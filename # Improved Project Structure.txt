@@ -1,0 +1,94 @@
+# Improved Project Structure
+
+```
+business_finance_app/
+├── .env                              # Environment variables
+├── .env.example                      # Example environment file
+├── .gitignore                        # Git ignore file
+├── docker-compose.yml                # Docker composition
+├── Dockerfile                        # Docker configuration
+├── requirements.txt                  # Dependencies
+├── README.md                         # Documentation
+├── pytest.ini                       # Test configuration
+├── setup.py                         # Package setup
+│
+├── app/                             # Main application package
+│   ├── __init__.py
+│   ├── main.py                      # New streamlit entry point
+│   ├── config/                      # Configuration management
+│   │   ├── __init__.py
+│   │   ├── settings.py              # Application settings
+│   │   ├── industry_config.py       # Industry thresholds
+│   │   └── model_config.py          # ML model configuration
+│   │
+│   ├── core/                        # Core business logic
+│   │   ├── __init__.py
+│   │   ├── exceptions.py            # Custom exceptions
+│   │   ├── validators.py            # Input validation
+│   │   ├── logger.py               # Logging configuration
+│   │   └── cache.py                # Caching utilities
+│   │
+│   ├── models/                      # Data models and ML
+│   │   ├── __init__.py
+│   │   ├── financial_models.py     # Financial data models
+│   │   ├── ml_predictor.py         # ML prediction logic
+│   │   └── model_artifacts/        # Model files
+│   │       ├── model.pkl
+│   │       └── scaler.pkl
+│   │
+│   ├── services/                    # Business services
+│   │   ├── __init__.py
+│   │   ├── data_processor.py       # Data processing service
+│   │   ├── financial_analyzer.py   # Financial analysis service
+│   │   ├── plaid_service.py        # Plaid API service
+│   │   ├── scoring_service.py      # Scoring algorithms
+│   │   └── report_generator.py     # Report generation
+│   │
+│   ├── utils/                       # Utility functions
+│   │   ├── __init__.py
+│   │   ├── data_utils.py           # Data manipulation utilities
+│   │   ├── chart_utils.py          # Chart generation utilities
+│   │   ├── export_utils.py         # Data export utilities
+│   │   └── security_utils.py       # Security utilities
+│   │
+│   ├── pages/                       # Streamlit pages
+│   │   ├── __init__.py
+│   │   ├── overview.py             # Overview page
+│   │   ├── bank_account.py         # Bank account page
+│   │   ├── upload.py               # Upload page
+│   │   └── dashboard.py            # Executive dashboard
+│   │
+│   └── components/                  # Reusable UI components
+│       ├── __init__.py
+│       ├── metrics_display.py      # Metrics display components
+│       ├── charts.py               # Chart components
+│       ├── forms.py                # Form components
+│       ├── tables.py               # Table components
+│       └── alerts.py               # Alert components
+│
+├── tests/                           # Test suite
+│   ├── __init__.py
+│   ├── conftest.py                 # Test configuration
+│   ├── test_data/                  # Test data files
+│   ├── unit/                       # Unit tests
+│   │   ├── test_financial_analyzer.py
+│   │   ├── test_data_processor.py
+│   │   ├── test_scoring_service.py
+│   │   └── test_validators.py
+│   ├── integration/                # Integration tests
+│   │   ├── test_plaid_service.py
+│   │   └── test_ml_predictor.py
+│   └── e2e/                        # End-to-end tests
+│       └── test_app_flow.py
+│
+├── scripts/                         # Utility scripts
+│   ├── setup_db.py                 # Database setup
+│   ├── migrate_data.py             # Data migration
+│   └── deploy.py                   # Deployment script
+│
+└── docs/                           # Documentation
+    ├── api_reference.md            # API documentation
+    ├── user_guide.md              # User guide
+    ├── developer_guide.md         # Developer documentation
+    └── deployment.md              # Deployment guide
+```
