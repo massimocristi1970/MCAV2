@@ -7,6 +7,11 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta, date
 import traceback
+import sys
+import os
+
+# Add the app directory to Python path
+sys.path.append(os.path.dirname(__file__))
 
 # Configure Streamlit page
 st.set_page_config(
