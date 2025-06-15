@@ -524,6 +524,51 @@ def create_monthly_charts(pivot_counts, pivot_amounts):
     )
     
     return fig_counts, fig_amounts
+
+def create_threshold_chart(score_breakdown):
+    """Create threshold comparison chart"""
+    
+    metrics = []
+    actual_values = []
+    threshold_values = []
+    colors = []
+    
+    for metric, data in score_breakdown.items():
+        metrics.append(metric.replace('_', ' ').title())
+        actual_values.append(data['actual'])
+        threshold_values.append(data['threshold'])
+        colors.append('green' if data['meets'] else 'red')
+    
+    fig = go.Figure()
+    
+    # Actual values
+    fig.add_trace(go.Bar(
+        name='Actual',
+        x=metrics,
+        y=actual_values,
+        marker_color=colors,
+        opacity=0.8
+    ))
+    
+    # Threshold lines
+    fig.add_trace(go.Scatter(
+        name='Threshold',
+        x=metrics,
+        y=threshold_values,
+        mode='markers',
+        marker=dict(color='black', size=10, symbol='diamond'),
+        line=dict(color='black', width=2, dash='dash')
+    ))
+    
+    fig.update_layout(
+        title="Actual vs Threshold Performance",
+        xaxis_title="Metrics",
+        yaxis_title="Values",
+        height=500,
+        xaxis_tickangle=-45
+    )
+    
+    return fig
     """Create threshold comparison chart"""
     
     metrics = []
@@ -657,18 +702,56 @@ def main():
     
     if uploaded_file is not None:
         try:
+            # Reset file pointer and read content
+            uploaded_file.seek(0)
+            content = uploaded_file.read()
+            
+            # Check if file is empty
+            if not content:
+                st.error("❌ Uploaded file is empty")
+                return
+            
+            # Try to parse JSON
+            try:
+                json_data = json.loads(content)
+            except json.JSONDecodeError as e:
+                st.error(f"❌ Invalid JSON file: {str(e)}")
+                st.info("Please ensure your file is valid JSON format")
+                return
+            
             # Process file
-            json_data = json.load(uploaded_file)
             transactions = json_data.get('transactions', [])
             
             if not transactions:
-                st.error("No transactions found in uploaded file")
+                st.error("❌ No transactions found in uploaded file")
+                st.info("Expected JSON structure: {'transactions': [...]}")
                 return
             
             df = pd.json_normalize(transactions)
-            df['date'] = pd.to_datetime(df['date'])
+            
+            # Validate required columns
+            required_columns = ['date', 'amount', 'name']
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            
+            if missing_columns:
+                st.error(f"❌ Missing required columns: {missing_columns}")
+                st.info("Required columns: date, amount, name")
+                return
+            
+            # Clean and process data
+            df['date'] = pd.to_datetime(df['date'], errors='coerce')
             df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
-            df = df.dropna(subset=['amount'])
+            
+            # Remove rows with invalid data
+            initial_count = len(df)
+            df = df.dropna(subset=['date', 'amount'])
+            
+            if df.empty:
+                st.error("❌ No valid transactions after data cleaning")
+                return
+            
+            if len(df) < initial_count:
+                st.warning(f"⚠️ Removed {initial_count - len(df)} rows with invalid data")
             
             # Display data info and export
             col1, col2, col3, col4 = st.columns(4)
