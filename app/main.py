@@ -451,7 +451,57 @@ def create_financial_charts(metrics):
     
     return fig_financial, fig_trend
 
-def create_monthly_breakdown(df):
+def calculate_revenue_insights(df):
+    """Calculate revenue-specific insights"""
+    if df.empty:
+        return {}
+    
+    # Apply categorization first
+    categorized_data = categorize_transactions(df.copy())
+    
+    # Filter for revenue transactions only
+    revenue_data = categorized_data[categorized_data['is_revenue']].copy()
+    
+    if revenue_data.empty:
+        return {
+            'unique_revenue_sources': 0,
+            'avg_revenue_transactions_per_day': 0,
+            'avg_daily_revenue_amount': 0,
+            'total_revenue_days': 0
+        }
+    
+    # Ensure we have the name column for revenue sources
+    name_column = 'name' if 'name' in revenue_data.columns else 'name_y' if 'name_y' in revenue_data.columns else None
+    
+    if name_column is None:
+        unique_revenue_sources = 0
+    else:
+        # Count unique revenue sources (unique company/merchant names)
+        unique_revenue_sources = revenue_data[name_column].nunique()
+    
+    # Calculate daily metrics
+    revenue_data['date'] = pd.to_datetime(revenue_data['date'])
+    revenue_data['date_only'] = revenue_data['date'].dt.date
+    
+    # Group by date to get daily totals
+    daily_revenue = revenue_data.groupby('date_only').agg({
+        'amount': ['count', lambda x: abs(x).sum()]
+    }).round(2)
+    
+    daily_revenue.columns = ['daily_transaction_count', 'daily_revenue_amount']
+    
+    # Calculate averages
+    total_revenue_days = len(daily_revenue)
+    avg_revenue_transactions_per_day = daily_revenue['daily_transaction_count'].mean()
+    avg_daily_revenue_amount = daily_revenue['daily_revenue_amount'].mean()
+    
+    return {
+        'unique_revenue_sources': unique_revenue_sources,
+        'avg_revenue_transactions_per_day': round(avg_revenue_transactions_per_day, 1),
+        'avg_daily_revenue_amount': round(avg_daily_revenue_amount, 2),
+        'total_revenue_days': total_revenue_days,
+        'daily_revenue_data': daily_revenue
+    }
     """Create monthly breakdown by subcategory"""
     if df.empty:
         return None
@@ -820,6 +870,9 @@ def main():
             metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
             scores = calculate_all_scores(metrics, params)
             
+            # Calculate revenue insights for the filtered period
+            revenue_insights = calculate_revenue_insights(filtered_df)
+            
             # Main Dashboard
             period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
             st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
@@ -845,6 +898,50 @@ def main():
             
             with col5:
                 st.metric("Monthly Revenue", f"£{metrics.get('Monthly Average Revenue', 0):,.0f}")
+            
+            # Revenue Insights Section
+            st.markdown("---")
+            st.subheader("💰 Revenue Insights")
+            
+            rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
+            
+            with rev_col1:
+                sources_count = revenue_insights.get('unique_revenue_sources', 0)
+                st.metric(
+                    "Unique Revenue Sources", 
+                    f"{sources_count}",
+                    help="Number of different companies/merchants providing revenue"
+                )
+                if sources_count == 1:
+                    st.warning("⚠️ Single revenue source - consider diversification")
+                elif sources_count <= 3:
+                    st.info("ℹ️ Limited revenue sources - moderate concentration risk")
+                else:
+                    st.success("✅ Good revenue diversification")
+            
+            with rev_col2:
+                avg_txns = revenue_insights.get('avg_revenue_transactions_per_day', 0)
+                st.metric(
+                    "Avg Revenue Transactions/Day", 
+                    f"{avg_txns:.1f}",
+                    help="Average number of revenue transactions per day"
+                )
+            
+            with rev_col3:
+                avg_daily_rev = revenue_insights.get('avg_daily_revenue_amount', 0)
+                st.metric(
+                    "Avg Daily Revenue", 
+                    f"£{avg_daily_rev:,.2f}",
+                    help="Average revenue amount received per day"
+                )
+            
+            with rev_col4:
+                total_days = revenue_insights.get('total_revenue_days', 0)
+                st.metric(
+                    "Revenue Active Days", 
+                    f"{total_days}",
+                    help="Number of days with revenue transactions"
+                )
             
             # Period Comparison (if not showing all data)
             if analysis_period != 'All':
