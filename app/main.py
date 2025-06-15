@@ -11,7 +11,6 @@ from plotly.subplots import make_subplots
 
 st.set_page_config(
     page_title="Business Finance Scorecard",
-    page_icon="💰",
     layout="wide"
 )
 
@@ -496,6 +495,46 @@ def create_threshold_chart(score_breakdown):
     
     return fig
 
+def filter_data_by_period(df, period_months):
+    """Filter data by time period"""
+    if df.empty or period_months == 'All':
+        return df
+    
+    df['date'] = pd.to_datetime(df['date'])
+    latest_date = df['date'].max()
+    start_date = latest_date - pd.DateOffset(months=int(period_months))
+    
+    return df[df['date'] >= start_date]
+
+def create_categorized_csv(df):
+    """Create CSV with categorization"""
+    if df.empty:
+        return None
+    
+    # Apply categorization
+    categorized_df = categorize_transactions(df.copy())
+    
+    # Select and order columns for export
+    export_columns = [
+        'date', 'name', 'amount', 'subcategory', 
+        'is_revenue', 'is_expense', 'is_debt_repayment', 'is_debt'
+    ]
+    
+    # Add any additional columns that exist
+    additional_cols = ['merchant_name', 'category', 'personal_finance_category.detailed']
+    for col in additional_cols:
+        if col in categorized_df.columns:
+            export_columns.append(col)
+    
+    # Filter to existing columns
+    available_columns = [col for col in export_columns if col in categorized_df.columns]
+    export_df = categorized_df[available_columns].copy()
+    
+    # Sort by date (newest first)
+    export_df = export_df.sort_values('date', ascending=False)
+    
+    return export_df.to_csv(index=False)
+
 def main():
     """Main application"""
     st.title("💰 Business Finance Scorecard")
@@ -507,7 +546,7 @@ def main():
     company_name = st.sidebar.text_input("Company Name", "Sample Business Ltd")
     industry = st.sidebar.selectbox("Industry", list(INDUSTRY_THRESHOLDS.keys()))
     requested_loan = st.sidebar.number_input("Requested Loan (£)", min_value=0.0, value=25000.0, step=1000.0)
-    directors_score = st.sidebar.slider("Director Credit Score", 0, 1000, 750)
+    directors_score = st.sidebar.slider("Director Credit Score", 0, 100, 75)
     company_age_months = st.sidebar.number_input("Company Age (Months)", min_value=0, value=24, step=1)
     
     st.sidebar.subheader("Risk Factors")
@@ -517,6 +556,14 @@ def main():
     website_or_social_outdated = st.sidebar.checkbox("Outdated Web Presence")
     uses_generic_email = st.sidebar.checkbox("Generic Email")
     no_online_presence = st.sidebar.checkbox("No Online Presence")
+    
+    # Time period filter
+    st.sidebar.subheader("📅 Analysis Period")
+    analysis_period = st.sidebar.selectbox(
+        "Select Time Period",
+        ["All", "3", "6", "9", "12"],
+        help="Choose how many months of data to analyze"
+    )
     
     params = {
         'company_name': company_name,
