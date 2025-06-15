@@ -887,24 +887,24 @@ def main():
             
             with col1:
                 fig_scores = create_score_charts(scores, metrics)
-                st.plotly_chart(fig_scores, use_container_width=True)
+                st.plotly_chart(fig_scores, use_container_width=True, key="scores_chart")
             
             with col2:
                 fig_financial, fig_trend = create_financial_charts(metrics)
-                st.plotly_chart(fig_financial, use_container_width=True)
+                st.plotly_chart(fig_financial, use_container_width=True, key="financial_chart")
             
             # Row 2: Trend and Threshold Charts
             col1, col2 = st.columns(2)
             
             with col1:
                 if fig_trend:
-                    st.plotly_chart(fig_trend, use_container_width=True)
+                    st.plotly_chart(fig_trend, use_container_width=True, key="trend_chart")
                 else:
                     st.info("Monthly trend requires multiple months of data")
             
             with col2:
                 fig_threshold = create_threshold_chart(scores['score_breakdown'])
-                st.plotly_chart(fig_threshold, use_container_width=True)
+                st.plotly_chart(fig_threshold, use_container_width=True, key="threshold_chart")
             
             # Monthly Breakdown Section
             st.markdown("---")
@@ -919,9 +919,9 @@ def main():
                 # Display charts
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.plotly_chart(fig_monthly_counts, use_container_width=True)
+                    st.plotly_chart(fig_monthly_counts, use_container_width=True, key="monthly_counts_chart")
                 with col2:
-                    st.plotly_chart(fig_monthly_amounts, use_container_width=True)
+                    st.plotly_chart(fig_monthly_amounts, use_container_width=True, key="monthly_amounts_chart")
                 
                 # Monthly summary table
                 with st.expander("📋 Detailed Monthly Breakdown", expanded=False):
@@ -993,7 +993,7 @@ def main():
                     legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.01)
                 )
                 
-                st.plotly_chart(fig_pie, use_container_width=True)
+                st.plotly_chart(fig_pie, use_container_width=True, key="category_pie_chart")
             
             # Detailed Metrics Table
             st.markdown("---")
