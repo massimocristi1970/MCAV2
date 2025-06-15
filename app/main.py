@@ -886,7 +886,7 @@ def main():
             
             # Main Dashboard - SINGLE RENDERING
             period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
-            st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
+            st.header(f"📊 Financial Dashboard: {company_name} ({period_label}) - MAIN DASHBOARD")
             
             # Key Metrics Row
             col1, col2, col3, col4, col5 = st.columns(5)
@@ -912,7 +912,7 @@ def main():
             
             # Revenue Insights Section
             st.markdown("---")
-            st.subheader("💰 Revenue Insights")
+            st.subheader("💰 Revenue Insights - SECTION 1")
             
             rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
             
@@ -990,6 +990,7 @@ def main():
             
             # Charts Section
             st.markdown("---")
+            st.subheader("📈 Charts & Analysis")
             
             # Row 1: Score and Financial Charts
             col1, col2 = st.columns(2)
