@@ -502,6 +502,32 @@ def calculate_revenue_insights(df):
         'total_revenue_days': total_revenue_days,
         'daily_revenue_data': daily_revenue
     }
+
+def create_monthly_breakdown(df):
+    """Create monthly breakdown by subcategory"""
+    if df.empty:
+        return None, None
+    
+    # Apply categorization
+    categorized_data = categorize_transactions(df.copy())
+    
+    # Create monthly summary
+    categorized_data['date'] = pd.to_datetime(categorized_data['date'])
+    categorized_data['year_month'] = categorized_data['date'].dt.to_period('M')
+    
+    # Group by month and subcategory
+    monthly_breakdown = categorized_data.groupby(['year_month', 'subcategory']).agg({
+        'amount': ['count', lambda x: abs(x).sum()]
+    }).round(2)
+    
+    monthly_breakdown.columns = ['Transaction_Count', 'Total_Amount']
+    monthly_breakdown = monthly_breakdown.reset_index()
+    
+    # Pivot to get subcategories as columns
+    pivot_counts = monthly_breakdown.pivot(index='year_month', columns='subcategory', values='Transaction_Count').fillna(0)
+    pivot_amounts = monthly_breakdown.pivot(index='year_month', columns='subcategory', values='Total_Amount').fillna(0)
+    
+    return pivot_counts, pivot_amounts
     """Create monthly breakdown by subcategory"""
     if df.empty:
         return None
