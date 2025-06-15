@@ -968,15 +968,15 @@ def main():
                         key="csv_export_main"
                     )
             
-            # Filter data and calculate metrics
-            filtered_df = filter_data_by_period(df, analysis_period)
-            metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
-            scores = calculate_all_scores(metrics, params)
-            revenue_insights = calculate_revenue_insights(filtered_df)
-            
-            # UPDATED SECTION FOR main.py - Replace the dashboard rendering section
+            # FIND THIS SECTION in your main.py (around line 650-700) and REPLACE IT:
 
-# ENHANCED DASHBOARD RENDERING with adaptive scoring (around line 680)
+# Filter data and calculate metrics
+filtered_df = filter_data_by_period(df, analysis_period)
+metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
+scores = calculate_all_scores(metrics, params)
+revenue_insights = calculate_revenue_insights(filtered_df)
+
+# ENHANCED DASHBOARD RENDERING with adaptive scoring
 period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
 st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
 
@@ -1210,43 +1210,44 @@ if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
             - **ML-Aligned Score**: {adaptive_score:.1f}% (after sigmoid transformation)
             """)
 
-           
-            # Revenue Insights
-            st.markdown("---")
-            st.subheader("💰 Revenue Insights")
-            
-            rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
-            with rev_col1:
-                sources_count = revenue_insights.get('unique_revenue_sources', 0)
-                st.metric("Unique Revenue Sources", f"{sources_count}")
-                if sources_count == 1:
-                    st.warning("⚠️ Single revenue source - consider diversification")
-                elif sources_count <= 3:
-                    st.info("ℹ️ Limited revenue sources - moderate concentration risk")
-                else:
-                    st.success("✅ Good revenue diversification")
-            with rev_col2:
-                avg_txns = revenue_insights.get('avg_revenue_transactions_per_day', 0)
-                st.metric("Avg Revenue Transactions/Day", f"{avg_txns:.1f}")
-            with rev_col3:
-                avg_daily_rev = revenue_insights.get('avg_daily_revenue_amount', 0)
-                st.metric("Avg Daily Revenue", f"£{avg_daily_rev:,.2f}")
-            with rev_col4:
-                total_days = revenue_insights.get('total_revenue_days', 0)
-                st.metric("Revenue Active Days", f"{total_days}")
-            
-            # Charts Section
-            st.markdown("---")
-            st.subheader("📈 Charts & Analysis")
-            
-            # Row 1: Enhanced Score and Financial Charts
-            col1, col2 = st.columns(2)
-            with col1:
-                fig_scores = create_score_charts(scores, metrics)
-                st.plotly_chart(fig_scores, use_container_width=True, key="enhanced_scores_chart")
-            with col2:
-                fig_financial, fig_trend = create_financial_charts(metrics)
-                st.plotly_chart(fig_financial, use_container_width=True, key="main_financial_chart")
+# Revenue Insights
+st.markdown("---")
+st.subheader("💰 Revenue Insights")
+
+rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
+with rev_col1:
+    sources_count = revenue_insights.get('unique_revenue_sources', 0)
+    st.metric("Unique Revenue Sources", f"{sources_count}")
+    if sources_count == 1:
+        st.warning("⚠️ Single revenue source - consider diversification")
+    elif sources_count <= 3:
+        st.info("ℹ️ Limited revenue sources - moderate concentration risk")
+    else:
+        st.success("✅ Good revenue diversification")
+with rev_col2:
+    avg_txns = revenue_insights.get('avg_revenue_transactions_per_day', 0)
+    st.metric("Avg Revenue Transactions/Day", f"{avg_txns:.1f}")
+with rev_col3:
+    avg_daily_rev = revenue_insights.get('avg_daily_revenue_amount', 0)
+    st.metric("Avg Daily Revenue", f"£{avg_daily_rev:,.2f}")
+with rev_col4:
+    total_days = revenue_insights.get('total_revenue_days', 0)
+    st.metric("Revenue Active Days", f"{total_days}")
+
+# Charts Section
+st.markdown("---")
+st.subheader("📈 Charts & Analysis")
+
+# Row 1: Enhanced Score and Financial Charts
+col1, col2 = st.columns(2)
+with col1:
+    fig_scores = create_score_charts(scores, metrics)
+    st.plotly_chart(fig_scores, use_container_width=True, key="enhanced_scores_chart")
+with col2:
+    fig_financial, fig_trend = create_financial_charts(metrics)
+    st.plotly_chart(fig_financial, use_container_width=True, key="main_financial_chart")
+
+# CONTINUE WITH THE REST OF YOUR EXISTING CODE...
             
             # Row 2: Trend and Threshold Charts
             col1, col2 = st.columns(2)
