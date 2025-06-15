@@ -803,7 +803,8 @@ def main():
                         file_name=f"{company_name.replace(' ', '_')}_transactions_categorized.csv",
                         mime="text/csv",
                         help="Download all transaction data with our subcategorization",
-                        type="primary"
+                        type="primary",
+                        key="main_csv_export"
                     )
             
             # Filter data by selected period
