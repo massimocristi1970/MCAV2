@@ -11,6 +11,7 @@ from plotly.subplots import make_subplots
 
 st.set_page_config(
     page_title="Business Finance Scorecard",
+    page_icon="💰",
     layout="wide"
 )
 
@@ -450,7 +451,79 @@ def create_financial_charts(metrics):
     
     return fig_financial, fig_trend
 
-def create_threshold_chart(score_breakdown):
+def create_monthly_breakdown(df):
+    """Create monthly breakdown by subcategory"""
+    if df.empty:
+        return None
+    
+    # Apply categorization
+    categorized_data = categorize_transactions(df.copy())
+    
+    # Create monthly summary
+    categorized_data['date'] = pd.to_datetime(categorized_data['date'])
+    categorized_data['year_month'] = categorized_data['date'].dt.to_period('M')
+    
+    # Group by month and subcategory
+    monthly_breakdown = categorized_data.groupby(['year_month', 'subcategory']).agg({
+        'amount': ['count', lambda x: abs(x).sum()]
+    }).round(2)
+    
+    monthly_breakdown.columns = ['Transaction_Count', 'Total_Amount']
+    monthly_breakdown = monthly_breakdown.reset_index()
+    
+    # Pivot to get subcategories as columns
+    pivot_counts = monthly_breakdown.pivot(index='year_month', columns='subcategory', values='Transaction_Count').fillna(0)
+    pivot_amounts = monthly_breakdown.pivot(index='year_month', columns='subcategory', values='Total_Amount').fillna(0)
+    
+    return pivot_counts, pivot_amounts
+
+def create_monthly_charts(pivot_counts, pivot_amounts):
+    """Create monthly breakdown charts"""
+    
+    # Transaction count chart
+    months = [str(month) for month in pivot_counts.index]
+    
+    fig_counts = go.Figure()
+    colors = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+    
+    for i, category in enumerate(pivot_counts.columns):
+        fig_counts.add_trace(go.Bar(
+            name=category,
+            x=months,
+            y=pivot_counts[category],
+            marker_color=colors[i % len(colors)]
+        ))
+    
+    fig_counts.update_layout(
+        title="Monthly Transaction Counts by Category",
+        xaxis_title="Month",
+        yaxis_title="Number of Transactions",
+        barmode='stack',
+        height=400,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    
+    # Amount chart
+    fig_amounts = go.Figure()
+    
+    for i, category in enumerate(pivot_amounts.columns):
+        fig_amounts.add_trace(go.Bar(
+            name=category,
+            x=months,
+            y=pivot_amounts[category],
+            marker_color=colors[i % len(colors)]
+        ))
+    
+    fig_amounts.update_layout(
+        title="Monthly Transaction Amounts by Category",
+        xaxis_title="Month",
+        yaxis_title="Amount (£)",
+        barmode='stack',
+        height=400,
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    
+    return fig_counts, fig_amounts
     """Create threshold comparison chart"""
     
     metrics = []
@@ -537,7 +610,7 @@ def create_categorized_csv(df):
 
 def main():
     """Main application"""
-    st.title(" Business Finance Scorecard")
+    st.title("💰 Business Finance Scorecard")
     st.markdown("---")
     
     # Sidebar inputs
@@ -546,7 +619,7 @@ def main():
     company_name = st.sidebar.text_input("Company Name", "Sample Business Ltd")
     industry = st.sidebar.selectbox("Industry", list(INDUSTRY_THRESHOLDS.keys()))
     requested_loan = st.sidebar.number_input("Requested Loan (£)", min_value=0.0, value=25000.0, step=1000.0)
-    directors_score = st.sidebar.slider("Director Credit Score", 0, 100, 75)
+    directors_score = st.sidebar.slider("Director Credit Score", 0, 1000, 750)
     company_age_months = st.sidebar.number_input("Company Age (Months)", min_value=0, value=24, step=1)
     
     st.sidebar.subheader("Risk Factors")
@@ -583,6 +656,7 @@ def main():
     uploaded_file = st.file_uploader("Upload Transaction Data (JSON)", type=['json'])
     
     if uploaded_file is not None:
+    if uploaded_file is not None:
         try:
             # Process file
             json_data = json.load(uploaded_file)
@@ -597,14 +671,47 @@ def main():
             df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
             df = df.dropna(subset=['amount'])
             
-            st.success(f"✅ Loaded {len(df)} transactions")
+            # Display data info and export
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.success(f"✅ Loaded {len(df)} transactions")
+            with col2:
+                date_range = f"{df['date'].min().date()} to {df['date'].max().date()}"
+                st.info(f"📅 Date Range: {date_range}")
+            with col3:
+                # Show filtered period info
+                if analysis_period != 'All':
+                    filtered_count = len(filter_data_by_period(df, analysis_period))
+                    st.info(f"📊 Period: {filtered_count} transactions")
+            with col4:
+                # CSV Export button - Make it more prominent
+                csv_data = create_categorized_csv(df)
+                if csv_data:
+                    st.download_button(
+                        label="📥 Export Categorized CSV",
+                        data=csv_data,
+                        file_name=f"{company_name.replace(' ', '_')}_transactions_categorized.csv",
+                        mime="text/csv",
+                        help="Download all transaction data with our subcategorization",
+                        type="primary"
+                    )
+            
+            # Filter data by selected period
+            filtered_df = filter_data_by_period(df, analysis_period)
+            
+            # Show period info
+            if analysis_period != 'All':
+                period_info = f"Last {analysis_period} months"
+                filtered_count = len(filtered_df)
+                st.info(f"📊 Analyzing {period_info}: {filtered_count} transactions")
             
             # Calculate metrics and scores
-            metrics = calculate_financial_metrics(df, params['company_age_months'])
+            metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
             scores = calculate_all_scores(metrics, params)
             
             # Main Dashboard
-            st.header(f"📊 Financial Dashboard: {company_name}")
+            period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
+            st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
             
             # Key Metrics Row
             col1, col2, col3, col4, col5 = st.columns(5)
@@ -627,6 +734,39 @@ def main():
             
             with col5:
                 st.metric("Monthly Revenue", f"£{metrics.get('Monthly Average Revenue', 0):,.0f}")
+            
+            # Period Comparison (if not showing all data)
+            if analysis_period != 'All':
+                st.markdown("---")
+                with st.expander(f"📈 Compare with Full Period Analysis", expanded=False):
+                    # Calculate full period metrics for comparison
+                    full_metrics = calculate_financial_metrics(df, params['company_age_months'])
+                    full_scores = calculate_all_scores(full_metrics, params)
+                    
+                    comp_col1, comp_col2, comp_col3, comp_col4 = st.columns(4)
+                    
+                    with comp_col1:
+                        delta_weighted = scores['weighted_score'] - full_scores['weighted_score']
+                        st.metric("Weighted Score", f"{full_scores['weighted_score']:.0f}/100", 
+                                delta=f"{delta_weighted:+.0f} vs {period_label}")
+                    
+                    with comp_col2:
+                        delta_industry = scores['industry_score'] - full_scores['industry_score']
+                        st.metric("Industry Score", f"{full_scores['industry_score']}/12",
+                                delta=f"{delta_industry:+.0f} vs {period_label}")
+                    
+                    with comp_col3:
+                        if full_scores['ml_score'] and scores['ml_score']:
+                            delta_ml = scores['ml_score'] - full_scores['ml_score']
+                            st.metric("ML Probability", f"{full_scores['ml_score']:.1f}%",
+                                    delta=f"{delta_ml:+.1f}% vs {period_label}")
+                        else:
+                            st.metric("ML Probability", "N/A")
+                    
+                    with comp_col4:
+                        delta_revenue = metrics.get('Monthly Average Revenue', 0) - full_metrics.get('Monthly Average Revenue', 0)
+                        st.metric("Monthly Revenue", f"£{full_metrics.get('Monthly Average Revenue', 0):,.0f}",
+                                delta=f"£{delta_revenue:+,.0f} vs {period_label}")
             
             # Charts Section
             st.markdown("---")
@@ -655,6 +795,95 @@ def main():
                 fig_threshold = create_threshold_chart(scores['score_breakdown'])
                 st.plotly_chart(fig_threshold, use_container_width=True)
             
+            # Monthly Breakdown Section
+            st.markdown("---")
+            st.subheader("📊 Monthly Breakdown by Category")
+            
+            pivot_counts, pivot_amounts = create_monthly_breakdown(filtered_df)
+            
+            if pivot_counts is not None and not pivot_counts.empty:
+                # Create monthly breakdown charts
+                fig_monthly_counts, fig_monthly_amounts = create_monthly_charts(pivot_counts, pivot_amounts)
+                
+                # Display charts
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.plotly_chart(fig_monthly_counts, use_container_width=True)
+                with col2:
+                    st.plotly_chart(fig_monthly_amounts, use_container_width=True)
+                
+                # Monthly summary table
+                with st.expander("📋 Detailed Monthly Breakdown", expanded=False):
+                    tab1, tab2 = st.tabs(["Transaction Counts", "Transaction Amounts (£)"])
+                    
+                    with tab1:
+                        # Format counts table
+                        counts_display = pivot_counts.copy()
+                        counts_display.index = counts_display.index.astype(str)
+                        counts_display = counts_display.astype(int)
+                        st.dataframe(counts_display, use_container_width=True)
+                        
+                        # Add totals row
+                        totals_counts = counts_display.sum()
+                        st.write("**Totals:**")
+                        total_cols = st.columns(len(totals_counts))
+                        for i, (cat, total) in enumerate(totals_counts.items()):
+                            with total_cols[i]:
+                                st.metric(cat, f"{total:,.0f}")
+                    
+                    with tab2:
+                        # Format amounts table
+                        amounts_display = pivot_amounts.copy()
+                        amounts_display.index = amounts_display.index.astype(str)
+                        amounts_display = amounts_display.round(2)
+                        st.dataframe(amounts_display, use_container_width=True)
+                        
+                        # Add totals row
+                        totals_amounts = amounts_display.sum()
+                        st.write("**Totals:**")
+                        total_cols = st.columns(len(totals_amounts))
+                        for i, (cat, total) in enumerate(totals_amounts.items()):
+                            with total_cols[i]:
+                                st.metric(cat, f"£{total:,.2f}")
+            else:
+                st.info("Monthly breakdown requires multiple months of data")
+            
+            # Transaction Category Breakdown
+            st.markdown("---")
+            st.subheader("💳 Transaction Analysis")
+            
+            # Show category breakdown for filtered period
+            categorized_data = categorize_transactions(filtered_df)
+            category_summary = categorized_data['subcategory'].value_counts()
+            
+            # Category breakdown with amounts
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.write("**Transaction Categories:**")
+                for category, count in category_summary.items():
+                    category_amount = abs(categorized_data[categorized_data['subcategory'] == category]['amount'].sum())
+                    percentage = (count / len(categorized_data)) * 100
+                    st.write(f"• **{category}**: {count} transactions (£{category_amount:,.2f}) - {percentage:.1f}%")
+            
+            with col2:
+                # Category pie chart
+                fig_pie = go.Figure(data=[go.Pie(
+                    labels=category_summary.index,
+                    values=category_summary.values,
+                    hole=0.3,
+                    marker_colors=['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+                )])
+                
+                fig_pie.update_layout(
+                    title="Transaction Distribution",
+                    height=300,
+                    showlegend=True,
+                    legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.01)
+                )
+                
+                st.plotly_chart(fig_pie, use_container_width=True)
+            
             # Detailed Metrics Table
             st.markdown("---")
             st.subheader("📋 Detailed Financial Metrics")
@@ -673,9 +902,20 @@ def main():
                         meets_threshold = value >= threshold
                         comparison = "≥"
                     
+                    # Format values appropriately
+                    if isinstance(value, float):
+                        if metric in ['Operating Margin', 'Debt-to-Income Ratio', 'Expense-to-Revenue Ratio']:
+                            formatted_value = f"{value:.3f} ({value*100:.1f}%)"
+                        elif metric in ['Revenue Growth Rate']:
+                            formatted_value = f"{value:.3f} ({value:.1f}%)"
+                        else:
+                            formatted_value = f"{value:.2f}"
+                    else:
+                        formatted_value = f"£{value:,.2f}" if 'Income' in metric or 'Revenue' in metric or 'Debt' in metric or 'Balance' in metric or 'Rate' in metric else str(value)
+                    
                     metrics_data.append({
                         'Metric': metric,
-                        'Actual Value': value,
+                        'Actual Value': formatted_value,
                         'Threshold': f"{comparison} {threshold}",
                         'Status': '✅ Pass' if meets_threshold else '❌ Fail'
                     })
