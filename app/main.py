@@ -537,7 +537,7 @@ def create_categorized_csv(df):
 
 def main():
     """Main application"""
-    st.title("💰 Business Finance Scorecard")
+    st.title(" Business Finance Scorecard")
     st.markdown("---")
     
     # Sidebar inputs
