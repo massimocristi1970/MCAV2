@@ -882,239 +882,241 @@ def main():
             scores = calculate_all_scores(metrics, params)
             revenue_insights = calculate_revenue_insights(filtered_df)
 
-            # ENHANCED DASHBOARD RENDERING with adaptive scoring
-            period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
-            st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
+            # UPDATED SECTION FOR main.py - Replace the dashboard rendering section
 
-            # ENHANCED Key Metrics with Adaptive Scoring - FIXED VERSION
-            col1, col2, col3, col4, col5 = st.columns(5)
-            with col1:
-                st.metric("Original Weighted Score", f"{scores['weighted_score']:.0f}/100")
-            with col2:
-                if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
-                    adaptive_score = scores['adaptive_weighted_score']
-                    delta = adaptive_score - scores['weighted_score']
-                    st.metric("Adaptive Weighted Score", f"{adaptive_score:.1f}%", delta=f"{delta:+.1f}")
-                else:
-                    st.metric("Adaptive Weighted Score", "N/A")
-            with col3:
-                if scores['ml_score']:
-                    st.metric("ML Probability", f"{scores['ml_score']:.1f}%")
-                else:
-                    st.metric("ML Probability", "N/A")
-            with col4:
-                risk_colors = {"Low Risk": "🟢", "Moderate Low Risk": "🟡", "Medium Risk": "🟠", "Moderate High Risk": "🔴", "High Risk": "🔴"}
-                st.metric("Loan to Revenue Risk", f"{risk_colors.get(scores['loan_risk'], '⚪')} {scores['loan_risk']}")
-            with col5:
-                st.metric("Monthly Revenue", f"£{metrics.get('Monthly Average Revenue', 0):,.0f}")
+# ENHANCED DASHBOARD RENDERING with adaptive scoring (around line 680)
+period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
+st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
 
-            # ENHANCED SCORING COMPARISON SECTION - NEW VERSION
-            if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
-                st.markdown("---")
-                
-                # Create the enhanced scoring analysis section
-                st.subheader("🎯 Enhanced Scoring Analysis")
-                
-                # Get the scores for comparison
-                original_score = scores['weighted_score']
-                adaptive_score = scores['adaptive_weighted_score'] 
-                ml_score = scores['ml_score'] if scores['ml_score'] else 0
-                scoring_details = scores.get('scoring_details', [])
-                
-                # Main scoring metrics display
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.metric(
-                        label="🏛️ Original Weighted Score", 
-                        value=f"{original_score:.0f}/100",
-                        help="Traditional binary threshold-based scoring"
-                    )
-                
-                with col2:
-                    difference = adaptive_score - original_score
-                    st.metric(
-                        label="🧠 Adaptive Weighted Score", 
-                        value=f"{adaptive_score:.1f}%",
-                        delta=f"{difference:+.1f} vs Original",
-                        help="Continuous scoring aligned with ML model"
-                    )
-                
-                with col3:
-                    if ml_score > 0:
-                        ml_difference = abs(adaptive_score - ml_score)
-                        st.metric(
-                            label="🤖 ML Probability Score", 
-                            value=f"{ml_score:.1f}%",
-                            delta=f"±{ml_difference:.1f} vs Adaptive",
-                            help="Machine learning model prediction"
-                        )
-                    else:
-                        st.metric(
-                            label="🤖 ML Probability Score", 
-                            value="N/A",
-                            help="ML model not available"
-                        )
-                
-                # Score alignment analysis
-                if ml_score > 0:
-                    ml_adaptive_diff = abs(adaptive_score - ml_score)
-                    
-                    # Create alignment status with color coding
-                    if ml_adaptive_diff < 10:
-                        st.success(f"✅ **Excellent Alignment**: Adaptive and ML scores within {ml_adaptive_diff:.1f} points")
-                        alignment_color = "🟢"
-                        alignment_text = "Excellent"
-                    elif ml_adaptive_diff < 15:
-                        st.info(f"ℹ️ **Good Alignment**: Adaptive and ML scores within {ml_adaptive_diff:.1f} points")
-                        alignment_color = "🟡"
-                        alignment_text = "Good"
-                    elif ml_adaptive_diff < 25:
-                        st.warning(f"⚠️ **Moderate Alignment**: Adaptive and ML scores differ by {ml_adaptive_diff:.1f} points")
-                        alignment_color = "🟠"
-                        alignment_text = "Moderate"
-                    else:
-                        st.error(f"🔍 **Poor Alignment**: Adaptive and ML scores differ by {ml_adaptive_diff:.1f} points - investigate")
-                        alignment_color = "🔴"
-                        alignment_text = "Poor"
-                    
-                    # Risk level comparison with enhanced display
-                    def get_risk_level(score):
-                        if score >= 70: return "Low Risk", "🟢"
-                        elif score >= 50: return "Medium Risk", "🟡"
-                        elif score >= 30: return "High Risk", "🟠"
-                        else: return "Very High Risk", "🔴"
-                    
-                    original_risk, original_icon = get_risk_level(original_score)
-                    adaptive_risk, adaptive_icon = get_risk_level(adaptive_score)
-                    ml_risk, ml_icon = get_risk_level(ml_score)
-                    
-                    # Enhanced risk comparison table
-                    st.markdown("### 🎯 Risk Level Analysis")
-                    
-                    risk_col1, risk_col2, risk_col3, risk_col4 = st.columns(4)
-                    
-                    with risk_col1:
-                        st.markdown(f"""
-                        **🏛️ Original Method**  
-                        {original_icon} **{original_risk}**  
-                        Score: {original_score:.0f}/100
-                        """)
-                    
-                    with risk_col2:
-                        st.markdown(f"""
-                        **🧠 Adaptive Method**  
-                        {adaptive_icon} **{adaptive_risk}**  
-                        Score: {adaptive_score:.1f}%
-                        """)
-                    
-                    with risk_col3:
-                        st.markdown(f"""
-                        **🤖 ML Prediction**  
-                        {ml_icon} **{ml_risk}**  
-                        Score: {ml_score:.1f}%
-                        """)
-                    
-                    with risk_col4:
-                        st.markdown(f"""
-                        **📊 Alignment**  
-                        {alignment_color} **{alignment_text}**  
-                        Diff: ±{ml_adaptive_diff:.1f}%
-                        """)
-                    
-                    # Consensus analysis
-                    risk_levels = [original_risk, adaptive_risk, ml_risk]
-                    unique_risks = set(risk_levels)
-                    
-                    if len(unique_risks) == 1:
-                        st.success(f"🎯 **Perfect Consensus**: All three methods agree on **{list(unique_risks)[0]}**")
-                    elif adaptive_risk == ml_risk:
-                        st.info(f"🤝 **Adaptive-ML Agreement**: Both advanced methods agree on **{adaptive_risk}** (Original: {original_risk})")
-                    elif original_risk == ml_risk:
-                        st.info(f"🤝 **Original-ML Agreement**: Traditional and ML methods agree on **{original_risk}** (Adaptive: {adaptive_risk})")
-                    else:
-                        st.warning(f"⚖️ **Split Decision**: No consensus - Original: {original_risk}, Adaptive: {adaptive_risk}, ML: {ml_risk}")
-                
-                # Score improvement analysis
-                st.markdown("### 📈 Scoring Methodology Comparison")
-                
-                improvement_col1, improvement_col2 = st.columns(2)
-                
-                with improvement_col1:
-                    st.markdown("""
-                    **🏛️ Original Weighted Scoring:**
-                    - ✅ Simple and transparent
-                    - ✅ Easy to understand thresholds
-                    - ❌ Binary pass/fail (harsh on borderline cases)
-                    - ❌ Sharp cutoffs can cause dramatic swings
-                    """)
-                
-                with improvement_col2:
-                    st.markdown("""
-                    **🧠 Adaptive Weighted Scoring:**
-                    - ✅ Gradual transitions near thresholds
-                    - ✅ Partial credit for near-threshold performance
-                    - ✅ Better alignment with ML predictions
-                    - ✅ More nuanced risk assessment
-                    """)
-                
-                # Detailed breakdown (enhanced expandable section)
-                if scoring_details:
-                    with st.expander("🔍 **Detailed Adaptive Scoring Breakdown**", expanded=False):
-                        st.markdown("**Component Score Analysis:**")
+# ENHANCED Key Metrics with Adaptive Scoring - FIXED VERSION
+col1, col2, col3, col4, col5 = st.columns(5)
+with col1:
+    st.metric("Original Weighted Score", f"{scores['weighted_score']:.0f}/100")
+with col2:
+    if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
+        adaptive_score = scores['adaptive_weighted_score']
+        delta = adaptive_score - scores['weighted_score']
+        st.metric("Adaptive Weighted Score", f"{adaptive_score:.1f}%", delta=f"{delta:+.1f}")
+    else:
+        st.metric("Adaptive Weighted Score", "N/A")
+with col3:
+    if scores['ml_score']:
+        st.metric("ML Probability", f"{scores['ml_score']:.1f}%")
+    else:
+        st.metric("ML Probability", "N/A")
+with col4:
+    risk_colors = {"Low Risk": "🟢", "Moderate Low Risk": "🟡", "Medium Risk": "🟠", "Moderate High Risk": "🔴", "High Risk": "🔴"}
+    st.metric("Loan to Revenue Risk", f"{risk_colors.get(scores['loan_risk'], '⚪')} {scores['loan_risk']}")
+with col5:
+    st.metric("Monthly Revenue", f"£{metrics.get('Monthly Average Revenue', 0):,.0f}")
+
+# ENHANCED SCORING COMPARISON SECTION - NEW VERSION
+if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
+    st.markdown("---")
+    
+    # Create the enhanced scoring analysis section
+    st.subheader("🎯 Enhanced Scoring Analysis")
+    
+    # Get the scores for comparison
+    original_score = scores['weighted_score']
+    adaptive_score = scores['adaptive_weighted_score'] 
+    ml_score = scores['ml_score'] if scores['ml_score'] else 0
+    scoring_details = scores.get('scoring_details', [])
+    
+    # Main scoring metrics display
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric(
+            label="🏛️ Original Weighted Score", 
+            value=f"{original_score:.0f}/100",
+            help="Traditional binary threshold-based scoring"
+        )
+    
+    with col2:
+        difference = adaptive_score - original_score
+        st.metric(
+            label="🧠 Adaptive Weighted Score", 
+            value=f"{adaptive_score:.1f}%",
+            delta=f"{difference:+.1f} vs Original",
+            help="Continuous scoring aligned with ML model"
+        )
+    
+    with col3:
+        if ml_score > 0:
+            ml_difference = abs(adaptive_score - ml_score)
+            st.metric(
+                label="🤖 ML Probability Score", 
+                value=f"{ml_score:.1f}%",
+                delta=f"±{ml_difference:.1f} vs Adaptive",
+                help="Machine learning model prediction"
+            )
+        else:
+            st.metric(
+                label="🤖 ML Probability Score", 
+                value="N/A",
+                help="ML model not available"
+            )
+    
+    # Score alignment analysis
+    if ml_score > 0:
+        ml_adaptive_diff = abs(adaptive_score - ml_score)
+        
+        # Create alignment status with color coding
+        if ml_adaptive_diff < 10:
+            st.success(f"✅ **Excellent Alignment**: Adaptive and ML scores within {ml_adaptive_diff:.1f} points")
+            alignment_color = "🟢"
+            alignment_text = "Excellent"
+        elif ml_adaptive_diff < 15:
+            st.info(f"ℹ️ **Good Alignment**: Adaptive and ML scores within {ml_adaptive_diff:.1f} points")
+            alignment_color = "🟡"
+            alignment_text = "Good"
+        elif ml_adaptive_diff < 25:
+            st.warning(f"⚠️ **Moderate Alignment**: Adaptive and ML scores differ by {ml_adaptive_diff:.1f} points")
+            alignment_color = "🟠"
+            alignment_text = "Moderate"
+        else:
+            st.error(f"🔍 **Poor Alignment**: Adaptive and ML scores differ by {ml_adaptive_diff:.1f} points - investigate")
+            alignment_color = "🔴"
+            alignment_text = "Poor"
+        
+        # Risk level comparison with enhanced display
+        def get_risk_level(score):
+            if score >= 70: return "Low Risk", "🟢"
+            elif score >= 50: return "Medium Risk", "🟡"
+            elif score >= 30: return "High Risk", "🟠"
+            else: return "Very High Risk", "🔴"
+        
+        original_risk, original_icon = get_risk_level(original_score)
+        adaptive_risk, adaptive_icon = get_risk_level(adaptive_score)
+        ml_risk, ml_icon = get_risk_level(ml_score)
+        
+        # Enhanced risk comparison table
+        st.markdown("### 🎯 Risk Level Analysis")
+        
+        risk_col1, risk_col2, risk_col3, risk_col4 = st.columns(4)
+        
+        with risk_col1:
+            st.markdown(f"""
+            **🏛️ Original Method**  
+            {original_icon} **{original_risk}**  
+            Score: {original_score:.0f}/100
+            """)
+        
+        with risk_col2:
+            st.markdown(f"""
+            **🧠 Adaptive Method**  
+            {adaptive_icon} **{adaptive_risk}**  
+            Score: {adaptive_score:.1f}%
+            """)
+        
+        with risk_col3:
+            st.markdown(f"""
+            **🤖 ML Prediction**  
+            {ml_icon} **{ml_risk}**  
+            Score: {ml_score:.1f}%
+            """)
+        
+        with risk_col4:
+            st.markdown(f"""
+            **📊 Alignment**  
+            {alignment_color} **{alignment_text}**  
+            Diff: ±{ml_adaptive_diff:.1f}%
+            """)
+        
+        # Consensus analysis
+        risk_levels = [original_risk, adaptive_risk, ml_risk]
+        unique_risks = set(risk_levels)
+        
+        if len(unique_risks) == 1:
+            st.success(f"🎯 **Perfect Consensus**: All three methods agree on **{list(unique_risks)[0]}**")
+        elif adaptive_risk == ml_risk:
+            st.info(f"🤝 **Adaptive-ML Agreement**: Both advanced methods agree on **{adaptive_risk}** (Original: {original_risk})")
+        elif original_risk == ml_risk:
+            st.info(f"🤝 **Original-ML Agreement**: Traditional and ML methods agree on **{original_risk}** (Adaptive: {adaptive_risk})")
+        else:
+            st.warning(f"⚖️ **Split Decision**: No consensus - Original: {original_risk}, Adaptive: {adaptive_risk}, ML: {ml_risk}")
+    
+    # Score improvement analysis
+    st.markdown("### 📈 Scoring Methodology Comparison")
+    
+    improvement_col1, improvement_col2 = st.columns(2)
+    
+    with improvement_col1:
+        st.markdown("""
+        **🏛️ Original Weighted Scoring:**
+        - ✅ Simple and transparent
+        - ✅ Easy to understand thresholds
+        - ❌ Binary pass/fail (harsh on borderline cases)
+        - ❌ Sharp cutoffs can cause dramatic swings
+        """)
+    
+    with improvement_col2:
+        st.markdown("""
+        **🧠 Adaptive Weighted Scoring:**
+        - ✅ Gradual transitions near thresholds
+        - ✅ Partial credit for near-threshold performance
+        - ✅ Better alignment with ML predictions
+        - ✅ More nuanced risk assessment
+        """)
+    
+    # Detailed breakdown (enhanced expandable section)
+    if scoring_details:
+        with st.expander("🔍 **Detailed Adaptive Scoring Breakdown**", expanded=False):
+            st.markdown("**Component Score Analysis:**")
+            
+            # Create a more structured display of scoring details
+            detail_data = []
+            for detail in scoring_details:
+                if " → " in detail and " vs " in detail:
+                    parts = detail.split(" → ")
+                    if len(parts) == 2:
+                        metric_part = parts[0]
+                        score_part = parts[1].replace(" pts", "")
                         
-                        # Create a more structured display of scoring details
-                        detail_data = []
-                        for detail in scoring_details:
-                            if " → " in detail and " vs " in detail:
-                                parts = detail.split(" → ")
-                                if len(parts) == 2:
-                                    metric_part = parts[0]
-                                    score_part = parts[1].replace(" pts", "")
-                                    
-                                    if ": " in metric_part and " vs " in metric_part:
-                                        metric_name = metric_part.split(": ")[0]
-                                        values_part = metric_part.split(": ")[1]
-                                        
-                                        if " vs " in values_part:
-                                            actual_val = values_part.split(" vs ")[0]
-                                            threshold_val = values_part.split(" vs ")[1]
-                                            
-                                            detail_data.append({
-                                                'Component': metric_name,
-                                                'Actual Value': actual_val,
-                                                'Threshold': threshold_val,
-                                                'Points Earned': score_part
-                                            })
+                        if ": " in metric_part and " vs " in metric_part:
+                            metric_name = metric_part.split(": ")[0]
+                            values_part = metric_part.split(": ")[1]
                             
-                            else:
-                                # Handle penalty entries
+                            if " vs " in values_part:
+                                actual_val = values_part.split(" vs ")[0]
+                                threshold_val = values_part.split(" vs ")[1]
+                                
                                 detail_data.append({
-                                    'Component': detail.split(":")[0] if ":" in detail else detail,
-                                    'Actual Value': '-',
-                                    'Threshold': '-',
-                                    'Points Earned': detail.split(":")[1] if ":" in detail else '0'
+                                    'Component': metric_name,
+                                    'Actual Value': actual_val,
+                                    'Threshold': threshold_val,
+                                    'Points Earned': score_part
                                 })
-                        
-                        if detail_data:
-                            breakdown_df = pd.DataFrame(detail_data)
-                            st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
-                        else:
-                            # Fallback to simple list if parsing fails
-                            for detail in scoring_details:
-                                st.write(f"• {detail}")
-                        
-                        # Summary statistics
-                        total_possible = 105  # Max possible adaptive score
-                        current_raw = scores.get('raw_adaptive_score', 0)
-                        utilization = (current_raw / total_possible) * 100
-                        
-                        st.markdown(f"""
-                        **📊 Scoring Summary:**
-                        - **Raw Score**: {current_raw:.1f}/{total_possible} points
-                        - **Utilization**: {utilization:.1f}% of maximum possible
-                        - **ML-Aligned Score**: {adaptive_score:.1f}% (after sigmoid transformation)
-                        """)
+                
+                else:
+                    # Handle penalty entries
+                    detail_data.append({
+                        'Component': detail.split(":")[0] if ":" in detail else detail,
+                        'Actual Value': '-',
+                        'Threshold': '-',
+                        'Points Earned': detail.split(":")[1] if ":" in detail else '0'
+                    })
+            
+            if detail_data:
+                breakdown_df = pd.DataFrame(detail_data)
+                st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
+            else:
+                # Fallback to simple list if parsing fails
+                for detail in scoring_details:
+                    st.write(f"• {detail}")
+            
+            # Summary statistics
+            total_possible = 105  # Max possible adaptive score
+            current_raw = scores.get('raw_adaptive_score', 0)
+            utilization = (current_raw / total_possible) * 100
+            
+            st.markdown(f"""
+            **📊 Scoring Summary:**
+            - **Raw Score**: {current_raw:.1f}/{total_possible} points
+            - **Utilization**: {utilization:.1f}% of maximum possible
+            - **ML-Aligned Score**: {adaptive_score:.1f}% (after sigmoid transformation)
+            """)
 
             # Revenue Insights
             st.markdown("---")
