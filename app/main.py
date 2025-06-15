@@ -884,7 +884,7 @@ def main():
             # Calculate revenue insights for the filtered period
             revenue_insights = calculate_revenue_insights(filtered_df)
             
-            # Main Dashboard
+            # Main Dashboard - SINGLE RENDERING
             period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
             st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
             
@@ -954,7 +954,7 @@ def main():
                     help="Number of days with revenue transactions"
                 )
             
-            # Period Comparison (if not showing all data)
+            # Period Comparison (if not showing all data) - COMPARISON ONLY, NO DUPLICATE DASHBOARD
             if analysis_period != 'All':
                 st.markdown("---")
                 with st.expander(f"📈 Compare with Full Period Analysis", expanded=False):
@@ -962,30 +962,31 @@ def main():
                     full_metrics = calculate_financial_metrics(df, params['company_age_months'])
                     full_scores = calculate_all_scores(full_metrics, params)
                     
+                    st.write("**Full Period vs Selected Period Comparison:**")
                     comp_col1, comp_col2, comp_col3, comp_col4 = st.columns(4)
                     
                     with comp_col1:
                         delta_weighted = scores['weighted_score'] - full_scores['weighted_score']
-                        st.metric("Weighted Score", f"{full_scores['weighted_score']:.0f}/100", 
-                                delta=f"{delta_weighted:+.0f} vs {period_label}")
+                        st.metric("Full Period Weighted Score", f"{full_scores['weighted_score']:.0f}/100", 
+                                delta=f"{delta_weighted:+.0f} difference")
                     
                     with comp_col2:
                         delta_industry = scores['industry_score'] - full_scores['industry_score']
-                        st.metric("Industry Score", f"{full_scores['industry_score']}/12",
-                                delta=f"{delta_industry:+.0f} vs {period_label}")
+                        st.metric("Full Period Industry Score", f"{full_scores['industry_score']}/12",
+                                delta=f"{delta_industry:+.0f} difference")
                     
                     with comp_col3:
                         if full_scores['ml_score'] and scores['ml_score']:
                             delta_ml = scores['ml_score'] - full_scores['ml_score']
-                            st.metric("ML Probability", f"{full_scores['ml_score']:.1f}%",
-                                    delta=f"{delta_ml:+.1f}% vs {period_label}")
+                            st.metric("Full Period ML Probability", f"{full_scores['ml_score']:.1f}%",
+                                    delta=f"{delta_ml:+.1f}% difference")
                         else:
-                            st.metric("ML Probability", "N/A")
+                            st.metric("Full Period ML Probability", "N/A")
                     
                     with comp_col4:
                         delta_revenue = metrics.get('Monthly Average Revenue', 0) - full_metrics.get('Monthly Average Revenue', 0)
-                        st.metric("Monthly Revenue", f"£{full_metrics.get('Monthly Average Revenue', 0):,.0f}",
-                                delta=f"£{delta_revenue:+,.0f} vs {period_label}")
+                        st.metric("Full Period Monthly Revenue", f"£{full_metrics.get('Monthly Average Revenue', 0):,.0f}",
+                                delta=f"£{delta_revenue:+,.0f} difference")
             
             # Charts Section
             st.markdown("---")
