@@ -778,15 +778,9 @@ def main():
     
     if uploaded_file is not None:
         try:
-            # Debug file information
-            st.write(f"**Debug Info:** File name: {uploaded_file.name}, File type: {uploaded_file.type}, File size: {uploaded_file.size} bytes")
-            
             # Read file content as string
             uploaded_file.seek(0)
             string_data = uploaded_file.getvalue().decode("utf-8")
-            
-            # Debug: show first 200 characters
-            st.write(f"**Debug:** First 200 characters: {repr(string_data[:200])}")
             
             # Check if file has content
             if not string_data.strip():
@@ -800,10 +794,6 @@ def main():
                 st.error(f"❌ Invalid JSON file: {str(e)}")
                 st.error(f"Error at line {e.lineno}, column {e.colno}")
                 st.info("Please ensure your file contains valid JSON")
-                
-                # Show file preview for debugging
-                with st.expander("🔍 File Content Preview (first 500 chars)"):
-                    st.text(string_data[:500])
                 return
             
             # Process transactions
@@ -812,10 +802,6 @@ def main():
             if not transactions:
                 st.error("❌ No 'transactions' key found in JSON file")
                 st.info("Expected JSON structure: {'transactions': [...]}")
-                
-                # Show available keys
-                if isinstance(json_data, dict):
-                    st.write(f"Available keys in JSON: {list(json_data.keys())}")
                 return
             
             # Convert to DataFrame
@@ -823,7 +809,6 @@ def main():
                 df = pd.json_normalize(transactions)
             except Exception as e:
                 st.error(f"❌ Error normalizing transaction data: {str(e)}")
-                st.write(f"First transaction example: {transactions[0] if transactions else 'None'}")
                 return
             
             if not transactions:
