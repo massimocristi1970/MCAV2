@@ -11,7 +11,6 @@ from plotly.subplots import make_subplots
 
 st.set_page_config(
     page_title="Business Finance Scorecard",
-    page_icon="💰",
     layout="wide"
 )
 
@@ -919,7 +918,7 @@ def main():
                     st.metric("ML Probability", "N/A")
             
             with col4:
-                risk_colors = {"Low Risk": "🟢", "Moderate Low Risk": "🟡", "Medium Risk": "🟠", "Moderate High Risk": "🔴", "High Risk": "🔴"}
+                risk_colors = {"Low to Revenue Risk": "🟢", "Moderate Low Risk": "🟡", "Medium Risk": "🟠", "Moderate High Risk": "🔴", "High Risk": "🔴"}
                 st.metric("Loan Risk", f"{risk_colors.get(scores['loan_risk'], '⚪')} {scores['loan_risk']}")
             
             with col5:
@@ -927,7 +926,7 @@ def main():
             
             # Revenue Insights Section
             st.markdown("---")
-            st.subheader("💰 Revenue Insights")
+            st.subheader(" Revenue Insights")
             
             rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
             
@@ -1254,7 +1253,7 @@ def main():
                     st.metric("ML Probability", "N/A")
             
             with col4:
-                risk_colors = {"Low Risk": "🟢", "Moderate Low Risk": "🟡", "Medium Risk": "🟠", "Moderate High Risk": "🔴", "High Risk": "🔴"}
+                risk_colors = {"Low to Revenue Risk": "🟢", "Moderate Low Risk": "🟡", "Medium Risk": "🟠", "Moderate High Risk": "🔴", "High Risk": "🔴"}
                 st.metric("Loan Risk", f"{risk_colors.get(scores['loan_risk'], '⚪')} {scores['loan_risk']}")
             
             with col5:
