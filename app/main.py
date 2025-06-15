@@ -820,69 +820,71 @@ def main():
     uploaded_file = st.file_uploader("Upload Transaction Data (JSON)", type=['json'])
     
     if uploaded_file is not None:
-        try:
-            # Read and process file
-            uploaded_file.seek(0)
-            string_data = uploaded_file.getvalue().decode("utf-8")
-            
-            if not string_data.strip():
-                st.error("❌ Uploaded file is empty")
-                return
-            
-            json_data = json.loads(string_data)
-            transactions = json_data.get('transactions', [])
-            
-            if not transactions:
-                st.error("❌ No transactions found in JSON file")
-                return
-            
-            df = pd.json_normalize(transactions)
-            required_columns = ['date', 'amount', 'name']
-            missing_columns = [col for col in required_columns if col not in df.columns]
-            
-            if missing_columns:
-                st.error(f"❌ Missing required columns: {missing_columns}")
-                return
-            
-            df['date'] = pd.to_datetime(df['date'], errors='coerce')
-            df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
-            df = df.dropna(subset=['date', 'amount'])
-            
-            if df.empty:
-                st.error("❌ No valid transactions after cleaning")
-                return
-            
-            # Display data info and export
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.success(f"✅ Loaded {len(df)} transactions")
-            with col2:
-                date_range = f"{df['date'].min().date()} to {df['date'].max().date()}"
-                st.info(f"📅 Date Range: {date_range}")
-            with col3:
-                if analysis_period != 'All':
-                    filtered_count = len(filter_data_by_period(df, analysis_period))
-                    st.info(f"📊 Period: {filtered_count} transactions")
-            with col4:
-                csv_data = create_categorized_csv(df)
-                if csv_data:
-                    st.download_button(
-                        label="📥 Export Categorized CSV",
-                        data=csv_data,
-                        file_name=f"{company_name.replace(' ', '_')}_transactions_categorized.csv",
-                        mime="text/csv",
-                        help="Download all transaction data with our subcategorization",
-                        type="primary",
-                        key="csv_export_main"
-                    )
-            
-            # Filter data and calculate metrics
-            filtered_df = filter_data_by_period(df, analysis_period)
-            metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
-            scores = calculate_all_scores(metrics, params)
-            revenue_insights = calculate_revenue_insights(filtered_df)
+    try:
+        # Read and process file
+        uploaded_file.seek(0)
+        string_data = uploaded_file.getvalue().decode("utf-8")
+        
+        if not string_data.strip():
+            st.error("❌ Uploaded file is empty")
+            return
+        
+        json_data = json.loads(string_data)
+        transactions = json_data.get('transactions', [])
+        
+        if not transactions:
+            st.error("❌ No transactions found in JSON file")
+            return
+        
+        df = pd.json_normalize(transactions)
+        required_columns = ['date', 'amount', 'name']
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        
+        if missing_columns:
+            st.error(f"❌ Missing required columns: {missing_columns}")
+            return
+        
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')
+        df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
+        df = df.dropna(subset=['date', 'amount'])
+        
+        if df.empty:
+            st.error("❌ No valid transactions after cleaning")
+            return
+        
+        # Display data info and export
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.success(f"✅ Loaded {len(df)} transactions")
+        with col2:
+            date_range = f"{df['date'].min().date()} to {df['date'].max().date()}"
+            st.info(f"📅 Date Range: {date_range}")
+        with col3:
+            if analysis_period != 'All':
+                filtered_count = len(filter_data_by_period(df, analysis_period))
+                st.info(f"📊 Period: {filtered_count} transactions")
+        with col4:
+            csv_data = create_categorized_csv(df)
+            if csv_data:
+                st.download_button(
+                    label="📥 Export Categorized CSV",
+                    data=csv_data,
+                    file_name=f"{company_name.replace(' ', '_')}_transactions_categorized.csv",
+                    mime="text/csv",
+                    help="Download all transaction data with our subcategorization",
+                    type="primary",
+                    key="csv_export_main"
+                )
+        
+        # Filter data and calculate metrics
+        filtered_df = filter_data_by_period(df, analysis_period)
+        metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
+        scores = calculate_all_scores(metrics, params)
+        revenue_insights = calculate_revenue_insights(filtered_df)
 
-            # UPDATED SECTION FOR main.py - Replace the dashboard rendering section
+    except Exception as e:
+        st.error(f"❌ Unexpected error during processing: {e}")
+
 
 # ENHANCED DASHBOARD RENDERING with adaptive scoring (around line 680)
 period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
