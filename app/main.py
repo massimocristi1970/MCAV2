@@ -632,6 +632,35 @@ def create_monthly_charts(pivot_counts, pivot_amounts):
     )
     
     return fig_counts, fig_amounts
+
+def create_categorized_csv(df):
+    """Create CSV with categorization"""
+    if df.empty:
+        return None
+    
+    # Apply categorization
+    categorized_df = categorize_transactions(df.copy())
+    
+    # Select and order columns for export
+    export_columns = [
+        'date', 'name', 'amount', 'subcategory', 
+        'is_revenue', 'is_expense', 'is_debt_repayment', 'is_debt'
+    ]
+    
+    # Add any additional columns that exist
+    additional_cols = ['merchant_name', 'category', 'personal_finance_category.detailed']
+    for col in additional_cols:
+        if col in categorized_df.columns:
+            export_columns.append(col)
+    
+    # Filter to existing columns
+    available_columns = [col for col in export_columns if col in categorized_df.columns]
+    export_df = categorized_df[available_columns].copy()
+    
+    # Sort by date (newest first)
+    export_df = export_df.sort_values('date', ascending=False)
+    
+    return export_df.to_csv(index=False)
     """Create CSV with categorization"""
     if df.empty:
         return None
