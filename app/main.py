@@ -9,6 +9,14 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+# NEW IMPORT: Add adaptive scoring module
+try:
+    from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
+    ADAPTIVE_SCORING_AVAILABLE = True
+except ImportError:
+    ADAPTIVE_SCORING_AVAILABLE = False
+    print("Adaptive scoring module not found - using original weighted score")
+
 st.set_page_config(
     page_title="Business Finance Scorecard",
     layout="wide"
@@ -79,6 +87,145 @@ PENALTIES = {
     "personal_default_12m": 3, "business_ccj": 5, "director_ccj": 3,
     'website_or_social_outdated': 3, 'uses_generic_email': 1, 'no_online_presence': 2
 }
+
+# NEW HELPER FUNCTIONS: Add scoring comparison functions
+def calculate_both_weighted_scores(metrics, params, industry_thresholds):
+    """Calculate both original and adaptive weighted scores for comparison"""
+    
+    # Original weighted score (keep existing logic)
+    original_weighted_score = 0
+    for metric, weight in WEIGHTS.items():
+        if metric == 'Company Age (Months)':
+            if params['company_age_months'] >= 6:
+                original_weighted_score += weight
+        elif metric == 'Directors Score':
+            if params['directors_score'] >= industry_thresholds['Directors Score']:
+                original_weighted_score += weight
+        elif metric == 'Sector Risk':
+            sector_risk = industry_thresholds['Sector Risk']
+            if sector_risk <= industry_thresholds['Sector Risk']:
+                original_weighted_score += weight
+        elif metric in metrics:
+            threshold = industry_thresholds.get(metric, 0)
+            if metric in ['Cash Flow Volatility', 'Average Negative Balance Days per Month', 'Number of Bounced Payments']:
+                if metrics[metric] <= threshold:
+                    original_weighted_score += weight
+            else:
+                if metrics[metric] >= threshold:
+                    original_weighted_score += weight
+    
+    # Apply penalties
+    penalties = 0
+    for flag, penalty in PENALTIES.items():
+        if params.get(flag, False):
+            penalties += penalty
+    
+    original_weighted_score = max(0, original_weighted_score - penalties)
+    
+    # New adaptive weighted score (if available)
+    if ADAPTIVE_SCORING_AVAILABLE:
+        adaptive_weighted_score, raw_adaptive_score, scoring_details = get_detailed_scoring_breakdown(
+            metrics, params['directors_score'], industry_thresholds['Sector Risk'], industry_thresholds, 
+            params['company_age_months'], params.get('personal_default_12m', False), 
+            params.get('business_ccj', False), params.get('director_ccj', False), 
+            params.get('website_or_social_outdated', False), params.get('uses_generic_email', False), 
+            params.get('no_online_presence', False), PENALTIES
+        )
+        return original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details
+    else:
+        return original_weighted_score, original_weighted_score, original_weighted_score, []
+
+def display_scoring_comparison(original_score, adaptive_score, ml_probability, scoring_details=None):
+    """Display comparison between different scoring methods"""
+    
+    st.subheader("📊 Enhanced Scoring Analysis")
+    
+    # Create columns for score display
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric(
+            label="Original Weighted Score", 
+            value=f"{original_score:.1f}",
+            help="Traditional binary threshold-based scoring"
+        )
+    
+    with col2:
+        if ADAPTIVE_SCORING_AVAILABLE:
+            difference = adaptive_score - original_score
+            st.metric(
+                label="Adaptive Weighted Score", 
+                value=f"{adaptive_score:.1f}%",
+                delta=f"{difference:+.1f} vs Original",
+                help="Continuous scoring aligned with ML model"
+            )
+        else:
+            st.metric(
+                label="Adaptive Weighted Score", 
+                value="Not Available",
+                help="Install adaptive_score_calculation.py to enable"
+            )
+    
+    with col3:
+        if ADAPTIVE_SCORING_AVAILABLE and ml_probability:
+            ml_difference = abs(adaptive_score - ml_probability)
+            st.metric(
+                label="ML Probability Score", 
+                value=f"{ml_probability:.1f}%",
+                delta=f"±{ml_difference:.1f} vs Adaptive",
+                help="Machine learning model prediction"
+            )
+        else:
+            st.metric(
+                label="ML Probability Score", 
+                value=f"{ml_probability:.1f}%" if ml_probability else "N/A",
+                help="Machine learning model prediction"
+            )
+    
+    # Score alignment analysis
+    if ADAPTIVE_SCORING_AVAILABLE and ml_probability:
+        ml_adaptive_diff = abs(adaptive_score - ml_probability)
+        
+        if ml_adaptive_diff < 10:
+            st.success(f"✅ Excellent alignment: Adaptive and ML scores within {ml_adaptive_diff:.1f} points")
+        elif ml_adaptive_diff < 15:
+            st.info(f"ℹ️ Good alignment: Adaptive and ML scores within {ml_adaptive_diff:.1f} points")
+        elif ml_adaptive_diff < 25:
+            st.warning(f"⚠️ Moderate alignment: Adaptive and ML scores differ by {ml_adaptive_diff:.1f} points")
+        else:
+            st.error(f"🔍 Poor alignment: Adaptive and ML scores differ by {ml_adaptive_diff:.1f} points - investigate")
+        
+        # Risk level comparison
+        def get_risk_level(score):
+            if score >= 70: return "Low Risk", "🟢"
+            elif score >= 50: return "Medium Risk", "🟡"
+            elif score >= 30: return "High Risk", "🟠"
+            else: return "Very High Risk", "🔴"
+        
+        original_risk, original_icon = get_risk_level(original_score)
+        adaptive_risk, adaptive_icon = get_risk_level(adaptive_score)
+        ml_risk, ml_icon = get_risk_level(ml_probability)
+        
+        st.write("**Risk Level Comparison:**")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.write(f"{original_icon} Original: {original_risk}")
+        with col2:
+            st.write(f"{adaptive_icon} Adaptive: {adaptive_risk}")
+        with col3:
+            st.write(f"{ml_icon} ML Model: {ml_risk}")
+        
+        if adaptive_risk == ml_risk:
+            st.success("✅ Adaptive and ML models agree on risk level")
+        else:
+            st.info("ℹ️ Risk level difference detected")
+        
+        # Detailed breakdown (expandable)
+        if scoring_details:
+            with st.expander("🔍 Detailed Adaptive Scoring Breakdown"):
+                st.write("**Component Scores:**")
+                for detail in scoring_details:
+                    st.write(f"• {detail}")
 
 def load_models():
     """Load ML models"""
@@ -319,38 +466,14 @@ def calculate_financial_metrics(data, company_age_months):
         return {}
 
 def calculate_all_scores(metrics, params):
-    """Calculate all scoring methods"""
+    """Calculate all scoring methods - ENHANCED with adaptive scoring"""
     industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
     sector_risk = industry_thresholds['Sector Risk']
     
-    # Weighted Score
-    weighted_score = 0
-    for metric, weight in WEIGHTS.items():
-        if metric == 'Company Age (Months)':
-            if params['company_age_months'] >= 6:
-                weighted_score += weight
-        elif metric == 'Directors Score':
-            if params['directors_score'] >= industry_thresholds['Directors Score']:
-                weighted_score += weight
-        elif metric == 'Sector Risk':
-            if sector_risk <= industry_thresholds['Sector Risk']:
-                weighted_score += weight
-        elif metric in metrics:
-            threshold = industry_thresholds.get(metric, 0)
-            if metric in ['Cash Flow Volatility', 'Average Negative Balance Days per Month', 'Number of Bounced Payments']:
-                if metrics[metric] <= threshold:
-                    weighted_score += weight
-            else:
-                if metrics[metric] >= threshold:
-                    weighted_score += weight
-    
-    # Apply penalties
-    penalties = 0
-    for flag, penalty in PENALTIES.items():
-        if params.get(flag, False):
-            penalties += penalty
-    
-    weighted_score = max(0, weighted_score - penalties)
+    # Calculate both weighted scores (original and adaptive)
+    original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details = calculate_both_weighted_scores(
+        metrics, params, industry_thresholds
+    )
     
     # Industry Score (binary)
     industry_score = 0
@@ -434,7 +557,10 @@ def calculate_all_scores(metrics, params):
         loan_risk = "High Risk"
     
     return {
-        'weighted_score': weighted_score,
+        'weighted_score': original_weighted_score,
+        'adaptive_weighted_score': adaptive_weighted_score,
+        'raw_adaptive_score': raw_adaptive_score,
+        'scoring_details': scoring_details,
         'industry_score': industry_score,
         'ml_score': ml_score,
         'loan_risk': loan_risk,
@@ -494,18 +620,19 @@ def calculate_revenue_insights(df):
     }
 
 def create_score_charts(scores, metrics):
-    """Create clean bar charts for scores"""
+    """Create clean bar charts for scores - ENHANCED with adaptive scoring"""
     
     # Score comparison chart
     fig_scores = go.Figure()
     
     score_data = {
-        'Weighted Score': scores['weighted_score'],
+        'Original Weighted': scores['weighted_score'],
+        'Adaptive Weighted': scores.get('adaptive_weighted_score', scores['weighted_score']),
         'Industry Score': (scores['industry_score'] / 12) * 100,  # Convert to percentage
         'ML Probability': scores['ml_score'] if scores['ml_score'] else 0
     }
     
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
     
     fig_scores.add_trace(go.Bar(
         x=list(score_data.keys()),
@@ -516,7 +643,7 @@ def create_score_charts(scores, metrics):
     ))
     
     fig_scores.update_layout(
-        title="Score Comparison",
+        title="Enhanced Score Comparison",
         yaxis_title="Score (%)",
         showlegend=False,
         height=400,
@@ -736,37 +863,10 @@ def create_categorized_csv(df):
     export_df = export_df.sort_values('date', ascending=False)
     
     return export_df.to_csv(index=False)
-    """Create CSV with categorization"""
-    if df.empty:
-        return None
-    
-    # Apply categorization
-    categorized_df = categorize_transactions(df.copy())
-    
-    # Select and order columns for export
-    export_columns = [
-        'date', 'name', 'amount', 'subcategory', 
-        'is_revenue', 'is_expense', 'is_debt_repayment', 'is_debt'
-    ]
-    
-    # Add any additional columns that exist
-    additional_cols = ['merchant_name', 'category', 'personal_finance_category.detailed']
-    for col in additional_cols:
-        if col in categorized_df.columns:
-            export_columns.append(col)
-    
-    # Filter to existing columns
-    available_columns = [col for col in export_columns if col in categorized_df.columns]
-    export_df = categorized_df[available_columns].copy()
-    
-    # Sort by date (newest first)
-    export_df = export_df.sort_values('date', ascending=False)
-    
-    return export_df.to_csv(index=False)
 
 def main():
-    """Main application - SINGLE CLEAN VERSION"""
-    st.title(" Business Finance Scorecard")
+    """Main application - ENHANCED with adaptive scoring"""
+    st.title("🏦 Business Finance Scorecard")
     st.markdown("---")
     
     # Sidebar inputs
@@ -874,16 +974,21 @@ def main():
             scores = calculate_all_scores(metrics, params)
             revenue_insights = calculate_revenue_insights(filtered_df)
             
-            # SINGLE DASHBOARD RENDERING
+            # ENHANCED DASHBOARD RENDERING with adaptive scoring
             period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
             st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
             
-            # Key Metrics
+            # ENHANCED Key Metrics with Adaptive Scoring
             col1, col2, col3, col4, col5 = st.columns(5)
             with col1:
-                st.metric("Weighted Score", f"{scores['weighted_score']:.0f}/100")
+                st.metric("Original Weighted Score", f"{scores['weighted_score']:.0f}/100")
             with col2:
-                st.metric("Industry Score", f"{scores['industry_score']}/12")
+                if ADAPTIVE_SCORING_AVAILABLE:
+                    adaptive_score = scores.get('adaptive_weighted_score', scores['weighted_score'])
+                    delta = adaptive_score - scores['weighted_score']
+                    st.metric("Adaptive Weighted Score", f"{adaptive_score:.1f}%", delta=f"{delta:+.1f}")
+                else:
+                    st.metric("Adaptive Weighted Score", "N/A")
             with col3:
                 if scores['ml_score']:
                     st.metric("ML Probability", f"{scores['ml_score']:.1f}%")
@@ -894,6 +999,16 @@ def main():
                 st.metric("Loan to Revenue Risk", f"{risk_colors.get(scores['loan_risk'], '⚪')} {scores['loan_risk']}")
             with col5:
                 st.metric("Monthly Revenue", f"£{metrics.get('Monthly Average Revenue', 0):,.0f}")
+            
+            # ADD ENHANCED SCORING COMPARISON SECTION
+            if ADAPTIVE_SCORING_AVAILABLE:
+                st.markdown("---")
+                display_scoring_comparison(
+                    scores['weighted_score'], 
+                    scores.get('adaptive_weighted_score', scores['weighted_score']), 
+                    scores['ml_score'], 
+                    scores.get('scoring_details', [])
+                )
             
             # Revenue Insights
             st.markdown("---")
@@ -923,11 +1038,11 @@ def main():
             st.markdown("---")
             st.subheader("📈 Charts & Analysis")
             
-            # Row 1: Score and Financial Charts
+            # Row 1: Enhanced Score and Financial Charts
             col1, col2 = st.columns(2)
             with col1:
                 fig_scores = create_score_charts(scores, metrics)
-                st.plotly_chart(fig_scores, use_container_width=True, key="main_scores_chart")
+                st.plotly_chart(fig_scores, use_container_width=True, key="enhanced_scores_chart")
             with col2:
                 fig_financial, fig_trend = create_financial_charts(metrics)
                 st.plotly_chart(fig_financial, use_container_width=True, key="main_financial_chart")
@@ -1083,9 +1198,12 @@ def main():
                                 delta=f"{delta_weighted:+.0f} difference")
                     
                     with comp_col2:
-                        delta_industry = scores['industry_score'] - full_scores['industry_score']
-                        st.metric("Full Period Industry Score", f"{full_scores['industry_score']}/12",
-                                delta=f"{delta_industry:+.0f} difference")
+                        if ADAPTIVE_SCORING_AVAILABLE:
+                            delta_adaptive = scores.get('adaptive_weighted_score', 0) - full_scores.get('adaptive_weighted_score', 0)
+                            st.metric("Full Period Adaptive Score", f"{full_scores.get('adaptive_weighted_score', 0):.1f}%",
+                                    delta=f"{delta_adaptive:+.1f}% difference")
+                        else:
+                            st.metric("Full Period Adaptive Score", "N/A")
                     
                     with comp_col3:
                         if full_scores['ml_score'] and scores['ml_score']:
@@ -1101,7 +1219,10 @@ def main():
                                 delta=f"£{delta_revenue:+,.0f} difference")
             
             st.markdown("---")
-            st.success("🎯 Dashboard complete - All sections rendered successfully")
+            if ADAPTIVE_SCORING_AVAILABLE:
+                st.success("🎯 Enhanced Dashboard complete with Adaptive Scoring - All sections rendered successfully")
+            else:
+                st.info("🎯 Dashboard complete - Install adaptive_score_calculation.py for enhanced scoring features")
             
         except Exception as e:
             st.error(f"Error processing file: {e}")
