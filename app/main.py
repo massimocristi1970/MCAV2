@@ -11,7 +11,6 @@ from plotly.subplots import make_subplots
 
 st.set_page_config(
     page_title="Business Finance Scorecard",
-    page_icon="💰",
     layout="wide"
 )
 
@@ -767,7 +766,7 @@ def create_categorized_csv(df):
 
 def main():
     """Main application - SINGLE CLEAN VERSION"""
-    st.title("💰 Business Finance Scorecard")
+    st.title(" Business Finance Scorecard")
     st.markdown("---")
     
     # Sidebar inputs
@@ -776,7 +775,7 @@ def main():
     company_name = st.sidebar.text_input("Company Name", "Sample Business Ltd")
     industry = st.sidebar.selectbox("Industry", list(INDUSTRY_THRESHOLDS.keys()))
     requested_loan = st.sidebar.number_input("Requested Loan (£)", min_value=0.0, value=25000.0, step=1000.0)
-    directors_score = st.sidebar.slider("Director Credit Score", 0, 1000, 750)
+    directors_score = st.sidebar.slider("Director Credit Score", 0, 100, 75)
     company_age_months = st.sidebar.number_input("Company Age (Months)", min_value=0, value=24, step=1)
     
     st.sidebar.subheader("Risk Factors")
