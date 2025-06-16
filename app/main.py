@@ -15,63 +15,108 @@ import os
 ADAPTIVE_SCORING_AVAILABLE = False
 
 def setup_adaptive_scoring():
-    """Setup adaptive scoring import with multiple path attempts"""
+    """Setup adaptive scoring import with detailed error reporting"""
     global ADAPTIVE_SCORING_AVAILABLE
+    
+    print("🔍 Starting adaptive scoring import attempts...")
     
     try:
         # Attempt 1: Direct import (if already in same directory)
+        print("  Attempt 1: Direct import...")
         from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
         ADAPTIVE_SCORING_AVAILABLE = True
         print("✅ Adaptive scoring module loaded successfully (direct import)")
         return True
-    except ImportError:
-        pass
+    except ImportError as e:
+        print(f"  ❌ Direct import failed: {e}")
+    except Exception as e:
+        print(f"  ❌ Direct import failed with error: {e}")
     
     try:
         # Attempt 2: Import from app folder
+        print("  Attempt 2: Import from app folder...")
         from app.adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
         ADAPTIVE_SCORING_AVAILABLE = True
         print("✅ Adaptive scoring module loaded successfully (from app folder)")
         return True
-    except ImportError:
-        pass
+    except ImportError as e:
+        print(f"  ❌ App folder import failed: {e}")
+    except Exception as e:
+        print(f"  ❌ App folder import failed with error: {e}")
     
     try:
         # Attempt 3: Add app folder to path and import
+        print("  Attempt 3: Adding app folder to path...")
         current_dir = os.path.dirname(os.path.abspath(__file__))
         app_dir = os.path.join(current_dir, 'app')
         if app_dir not in sys.path:
             sys.path.insert(0, app_dir)
+            print(f"    Added to path: {app_dir}")
         
         from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
         ADAPTIVE_SCORING_AVAILABLE = True
         print("✅ Adaptive scoring module loaded successfully (with app path adjustment)")
         return True
-    except ImportError:
-        pass
+    except ImportError as e:
+        print(f"  ❌ Path adjustment import failed: {e}")
+    except Exception as e:
+        print(f"  ❌ Path adjustment import failed with error: {e}")
     
     try:
         # Attempt 4: Try parent directory then app
+        print("  Attempt 4: Trying parent directory...")
         parent_dir = os.path.dirname(current_dir)
         app_dir = os.path.join(parent_dir, 'app')
         if app_dir not in sys.path:
             sys.path.insert(0, app_dir)
+            print(f"    Added to path: {app_dir}")
         
         from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
         ADAPTIVE_SCORING_AVAILABLE = True
         print("✅ Adaptive scoring module loaded successfully (from parent/app path)")
         return True
-    except ImportError:
-        pass
+    except ImportError as e:
+        print(f"  ❌ Parent directory import failed: {e}")
+    except Exception as e:
+        print(f"  ❌ Parent directory import failed with error: {e}")
+    
+    try:
+        # Attempt 5: Force reload and import (since file exists)
+        print("  Attempt 5: Force reload...")
+        import importlib.util
+        import sys
+        
+        # Find the file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        module_path = os.path.join(current_dir, 'adaptive_score_calculation.py')
+        
+        if os.path.exists(module_path):
+            print(f"    Found module at: {module_path}")
+            spec = importlib.util.spec_from_file_location("adaptive_score_calculation", module_path)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["adaptive_score_calculation"] = module
+            spec.loader.exec_module(module)
+            
+            # Test the functions
+            get_improved_weighted_score = module.get_improved_weighted_score
+            get_detailed_scoring_breakdown = module.get_detailed_scoring_breakdown
+            
+            ADAPTIVE_SCORING_AVAILABLE = True
+            print("✅ Adaptive scoring module loaded successfully (force reload)")
+            return True
+        else:
+            print(f"    Module not found at expected path: {module_path}")
+            
+    except Exception as e:
+        print(f"  ❌ Force reload failed with error: {e}")
+        import traceback
+        print(f"    Detailed error: {traceback.format_exc()}")
     
     # If all attempts fail
     ADAPTIVE_SCORING_AVAILABLE = False
-    print("⚠️ Adaptive scoring module not found in any of the expected locations")
-    print("   Checked:")
-    print("   - Current directory")
-    print("   - ./app/ folder")
-    print("   - Added app folder to Python path")
-    print("   Using original weighted score calculation only")
+    print("⚠️ All import attempts failed")
+    print("   The adaptive_score_calculation.py file exists but cannot be imported")
+    print("   This usually means there's a syntax error or missing dependency in the file")
     return False
 
 # Run the setup
