@@ -5,7 +5,13 @@ Place it in the same directory as your app.py file
 
 import pandas as pd
 import numpy as np
-from config import months_threshold
+
+# Define months_threshold locally to avoid config import issues
+months_threshold = 6
+
+def safe_get_metric(metrics, key, default=0):
+    """Safely get a metric value with a default fallback"""
+    return metrics.get(key, default)
 
 def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thresholds, company_age_months, 
                                     personal_default_12m=False, business_ccj=False, director_ccj=False, 
@@ -37,8 +43,8 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details = []
     
     # 1. DEBT SERVICE COVERAGE RATIO (19 points) - Continuous scoring
-    dscr = metrics["Debt Service Coverage Ratio"]
-    threshold = thresholds["Debt Service Coverage Ratio"]
+    dscr = safe_get_metric(metrics, "Debt Service Coverage Ratio", 0)
+    threshold = thresholds.get("Debt Service Coverage Ratio", 1.4)
     if dscr >= threshold:
         score = continuous_weights['Debt Service Coverage Ratio']
     elif dscr >= threshold * 0.8:  # Partial credit for 80%+ of threshold
@@ -53,7 +59,7 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"DSCR: {dscr:.2f} vs {threshold:.2f} → {score:.1f} pts")
     
     # 2. DIRECTORS SCORE (18 points) - Continuous scoring
-    dir_threshold = thresholds["Directors Score"]
+    dir_threshold = thresholds.get("Directors Score", 75)
     if directors_score >= dir_threshold:
         score = continuous_weights['Directors Score']
     elif directors_score >= dir_threshold * 0.9:
@@ -68,8 +74,8 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"Directors: {directors_score} vs {dir_threshold} → {score:.1f} pts")
     
     # 3. CASH FLOW VOLATILITY (12 points) - Inverse continuous scoring (lower is better)
-    volatility = metrics["Cash Flow Volatility"]
-    vol_threshold = thresholds["Cash Flow Volatility"]
+    volatility = safe_get_metric(metrics, "Cash Flow Volatility", 0.1)
+    vol_threshold = thresholds.get("Cash Flow Volatility", 0.2)
     if volatility <= vol_threshold:
         score = continuous_weights['Cash Flow Volatility']
     elif volatility <= vol_threshold * 1.25:  # Within 25% of threshold
@@ -84,8 +90,8 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"Volatility: {volatility:.3f} vs {vol_threshold:.3f} → {score:.1f} pts")
     
     # 4. OPERATING MARGIN (9 points) - Continuous scoring
-    margin = metrics["Operating Margin"]
-    margin_threshold = thresholds["Operating Margin"]
+    margin = safe_get_metric(metrics, "Operating Margin", 0)
+    margin_threshold = thresholds.get("Operating Margin", 0.08)
     if margin >= margin_threshold:
         score = continuous_weights['Operating Margin']
     elif margin >= margin_threshold * 0.75:
@@ -100,7 +106,7 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"Op Margin: {margin:.3f} vs {margin_threshold:.3f} → {score:.1f} pts")
     
     # 5. TOTAL REVENUE (8 points) - NEW: Scale-based scoring
-    revenue = metrics["Total Revenue"]
+    revenue = safe_get_metric(metrics, "Total Revenue", 0)
     # Dynamic thresholds based on company age
     if company_age_months >= 24:  # Mature company
         revenue_benchmarks = [15000, 30000, 60000, 100000]
@@ -123,8 +129,8 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"Revenue: £{revenue:,.0f} → {score:.1f} pts")
     
     # 6. TOTAL DEBT (7 points) - NEW: Inverse scale scoring (lower debt is better)
-    debt = metrics["Total Debt"]
-    debt_ratio = debt / revenue if revenue > 0 else 999
+    debt = safe_get_metric(metrics, "Total Debt", 0)
+    debt_ratio = debt / revenue if revenue > 0 else 0
     if debt_ratio <= 0.1:      # Very low debt
         score = continuous_weights['Total Debt']
     elif debt_ratio <= 0.25:   # Moderate debt
@@ -139,7 +145,7 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"Debt Ratio: {debt_ratio:.3f} → {score:.1f} pts")
     
     # 7. DEBT-TO-INCOME RATIO (6 points) - NEW: Direct ratio scoring
-    debt_income_ratio = metrics["Debt-to-Income Ratio"]
+    debt_income_ratio = safe_get_metric(metrics, "Debt-to-Income Ratio", 0)
     if debt_income_ratio <= 0.15:
         score = continuous_weights['Debt-to-Income Ratio']
     elif debt_income_ratio <= 0.3:
@@ -154,8 +160,8 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"Debt/Income: {debt_income_ratio:.3f} → {score:.1f} pts")
     
     # 8. AVERAGE NEGATIVE BALANCE DAYS (6 points) - Inverse continuous
-    neg_days = metrics["Average Negative Balance Days per Month"]
-    neg_threshold = thresholds["Average Negative Balance Days per Month"]
+    neg_days = safe_get_metric(metrics, "Average Negative Balance Days per Month", 0)
+    neg_threshold = thresholds.get("Average Negative Balance Days per Month", 2)
     if neg_days <= neg_threshold:
         score = continuous_weights['Average Negative Balance Days per Month']
     elif neg_days <= neg_threshold + 2:
@@ -170,8 +176,8 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"Neg Days: {neg_days:.1f} vs {neg_threshold} → {score:.1f} pts")
     
     # 9. AVERAGE MONTH-END BALANCE (5 points) - Continuous scoring
-    balance = metrics["Average Month-End Balance"]
-    balance_threshold = thresholds["Average Month-End Balance"]
+    balance = safe_get_metric(metrics, "Average Month-End Balance", 0)
+    balance_threshold = thresholds.get("Average Month-End Balance", 1000)
     if balance >= balance_threshold:
         score = continuous_weights['Average Month-End Balance']
     elif balance >= balance_threshold * 0.7:
@@ -186,8 +192,8 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"Avg Balance: £{balance:,.0f} vs £{balance_threshold:,.0f} → {score:.1f} pts")
     
     # 10. REVENUE GROWTH RATE (5 points) - Continuous scoring
-    growth = metrics["Revenue Growth Rate"]
-    growth_threshold = thresholds["Revenue Growth Rate"]
+    growth = safe_get_metric(metrics, "Revenue Growth Rate", 0)
+    growth_threshold = thresholds.get("Revenue Growth Rate", 0.04)
     if growth >= growth_threshold:
         score = continuous_weights['Revenue Growth Rate']
     elif growth >= growth_threshold * 0.5:
@@ -216,8 +222,8 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"Age: {company_age_months} months vs {months_threshold} → {score:.1f} pts")
     
     # 12. NUMBER OF BOUNCED PAYMENTS (3 points) - Inverse continuous
-    bounced = metrics["Number of Bounced Payments"]
-    bounced_threshold = thresholds["Number of Bounced Payments"]
+    bounced = safe_get_metric(metrics, "Number of Bounced Payments", 0)
+    bounced_threshold = thresholds.get("Number of Bounced Payments", 0)
     if bounced <= bounced_threshold:
         score = continuous_weights['Number of Bounced Payments']
     elif bounced <= bounced_threshold + 2:
@@ -230,7 +236,8 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"Bounced: {bounced} vs {bounced_threshold} → {score:.1f} pts")
     
     # 13. SECTOR RISK (3 points) - Binary (matches ML)
-    if sector_risk <= thresholds["Sector Risk"]:  # Low risk
+    sector_threshold = thresholds.get("Sector Risk", 0)
+    if sector_risk <= sector_threshold:  # Low risk
         score = continuous_weights['Sector Risk']
     else:
         score = 0
@@ -288,7 +295,7 @@ def calculate_ml_aligned_score_percentage(adaptive_score, max_possible_score=105
     
     return round(ml_aligned_score, 1)
 
-def get_improved_weighted_score(metrics, directors_score, sector_risk, industry_thresholds, 
+def get_improved_weighted_score(metrics, directors_score, sector_risk, industry_thresholds, weights,
                                company_age_months, personal_default_12m=False, business_ccj=False, 
                                director_ccj=False, website_or_social_outdated=False, 
                                uses_generic_email=False, no_online_presence=False, penalties=None):
@@ -325,3 +332,69 @@ def get_detailed_scoring_breakdown(metrics, directors_score, sector_risk, indust
     ml_aligned_percentage = calculate_ml_aligned_score_percentage(adaptive_score)
     
     return ml_aligned_percentage, adaptive_score, details
+
+# Test function to verify the module works
+def test_module():
+    """Test function to verify the module is working correctly"""
+    print("✅ Adaptive scoring module loaded successfully!")
+    
+    # Complete test metrics that match what the main app provides
+    test_metrics = {
+        'Debt Service Coverage Ratio': 1.5,
+        'Net Income': 5000,
+        'Operating Margin': 0.1,
+        'Revenue Growth Rate': 0.05,
+        'Cash Flow Volatility': 0.15,
+        'Gross Burn Rate': 10000,
+        'Average Month-End Balance': 5000,
+        'Average Negative Balance Days per Month': 1,
+        'Number of Bounced Payments': 0,
+        'Total Revenue': 50000,
+        'Total Debt': 5000,
+        'Debt-to-Income Ratio': 0.1,
+        'Total Expenses': 45000,
+        'Total Debt Repayments': 1000,
+        'Expense-to-Revenue Ratio': 0.9
+    }
+    
+    test_thresholds = {
+        'Debt Service Coverage Ratio': 1.4,
+        'Net Income': 1000,
+        'Operating Margin': 0.08,
+        'Revenue Growth Rate': 0.04,
+        'Cash Flow Volatility': 0.2,
+        'Gross Burn Rate': 12000,
+        'Directors Score': 75,
+        'Sector Risk': 0,
+        'Average Month-End Balance': 1000,
+        'Average Negative Balance Days per Month': 2,
+        'Number of Bounced Payments': 0
+    }
+    
+    test_penalties = {
+        "personal_default_12m": 3,
+        "business_ccj": 5,
+        "director_ccj": 3,
+        'website_or_social_outdated': 3,
+        'uses_generic_email': 1,
+        'no_online_presence': 2
+    }
+    
+    # Test the function
+    score, raw, details = get_detailed_scoring_breakdown(
+        test_metrics, 75, 0, test_thresholds, 24,
+        False, False, False, False, False, False, test_penalties
+    )
+    
+    print(f"Test results:")
+    print(f"  ML-Aligned Score: {score:.1f}%")
+    print(f"  Raw Score: {raw:.1f}/105")
+    print(f"  Breakdown items: {len(details)}")
+    print(f"  Sample details:")
+    for detail in details[:3]:  # Show first 3 details
+        print(f"    {detail}")
+    
+    return True
+
+if __name__ == "__main__":
+    test_module()
