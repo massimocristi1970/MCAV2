@@ -8,22 +8,82 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import sys
+import os
 
-# NEW IMPORT: Add adaptive scoring module
-try:
-    from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
-    ADAPTIVE_SCORING_AVAILABLE = True
-except ImportError:
+# NEW IMPORT: Add adaptive scoring module with proper path handling
+ADAPTIVE_SCORING_AVAILABLE = False
+
+def setup_adaptive_scoring():
+    """Setup adaptive scoring import with multiple path attempts"""
+    global ADAPTIVE_SCORING_AVAILABLE
+    
+    try:
+        # Attempt 1: Direct import (if already in same directory)
+        from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
+        ADAPTIVE_SCORING_AVAILABLE = True
+        print("✅ Adaptive scoring module loaded successfully (direct import)")
+        return True
+    except ImportError:
+        pass
+    
+    try:
+        # Attempt 2: Import from app folder
+        from app.adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
+        ADAPTIVE_SCORING_AVAILABLE = True
+        print("✅ Adaptive scoring module loaded successfully (from app folder)")
+        return True
+    except ImportError:
+        pass
+    
+    try:
+        # Attempt 3: Add app folder to path and import
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        app_dir = os.path.join(current_dir, 'app')
+        if app_dir not in sys.path:
+            sys.path.insert(0, app_dir)
+        
+        from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
+        ADAPTIVE_SCORING_AVAILABLE = True
+        print("✅ Adaptive scoring module loaded successfully (with app path adjustment)")
+        return True
+    except ImportError:
+        pass
+    
+    try:
+        # Attempt 4: Try parent directory then app
+        parent_dir = os.path.dirname(current_dir)
+        app_dir = os.path.join(parent_dir, 'app')
+        if app_dir not in sys.path:
+            sys.path.insert(0, app_dir)
+        
+        from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
+        ADAPTIVE_SCORING_AVAILABLE = True
+        print("✅ Adaptive scoring module loaded successfully (from parent/app path)")
+        return True
+    except ImportError:
+        pass
+    
+    # If all attempts fail
     ADAPTIVE_SCORING_AVAILABLE = False
-    print("Adaptive scoring module not found - using original weighted score")
+    print("⚠️ Adaptive scoring module not found in any of the expected locations")
+    print("   Checked:")
+    print("   - Current directory")
+    print("   - ./app/ folder")
+    print("   - Added app folder to Python path")
+    print("   Using original weighted score calculation only")
+    return False
+
+# Run the setup
+setup_adaptive_scoring()
 
 st.set_page_config(
     page_title="Business Finance Scorecard",
     layout="wide"
 )
 
-# Industry thresholds
-INDUSTRY_THRESHOLDS = {
+# Complete Industry thresholds with all sectors
+INDUSTRY_THRESHOLDS = dict(sorted({
     'Medical Practices (GPs, Clinics, Dentists)': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 1000, 'Operating Margin': 0.10,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 16000,
@@ -48,16 +108,136 @@ INDUSTRY_THRESHOLDS = {
         'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
+    'Courier Services (Independent and Regional Operators)': {
+        'Debt Service Coverage Ratio': 1.50, 'Net Income': 500, 'Operating Margin': 0.08,
+        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 12000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
+    },
+    'Grocery Stores and Mini-Markets': {
+        'Debt Service Coverage Ratio': 1.50, 'Net Income': 500, 'Operating Margin': 0.07,
+        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 10000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Education': {
+        'Debt Service Coverage Ratio': 1.45, 'Net Income': 1500, 'Operating Margin': 0.10,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.09, 'Gross Burn Rate': 11500,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Engineering': {
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 7000, 'Operating Margin': 0.07,
+        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Estate Agent': {
+        'Debt Service Coverage Ratio': 1.50, 'Net Income': 4500, 'Operating Margin': 0.09,
+        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
+    },
+    'Food Service': {
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 2500, 'Operating Margin': 0.06,
+        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 11000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Import / Export': {
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 3000, 'Operating Margin': 0.07,
+        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.15, 'Gross Burn Rate': 11000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Manufacturing': {
+        'Debt Service Coverage Ratio': 1.60, 'Net Income': 1500, 'Operating Margin': 0.08,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 13500,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Marketing / Advertising / Design': {
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 5000, 'Operating Margin': 0.11,
+        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 13500,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Off-Licence Business': {
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 4500, 'Operating Margin': 0.08,
+        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 14000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Telecommunications': {
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 5000, 'Operating Margin': 0.11,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 13000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Tradesman': {
+        'Debt Service Coverage Ratio': 1.40, 'Net Income': 4000, 'Operating Margin': 0.08,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.15, 'Gross Burn Rate': 11500,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
+    },
+    'Wholesaler / Distributor': {
+        'Debt Service Coverage Ratio': 1.50, 'Net Income': 3500, 'Operating Margin': 0.10,
+        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 13000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Other': {
+        'Debt Service Coverage Ratio': 1.50, 'Net Income': 3000, 'Operating Margin': 0.08,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 11000,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Personal Services': {
+        'Debt Service Coverage Ratio': 1.50, 'Net Income': 2000, 'Operating Margin': 0.09,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 12000,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
     'Restaurants and Cafes': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 0, 'Operating Margin': 0.05,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 11000,
         'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
-    'Retail': {
-        'Debt Service Coverage Ratio': 1.40, 'Net Income': 2500, 'Operating Margin': 0.09,
-        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11500,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 620,
+    'Bars and Pubs': {
+        'Debt Service Coverage Ratio': 1.25, 'Net Income': 0, 'Operating Margin': 0.04,
+        'Revenue Growth Rate': 0.03, 'Cash Flow Volatility': 0.18, 'Gross Burn Rate': 10000,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
+    },
+    'Beauty Salons and Spas': {
+        'Debt Service Coverage Ratio': 1.30, 'Net Income': 500, 'Operating Margin': 0.06,
+        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 9500,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 550,
+        'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
+    },
+    'E-Commerce Retailers': {
+        'Debt Service Coverage Ratio': 1.35, 'Net Income': 1000, 'Operating Margin': 0.07,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 10000,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Event Planning and Management Firms': {
+        'Debt Service Coverage Ratio': 1.30, 'Net Income': 500, 'Operating Margin': 0.05,
+        'Revenue Growth Rate': 0.03, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 10000,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Auto Repair Shops': {
+        'Debt Service Coverage Ratio': 1.40, 'Net Income': 1000, 'Operating Margin': 0.08,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 9500,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 650,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Fitness Centres and Gyms': {
+        'Debt Service Coverage Ratio': 1.35, 'Net Income': 500, 'Operating Margin': 0.06,
+        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.18, 'Gross Burn Rate': 10000,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Construction Firms': {
@@ -66,13 +246,25 @@ INDUSTRY_THRESHOLDS = {
         'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
-    'Other': {
-        'Debt Service Coverage Ratio': 1.50, 'Net Income': 3000, 'Operating Margin': 0.08,
-        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 11000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
+    'Printing / Publishing': {
+        'Debt Service Coverage Ratio': 1.50, 'Net Income': 2500, 'Operating Margin': 0.08,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11000,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
-    }
-}
+    },
+    'Recruitment': {
+        'Debt Service Coverage Ratio': 1.50, 'Net Income': 2000, 'Operating Margin': 0.09,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+    'Retail': {
+        'Debt Service Coverage Ratio': 1.40, 'Net Income': 2500, 'Operating Margin': 0.09,
+        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11500,
+        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 620,
+        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+    },
+}.items()))
 
 # Scoring weights
 WEIGHTS = {
@@ -87,6 +279,49 @@ PENALTIES = {
     "personal_default_12m": 3, "business_ccj": 5, "director_ccj": 3,
     'website_or_social_outdated': 3, 'uses_generic_email': 1, 'no_online_presence': 2
 }
+
+# Enhanced debug info function
+def show_debug_info():
+    """Show debug information about file structure and imports"""
+    with st.expander("🔧 Debug Information", expanded=False):
+        st.write(f"**Adaptive Scoring Available:** {ADAPTIVE_SCORING_AVAILABLE}")
+        if ADAPTIVE_SCORING_AVAILABLE:
+            st.success("✅ Enhanced adaptive scoring is enabled")
+        else:
+            st.warning("⚠️ Using original scoring only - adaptive_score_calculation.py not found")
+        
+        # Show current working directory and file structure
+        current_dir = os.getcwd()
+        st.write(f"**Current Working Directory:** {current_dir}")
+        
+        # List files in current directory
+        try:
+            files = [f for f in os.listdir('.') if f.endswith('.py')]
+            st.write(f"**Python files in current directory:** {files}")
+        except Exception as e:
+            st.write(f"Could not list files in current directory: {e}")
+        
+        # Check app folder
+        app_folder = os.path.join(current_dir, 'app')
+        if os.path.exists(app_folder):
+            try:
+                app_files = [f for f in os.listdir(app_folder) if f.endswith('.py')]
+                st.write(f"**Python files in app folder:** {app_files}")
+                if 'adaptive_score_calculation.py' in app_files:
+                    st.success("✅ Found adaptive_score_calculation.py in app folder!")
+                else:
+                    st.warning("⚠️ adaptive_score_calculation.py not found in app folder")
+            except Exception as e:
+                st.write(f"Could not list files in app folder: {e}")
+        else:
+            st.write("**App folder:** Not found in current directory")
+        
+        # Show Python path
+        st.write("**Python Path Includes:**")
+        for i, path in enumerate(sys.path[:5]):  # Show first 5 paths
+            st.write(f"  {i+1}. {path}")
+        if len(sys.path) > 5:
+            st.write(f"  ... and {len(sys.path) - 5} more paths")
 
 # NEW HELPER FUNCTIONS: Add scoring comparison functions
 def calculate_both_weighted_scores(metrics, params, industry_thresholds):
@@ -124,14 +359,30 @@ def calculate_both_weighted_scores(metrics, params, industry_thresholds):
     
     # New adaptive weighted score (if available)
     if ADAPTIVE_SCORING_AVAILABLE:
-        adaptive_weighted_score, raw_adaptive_score, scoring_details = get_detailed_scoring_breakdown(
-            metrics, params['directors_score'], industry_thresholds['Sector Risk'], industry_thresholds, 
-            params['company_age_months'], params.get('personal_default_12m', False), 
-            params.get('business_ccj', False), params.get('director_ccj', False), 
-            params.get('website_or_social_outdated', False), params.get('uses_generic_email', False), 
-            params.get('no_online_presence', False), PENALTIES
-        )
-        return original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details
+        try:
+            # Import the functions dynamically
+            if 'adaptive_score_calculation' in sys.modules:
+                adaptive_module = sys.modules['adaptive_score_calculation']
+            elif 'app.adaptive_score_calculation' in sys.modules:
+                adaptive_module = sys.modules['app.adaptive_score_calculation']
+            else:
+                # Try to import again
+                try:
+                    import adaptive_score_calculation as adaptive_module
+                except ImportError:
+                    from app import adaptive_score_calculation as adaptive_module
+            
+            adaptive_weighted_score, raw_adaptive_score, scoring_details = adaptive_module.get_detailed_scoring_breakdown(
+                metrics, params['directors_score'], industry_thresholds['Sector Risk'], industry_thresholds, 
+                params['company_age_months'], params.get('personal_default_12m', False), 
+                params.get('business_ccj', False), params.get('director_ccj', False), 
+                params.get('website_or_social_outdated', False), params.get('uses_generic_email', False), 
+                params.get('no_online_presence', False), PENALTIES
+            )
+            return original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details
+        except Exception as e:
+            st.warning(f"Error in adaptive scoring calculation: {e}")
+            return original_weighted_score, original_weighted_score, original_weighted_score, []
     else:
         return original_weighted_score, original_weighted_score, original_weighted_score, []
 
@@ -776,6 +1027,9 @@ def main():
     """Main application - ENHANCED with adaptive scoring"""
     st.title("🏦 Business Finance Scorecard")
     st.markdown("---")
+    
+    # Add debug information
+    show_debug_info()
     
     # Sidebar inputs
     st.sidebar.header("Business Parameters")
