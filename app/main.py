@@ -11,6 +11,7 @@ from plotly.subplots import make_subplots
 import sys
 import os
 
+
 # NEW IMPORT: Add adaptive scoring module with proper path handling
 ADAPTIVE_SCORING_AVAILABLE = False
 
@@ -1546,6 +1547,10 @@ def main():
                 
                 st.plotly_chart(fig_pie, use_container_width=True, key="main_category_pie")
             
+            # NEW: Loans and Debt Repayments Analysis
+            display_loans_repayments_section(filtered_df, analysis_period)
+
+            
             # Detailed Metrics Table
             st.markdown("---")
             st.subheader("📋 Detailed Financial Metrics")
@@ -1633,6 +1638,388 @@ def main():
     
     else:
         st.info("👆 Upload a JSON transaction file to begin analysis")
+
+# COPY THIS ENTIRE BLOCK and paste it at the very end of your app/main.py file
+# (After all the existing functions but before the "if __name__ == "__main__":" line)
+
+def analyze_loans_and_repayments(df):
+    """Comprehensive analysis of loans received and debt repayments"""
+    if df.empty:
+        return {}
+    
+    # Apply categorization to ensure we have subcategories
+    categorized_data = categorize_transactions(df.copy())
+    
+    # Extract loans and repayments
+    loans_data = categorized_data[categorized_data['subcategory'] == 'Loans'].copy()
+    repayments_data = categorized_data[categorized_data['subcategory'] == 'Debt Repayments'].copy()
+    
+    # Prepare date columns
+    for data in [loans_data, repayments_data]:
+        if not data.empty:
+            data['date'] = pd.to_datetime(data['date'])
+            data['month'] = data['date'].dt.to_period('M')
+            data['amount_abs'] = abs(data['amount'])
+    
+    analysis = {}
+    
+    # === LOANS ANALYSIS ===
+    if not loans_data.empty:
+        analysis['total_loans_received'] = loans_data['amount_abs'].sum()
+        analysis['loan_count'] = len(loans_data)
+        analysis['avg_loan_amount'] = loans_data['amount_abs'].mean()
+        analysis['largest_loan'] = loans_data['amount_abs'].max()
+        analysis['smallest_loan'] = loans_data['amount_abs'].min()
+        
+        # Monthly loans
+        analysis['loans_by_month'] = loans_data.groupby('month')['amount_abs'].agg(['count', 'sum']).reset_index()
+        analysis['loans_by_month']['month_str'] = analysis['loans_by_month']['month'].astype(str)
+        
+        # Lender analysis
+        loans_data['lender_clean'] = loans_data['name'].str.lower().str.strip()
+        analysis['loans_by_lender'] = loans_data.groupby('lender_clean')['amount_abs'].agg(['count', 'sum']).reset_index()
+        analysis['loans_by_lender'] = analysis['loans_by_lender'].sort_values('sum', ascending=False)
+    else:
+        analysis.update({
+            'total_loans_received': 0, 'loan_count': 0, 'avg_loan_amount': 0,
+            'largest_loan': 0, 'smallest_loan': 0, 'loans_by_month': pd.DataFrame(),
+            'loans_by_lender': pd.DataFrame()
+        })
+    
+    # === REPAYMENTS ANALYSIS ===
+    if not repayments_data.empty:
+        analysis['total_repayments_made'] = repayments_data['amount_abs'].sum()
+        analysis['repayment_count'] = len(repayments_data)
+        analysis['avg_repayment_amount'] = repayments_data['amount_abs'].mean()
+        analysis['largest_repayment'] = repayments_data['amount_abs'].max()
+        analysis['smallest_repayment'] = repayments_data['amount_abs'].min()
+        
+        # Monthly repayments
+        analysis['repayments_by_month'] = repayments_data.groupby('month')['amount_abs'].agg(['count', 'sum']).reset_index()
+        analysis['repayments_by_month']['month_str'] = analysis['repayments_by_month']['month'].astype(str)
+        
+        # Recipient analysis
+        repayments_data['recipient_clean'] = repayments_data['name'].str.lower().str.strip()
+        analysis['repayments_by_recipient'] = repayments_data.groupby('recipient_clean')['amount_abs'].agg(['count', 'sum']).reset_index()
+        analysis['repayments_by_recipient'] = analysis['repayments_by_recipient'].sort_values('sum', ascending=False)
+    else:
+        analysis.update({
+            'total_repayments_made': 0, 'repayment_count': 0, 'avg_repayment_amount': 0,
+            'largest_repayment': 0, 'smallest_repayment': 0, 'repayments_by_month': pd.DataFrame(),
+            'repayments_by_recipient': pd.DataFrame()
+        })
+    
+    # === COMBINED ANALYSIS ===
+    analysis['net_borrowing'] = analysis['total_loans_received'] - analysis['total_repayments_made']
+    analysis['repayment_ratio'] = (analysis['total_repayments_made'] / analysis['total_loans_received']) if analysis['total_loans_received'] > 0 else 0
+    
+    # Monthly net borrowing trend
+    if not loans_data.empty or not repayments_data.empty:
+        all_months = set()
+        if not loans_data.empty:
+            all_months.update(loans_data['month'].unique())
+        if not repayments_data.empty:
+            all_months.update(repayments_data['month'].unique())
+        
+        monthly_net = []
+        for month in sorted(all_months):
+            month_loans = loans_data[loans_data['month'] == month]['amount_abs'].sum() if not loans_data.empty else 0
+            month_repayments = repayments_data[repayments_data['month'] == month]['amount_abs'].sum() if not repayments_data.empty else 0
+            monthly_net.append({
+                'month': month,
+                'month_str': str(month),
+                'loans': month_loans,
+                'repayments': month_repayments,
+                'net_borrowing': month_loans - month_repayments
+            })
+        
+        analysis['monthly_net_borrowing'] = pd.DataFrame(monthly_net)
+    else:
+        analysis['monthly_net_borrowing'] = pd.DataFrame()
+    
+    return analysis
+
+def create_loans_repayments_charts(analysis):
+    """Create charts for loans and repayments analysis"""
+    charts = {}
+    
+    # 1. Monthly Loans vs Repayments
+    if not analysis['monthly_net_borrowing'].empty:
+        monthly_data = analysis['monthly_net_borrowing']
+        
+        fig_monthly = go.Figure()
+        
+        fig_monthly.add_trace(go.Bar(
+            name='Loans Received',
+            x=monthly_data['month_str'],
+            y=monthly_data['loans'],
+            marker_color='lightcoral',
+            opacity=0.8
+        ))
+        
+        fig_monthly.add_trace(go.Bar(
+            name='Debt Repayments',
+            x=monthly_data['month_str'],
+            y=-monthly_data['repayments'],  # Negative for visual distinction
+            marker_color='lightblue',
+            opacity=0.8
+        ))
+        
+        fig_monthly.add_trace(go.Scatter(
+            name='Net Borrowing',
+            x=monthly_data['month_str'],
+            y=monthly_data['net_borrowing'],
+            mode='lines+markers',
+            line=dict(color='darkgreen', width=3),
+            marker=dict(size=8)
+        ))
+        
+        fig_monthly.update_layout(
+            title="Monthly Loans vs Repayments",
+            xaxis_title="Month",
+            yaxis_title="Amount (£)",
+            barmode='relative',
+            height=400
+        )
+        
+        charts['monthly_comparison'] = fig_monthly
+    
+    # 2. Loans by Lender (Top 10)
+    if not analysis['loans_by_lender'].empty:
+        top_lenders = analysis['loans_by_lender'].head(10)
+        
+        fig_lenders = go.Figure(data=[
+            go.Bar(
+                x=top_lenders['sum'],
+                y=[name.title()[:30] + '...' if len(name) > 30 else name.title() for name in top_lenders['lender_clean']],
+                orientation='h',
+                marker_color='lightcoral',
+                text=[f"£{amount:,.0f}" for amount in top_lenders['sum']],
+                textposition='auto'
+            )
+        ])
+        
+        fig_lenders.update_layout(
+            title="Loans by Lender (Top 10)",
+            xaxis_title="Total Amount (£)",
+            yaxis_title="Lender",
+            height=400,
+            yaxis=dict(autorange="reversed")
+        )
+        
+        charts['loans_by_lender'] = fig_lenders
+    
+    # 3. Repayments by Recipient (Top 10)
+    if not analysis['repayments_by_recipient'].empty:
+        top_recipients = analysis['repayments_by_recipient'].head(10)
+        
+        fig_recipients = go.Figure(data=[
+            go.Bar(
+                x=top_recipients['sum'],
+                y=[name.title()[:30] + '...' if len(name) > 30 else name.title() for name in top_recipients['recipient_clean']],
+                orientation='h',
+                marker_color='lightblue',
+                text=[f"£{amount:,.0f}" for amount in top_recipients['sum']],
+                textposition='auto'
+            )
+        ])
+        
+        fig_recipients.update_layout(
+            title="Repayments by Recipient (Top 10)",
+            xaxis_title="Total Amount (£)",
+            yaxis_title="Recipient",
+            height=400,
+            yaxis=dict(autorange="reversed")
+        )
+        
+        charts['repayments_by_recipient'] = fig_recipients
+    
+    # 4. Cumulative Borrowing Position
+    if not analysis['monthly_net_borrowing'].empty:
+        monthly_data = analysis['monthly_net_borrowing'].copy()
+        monthly_data['cumulative_borrowing'] = monthly_data['net_borrowing'].cumsum()
+        
+        fig_cumulative = go.Figure()
+        
+        fig_cumulative.add_trace(go.Scatter(
+            x=monthly_data['month_str'],
+            y=monthly_data['cumulative_borrowing'],
+            mode='lines+markers',
+            fill='tonexty',
+            name='Cumulative Net Borrowing',
+            line=dict(color='purple', width=3),
+            marker=dict(size=8)
+        ))
+        
+        fig_cumulative.add_hline(y=0, line_dash="dash", line_color="black", opacity=0.5)
+        
+        fig_cumulative.update_layout(
+            title="Cumulative Net Borrowing Position",
+            xaxis_title="Month",
+            yaxis_title="Cumulative Amount (£)",
+            height=400
+        )
+        
+        charts['cumulative_borrowing'] = fig_cumulative
+    
+    return charts
+
+def display_loans_repayments_section(df, analysis_period):
+    """Display the complete loans and repayments analysis section"""
+    st.markdown("---")
+    st.subheader("💰 Loans and Debt Repayments Analysis")
+    
+    # Filter data by period if needed
+    filtered_df = filter_data_by_period(df, analysis_period)
+    
+    # Perform analysis
+    analysis = analyze_loans_and_repayments(filtered_df)
+    
+    # Key Metrics Row
+    col1, col2, col3, col4, col5 = st.columns(5)
+    
+    with col1:
+        st.metric(
+            "Total Loans Received", 
+            f"£{analysis['total_loans_received']:,.0f}",
+            help=f"From {analysis['loan_count']} loan transactions"
+        )
+    
+    with col2:
+        st.metric(
+            "Total Repayments Made", 
+            f"£{analysis['total_repayments_made']:,.0f}",
+            help=f"From {analysis['repayment_count']} repayment transactions"
+        )
+    
+    with col3:
+        net_borrowing = analysis['net_borrowing']
+        st.metric(
+            "Net Borrowing Position", 
+            f"£{abs(net_borrowing):,.0f}",
+            delta="Outstanding" if net_borrowing > 0 else "Net Repaid" if net_borrowing < 0 else "Balanced"
+        )
+    
+    with col4:
+        repayment_ratio = analysis['repayment_ratio'] * 100
+        st.metric(
+            "Repayment Ratio", 
+            f"{repayment_ratio:.1f}%",
+            help="Percentage of loans that have been repaid"
+        )
+    
+    with col5:
+        avg_loan = analysis['avg_loan_amount']
+        st.metric(
+            "Average Loan Amount", 
+            f"£{avg_loan:,.0f}" if avg_loan > 0 else "N/A"
+        )
+    
+    # Risk Assessment Row
+    st.markdown("### 🎯 Risk Assessment")
+    risk_col1, risk_col2, risk_col3 = st.columns(3)
+    
+    with risk_col1:
+        if analysis['loan_count'] == 0:
+            st.info("✅ **No External Debt** - Business operates without external financing")
+        elif analysis['repayment_ratio'] >= 0.8:
+            st.success("✅ **Good Repayment Behavior** - Consistently repays debt obligations")
+        elif analysis['repayment_ratio'] >= 0.5:
+            st.warning("⚠️ **Moderate Debt Management** - Some outstanding obligations")
+        else:
+            st.error("🚨 **High Debt Risk** - Low repayment ratio indicates potential issues")
+    
+    with risk_col2:
+        if analysis['loan_count'] == 0:
+            st.info("📊 **No Borrowing History** - Cannot assess borrowing patterns")
+        elif analysis['loan_count'] <= 3:
+            st.success("📊 **Conservative Borrowing** - Infrequent use of external financing")
+        elif analysis['loan_count'] <= 10:
+            st.warning("📊 **Moderate Borrowing** - Regular use of external financing")
+        else:
+            st.error("📊 **High Borrowing Frequency** - Heavy reliance on external financing")
+    
+    with risk_col3:
+        if analysis['net_borrowing'] <= 0:
+            st.success("💰 **Positive Net Position** - More repaid than borrowed")
+        elif analysis['net_borrowing'] <= analysis['total_loans_received'] * 0.3:
+            st.info("💰 **Manageable Outstanding** - Reasonable debt burden")
+        else:
+            st.warning("💰 **High Outstanding Debt** - Significant borrowing position")
+    
+    # Charts Section
+    if analysis['loan_count'] > 0 or analysis['repayment_count'] > 0:
+        st.markdown("### 📈 Borrowing and Repayment Patterns")
+        
+        charts = create_loans_repayments_charts(analysis)
+        
+        # Row 1: Monthly comparison and cumulative position
+        if 'monthly_comparison' in charts and 'cumulative_borrowing' in charts:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.plotly_chart(charts['monthly_comparison'], use_container_width=True, key="loans_monthly_comparison")
+            with col2:
+                st.plotly_chart(charts['cumulative_borrowing'], use_container_width=True, key="loans_cumulative")
+        
+        # Row 2: Lender and recipient analysis
+        chart_row2_col1, chart_row2_col2 = st.columns(2)
+        
+        if 'loans_by_lender' in charts and charts['loans_by_lender'] is not None:
+            with chart_row2_col1:
+                st.plotly_chart(charts['loans_by_lender'], use_container_width=True, key="loans_by_lender")
+        else:
+            with chart_row2_col1:
+                st.info("No loan data available for lender analysis")
+        
+        if 'repayments_by_recipient' in charts and charts['repayments_by_recipient'] is not None:
+            with chart_row2_col2:
+                st.plotly_chart(charts['repayments_by_recipient'], use_container_width=True, key="repayments_by_recipient")
+        else:
+            with chart_row2_col2:
+                st.info("No repayment data available for recipient analysis")
+    
+    # Detailed Breakdown Tables
+    with st.expander("📋 Detailed Loan and Repayment Breakdown", expanded=False):
+        tab1, tab2, tab3 = st.tabs(["Loans Received", "Repayments Made", "Monthly Summary"])
+        
+        with tab1:
+            if not analysis['loans_by_lender'].empty:
+                st.write("**Loans by Lender:**")
+                display_loans = analysis['loans_by_lender'].copy()
+                display_loans['lender_clean'] = display_loans['lender_clean'].str.title()
+                display_loans.columns = ['Lender', 'Number of Loans', 'Total Amount (£)']
+                display_loans['Total Amount (£)'] = display_loans['Total Amount (£)'].apply(lambda x: f"£{x:,.2f}")
+                st.dataframe(display_loans, use_container_width=True, hide_index=True)
+            else:
+                st.info("No loan transactions found in the selected period.")
+        
+        with tab2:
+            if not analysis['repayments_by_recipient'].empty:
+                st.write("**Repayments by Recipient:**")
+                display_repayments = analysis['repayments_by_recipient'].copy()
+                display_repayments['recipient_clean'] = display_repayments['recipient_clean'].str.title()
+                display_repayments.columns = ['Recipient', 'Number of Repayments', 'Total Amount (£)']
+                display_repayments['Total Amount (£)'] = display_repayments['Total Amount (£)'].apply(lambda x: f"£{x:,.2f}")
+                st.dataframe(display_repayments, use_container_width=True, hide_index=True)
+            else:
+                st.info("No repayment transactions found in the selected period.")
+        
+        with tab3:
+            if not analysis['monthly_net_borrowing'].empty:
+                st.write("**Monthly Borrowing Summary:**")
+                display_monthly = analysis['monthly_net_borrowing'].copy()
+                display_monthly['loans'] = display_monthly['loans'].apply(lambda x: f"£{x:,.2f}")
+                display_monthly['repayments'] = display_monthly['repayments'].apply(lambda x: f"£{x:,.2f}")
+                display_monthly['net_borrowing'] = display_monthly['net_borrowing'].apply(
+                    lambda x: f"£{x:,.2f}" if x >= 0 else f"-£{abs(x):,.2f}"
+                )
+                display_monthly = display_monthly[['month_str', 'loans', 'repayments', 'net_borrowing']]
+                display_monthly.columns = ['Month', 'Loans Received', 'Repayments Made', 'Net Borrowing']
+                st.dataframe(display_monthly, use_container_width=True, hide_index=True)
+            else:
+                st.info("No loan or repayment data found for monthly analysis.")
+    
+    return analysis
 
 
 if __name__ == "__main__":
