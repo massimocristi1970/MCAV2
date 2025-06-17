@@ -758,6 +758,18 @@ def calculate_all_scores_enhanced(metrics, params):
     print(f"  Sector Risk: {sector_risk}")
     print(f"  Directors Score: {params['directors_score']}")
     print(f"  Company Age: {params['company_age_months']} months")
+
+    # DEBUG: Check subprime scoring availability
+    print(f"\n🔍 DEBUG - Subprime Scoring Check:")
+    print(f"  SUBPRIME_SCORING_AVAILABLE: {globals().get('SUBPRIME_SCORING_AVAILABLE', 'Not defined')}")
+    
+    try:
+        print(f"  SubprimeScoring class available: {SubprimeScoring}")
+        scorer_test = SubprimeScoring()
+        print(f"  SubprimeScoring instance created successfully: {type(scorer_test)}")
+    except Exception as e:
+        print(f"  ERROR creating SubprimeScoring: {e}")
+        print(f"  This is why subprime score is not working!")
     
     # Calculate both weighted scores (original and adaptive)
     original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details = calculate_both_weighted_scores(
@@ -767,12 +779,35 @@ def calculate_all_scores_enhanced(metrics, params):
     print(f"  Original Weighted Score: {original_weighted_score}/100")
     print(f"  Adaptive Weighted Score: {adaptive_weighted_score:.1f}%")
     
-    # NEW: Subprime scoring
-    subprime_scorer = SubprimeScoring()
-    subprime_result = subprime_scorer.calculate_subprime_score(metrics, params)
+    # NEW: Subprime scoring - WITH ERROR HANDLING
+    print(f"\n🎯 DEBUG - Attempting Subprime Scoring:")
+    try:
+        subprime_scorer = SubprimeScoring()
+        print(f"  Subprime scorer created: {type(subprime_scorer)}")
+        
+        print(f"  Calling calculate_subprime_score with:")
+        print(f"    Metrics keys: {list(metrics.keys())}")
+        print(f"    Params keys: {list(params.keys())}")
+        
+        subprime_result = subprime_scorer.calculate_subprime_score(metrics, params)
+        print(f"  Subprime calculation successful!")
+        print(f"  Subprime Score: {subprime_result['subprime_score']:.1f}/100")
+        print(f"  Subprime Tier: {subprime_result['risk_tier']}")
+        
+    except Exception as e:
+        print(f"  ERROR in subprime scoring: {e}")
+        import traceback
+        print(f"  Full traceback: {traceback.format_exc()}")
+        
+        # Fallback result
+        subprime_result = {
+            'subprime_score': 0,
+            'risk_tier': 'Error',
+            'pricing_guidance': {'suggested_rate': 'N/A'},
+            'recommendation': f'Subprime scoring failed: {str(e)}',
+            'breakdown': [f'Error: {str(e)}']
+        }
     
-    print(f"  Subprime Score: {subprime_result['subprime_score']:.1f}/100")
-    print(f"  Subprime Tier: {subprime_result['risk_tier']}")
     
     # Industry Score (binary) - ENHANCED with debugging
     industry_score = 0
