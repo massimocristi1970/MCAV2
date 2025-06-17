@@ -609,19 +609,22 @@ def filter_data_by_period(df, period_months):
     return df[df['date'] >= start_date]
 
 def calculate_financial_metrics(data, company_age_months):
-    """Calculate comprehensive financial metrics"""
+    """Calculate comprehensive financial metrics - ENHANCED VERSION"""
     if data.empty:
         return {}
     
     try:
         data = categorize_transactions(data)
         
-        # Basic calculations
-        total_revenue = abs(data.loc[data['is_revenue'], 'amount'].sum())
-        total_expenses = abs(data.loc[data['is_expense'], 'amount'].sum())
+        # FIXED: Use absolute values for all amounts
+        total_revenue = abs(data.loc[data['is_revenue'], 'amount'].sum()) if data['is_revenue'].any() else 0
+        total_expenses = abs(data.loc[data['is_expense'], 'amount'].sum()) if data['is_expense'].any() else 0
         net_income = total_revenue - total_expenses
-        total_debt_repayments = abs(data.loc[data['is_debt_repayment'], 'amount'].sum())
-        total_debt = abs(data.loc[data['is_debt'], 'amount'].sum())
+        total_debt_repayments = abs(data.loc[data['is_debt_repayment'], 'amount'].sum()) if data['is_debt_repayment'].any() else 0
+        total_debt = abs(data.loc[data['is_debt'], 'amount'].sum()) if data['is_debt'].any() else 0
+        
+        # Ensure minimum values to prevent division by zero
+        total_revenue = max(total_revenue, 1)  # Minimum £1 to prevent division by zero
         
         # Time-based calculations
         data['date'] = pd.to_datetime(data['date'])
@@ -631,37 +634,93 @@ def calculate_financial_metrics(data, company_age_months):
         
         monthly_avg_revenue = total_revenue / months_count
         
-        # Financial ratios
-        debt_to_income_ratio = (total_debt / total_revenue) if total_revenue > 0 else 0
-        expense_to_revenue_ratio = (total_expenses / total_revenue) if total_revenue > 0 else 0
-        operating_margin = (net_income / total_revenue) if total_revenue > 0 else 0
-        debt_service_coverage_ratio = (total_revenue / total_debt_repayments) if total_debt_repayments > 0 else 0
+        # Financial ratios - ENHANCED
+        debt_to_income_ratio = min(total_debt / total_revenue, 10) if total_revenue > 0 else 0  # Cap at 10x
+        expense_to_revenue_ratio = total_expenses / total_revenue if total_revenue > 0 else 1
+        operating_margin = max(-1, min(1, net_income / total_revenue)) if total_revenue > 0 else -1  # Cap between -100% and 100%
         
-        # Monthly analysis
+        # FIXED: Debt Service Coverage Ratio calculation
+        if total_debt_repayments > 0:
+            debt_service_coverage_ratio = total_revenue / total_debt_repayments
+        elif total_debt > 0:
+            # Estimate minimum required payments (10% of debt as annual payment)
+            estimated_annual_payment = total_debt * 0.1
+            debt_service_coverage_ratio = total_revenue / estimated_annual_payment if estimated_annual_payment > 0 else 0
+        else:
+            debt_service_coverage_ratio = 10  # No debt = excellent coverage
+        
+        # Cap DSCR at reasonable maximum
+        debt_service_coverage_ratio = min(debt_service_coverage_ratio, 50)
+        
+        # Monthly analysis - ENHANCED
         monthly_summary = data.groupby('year_month').agg({
             'amount': [
-                lambda x: abs(x[data.loc[x.index, 'is_revenue']].sum()),
-                lambda x: abs(x[data.loc[x.index, 'is_expense']].sum())
+                lambda x: abs(x[data.loc[x.index, 'is_revenue']].sum()) if data.loc[x.index, 'is_revenue'].any() else 0,
+                lambda x: abs(x[data.loc[x.index, 'is_expense']].sum()) if data.loc[x.index, 'is_expense'].any() else 0
             ]
         }).round(2)
         
         monthly_summary.columns = ['monthly_revenue', 'monthly_expenses']
         
-        # Volatility metrics
+        # Volatility metrics - ENHANCED
         if len(monthly_summary) > 1:
-            revenue_mean = monthly_summary['monthly_revenue'].mean()
-            cash_flow_volatility = (monthly_summary['monthly_revenue'].std() / revenue_mean) if revenue_mean > 0 else 0.1
-            revenue_growth_rate = monthly_summary['monthly_revenue'].pct_change().median() * 100
+            revenue_values = monthly_summary['monthly_revenue']
+            revenue_mean = revenue_values.mean()
+            
+            if revenue_mean > 0:
+                cash_flow_volatility = min(revenue_values.std() / revenue_mean, 2.0)  # Cap at 200%
+            else:
+                cash_flow_volatility = 0.5  # Default moderate volatility
+                
+            # Revenue growth calculation
+            revenue_growth_changes = revenue_values.pct_change().dropna()
+            if len(revenue_growth_changes) > 0:
+                revenue_growth_rate = revenue_growth_changes.median() * 100
+                revenue_growth_rate = max(-50, min(50, revenue_growth_rate))  # Cap between -50% and +50%
+            else:
+                revenue_growth_rate = 0
+                
             gross_burn_rate = monthly_summary['monthly_expenses'].mean()
         else:
-            cash_flow_volatility = 0.1
-            revenue_growth_rate = 5.0
+            cash_flow_volatility = 0.1  # Low volatility for single month
+            revenue_growth_rate = 0
             gross_burn_rate = total_expenses / months_count
         
-        # Balance metrics (simplified for demo)
-        avg_month_end_balance = max(1000, total_revenue * 0.1)
-        avg_negative_days = min(2, max(0, int(cash_flow_volatility * 10)))
+        # Balance metrics - IMPROVED with realistic estimates
+        if 'balances.available' in data.columns and not data['balances.available'].isna().all():
+            avg_month_end_balance = data['balances.available'].mean()
+        else:
+            # Estimate based on revenue and expenses
+            monthly_net = (total_revenue - total_expenses) / months_count
+            avg_month_end_balance = max(1000, monthly_net * 0.5)  # Conservative estimate
+        
+        # Negative balance days - estimated
+        if cash_flow_volatility > 0.3:
+            avg_negative_days = min(10, int(cash_flow_volatility * 10))
+        elif operating_margin < 0:
+            avg_negative_days = 3
+        else:
+            avg_negative_days = 0
+        
+        # Bounced payments - scan transaction names
         bounced_payments = 0
+        if 'name_y' in data.columns:
+            failed_payment_keywords = ['unpaid', 'returned', 'bounced', 'insufficient', 'failed', 'declined']
+            for keyword in failed_payment_keywords:
+                bounced_payments += data['name_y'].str.contains(keyword, case=False, na=False).sum()
+        
+        # DEBUGGING: Print key values
+        print(f"\n🔍 DEBUG - Financial Metrics:")
+        print(f"  Total Revenue: £{total_revenue:,.2f}")
+        print(f"  Total Expenses: £{total_expenses:,.2f}")
+        print(f"  Net Income: £{net_income:,.2f}")
+        print(f"  DSCR: {debt_service_coverage_ratio:.2f}")
+        print(f"  Operating Margin: {operating_margin:.3f} ({operating_margin*100:.1f}%)")
+        print(f"  Cash Flow Volatility: {cash_flow_volatility:.3f}")
+        print(f"  Revenue Growth Rate: {revenue_growth_rate:.2f}%")
+        print(f"  Avg Month-End Balance: £{avg_month_end_balance:,.2f}")
+        print(f"  Avg Negative Days: {avg_negative_days}")
+        print(f"  Bounced Payments: {bounced_payments}")
         
         return {
             "Total Revenue": round(total_revenue, 2),
@@ -670,13 +729,13 @@ def calculate_financial_metrics(data, company_age_months):
             "Net Income": round(net_income, 2),
             "Total Debt Repayments": round(total_debt_repayments, 2),
             "Total Debt": round(total_debt, 2),
-            "Debt-to-Income Ratio": round(debt_to_income_ratio, 2),
-            "Expense-to-Revenue Ratio": round(expense_to_revenue_ratio, 2),
-            "Operating Margin": round(operating_margin, 2),
+            "Debt-to-Income Ratio": round(debt_to_income_ratio, 3),
+            "Expense-to-Revenue Ratio": round(expense_to_revenue_ratio, 3),
+            "Operating Margin": round(operating_margin, 3),
             "Debt Service Coverage Ratio": round(debt_service_coverage_ratio, 2),
             "Gross Burn Rate": round(gross_burn_rate, 2),
-            "Cash Flow Volatility": round(cash_flow_volatility, 2),
-            "Revenue Growth Rate": round(revenue_growth_rate if not pd.isna(revenue_growth_rate) else 0, 2),
+            "Cash Flow Volatility": round(cash_flow_volatility, 3),
+            "Revenue Growth Rate": round(revenue_growth_rate, 2),
             "Average Month-End Balance": round(avg_month_end_balance, 2),
             "Average Negative Balance Days per Month": avg_negative_days,
             "Number of Bounced Payments": bounced_payments,
@@ -685,24 +744,42 @@ def calculate_financial_metrics(data, company_age_months):
         
     except Exception as e:
         st.error(f"Error calculating metrics: {e}")
+        import traceback
+        print(f"Full error traceback: {traceback.format_exc()}")
         return {}
-def calculate_all_scores(metrics, params):
-    """Calculate all scoring methods including subprime-specific scoring."""
+
+def calculate_all_scores_enhanced(metrics, params):
+    """Enhanced scoring calculation with better debugging and subprime scoring"""
     industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
     sector_risk = industry_thresholds['Sector Risk']
     
-    # Existing scores
+    print(f"\n🎯 DEBUG - Scoring Calculation:")
+    print(f"  Industry: {params['industry']}")
+    print(f"  Sector Risk: {sector_risk}")
+    print(f"  Directors Score: {params['directors_score']}")
+    print(f"  Company Age: {params['company_age_months']} months")
+    
+    # Calculate both weighted scores (original and adaptive)
     original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details = calculate_both_weighted_scores(
         metrics, params, industry_thresholds
     )
+    
+    print(f"  Original Weighted Score: {original_weighted_score}/100")
+    print(f"  Adaptive Weighted Score: {adaptive_weighted_score:.1f}%")
     
     # NEW: Subprime scoring
     subprime_scorer = SubprimeScoring()
     subprime_result = subprime_scorer.calculate_subprime_score(metrics, params)
     
-    # Industry Score (unchanged)
+    print(f"  Subprime Score: {subprime_result['subprime_score']:.1f}/100")
+    print(f"  Subprime Tier: {subprime_result['risk_tier']}")
+    
+    # Industry Score (binary) - ENHANCED with debugging
     industry_score = 0
     score_breakdown = {}
+    
+    # Check each threshold
+    threshold_checks = []
     
     for metric, threshold in industry_thresholds.items():
         if metric in ['Directors Score', 'Sector Risk']:
@@ -712,11 +789,15 @@ def calculate_all_scores(metrics, params):
             actual_value = metrics[metric]
             if metric in ['Cash Flow Volatility', 'Average Negative Balance Days per Month', 'Number of Bounced Payments']:
                 meets_threshold = actual_value <= threshold
+                direction = "≤"
             else:
                 meets_threshold = actual_value >= threshold
+                direction = "≥"
             
             if meets_threshold:
                 industry_score += 1
+            
+            threshold_checks.append(f"  {metric}: {actual_value:.3f} {direction} {threshold} = {'✅' if meets_threshold else '❌'}")
             
             score_breakdown[metric] = {
                 'actual': actual_value,
@@ -728,12 +809,27 @@ def calculate_all_scores(metrics, params):
     # Add non-metric scores
     if params['company_age_months'] >= 6:
         industry_score += 1
+        threshold_checks.append(f"  Company Age: {params['company_age_months']} ≥ 6 months = ✅")
+    else:
+        threshold_checks.append(f"  Company Age: {params['company_age_months']} ≥ 6 months = ❌")
+        
     if params['directors_score'] >= industry_thresholds['Directors Score']:
         industry_score += 1
+        threshold_checks.append(f"  Directors Score: {params['directors_score']} ≥ {industry_thresholds['Directors Score']} = ✅")
+    else:
+        threshold_checks.append(f"  Directors Score: {params['directors_score']} ≥ {industry_thresholds['Directors Score']} = ❌")
+        
     if sector_risk <= industry_thresholds['Sector Risk']:
         industry_score += 1
+        threshold_checks.append(f"  Sector Risk: {sector_risk} ≤ {industry_thresholds['Sector Risk']} = ✅")
+    else:
+        threshold_checks.append(f"  Sector Risk: {sector_risk} ≤ {industry_thresholds['Sector Risk']} = ❌")
     
-    # ML Score (unchanged)
+    print(f"\n📊 Industry Score Breakdown ({industry_score}/12):")
+    for check in threshold_checks:
+        print(check)
+    
+    # ML Score (if available)
     model, scaler = load_models()
     ml_score = None
     if model and scaler:
@@ -761,10 +857,12 @@ def calculate_all_scores(metrics, params):
             features_scaled = scaler.transform(features_df)
             probability = model.predict_proba(features_scaled)[:, 1] * 100
             ml_score = round(probability[0], 2)
-        except:
-            pass
+            
+            print(f"  ML Score: {ml_score:.1f}%")
+        except Exception as e:
+            print(f"  ML Score: Error - {e}")
     
-    # Loan Risk (unchanged)
+    # Loan Risk
     monthly_revenue = metrics.get('Monthly Average Revenue', 0)
     if monthly_revenue > 0:
         ratio = params['requested_loan'] / monthly_revenue
@@ -780,6 +878,9 @@ def calculate_all_scores(metrics, params):
             loan_risk = "High Risk"
     else:
         loan_risk = "High Risk"
+    
+    print(f"  Loan Risk: {loan_risk}")
+    print(f"="*50)
     
     return {
         'weighted_score': original_weighted_score,
@@ -1205,7 +1306,7 @@ def main():
             # Filter data and calculate metrics
             filtered_df = filter_data_by_period(df, analysis_period)
             metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
-            scores = calculate_all_scores(metrics, params)
+            scores = calculate_all_scores_enhanced(metrics, params)
             revenue_insights = calculate_revenue_insights(filtered_df)
 
             # ENHANCED DASHBOARD RENDERING with adaptive scoring
