@@ -797,7 +797,7 @@ def calculate_financial_metrics(data, company_age_months):
                 print(f"  Revenue Growth Rate Calculation:")
                 print(f"    Monthly changes: {revenue_growth_changes.tolist()}")
                 print(f"    Median change: {revenue_growth_rate:.3f} ({revenue_growth_rate*100:.1f}%)")
-           else:
+            else:
                revenue_growth_rate = 0
                 
             gross_burn_rate = monthly_summary['monthly_expenses'].mean()
