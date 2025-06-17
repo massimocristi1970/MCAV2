@@ -533,7 +533,7 @@ def calculate_both_weighted_scores(metrics, params, industry_thresholds):
     
     original_weighted_score = max(0, original_weighted_score - penalties)
     
-    # New adaptive weighted score (if available)
+    # Adaptive weighted score (if available)
     if ADAPTIVE_SCORING_AVAILABLE:
         try:
             # Import the functions dynamically
@@ -557,7 +557,7 @@ def calculate_both_weighted_scores(metrics, params, industry_thresholds):
             )
             return original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details
         except Exception as e:
-            st.warning(f"Error in adaptive scoring calculation: {e}")
+            print(f"Error in adaptive scoring calculation: {e}")
             return original_weighted_score, original_weighted_score, original_weighted_score, []
     else:
         return original_weighted_score, original_weighted_score, original_weighted_score, []
