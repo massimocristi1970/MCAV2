@@ -1893,7 +1893,7 @@ def main():
                 st.markdown("---")
                 with st.expander(f"📈 Compare with Full Period Analysis", expanded=False):
                     full_metrics = calculate_financial_metrics(df, params['company_age_months'])
-                    full_scores = calculate_all_scores(full_metrics, params)
+                    full_scores = calculate_all_scores_enhanced(full_metrics, params)
                     
                     st.write("**Full Period vs Selected Period Comparison:**")
                     comp_col1, comp_col2, comp_col3, comp_col4 = st.columns(4)
