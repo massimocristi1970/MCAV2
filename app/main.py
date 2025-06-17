@@ -10,25 +10,138 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import sys
 import os
-# Import SubprimeScoring with error handling
-try:
-    from app.services.subprime_scoring_system import SubprimeScoring
-    SUBPRIME_SCORING_AVAILABLE = True
-except ImportError:
+
+# Add debug info about file structure
+def debug_file_structure():
+    """Debug helper to understand the file structure"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    print(f"🔍 DEBUG - File Structure:")
+    print(f"  Current file location: {__file__}")
+    print(f"  Current directory: {current_dir}")
+    
+    # Check for services directory
+    services_dir = os.path.join(current_dir, 'services')
+    print(f"  Services directory exists: {os.path.exists(services_dir)}")
+    
+    if os.path.exists(services_dir):
+        services_files = os.listdir(services_dir)
+        print(f"  Files in services/: {services_files}")
+        
+        subprime_file = os.path.join(services_dir, 'subprime_scoring_system.py')
+        print(f"  subprime_scoring_system.py exists: {os.path.exists(subprime_file)}")
+    
+    # Check parent directory structure  
+    parent_dir = os.path.dirname(current_dir)
+    print(f"  Parent directory: {parent_dir}")
+    
+    app_services_dir = os.path.join(parent_dir, 'app', 'services')
+    print(f"  app/services/ directory exists: {os.path.exists(app_services_dir)}")
+    
+    if os.path.exists(app_services_dir):
+        app_services_files = os.listdir(app_services_dir)
+        print(f"  Files in app/services/: {app_services_files}")
+
+# Run debug (remove this after fixing)
+debug_file_structure()
+
+# Improved import with multiple fallback strategies
+def import_subprime_scoring():
+    """Import SubprimeScoring with comprehensive fallback strategies"""
+    
+    # Strategy 1: Direct import from services (if main.py is in app/)
     try:
+        from services.subprime_scoring_system import SubprimeScoring
+        print("✅ Imported SubprimeScoring from services.subprime_scoring_system")
+        return SubprimeScoring, True
+    except ImportError as e:
+        print(f"❌ Failed import from services: {e}")
+    
+    # Strategy 2: Import from app.services (if main.py is in root/)
+    try:
+        from app.services.subprime_scoring_system import SubprimeScoring
+        print("✅ Imported SubprimeScoring from app.services.subprime_scoring_system")
+        return SubprimeScoring, True
+    except ImportError as e:
+        print(f"❌ Failed import from app.services: {e}")
+    
+    # Strategy 3: Add path and import
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        services_dir = os.path.join(current_dir, 'services')
+        
+        if os.path.exists(services_dir) and services_dir not in sys.path:
+            sys.path.insert(0, services_dir)
+            print(f"📁 Added to path: {services_dir}")
+        
         from subprime_scoring_system import SubprimeScoring
-        SUBPRIME_SCORING_AVAILABLE = True
-    except ImportError:
-        SUBPRIME_SCORING_AVAILABLE = False
-        class SubprimeScoring:
-            def calculate_subprime_score(self, metrics, params):
-                return {
-                    'subprime_score': 0,
-                    'risk_tier': 'N/A',
-                    'pricing_guidance': {'suggested_rate': 'N/A'},
-                    'recommendation': 'Subprime scoring not available',
-                    'breakdown': ['Subprime scoring module not found']
-                }
+        print("✅ Imported SubprimeScoring after adding services to path")
+        return SubprimeScoring, True
+    except ImportError as e:
+        print(f"❌ Failed import after path addition: {e}")
+    
+    # Strategy 4: Check parent app/services directory
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        app_services_dir = os.path.join(parent_dir, 'app', 'services')
+        
+        if os.path.exists(app_services_dir) and app_services_dir not in sys.path:
+            sys.path.insert(0, app_services_dir)
+            print(f"📁 Added to path: {app_services_dir}")
+        
+        from subprime_scoring_system import SubprimeScoring
+        print("✅ Imported SubprimeScoring from parent app/services")
+        return SubprimeScoring, True
+    except ImportError as e:
+        print(f"❌ Failed import from parent app/services: {e}")
+    
+    # Strategy 5: Absolute import with file loading
+    try:
+        import importlib.util
+        
+        # Find the file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        possible_paths = [
+            os.path.join(current_dir, 'services', 'subprime_scoring_system.py'),
+            os.path.join(current_dir, 'subprime_scoring_system.py'),
+            os.path.join(os.path.dirname(current_dir), 'app', 'services', 'subprime_scoring_system.py')
+        ]
+        
+        for path in possible_paths:
+            if os.path.exists(path):
+                print(f"📄 Found subprime_scoring_system.py at: {path}")
+                spec = importlib.util.spec_from_file_location("subprime_scoring_system", path)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                
+                SubprimeScoring = module.SubprimeScoring
+                print("✅ Imported SubprimeScoring using importlib")
+                return SubprimeScoring, True
+        
+        print("❌ subprime_scoring_system.py not found in any expected location")
+        
+    except Exception as e:
+        print(f"❌ Failed absolute import: {e}")
+    
+    # If all strategies fail, return None
+    print("🚨 All import strategies failed!")
+    return None, False
+
+# Use the import function
+SubprimeScoring, SUBPRIME_SCORING_AVAILABLE = import_subprime_scoring()
+
+# Create fallback class if import failed
+if not SUBPRIME_SCORING_AVAILABLE:
+    print("⚠️ Creating fallback SubprimeScoring class")
+    class SubprimeScoring:
+        def calculate_subprime_score(self, metrics, params):
+            return {
+                'subprime_score': 0,
+                'risk_tier': 'Import Failed',
+                'pricing_guidance': {'suggested_rate': 'N/A'},
+                'recommendation': 'Subprime scoring import failed - check file structure',
+                'breakdown': ['Import failed - check console for details']
+            }
 # NEW IMPORT: Add adaptive scoring module with proper path handling
 ADAPTIVE_SCORING_AVAILABLE = False
 
