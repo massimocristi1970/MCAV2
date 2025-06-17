@@ -785,19 +785,20 @@ def calculate_financial_metrics(data, company_age_months):
             else:
                 cash_flow_volatility = 0.5  # Default moderate volatility
                 
-            # Revenue growth calculation
+            
+            # Revenue growth calculation - FIXED
             revenue_growth_changes = revenue_values.pct_change().dropna()
             if len(revenue_growth_changes) > 0:
-    		# Don't multiply by 100 - store as decimal (0.245 = 24.5%)
-    		revenue_growth_rate = revenue_growth_changes.median()
-    		revenue_growth_rate = max(-0.5, min(0.5, revenue_growth_rate))  # Cap between -50% and +50%
-    
-    		# Debug output
-    		print(f"  Revenue Growth Rate Calculation:")
-    		print(f"    Monthly changes: {revenue_growth_changes.tolist()}")
-    		print(f"    Median change: {revenue_growth_rate:.3f} ({revenue_growth_rate*100:.1f}%)")
-            else:
-    		revenue_growth_rate = 0
+                # Don't multiply by 100 - store as decimal (0.245 = 24.5%)
+                revenue_growth_rate = revenue_growth_changes.median()
+                revenue_growth_rate = max(-0.5, min(0.5, revenue_growth_rate))  # Cap between -50% and +50%
+            
+                # Debug output
+                print(f"  Revenue Growth Rate Calculation:")
+                print(f"    Monthly changes: {revenue_growth_changes.tolist()}")
+                print(f"    Median change: {revenue_growth_rate:.3f} ({revenue_growth_rate*100:.1f}%)")
+           else:
+               revenue_growth_rate = 0
                 
             gross_burn_rate = monthly_summary['monthly_expenses'].mean()
         else:
