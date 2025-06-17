@@ -984,38 +984,45 @@ def calculate_all_scores_enhanced(metrics, params):
     for check in threshold_checks:
         print(check)
     
-    # ML Score (if available)
+    # ML Score (if available) - ENHANCED with growth business adjustment
     model, scaler = load_models()
     ml_score = None
+    adjusted_ml_score = None
+
     if model and scaler:
-        try:
-            features = {
-                'Directors Score': params['directors_score'],
-                'Total Revenue': metrics["Total Revenue"],
-                'Total Debt': metrics["Total Debt"],
-                'Debt-to-Income Ratio': metrics["Debt-to-Income Ratio"],
-                'Operating Margin': metrics["Operating Margin"],
-                'Debt Service Coverage Ratio': metrics["Debt Service Coverage Ratio"],
-                'Cash Flow Volatility': metrics["Cash Flow Volatility"],
-                'Revenue Growth Rate': metrics["Revenue Growth Rate"],
-                'Average Month-End Balance': metrics["Average Month-End Balance"],
-                'Average Negative Balance Days per Month': metrics["Average Negative Balance Days per Month"],
-                'Number of Bounced Payments': metrics["Number of Bounced Payments"],
-                'Company Age (Months)': params['company_age_months'],
-                'Sector_Risk': sector_risk
-            }
-            
-            features_df = pd.DataFrame([features])
-            features_df.replace([np.inf, -np.inf], np.nan, inplace=True)
-            features_df.fillna(0, inplace=True)
-            
-            features_scaled = scaler.transform(features_df)
-            probability = model.predict_proba(features_scaled)[:, 1] * 100
-            ml_score = round(probability[0], 2)
-            
-            print(f"  ML Score: {ml_score:.1f}%")
-        except Exception as e:
-            print(f"  ML Score: Error - {e}")
+                   try:
+                             features = {
+                                        'Directors Score': params['directors_score'],
+                                        'Total Revenue': metrics["Total Revenue"],
+                                        'Total Debt': metrics["Total Debt"],
+                                        'Debt-to-Income Ratio': metrics["Debt-to-Income Ratio"],
+                                        'Operating Margin': metrics["Operating Margin"],
+                                        'Debt Service Coverage Ratio': metrics["Debt Service Coverage Ratio"],
+                                        'Cash Flow Volatility': metrics["Cash Flow Volatility"],
+                                        'Revenue Growth Rate': metrics["Revenue Growth Rate"],
+                                        'Average Month-End Balance': metrics["Average Month-End Balance"],
+                                        'Average Negative Balance Days per Month': metrics["Average Negative Balance Days per Month"],
+                                        'Number of Bounced Payments': metrics["Number of Bounced Payments"],
+                                        'Company Age (Months)': params['company_age_months'],
+                                        'Sector_Risk': sector_risk
+                            }
+        
+                           features_df = pd.DataFrame([features])
+                           features_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+                           features_df.fillna(0, inplace=True)
+        
+                           features_scaled = scaler.transform(features_df)
+                           probability = model.predict_proba(features_scaled)[:, 1] * 100
+                          ml_score = round(probability[0], 2)
+        
+                          # NEW: Apply growth business adjustment
+                          adjusted_ml_score = adjust_ml_score_for_growth_business(ml_score, metrics, params)
+        
+                         print(f"  Raw ML Score: {ml_score:.1f}%")
+                         print(f"  Adjusted ML Score: {adjusted_ml_score:.1f}%")
+        
+               except Exception as e:
+                         print(f"  ML Score: Error - {e}")
     
     # Loan Risk
     monthly_revenue = metrics.get('Monthly Average Revenue', 0)
@@ -1044,6 +1051,7 @@ def calculate_all_scores_enhanced(metrics, params):
         'scoring_details': scoring_details,
         'industry_score': industry_score,
         'ml_score': ml_score,
+        'adjusted_ml_score': adjusted_ml_score,
         'loan_risk': loan_risk,
         'score_breakdown': score_breakdown,
         # NEW: Subprime scoring results
@@ -1053,6 +1061,133 @@ def calculate_all_scores_enhanced(metrics, params):
         'subprime_recommendation': subprime_result['recommendation'],
         'subprime_breakdown': subprime_result['breakdown']
     }
+
+# Add this function to your main.py file
+
+def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
+    """
+    Adjust ML score for growth businesses that the traditional model undervalues.
+    """
+    
+    if raw_ml_score is None:
+        return None
+    
+    print(f"\n🔧 ML Score Adjustment Analysis:")
+    print(f"  Raw ML Score: {raw_ml_score:.1f}%")
+    
+    # Initialize adjustment
+    adjustment = 0
+    adjustment_reasons = []
+    
+    # Factor 1: Strong DSCR despite losses
+    dscr = metrics.get('Debt Service Coverage Ratio', 0)
+    operating_margin = metrics.get('Operating Margin', 0)
+    
+    if dscr >= 3.0 and operating_margin < 0:
+        adjustment += 15
+        adjustment_reasons.append(f"Strong DSCR ({dscr:.1f}) despite losses (+15)")
+    elif dscr >= 2.0 and operating_margin < 0:
+        adjustment += 12
+        adjustment_reasons.append(f"Good DSCR ({dscr:.1f}) despite losses (+12)")
+    elif dscr >= 1.5 and operating_margin < 0:
+        adjustment += 8
+        adjustment_reasons.append(f"Adequate DSCR ({dscr:.1f}) despite losses (+8)")
+    
+    # Factor 2: High growth trajectory
+    growth = metrics.get('Revenue Growth Rate', 0)
+    if growth > 1:  # Convert percentage if needed
+        growth = growth / 100
+    
+    if growth >= 0.2:  # 20%+ growth
+        adjustment += 12
+        adjustment_reasons.append(f"High growth ({growth*100:.1f}%) (+12)")
+    elif growth >= 0.15:  # 15%+ growth
+        adjustment += 8
+        adjustment_reasons.append(f"Strong growth ({growth*100:.1f}%) (+8)")
+    elif growth >= 0.1:  # 10%+ growth
+        adjustment += 5
+        adjustment_reasons.append(f"Good growth ({growth*100:.1f}%) (+5)")
+    
+    # Factor 3: Growth + DSCR combination (compounding effect)
+    if growth >= 0.15 and dscr >= 2.0:
+        adjustment += 10
+        adjustment_reasons.append("Growth + Strong DSCR combination (+10)")
+    elif growth >= 0.1 and dscr >= 1.5:
+        adjustment += 5
+        adjustment_reasons.append("Growth + Good DSCR combination (+5)")
+    
+    # Factor 4: Director reliability
+    directors_score = params.get('directors_score', 0)
+    if directors_score >= 80:
+        adjustment += 3
+        adjustment_reasons.append(f"Excellent director score ({directors_score}) (+3)")
+    elif directors_score >= 70:
+        adjustment += 2
+        adjustment_reasons.append(f"Good director score ({directors_score}) (+2)")
+    
+    # Factor 5: Young company bonus (growth trajectory more important)
+    company_age = params.get('company_age_months', 0)
+    if company_age <= 36 and growth >= 0.15:  # Young + high growth
+        adjustment += 5
+        adjustment_reasons.append(f"Young high-growth company ({company_age}m, {growth*100:.1f}%) (+5)")
+    
+    # Factor 6: Revenue scale adjustment
+    revenue = metrics.get('Total Revenue', 0)
+    monthly_revenue = metrics.get('Monthly Average Revenue', 0)
+    
+    if monthly_revenue >= 10000:  # £10k+ monthly revenue
+        adjustment += 3
+        adjustment_reasons.append(f"Strong revenue scale (£{monthly_revenue:,.0f}/month) (+3)")
+    elif monthly_revenue >= 5000:  # £5k+ monthly revenue
+        adjustment += 2
+        adjustment_reasons.append(f"Good revenue scale (£{monthly_revenue:,.0f}/month) (+2)")
+    
+    # Apply adjustment with cap
+    adjusted_score = min(85, raw_ml_score + adjustment)  # Cap at 85%
+    
+    print(f"  Adjustment Factors:")
+    for reason in adjustment_reasons:
+        print(f"    • {reason}")
+    
+    print(f"  Total Adjustment: +{adjustment:.1f} points")
+    print(f"  Adjusted ML Score: {adjusted_score:.1f}%")
+    print(f"  Improvement: {adjusted_score - raw_ml_score:+.1f} points")
+    
+    return adjusted_score
+
+def get_ml_score_interpretation(adjusted_score, raw_score):
+    """Provide interpretation of the adjusted ML score."""
+    
+    if adjusted_score is None:
+        return "ML model not available"
+    
+    improvement = adjusted_score - raw_score
+    
+    if adjusted_score >= 60:
+        risk_level = "Low Risk"
+        color = "🟢"
+    elif adjusted_score >= 40:
+        risk_level = "Moderate Risk" 
+        color = "🟡"
+    elif adjusted_score >= 25:
+        risk_level = "Higher Risk"
+        color = "🟠"
+    else:
+        risk_level = "High Risk"
+        color = "🔴"
+    
+    interpretation = f"{color} **{risk_level}** (Adjusted: {adjusted_score:.1f}%, Raw: {raw_score:.1f}%)"
+    
+    if improvement >= 15:
+        interpretation += f"\n  📈 **Significant upward adjustment** (+{improvement:.1f}) for growth business profile"
+    elif improvement >= 8:
+        interpretation += f"\n  📈 **Notable upward adjustment** (+{improvement:.1f}) for growth characteristics"
+    elif improvement >= 3:
+        interpretation += f"\n  📈 **Minor upward adjustment** (+{improvement:.1f}) for positive factors"
+    else:
+        interpretation += f"\n  ➡️ **Minimal adjustment** (+{improvement:.1f}) - standard risk profile"
+    
+    return interpretation
 
 def calculate_revenue_insights(df):
     """Calculate revenue-specific insights"""
