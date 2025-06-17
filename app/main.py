@@ -907,7 +907,7 @@ def calculate_all_scores_enhanced(metrics, params):
         raw_adaptive_score = 70.9
         scoring_details = []
 
-print(f"🔍 DEBUG - Scoring details type: {type(scoring_details)}, length: {len(scoring_details) if isinstance(scoring_details, list) else 'Not a list'}")
+    print(f"🔍 DEBUG - Scoring details type: {type(scoring_details)}, length: {len(scoring_details) if isinstance(scoring_details, list) else 'Not a list'}")
 
         
     print(f"  Original Weighted Score: {original_weighted_score}/100")
