@@ -1251,7 +1251,7 @@ def create_score_charts(scores, metrics):
         'Original Weighted': scores['weighted_score'],
         'Adaptive Weighted': scores.get('adaptive_weighted_score', scores['weighted_score']),
         'Industry Score': (scores['industry_score'] / 12) * 100,  # Convert to percentage
-        'ML Probability': scores['ml_score'] if scores['ml_score'] else 0
+        'ML Probability': scores.get('adjusted_ml_score', scores.get('ml_score', 0))
     }
     
     colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
@@ -1618,7 +1618,12 @@ def main():
                     st.metric("Adaptive Weighted Score", "N/A")
 
             with col3:
-                if scores['ml_score']:
+                if scores.get('adjusted_ml_score'):
+                    raw_ml = scores.get('ml_score', 0)
+                    adjusted_ml = scores['adjusted_ml_score']
+                    delta = adjusted_ml - raw_ml
+                    st.metric("Adjusted ML Probability", f"{adjusted_ml:.1f}%", delta=f"+{delta:.1f} vs raw")
+                elif scores['ml_score']:
                     st.metric("ML Probability", f"{scores['ml_score']:.1f}%")
                 else:
                     st.metric("ML Probability", "N/A")
