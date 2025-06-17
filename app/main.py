@@ -10,8 +10,25 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import sys
 import os
-
-
+# Import SubprimeScoring with error handling
+try:
+    from app.services.subprime_scoring_system import SubprimeScoring
+    SUBPRIME_SCORING_AVAILABLE = True
+except ImportError:
+    try:
+        from subprime_scoring_system import SubprimeScoring
+        SUBPRIME_SCORING_AVAILABLE = True
+    except ImportError:
+        SUBPRIME_SCORING_AVAILABLE = False
+        class SubprimeScoring:
+            def calculate_subprime_score(self, metrics, params):
+                return {
+                    'subprime_score': 0,
+                    'risk_tier': 'N/A',
+                    'pricing_guidance': {'suggested_rate': 'N/A'},
+                    'recommendation': 'Subprime scoring not available',
+                    'breakdown': ['Subprime scoring module not found']
+                }
 # NEW IMPORT: Add adaptive scoring module with proper path handling
 ADAPTIVE_SCORING_AVAILABLE = False
 
@@ -669,18 +686,21 @@ def calculate_financial_metrics(data, company_age_months):
     except Exception as e:
         st.error(f"Error calculating metrics: {e}")
         return {}
-
 def calculate_all_scores(metrics, params):
-    """Calculate all scoring methods - ENHANCED with adaptive scoring"""
+    """Calculate all scoring methods including subprime-specific scoring."""
     industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
     sector_risk = industry_thresholds['Sector Risk']
     
-    # Calculate both weighted scores (original and adaptive)
+    # Existing scores
     original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details = calculate_both_weighted_scores(
         metrics, params, industry_thresholds
     )
     
-    # Industry Score (binary)
+    # NEW: Subprime scoring
+    subprime_scorer = SubprimeScoring()
+    subprime_result = subprime_scorer.calculate_subprime_score(metrics, params)
+    
+    # Industry Score (unchanged)
     industry_score = 0
     score_breakdown = {}
     
@@ -713,7 +733,7 @@ def calculate_all_scores(metrics, params):
     if sector_risk <= industry_thresholds['Sector Risk']:
         industry_score += 1
     
-    # ML Score (if available)
+    # ML Score (unchanged)
     model, scaler = load_models()
     ml_score = None
     if model and scaler:
@@ -744,7 +764,7 @@ def calculate_all_scores(metrics, params):
         except:
             pass
     
-    # Loan Risk
+    # Loan Risk (unchanged)
     monthly_revenue = metrics.get('Monthly Average Revenue', 0)
     if monthly_revenue > 0:
         ratio = params['requested_loan'] / monthly_revenue
@@ -769,7 +789,13 @@ def calculate_all_scores(metrics, params):
         'industry_score': industry_score,
         'ml_score': ml_score,
         'loan_risk': loan_risk,
-        'score_breakdown': score_breakdown
+        'score_breakdown': score_breakdown,
+        # NEW: Subprime scoring results
+        'subprime_score': subprime_result['subprime_score'],
+        'subprime_tier': subprime_result['risk_tier'],
+        'subprime_pricing': subprime_result['pricing_guidance'],
+        'subprime_recommendation': subprime_result['recommendation'],
+        'subprime_breakdown': subprime_result['breakdown']
     }
 
 def calculate_revenue_insights(df):
@@ -1186,27 +1212,42 @@ def main():
             period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
             st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
 
-            # ENHANCED Key Metrics with Adaptive Scoring
-            col1, col2, col3, col4, col5 = st.columns(5)
-            with col1:
-                st.metric("Original Weighted Score", f"{scores['weighted_score']:.0f}/100")
-            with col2:
-                if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
-                    adaptive_score = scores['adaptive_weighted_score']
-                    delta = adaptive_score - scores['weighted_score']
-                    st.metric("Adaptive Weighted Score", f"{adaptive_score:.1f}%", delta=f"{delta:+.1f}")
-                else:
-                    st.metric("Adaptive Weighted Score", "N/A")
-            with col3:
-                if scores['ml_score']:
-                    st.metric("ML Probability", f"{scores['ml_score']:.1f}%")
-                else:
-                    st.metric("ML Probability", "N/A")
-            with col4:
-                risk_colors = {"Low Risk": "🟢", "Moderate Low Risk": "🟡", "Medium Risk": "🟠", "Moderate High Risk": "🔴", "High Risk": "🔴"}
-                st.metric("Loan to Revenue Risk", f"{risk_colors.get(scores['loan_risk'], '⚪')} {scores['loan_risk']}")
-            with col5:
-                st.metric("Monthly Revenue", f"£{metrics.get('Monthly Average Revenue', 0):,.0f}")
+            # Enhanced Key Metrics with Subprime Scoring
+	    col1, col2, col3, col4, col5, col6 = st.columns(6)
+
+with col1:
+    st.metric("Original Weighted Score", f"{scores['weighted_score']:.0f}/100")
+
+with col2:
+    if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
+        adaptive_score = scores['adaptive_weighted_score']
+        delta = adaptive_score - scores['weighted_score']
+        st.metric("Adaptive Weighted Score", f"{adaptive_score:.1f}%", delta=f"{delta:+.1f}")
+    else:
+        st.metric("Adaptive Weighted Score", "N/A")
+
+with col3:
+    if scores['ml_score']:
+        st.metric("ML Probability", f"{scores['ml_score']:.1f}%")
+    else:
+        st.metric("ML Probability", "N/A")
+
+with col4:
+    # NEW: Subprime Score
+    subprime_score = scores['subprime_score']
+    st.metric("Subprime Score", f"{subprime_score:.1f}/100")
+
+with col5:
+    # NEW: Risk Tier
+    tier = scores['subprime_tier']
+    tier_colors = {
+        "Tier 1": "🟢", "Tier 2": "🟡", "Tier 3": "🟠", 
+        "Tier 4": "🔴", "Decline": "⚫"
+    }
+    st.metric("Risk Tier", f"{tier_colors.get(tier, '⚪')} {tier}")
+
+with col6:
+    st.metric("Monthly Revenue", f"£{metrics.get('Monthly Average Revenue', 0):,.0f}")
 
             # ENHANCED SCORING COMPARISON SECTION
             if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
@@ -1626,12 +1667,152 @@ def main():
                         delta_revenue = metrics.get('Monthly Average Revenue', 0) - full_metrics.get('Monthly Average Revenue', 0)
                         st.metric("Full Period Monthly Revenue", f"£{full_metrics.get('Monthly Average Revenue', 0):,.0f}",
                                 delta=f"£{delta_revenue:+,.0f} difference")
-            
+            # NEW: Subprime Lending Analysis Section
+            st.markdown("---")
+            st.subheader("🎯 Subprime Lending Analysis")
+
+            # Subprime scoring overview
+            subprime_col1, subprime_col2, subprime_col3 = st.columns(3)
+
+            with subprime_col1:
+                score = scores['subprime_score']
+                if score >= 65:
+                    st.success(f"✅ **Excellent Subprime Candidate**\nScore: {score:.1f}/100")
+                elif score >= 50:
+                    st.info(f"ℹ️ **Good Subprime Candidate**\nScore: {score:.1f}/100") 
+                elif score >= 35:
+                    st.warning(f"⚠️ **Conditional Approval**\nScore: {score:.1f}/100")
+                else:
+                    st.error(f"❌ **High Risk - Review Required**\nScore: {score:.1f}/100")
+
+            with subprime_col2:
+                st.write("**Pricing Guidance:**")
+                pricing = scores['subprime_pricing']
+                for key, value in pricing.items():
+                    if key in ['suggested_rate', 'max_loan_multiple', 'term_range']:
+                        st.write(f"• **{key.replace('_', ' ').title()}**: {value}")
+
+            with subprime_col3:
+                st.write("**Monitoring Requirements:**")
+                monitoring = pricing.get('monitoring', 'Standard reviews')
+                approval_prob = pricing.get('approval_probability', 'Unknown')
+                st.write(f"• **Monitoring**: {monitoring}")
+                st.write(f"• **Approval Probability**: {approval_prob}")
+
+            # Subprime recommendation
+            st.markdown("### 📋 Subprime Lending Recommendation")
+            recommendation = scores['subprime_recommendation']
+            if "APPROVE" in recommendation:
+                st.success(f"**Recommendation**: {recommendation}")
+            elif "CONDITIONAL" in recommendation:
+                st.warning(f"**Recommendation**: {recommendation}")
+            elif "SENIOR REVIEW" in recommendation:
+                st.info(f"**Recommendation**: {recommendation}")
+            else:
+                st.error(f"**Recommendation**: {recommendation}")
+
+            # Detailed subprime breakdown
+            with st.expander("🔍 **Detailed Subprime Scoring Breakdown**", expanded=False):
+                st.write("**Scoring Components:**")
+                for line in scores['subprime_breakdown']:
+                    st.write(f"• {line}")
+
+            # Score comparison for subprime context
+            st.markdown("### 📊 All Scoring Methods Comparison (Subprime Context)")
+
+            comparison_col1, comparison_col2 = st.columns(2)
+
+            with comparison_col1:
+                # Create comparison chart
+                fig_subprime_comparison = go.Figure()
+                
+                score_data = {
+                    'Traditional Weighted': scores['weighted_score'],
+                    'Adaptive Weighted': scores.get('adaptive_weighted_score', scores['weighted_score']),
+                    'ML Probability': scores['ml_score'] if scores['ml_score'] else 0,
+                    'Subprime Optimized': scores['subprime_score']
+                }
+                
+                colors = ['#1f77b4', '#ff7f0e', '#d62728', '#2ca02c']
+                
+                fig_subprime_comparison.add_trace(go.Bar(
+                    x=list(score_data.keys()),
+                    y=list(score_data.values()),
+                    marker_color=colors,
+                    text=[f"{v:.1f}%" for v in score_data.values()],
+                    textposition='outside'
+                ))
+                
+                fig_subprime_comparison.update_layout(
+                    title="Score Comparison (Subprime Lending Context)",
+                    yaxis_title="Score (%)",
+                    showlegend=False,
+                    height=400,
+                    yaxis=dict(range=[0, 100])
+                )
+                
+                st.plotly_chart(fig_subprime_comparison, use_container_width=True, key="subprime_comparison_chart")
+
+            with comparison_col2:
+                st.write("**Interpretation for Subprime Lending:**")
+                
+                # ML Score interpretation for subprime
+                ml_score = scores['ml_score'] if scores['ml_score'] else 0
+                if ml_score >= 25:
+                    ml_interpretation = "🟢 Excellent for subprime"
+                elif ml_score >= 15:
+                    ml_interpretation = "🟡 Good for subprime"
+                elif ml_score >= 8:
+                    ml_interpretation = "🟠 Acceptable for subprime"
+                elif ml_score >= 5:
+                    ml_interpretation = "🔴 High-risk subprime"
+                else:
+                    ml_interpretation = "⚫ Too risky even for subprime"
+                
+                st.write(f"• **ML Model ({ml_score:.1f}%)**: {ml_interpretation}")
+                
+                # Subprime score interpretation
+                subprime_score = scores['subprime_score']
+                if subprime_score >= 65:
+                    subprime_interpretation = "🟢 Premium subprime candidate"
+                elif subprime_score >= 50:
+                    subprime_interpretation = "🟡 Standard subprime candidate"
+                elif subprime_score >= 35:
+                    subprime_interpretation = "🟠 High-risk but acceptable"
+                else:
+                    subprime_interpretation = "🔴 Decline recommended"
+                
+                st.write(f"• **Subprime Score ({subprime_score:.1f})**: {subprime_interpretation}")
+                
+                # Score convergence analysis
+                scores_list = [scores['weighted_score'], scores.get('adaptive_weighted_score', 0), ml_score, subprime_score]
+                score_range = max(scores_list) - min(scores_list)
+                
+                if score_range <= 15:
+                    convergence = "🟢 High convergence - all methods agree"
+                elif score_range <= 30:
+                    convergence = "🟡 Moderate convergence - some disagreement"
+                else:
+                    convergence = "🔴 Low convergence - significant disagreement"
+                
+                st.write(f"• **Score Convergence**: {convergence}")
+                st.write(f"• **Score Range**: {score_range:.1f} points")
+                
+                # Primary recommendation
+                st.markdown("**🎯 Primary Recommendation (Subprime Context):**")
+                if subprime_score >= 50:
+                    st.success("✅ **APPROVE** with appropriate subprime pricing")
+                elif subprime_score >= 35:
+                    st.warning("⚠️ **CONDITIONAL APPROVAL** with enhanced monitoring")
+                else:
+                    st.error("❌ **DECLINE** - Risk too high even for subprime")
+
             st.markdown("---")
             if ADAPTIVE_SCORING_AVAILABLE:
-                st.success("🎯 Enhanced Dashboard complete with Adaptive Scoring - All sections rendered successfully")
+                st.success("🎯 Enhanced Dashboard complete with Adaptive Scoring and Subprime Analysis - All sections rendered successfully")
             else:
-                st.info("🎯 Dashboard complete - Install adaptive_score_calculation.py for enhanced scoring features")
+                st.info("🎯 Dashboard complete with Subprime Analysis - Install adaptive_score_calculation.py for enhanced scoring features")
+            
             
         except Exception as e:
             st.error(f"❌ Unexpected error during processing: {e}")
