@@ -1007,19 +1007,19 @@ def calculate_all_scores_enhanced(metrics, params):
                                         'Sector_Risk': sector_risk
                             }
         
-                           features_df = pd.DataFrame([features])
-                           features_df.replace([np.inf, -np.inf], np.nan, inplace=True)
-                           features_df.fillna(0, inplace=True)
+                            features_df = pd.DataFrame([features])
+                            features_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+                            features_df.fillna(0, inplace=True)
         
                            features_scaled = scaler.transform(features_df)
                            probability = model.predict_proba(features_scaled)[:, 1] * 100
-                          ml_score = round(probability[0], 2)
+                           ml_score = round(probability[0], 2)
         
-                          # NEW: Apply growth business adjustment
+                           # NEW: Apply growth business adjustment
                           adjusted_ml_score = adjust_ml_score_for_growth_business(ml_score, metrics, params)
         
-                         print(f"  Raw ML Score: {ml_score:.1f}%")
-                         print(f"  Adjusted ML Score: {adjusted_ml_score:.1f}%")
+                          print(f"  Raw ML Score: {ml_score:.1f}%")
+                          print(f"  Adjusted ML Score: {adjusted_ml_score:.1f}%")
         
                except Exception as e:
                          print(f"  ML Score: Error - {e}")
