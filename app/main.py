@@ -990,39 +990,39 @@ def calculate_all_scores_enhanced(metrics, params):
     adjusted_ml_score = None
 
     if model and scaler:
-                   try:
-                             features = {
-                                        'Directors Score': params['directors_score'],
-                                        'Total Revenue': metrics["Total Revenue"],
-                                        'Total Debt': metrics["Total Debt"],
-                                        'Debt-to-Income Ratio': metrics["Debt-to-Income Ratio"],
-                                        'Operating Margin': metrics["Operating Margin"],
-                                        'Debt Service Coverage Ratio': metrics["Debt Service Coverage Ratio"],
-                                        'Cash Flow Volatility': metrics["Cash Flow Volatility"],
-                                        'Revenue Growth Rate': metrics["Revenue Growth Rate"],
-                                        'Average Month-End Balance': metrics["Average Month-End Balance"],
-                                        'Average Negative Balance Days per Month': metrics["Average Negative Balance Days per Month"],
-                                        'Number of Bounced Payments': metrics["Number of Bounced Payments"],
-                                        'Company Age (Months)': params['company_age_months'],
-                                        'Sector_Risk': sector_risk
-                            }
-        
-                            features_df = pd.DataFrame([features])
-                            features_df.replace([np.inf, -np.inf], np.nan, inplace=True)
-                            features_df.fillna(0, inplace=True)
-        
-                           features_scaled = scaler.transform(features_df)
-                           probability = model.predict_proba(features_scaled)[:, 1] * 100
-                           ml_score = round(probability[0], 2)
-        
-                           # NEW: Apply growth business adjustment
-                          adjusted_ml_score = adjust_ml_score_for_growth_business(ml_score, metrics, params)
-        
-                          print(f"  Raw ML Score: {ml_score:.1f}%")
-                          print(f"  Adjusted ML Score: {adjusted_ml_score:.1f}%")
-        
-               except Exception as e:
-                         print(f"  ML Score: Error - {e}")
+        try:
+            features = {
+                'Directors Score': params['directors_score'],
+                'Total Revenue': metrics["Total Revenue"],
+                'Total Debt': metrics["Total Debt"],
+                'Debt-to-Income Ratio': metrics["Debt-to-Income Ratio"],
+                'Operating Margin': metrics["Operating Margin"],
+                'Debt Service Coverage Ratio': metrics["Debt Service Coverage Ratio"],
+                'Cash Flow Volatility': metrics["Cash Flow Volatility"],
+                'Revenue Growth Rate': metrics["Revenue Growth Rate"],
+                'Average Month-End Balance': metrics["Average Month-End Balance"],
+                'Average Negative Balance Days per Month': metrics["Average Negative Balance Days per Month"],
+                'Number of Bounced Payments': metrics["Number of Bounced Payments"],
+                'Company Age (Months)': params['company_age_months'],
+                'Sector_Risk': sector_risk
+            }
+            
+            features_df = pd.DataFrame([features])
+            features_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+            features_df.fillna(0, inplace=True)
+            
+            features_scaled = scaler.transform(features_df)
+            probability = model.predict_proba(features_scaled)[:, 1] * 100
+            ml_score = round(probability[0], 2)
+            
+            # NEW: Apply growth business adjustment
+            adjusted_ml_score = adjust_ml_score_for_growth_business(ml_score, metrics, params)
+            
+            print(f"  Raw ML Score: {ml_score:.1f}%")
+            print(f"  Adjusted ML Score: {adjusted_ml_score:.1f}%")
+            
+        except Exception as e:
+            print(f"  ML Score: Error - {e}")
     
     # Loan Risk
     monthly_revenue = metrics.get('Monthly Average Revenue', 0)
