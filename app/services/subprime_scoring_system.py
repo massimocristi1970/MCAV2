@@ -277,7 +277,7 @@ class SubprimeScoring:
         if (score >= 65 and dscr >= 2.0 and growth >= 0.15 and directors_score >= 75):
             return "Tier 1", {
                 "risk_level": "Premium Subprime",
-                "suggested_rate": "18-24% APR",
+                "suggested_rate": "1.4-1.45 factor rate",
                 "max_loan_multiple": "6x monthly revenue",
                 "term_range": "12-24 months",
                 "monitoring": "Quarterly reviews",
@@ -288,7 +288,7 @@ class SubprimeScoring:
         elif (score >= 50 and dscr >= 1.5):
             return "Tier 2", {
                 "risk_level": "Standard Subprime", 
-                "suggested_rate": "24-36% APR",
+                "suggested_rate": "1.45-1.55 factor rate",
                 "max_loan_multiple": "4x monthly revenue",
                 "term_range": "6-18 months",
                 "monitoring": "Monthly reviews",
@@ -299,7 +299,7 @@ class SubprimeScoring:
         elif (score >= 35 and dscr >= 1.2 and directors_score >= 55):
             return "Tier 3", {
                 "risk_level": "High-Risk Subprime",
-                "suggested_rate": "36-48% APR", 
+                "suggested_rate": "1.55-1.65 factor rate", 
                 "max_loan_multiple": "3x monthly revenue",
                 "term_range": "6-12 months",
                 "monitoring": "Bi-weekly reviews",
@@ -310,7 +310,7 @@ class SubprimeScoring:
         elif (score >= 25 and dscr >= 1.0):
             return "Tier 4", {
                 "risk_level": "Enhanced Monitoring Required",
-                "suggested_rate": "48-60% APR",
+                "suggested_rate": "1.65-1.8 factor rate",
                 "max_loan_multiple": "2x monthly revenue", 
                 "term_range": "3-9 months",
                 "monitoring": "Weekly reviews + daily balance monitoring",
