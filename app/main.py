@@ -892,14 +892,18 @@ def calculate_all_scores_enhanced(metrics, params):
         print(f"  This is why subprime score is not working!")
     
     # Calculate both weighted scores (original and adaptive)
-    original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details = calculate_both_weighted_scores(
-    metrics, params, industry_thresholds
-    )
-
-    # Ensure scoring_details is always defined
-    if not isinstance(scoring_details, list):
+    try:
+        original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details = calculate_both_weighted_scores(
+            metrics, params, industry_thresholds
+        )
+    except:
+        # Fallback if adaptive scoring fails
+        original_weighted_score = 50  # Default score
+        adaptive_weighted_score = 50
+        raw_adaptive_score = 50
         scoring_details = []
-    
+
+        
     print(f"  Original Weighted Score: {original_weighted_score}/100")
     print(f"  Adaptive Weighted Score: {adaptive_weighted_score:.1f}%")
     
