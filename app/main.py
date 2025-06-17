@@ -893,8 +893,12 @@ def calculate_all_scores_enhanced(metrics, params):
     
     # Calculate both weighted scores (original and adaptive)
     original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details = calculate_both_weighted_scores(
-        metrics, params, industry_thresholds
+    metrics, params, industry_thresholds
     )
+
+    # Ensure scoring_details is always defined
+    if not isinstance(scoring_details, list):
+        scoring_details = []
     
     print(f"  Original Weighted Score: {original_weighted_score}/100")
     print(f"  Adaptive Weighted Score: {adaptive_weighted_score:.1f}%")
