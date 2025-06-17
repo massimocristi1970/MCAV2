@@ -1213,41 +1213,41 @@ def main():
             st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
 
             # Enhanced Key Metrics with Subprime Scoring
-	    col1, col2, col3, col4, col5, col6 = st.columns(6)
+            col1, col2, col3, col4, col5, col6 = st.columns(6)
 
-with col1:
-    st.metric("Original Weighted Score", f"{scores['weighted_score']:.0f}/100")
+            with col1:
+                st.metric("Original Weighted Score", f"{scores['weighted_score']:.0f}/100")
 
-with col2:
-    if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
-        adaptive_score = scores['adaptive_weighted_score']
-        delta = adaptive_score - scores['weighted_score']
-        st.metric("Adaptive Weighted Score", f"{adaptive_score:.1f}%", delta=f"{delta:+.1f}")
-    else:
-        st.metric("Adaptive Weighted Score", "N/A")
+            with col2:
+                if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
+                    adaptive_score = scores['adaptive_weighted_score']
+                    delta = adaptive_score - scores['weighted_score']
+                    st.metric("Adaptive Weighted Score", f"{adaptive_score:.1f}%", delta=f"{delta:+.1f}")
+                else:
+                    st.metric("Adaptive Weighted Score", "N/A")
 
-with col3:
-    if scores['ml_score']:
-        st.metric("ML Probability", f"{scores['ml_score']:.1f}%")
-    else:
-        st.metric("ML Probability", "N/A")
+            with col3:
+                if scores['ml_score']:
+                    st.metric("ML Probability", f"{scores['ml_score']:.1f}%")
+                else:
+                    st.metric("ML Probability", "N/A")
 
-with col4:
-    # NEW: Subprime Score
-    subprime_score = scores['subprime_score']
-    st.metric("Subprime Score", f"{subprime_score:.1f}/100")
+            with col4:
+                # NEW: Subprime Score
+                subprime_score = scores['subprime_score']
+                st.metric("Subprime Score", f"{subprime_score:.1f}/100")
 
-with col5:
-    # NEW: Risk Tier
-    tier = scores['subprime_tier']
-    tier_colors = {
-        "Tier 1": "🟢", "Tier 2": "🟡", "Tier 3": "🟠", 
-        "Tier 4": "🔴", "Decline": "⚫"
-    }
-    st.metric("Risk Tier", f"{tier_colors.get(tier, '⚪')} {tier}")
+            with col5:
+                # NEW: Risk Tier
+                tier = scores['subprime_tier']
+                tier_colors = {
+                    "Tier 1": "🟢", "Tier 2": "🟡", "Tier 3": "🟠", 
+                    "Tier 4": "🔴", "Decline": "⚫"
+                }
+                st.metric("Risk Tier", f"{tier_colors.get(tier, '⚪')} {tier}")
 
-with col6:
-    st.metric("Monthly Revenue", f"£{metrics.get('Monthly Average Revenue', 0):,.0f}")
+            with col6:
+                st.metric("Monthly Revenue", f"£{metrics.get('Monthly Average Revenue', 0):,.0f}")
 
             # ENHANCED SCORING COMPARISON SECTION
             if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
