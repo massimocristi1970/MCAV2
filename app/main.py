@@ -1709,6 +1709,8 @@ def main():
                     with st.expander("🔍 **Detailed Adaptive Scoring Breakdown**", expanded=False):
                         st.markdown("**Component Score Analysis:**")
                         
+                        scoring_details = scores.get('scoring_details', [])
+                        
                         # Create a more structured display of scoring details
                         detail_data = []
                         for detail in scoring_details:
