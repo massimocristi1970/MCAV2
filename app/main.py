@@ -661,16 +661,16 @@ def calculate_financial_metrics(data, company_age_months):
         
         # DEBUGGING: Print key values
         print(f"\n🔍 DEBUG - Financial Metrics:")
-        print(f"  Total Revenue: £{total_revenue:,.2f}")
-        print(f"  Total Expenses: £{total_expenses:,.2f}")
-        print(f"  Net Income: £{net_income:,.2f}")
-        print(f"  DSCR: {debt_service_coverage_ratio:.2f}")
-        print(f"  Operating Margin: {operating_margin:.3f} ({operating_margin*100:.1f}%)")
-        print(f"  Cash Flow Volatility: {cash_flow_volatility:.3f}")
-        print(f"  Revenue Growth Rate: {revenue_growth_rate:.2f}%")
-        print(f"  Avg Month-End Balance: £{avg_month_end_balance:,.2f}")
-        print(f"  Avg Negative Days: {avg_negative_days}")
-        print(f"  Bounced Payments: {bounced_payments}")
+        print(f"  Total Revenue: £{total_revenue:,.2f}" if total_revenue is not None else "  Total Revenue: N/A")
+        print(f"  Total Expenses: £{total_expenses:,.2f}" if total_expenses is not None else "  Total Expenses: N/A")
+        print(f"  Net Income: £{net_income:,.2f}" if net_income is not None else "  Net Income: N/A")
+        print(f"  DSCR: {debt_service_coverage_ratio:.2f}" if debt_service_coverage_ratio is not None else "  DSCR: N/A")
+        print(f"  Operating Margin: {operating_margin:.3f} ({operating_margin*100:.1f}%)" if operating_margin is not None else "  Operating Margin: N/A")
+        print(f"  Cash Flow Volatility: {cash_flow_volatility:.3f}" if cash_flow_volatility is not None else "  Cash Flow Volatility: N/A")
+        print(f"  Revenue Growth Rate: {revenue_growth_rate:.2f}%" if revenue_growth_rate is not None else "  Revenue Growth Rate: N/A")
+        print(f"  Avg Month-End Balance: £{avg_month_end_balance:,.2f}" if avg_month_end_balance is not None else "  Avg Month-End Balance: N/A")
+        print(f"  Avg Negative Days: {avg_negative_days}" if avg_negative_days is not None else "  Avg Negative Days: N/A")
+        print(f"  Bounced Payments: {bounced_payments}" if bounced_payments is not None else "  Bounced Payments: N/A")
         
         return {
             "Total Revenue": round(total_revenue, 2),
@@ -740,7 +740,7 @@ def calculate_all_scores_enhanced(metrics, params):
         
         subprime_result = subprime_scorer.calculate_subprime_score(metrics, params)
         print(f"  Subprime calculation successful!")
-        print(f"  Subprime Score: {subprime_result['subprime_score']:.1f}/100")
+        print(f"  Subprime Score: {subprime_result['subprime_score']:.1f}/100" if subprime_result.get('subprime_score') is not None else "  Subprime Score: N/A/100")
         print(f"  Subprime Tier: {subprime_result['risk_tier']}")
         
     except Exception as e:
@@ -846,12 +846,19 @@ def calculate_all_scores_enhanced(metrics, params):
             
             # NEW: Apply growth business adjustment
             adjusted_ml_score = adjust_ml_score_for_growth_business(ml_score, metrics, params)
-            
-            print(f"  Raw ML Score: {ml_score:.1f}%")
-            print(f"  Adjusted ML Score: {adjusted_ml_score:.1f}%")
-            
-        except Exception as e:
-            print(f"  ML Score: Error - {e}")
+
+            if ml_score is not None:
+                print(f"  Raw ML Score: {ml_score:.1f}%")
+            else:
+                print(f"  Raw ML Score: N/A")
+
+            if adjusted_ml_score is not None:
+                print(f"  Adjusted ML Score: {adjusted_ml_score:.1f}%")
+            else:
+                print(f"  Adjusted ML Score: N/A")
+
+            except Exception as e:
+                print(f"  ML Score: Error - {e}")
     
     # Loan Risk
     monthly_revenue = metrics.get('Monthly Average Revenue', 0)
@@ -899,7 +906,10 @@ def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
         return None
     
     print(f"\n🔧 ML Score Adjustment Analysis:")
-    print(f"  Raw ML Score: {raw_ml_score:.1f}%")
+    if raw_ml_score is not None:
+        print(f"  Raw ML Score: {raw_ml_score:.1f}%")
+    else:
+        print(f"  Raw ML Score: N/A")
     
     # Initialize adjustment
     adjustment = 0
@@ -1313,981 +1323,997 @@ def create_categorized_csv(df):
 
 def main():
     """Main application"""
-    st.title("🏦 Business Finance Scorecard")
-    st.markdown("---")
-    
-       
-    # Sidebar inputs
-    st.sidebar.header("Business Parameters")
-    
-    company_name = st.sidebar.text_input("Company Name", "Sample Business Ltd")
-    industry = st.sidebar.selectbox("Industry", list(INDUSTRY_THRESHOLDS.keys()))
-    requested_loan = st.sidebar.number_input("Requested Loan (£)", min_value=0.0, value=25000.0, step=1000.0)
-    directors_score = st.sidebar.slider("Director Credit Score", 0, 100, 75)
-    company_age_months = st.sidebar.number_input("Company Age (Months)", min_value=0, value=24, step=1)
-    
-    st.sidebar.subheader("Risk Factors")
-    personal_default_12m = st.sidebar.checkbox("Personal Defaults (12m)")
-    business_ccj = st.sidebar.checkbox("Business CCJs")
-    director_ccj = st.sidebar.checkbox("Director CCJs")
-    website_or_social_outdated = st.sidebar.checkbox("Outdated Web Presence")
-    uses_generic_email = st.sidebar.checkbox("Generic Email")
-    no_online_presence = st.sidebar.checkbox("No Online Presence")
-    
-    # Time period filter
-    st.sidebar.subheader("📅 Analysis Period")
-    analysis_period = st.sidebar.selectbox(
-        "Select Time Period",
-        ["All", "3", "6", "9", "12"],
-        help="Choose how many months of data to analyze"
-    )
-    
-    params = {
-        'company_name': company_name,
-        'industry': industry,
-        'requested_loan': requested_loan,
-        'directors_score': directors_score,
-        'company_age_months': company_age_months,
-        'personal_default_12m': personal_default_12m,
-        'business_ccj': business_ccj,
-        'director_ccj': director_ccj,
-        'website_or_social_outdated': website_or_social_outdated,
-        'uses_generic_email': uses_generic_email,
-        'no_online_presence': no_online_presence
-    }
-    
-    # File upload
-    uploaded_file = st.file_uploader("Upload Transaction Data (JSON)", type=['json'])
-    
-    if uploaded_file is not None:
-        try:
-            # Read and process file
-            uploaded_file.seek(0)
-            string_data = uploaded_file.getvalue().decode("utf-8")
-            
-            if not string_data.strip():
-                st.error("❌ Uploaded file is empty")
-                return
-            
-            json_data = json.loads(string_data)
-            transactions = json_data.get('transactions', [])
-            
-            if not transactions:
-                st.error("❌ No transactions found in JSON file")
-                return
-            
-            df = pd.json_normalize(transactions)
-            required_columns = ['date', 'amount', 'name']
-            missing_columns = [col for col in required_columns if col not in df.columns]
-            
-            if missing_columns:
-                st.error(f"❌ Missing required columns: {missing_columns}")
-                return
-            
-            df['date'] = pd.to_datetime(df['date'], errors='coerce')
-            df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
-            df = df.dropna(subset=['date', 'amount'])
-            
-            if df.empty:
-                st.error("❌ No valid transactions after cleaning")
-                return
-            
-            # Display data info and export
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                st.success(f"✅ Loaded {len(df)} transactions")
-            with col2:
-                date_range = f"{df['date'].min().date()} to {df['date'].max().date()}"
-                st.info(f"📅 Date Range: {date_range}")
-            with col3:
-                if analysis_period != 'All':
-                    filtered_count = len(filter_data_by_period(df, analysis_period))
-                    st.info(f"📊 Period: {filtered_count} transactions")
-            with col4:
-                csv_data = create_categorized_csv(df)
-                if csv_data:
-                    st.download_button(
-                        label="📥 Export Categorized CSV",
-                        data=csv_data,
-                        file_name=f"{company_name.replace(' ', '_')}_transactions_categorized.csv",
-                        mime="text/csv",
-                        help="Download all transaction data with our subcategorization",
-                        type="primary",
-                        key="csv_export_main"
-                    )
-            
-            # Filter data and calculate metrics
-            filtered_df = filter_data_by_period(df, analysis_period)
-            metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
-            scores = calculate_all_scores_enhanced(metrics, params)
-            revenue_insights = calculate_revenue_insights(filtered_df)
+    try:
+        st.title("🏦 Business Finance Scorecard")
+        st.markdown("---")
+        
+           
+        # Sidebar inputs
+        st.sidebar.header("Business Parameters")
+        
+        company_name = st.sidebar.text_input("Company Name", "Sample Business Ltd")
+        industry = st.sidebar.selectbox("Industry", list(INDUSTRY_THRESHOLDS.keys()))
+        requested_loan = st.sidebar.number_input("Requested Loan (£)", min_value=0.0, value=25000.0, step=1000.0)
+        directors_score = st.sidebar.slider("Director Credit Score", 0, 100, 75)
+        company_age_months = st.sidebar.number_input("Company Age (Months)", min_value=0, value=24, step=1)
+        
+        st.sidebar.subheader("Risk Factors")
+        personal_default_12m = st.sidebar.checkbox("Personal Defaults (12m)")
+        business_ccj = st.sidebar.checkbox("Business CCJs")
+        director_ccj = st.sidebar.checkbox("Director CCJs")
+        website_or_social_outdated = st.sidebar.checkbox("Outdated Web Presence")
+        uses_generic_email = st.sidebar.checkbox("Generic Email")
+        no_online_presence = st.sidebar.checkbox("No Online Presence")
+        
+        # Time period filter
+        st.sidebar.subheader("📅 Analysis Period")
+        analysis_period = st.sidebar.selectbox(
+            "Select Time Period",
+            ["All", "3", "6", "9", "12"],
+            help="Choose how many months of data to analyze"
+        )
+        
+        params = {
+            'company_name': company_name,
+            'industry': industry,
+            'requested_loan': requested_loan,
+            'directors_score': directors_score,
+            'company_age_months': company_age_months,
+            'personal_default_12m': personal_default_12m,
+            'business_ccj': business_ccj,
+            'director_ccj': director_ccj,
+            'website_or_social_outdated': website_or_social_outdated,
+            'uses_generic_email': uses_generic_email,
+            'no_online_presence': no_online_presence
+        }
+        
+        # File upload
+        uploaded_file = st.file_uploader("Upload Transaction Data (JSON)", type=['json'])
+        
+        if uploaded_file is not None:
+            try:
+                # Read and process file
+                uploaded_file.seek(0)
+                string_data = uploaded_file.getvalue().decode("utf-8")
+                
+                if not string_data.strip():
+                    st.error("❌ Uploaded file is empty")
+                    return
+                
+                json_data = json.loads(string_data)
+                transactions = json_data.get('transactions', [])
+                
+                if not transactions:
+                    st.error("❌ No transactions found in JSON file")
+                    return
+                
+                df = pd.json_normalize(transactions)
+                required_columns = ['date', 'amount', 'name']
+                missing_columns = [col for col in required_columns if col not in df.columns]
+                
+                if missing_columns:
+                    st.error(f"❌ Missing required columns: {missing_columns}")
+                    return
+                
+                df['date'] = pd.to_datetime(df['date'], errors='coerce')
+                df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
+                df = df.dropna(subset=['date', 'amount'])
+                
+                if df.empty:
+                    st.error("❌ No valid transactions after cleaning")
+                    return
+                
+                # Display data info and export
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.success(f"✅ Loaded {len(df)} transactions")
+                with col2:
+                    date_range = f"{df['date'].min().date()} to {df['date'].max().date()}"
+                    st.info(f"📅 Date Range: {date_range}")
+                with col3:
+                    if analysis_period != 'All':
+                        filtered_count = len(filter_data_by_period(df, analysis_period))
+                        st.info(f"📊 Period: {filtered_count} transactions")
+                with col4:
+                    csv_data = create_categorized_csv(df)
+                    if csv_data:
+                        st.download_button(
+                            label="📥 Export Categorized CSV",
+                            data=csv_data,
+                            file_name=f"{company_name.replace(' ', '_')}_transactions_categorized.csv",
+                            mime="text/csv",
+                            help="Download all transaction data with our subcategorization",
+                            type="primary",
+                            key="csv_export_main"
+                        )
+                
+                # Filter data and calculate metrics
+                filtered_df = filter_data_by_period(df, analysis_period)
+                metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
+                scores = calculate_all_scores_enhanced(metrics, params)
+                revenue_insights = calculate_revenue_insights(filtered_df)
 
-            # ENHANCED DASHBOARD RENDERING 
-            period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
-            st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
+                # ENHANCED DASHBOARD RENDERING 
+                period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
+                st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
 
-            # Key Scoring Methods
-            col1, col2, col3 = st.columns(3)  # Change from 4 to 3 columns
+                # Key Scoring Methods
+                col1, col2, col3 = st.columns(3)  # Change from 4 to 3 columns
 
-            with col1:
-                subprime_score = scores.get('subprime_score', 0)
-                tier = scores.get('subprime_tier', 'N/A')
-                tier_colors = {
-                    "Tier 1": "🟢", "Tier 2": "🟡", "Tier 3": "🟠", 
-                    "Tier 4": "🔴", "Decline": "⚫"
-                }
-                st.metric(
-                    f"🎯 Subprime Score", 
-                    f"{subprime_score:.1f}/100",
-                    delta=f"{tier_colors.get(tier, '⚪')} {tier}",
-                    help="Primary score for subprime lending decisions"
-                )
-
-            with col2:
-                st.metric(
-                    "🏛️ V2 Weighted", 
-                    f"{scores['weighted_score']:.0f}/100",
-                    help="Binary threshold scoring system"
-                )
-
-            with col3:
-                if scores.get('adjusted_ml_score'):
-                    raw_ml = scores.get('ml_score', 0)
-                    adjusted_ml = scores['adjusted_ml_score']
-                    delta = adjusted_ml - raw_ml
+                with col1:
+                    subprime_score = scores.get('subprime_score', 0)
+                    tier = scores.get('subprime_tier', 'N/A')
+                    tier_colors = {
+                        "Tier 1": "🟢", "Tier 2": "🟡", "Tier 3": "🟠", 
+                        "Tier 4": "🔴", "Decline": "⚫"
+                    }
                     st.metric(
-                        "🤖 Adjusted ML", 
-                        f"{adjusted_ml:.1f}%", 
-                        delta=f"+{delta:.1f}",
-                        help="ML model (future use - not for decisions yet)"
+                        f"🎯 Subprime Score", 
+                        f"{subprime_score:.1f}/100",
+                        delta=f"{tier_colors.get(tier, '⚪')} {tier}",
+                        help="Primary score for subprime lending decisions"
                     )
-                else:
-                    st.metric("🤖 Adjusted ML", "N/A")
+
+                with col2:
+                    st.metric(
+                        "🏛️ V2 Weighted", 
+                        f"{scores['weighted_score']:.0f}/100",
+                        help="Binary threshold scoring system"
+                    )
+
+                with col3:
+                    if scores.get('adjusted_ml_score'):
+                        raw_ml = scores.get('ml_score', 0)
+                        adjusted_ml = scores['adjusted_ml_score']
+                        delta = adjusted_ml - raw_ml
+                        st.metric(
+                            "🤖 Adjusted ML", 
+                            f"{adjusted_ml:.1f}%", 
+                            delta=f"+{delta:.1f}",
+                            help="ML model (future use - not for decisions yet)"
+                        )
+                    else:
+                        st.metric("🤖 Adjusted ML", "N/A")
+                        
+                st.info("""
+                **🎯 Scoring Decision Hierarchy:**
+                1. **Subprime Score** - Primary lending decision
+                2. **V2 Weighted** - Secondary validation 
+                3. **ML Score** - Future use only (monitoring)
+                """)
+
+                               
+                # Score improvement analysis
                     
-            st.info("""
-            **🎯 Scoring Decision Hierarchy:**
-            1. **Subprime Score** - Primary lending decision
-            2. **V2 Weighted** - Secondary validation 
-            3. **ML Score** - Future use only (monitoring)
-            """)
+                st.markdown("### 📈 Primary Scoring Methods")
 
-                           
-            # Score improvement analysis
-                
-            st.markdown("### 📈 Primary Scoring Methods")
+                # Create three columns for the three scoring methods
+                method_col1, method_col2, method_col3 = st.columns(3)
 
-            # Create three columns for the three scoring methods
-            method_col1, method_col2, method_col3 = st.columns(3)
-
-            with method_col1:
-                st.markdown("""
-                **🎯 Subprime Score (PRIMARY):**
-                - ✅ Designed for growth businesses with temporary losses
-                - ✅ Focuses on ability to pay (DSCR) and growth trajectory
-                - ✅ Industry-specific risk adjustments
-                - ✅ **Primary recommendation for lending decisions**
-                - ✅ Best discrimination in your historical data
-                """)
-
-            with method_col2:
-                st.markdown("""
-                **🏛️ V2 Weighted Score (SECONDARY):**
-                - ✅ Simple and transparent binary thresholds
-                - ✅ Easy to understand and explain
-                - ✅ Good discrimination between good/bad loans
-                - ✅ Validation tool for subprime decisions
-                - ⚠️ Can be harsh on borderline cases
-                """)
-
-            with method_col3:
-                st.markdown("""
-                **🤖 Adjusted ML Score (FUTURE):**
-                - ⚠️ **Not ready for lending decisions**
-                - ⚠️ Insufficient training data (need 100+ loans)
-                - ✅ Growth business adjustments included
-                - ✅ Future-proofing for when dataset grows
-                - 📊 Currently for monitoring/comparison only
-                """)
-                
-            # Detailed breakdown for V2 Weighted scoring
-            with st.expander("🔍 **Detailed V2 Weighted Scoring Breakdown**", expanded=False):
-                st.markdown("**Component Analysis:**")
-    
-                if scores.get('score_breakdown'):
-                    breakdown_data = []
-                    for metric, data in scores['score_breakdown'].items():
-                        status = '✅ Pass' if data['meets'] else '❌ Fail'
-                        breakdown_data.append({
-                            'Metric': metric,
-                            'Actual Value': f"{data['actual']:.3f}",
-                            'Meets Threshold': status
-                        })
-        
-                    if breakdown_data:
-                        breakdown_df = pd.DataFrame(breakdown_data)
-                        st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
-        
-                    # Summary statistics
-                    total_metrics = len(scores.get('score_breakdown', {}))
-                    passed_metrics = sum(1 for data in scores.get('score_breakdown', {}).values() if data.get('meets', False))
-        
-                    st.markdown(f"""
-                    **📊 V2 Weighted Summary:**
-                    - **Metrics Passed**: {passed_metrics}/{total_metrics}
-                    - **Pass Rate**: {(passed_metrics/total_metrics)*100:.1f}% of thresholds met
-                    - **Final Score**: {scores['weighted_score']:.0f}/100
+                with method_col1:
+                    st.markdown("""
+                    **🎯 Subprime Score (PRIMARY):**
+                    - ✅ Designed for growth businesses with temporary losses
+                    - ✅ Focuses on ability to pay (DSCR) and growth trajectory
+                    - ✅ Industry-specific risk adjustments
+                    - ✅ **Primary recommendation for lending decisions**
+                    - ✅ Best discrimination in your historical data
                     """)
-                else:
-                    st.info("No detailed breakdown available for V2 Weighted scoring")
 
-            # Revenue Insights
-            st.markdown("---")
-            st.subheader("💰 Revenue Insights")
+                with method_col2:
+                    st.markdown("""
+                    **🏛️ V2 Weighted Score (SECONDARY):**
+                    - ✅ Simple and transparent binary thresholds
+                    - ✅ Easy to understand and explain
+                    - ✅ Good discrimination between good/bad loans
+                    - ✅ Validation tool for subprime decisions
+                    - ⚠️ Can be harsh on borderline cases
+                    """)
 
-            rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
-            with rev_col1:
-                sources_count = revenue_insights.get('unique_revenue_sources', 0)
-                st.metric("Unique Revenue Sources", f"{sources_count}")
-                if sources_count == 1:
-                    st.warning("⚠️ Single revenue source - consider diversification")
-                elif sources_count <= 3:
-                    st.info("ℹ️ Limited revenue sources - moderate concentration risk")
-                else:
-                    st.success("✅ Good revenue diversification")
-            with rev_col2:
-                avg_txns = revenue_insights.get('avg_revenue_transactions_per_day', 0)
-                st.metric("Avg Revenue Transactions/Day", f"{avg_txns:.1f}")
-            with rev_col3:
-                avg_daily_rev = revenue_insights.get('avg_daily_revenue_amount', 0)
-                st.metric("Avg Daily Revenue", f"£{avg_daily_rev:,.2f}")
-            with rev_col4:
-                total_days = revenue_insights.get('total_revenue_days', 0)
-                st.metric("Revenue Active Days", f"{total_days}")
+                with method_col3:
+                    st.markdown("""
+                    **🤖 Adjusted ML Score (FUTURE):**
+                    - ⚠️ **Not ready for lending decisions**
+                    - ⚠️ Insufficient training data (need 100+ loans)
+                    - ✅ Growth business adjustments included
+                    - ✅ Future-proofing for when dataset grows
+                    - 📊 Currently for monitoring/comparison only
+                    """)
+                    
+                # Detailed breakdown for V2 Weighted scoring
+                with st.expander("🔍 **Detailed V2 Weighted Scoring Breakdown**", expanded=False):
+                    st.markdown("**Component Analysis:**")
+        
+                    if scores.get('score_breakdown'):
+                        breakdown_data = []
+                        for metric, data in scores['score_breakdown'].items():
+                            status = '✅ Pass' if data['meets'] else '❌ Fail'
+                            breakdown_data.append({
+                                'Metric': metric,
+                                'Actual Value': f"{data['actual']:.3f}",
+                                'Meets Threshold': status
+                            })
+            
+                        if breakdown_data:
+                            breakdown_df = pd.DataFrame(breakdown_data)
+                            st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
+            
+                        # Summary statistics
+                        total_metrics = len(scores.get('score_breakdown', {}))
+                        passed_metrics = sum(1 for data in scores.get('score_breakdown', {}).values() if data.get('meets', False))
+            
+                        st.markdown(f"""
+                        **📊 V2 Weighted Summary:**
+                        - **Metrics Passed**: {passed_metrics}/{total_metrics}
+                        - **Pass Rate**: {(passed_metrics/total_metrics)*100:.1f}% of thresholds met
+                        - **Final Score**: {scores['weighted_score']:.0f}/100
+                        """)
+                    else:
+                        st.info("No detailed breakdown available for V2 Weighted scoring")
 
-            # Charts Section
-            st.markdown("---")
-            st.subheader("📈 Charts & Analysis")
+                # Revenue Insights
+                st.markdown("---")
+                st.subheader("💰 Revenue Insights")
 
-            # Row 1: Enhanced Score and Financial Charts
-            col1, col2 = st.columns(2)
-            with col1:
-                fig_scores = create_score_charts(scores, metrics)
-                st.plotly_chart(fig_scores, use_container_width=True, key="enhanced_scores_chart")
-            with col2:
-                fig_financial, fig_trend = create_financial_charts(metrics)
-                st.plotly_chart(fig_financial, use_container_width=True, key="main_financial_chart")
-            
-            # Row 2: Trend and Threshold Charts
-            col1, col2 = st.columns(2)
-            with col1:
-                if fig_trend:
-                    st.plotly_chart(fig_trend, use_container_width=True, key="main_trend_chart")
-                else:
-                    st.info("Monthly trend requires multiple months of data")
-            with col2:
-                fig_threshold = create_threshold_chart(scores['score_breakdown'])
-                st.plotly_chart(fig_threshold, use_container_width=True, key="main_threshold_chart")
-            
-            # Monthly Breakdown Section
-            st.markdown("---")
-            st.subheader("📊 Monthly Breakdown by Category")
-            
-            pivot_counts, pivot_amounts = create_monthly_breakdown(filtered_df)
-            
-            if pivot_counts is not None and not pivot_counts.empty:
-                # Create monthly breakdown charts
-                fig_monthly_counts, fig_monthly_amounts = create_monthly_charts(pivot_counts, pivot_amounts)
-                
-                # Display charts
+                rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
+                with rev_col1:
+                    sources_count = revenue_insights.get('unique_revenue_sources', 0)
+                    st.metric("Unique Revenue Sources", f"{sources_count}")
+                    if sources_count == 1:
+                        st.warning("⚠️ Single revenue source - consider diversification")
+                    elif sources_count <= 3:
+                        st.info("ℹ️ Limited revenue sources - moderate concentration risk")
+                    else:
+                        st.success("✅ Good revenue diversification")
+                with rev_col2:
+                    avg_txns = revenue_insights.get('avg_revenue_transactions_per_day', 0)
+                    st.metric("Avg Revenue Transactions/Day", f"{avg_txns:.1f}")
+                with rev_col3:
+                    avg_daily_rev = revenue_insights.get('avg_daily_revenue_amount', 0)
+                    st.metric("Avg Daily Revenue", f"£{avg_daily_rev:,.2f}")
+                with rev_col4:
+                    total_days = revenue_insights.get('total_revenue_days', 0)
+                    st.metric("Revenue Active Days", f"{total_days}")
+
+                # Charts Section
+                st.markdown("---")
+                st.subheader("📈 Charts & Analysis")
+
+                # Row 1: Enhanced Score and Financial Charts
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.plotly_chart(fig_monthly_counts, use_container_width=True, key="main_monthly_counts")
+                    fig_scores = create_score_charts(scores, metrics)
+                    st.plotly_chart(fig_scores, use_container_width=True, key="enhanced_scores_chart")
                 with col2:
-                    st.plotly_chart(fig_monthly_amounts, use_container_width=True, key="main_monthly_amounts")
+                    fig_financial, fig_trend = create_financial_charts(metrics)
+                    st.plotly_chart(fig_financial, use_container_width=True, key="main_financial_chart")
                 
-                # Monthly summary table
-                with st.expander("📋 Detailed Monthly Breakdown", expanded=False):
-                    tab1, tab2 = st.tabs(["Transaction Counts", "Transaction Amounts (£)"])
-                    
-                    with tab1:
-                        counts_display = pivot_counts.copy()
-                        counts_display.index = counts_display.index.astype(str)
-                        counts_display = counts_display.astype(int)
-                        st.dataframe(counts_display, use_container_width=True)
-                        
-                        # Add totals
-                        totals_counts = counts_display.sum()
-                        st.write("**Totals:**")
-                        total_cols = st.columns(len(totals_counts))
-                        for i, (cat, total) in enumerate(totals_counts.items()):
-                            with total_cols[i]:
-                                st.metric(cat, f"{total:,.0f}")
-                    
-                    with tab2:
-                        amounts_display = pivot_amounts.copy()
-                        amounts_display.index = amounts_display.index.astype(str)
-                        amounts_display = amounts_display.round(2)
-                        st.dataframe(amounts_display, use_container_width=True)
-                        
-                        # Add totals
-                        totals_amounts = amounts_display.sum()
-                        st.write("**Totals:**")
-                        total_cols = st.columns(len(totals_amounts))
-                        for i, (cat, total) in enumerate(totals_amounts.items()):
-                            with total_cols[i]:
-                                st.metric(cat, f"£{total:,.2f}")
-            else:
-                st.info("Monthly breakdown requires multiple months of data")
-            
-            # Transaction Category Analysis
-            st.markdown("---")
-            st.subheader("💳 Transaction Analysis")
-            
-            categorized_data = categorize_transactions(filtered_df)
-            category_summary = categorized_data['subcategory'].value_counts()
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write("**Transaction Categories:**")
-                for category, count in category_summary.items():
-                    category_amount = abs(categorized_data[categorized_data['subcategory'] == category]['amount'].sum())
-                    percentage = (count / len(categorized_data)) * 100
-                    st.write(f"• **{category}**: {count} transactions (£{category_amount:,.2f}) - {percentage:.1f}%")
-            
-            with col2:
-                # Category pie chart
-                fig_pie = go.Figure(data=[go.Pie(
-                    labels=category_summary.index,
-                    values=category_summary.values,
-                    hole=0.3,
-                    marker_colors=['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
-                )])
-                
-                fig_pie.update_layout(
-                    title="Transaction Distribution",
-                    height=300,
-                    showlegend=True,
-                    legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.01)
-                )
-                
-                st.plotly_chart(fig_pie, use_container_width=True, key="main_category_pie")
-            
-            # NEW: Loans and Debt Repayments Analysis
-            display_loans_repayments_section(filtered_df, analysis_period)
-
-            
-            # Detailed Metrics Table
-            st.markdown("---")
-            st.subheader("📋 Detailed Financial Metrics")
-            
-            # Create metrics table
-            metrics_data = []
-            industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
-            
-            for metric, value in metrics.items():
-                if metric in industry_thresholds and metric != 'monthly_summary':
-                    threshold = industry_thresholds[metric]
-                    if metric in ['Cash Flow Volatility', 'Average Negative Balance Days per Month', 'Number of Bounced Payments']:
-                        meets_threshold = value <= threshold
-                        comparison = "≤"
+                # Row 2: Trend and Threshold Charts
+                col1, col2 = st.columns(2)
+                with col1:
+                    if fig_trend:
+                        st.plotly_chart(fig_trend, use_container_width=True, key="main_trend_chart")
                     else:
-                        meets_threshold = value >= threshold
-                        comparison = "≥"
-                    
-                    # Format values appropriately
-                    if isinstance(value, float):
-                        if metric in ['Operating Margin', 'Debt-to-Income Ratio', 'Expense-to-Revenue Ratio']:
-                            formatted_value = f"{value:.3f} ({value*100:.1f}%)"
-                        elif metric in ['Revenue Growth Rate']:
-                            formatted_value = f"{value:.3f} ({value:.1f}%)"
-                        else:
-                            formatted_value = f"{value:.2f}"
-                    else:
-                        formatted_value = f"£{value:,.2f}" if 'Income' in metric or 'Revenue' in metric or 'Debt' in metric or 'Balance' in metric or 'Rate' in metric else str(value)
-                    
-                    metrics_data.append({
-                        'Metric': metric,
-                        'Actual Value': formatted_value,
-                        'Threshold': f"{comparison} {threshold}",
-                        'Status': '✅ Pass' if meets_threshold else '❌ Fail'
-                    })
-            
-            if metrics_data:
-                df_metrics = pd.DataFrame(metrics_data)
-                st.dataframe(df_metrics, use_container_width=True, hide_index=True)
-            
-            # Period Comparison (if applicable)
-            if analysis_period != 'All':
+                        st.info("Monthly trend requires multiple months of data")
+                with col2:
+                    fig_threshold = create_threshold_chart(scores['score_breakdown'])
+                    st.plotly_chart(fig_threshold, use_container_width=True, key="main_threshold_chart")
+                
+                # Monthly Breakdown Section
                 st.markdown("---")
-                with st.expander(f"📈 Compare with Full Period Analysis", expanded=False):
-                    full_metrics = calculate_financial_metrics(df, params['company_age_months'])
-                    full_scores = calculate_all_scores_enhanced(full_metrics, params)
+                st.subheader("📊 Monthly Breakdown by Category")
+                
+                pivot_counts, pivot_amounts = create_monthly_breakdown(filtered_df)
+                
+                if pivot_counts is not None and not pivot_counts.empty:
+                    # Create monthly breakdown charts
+                    fig_monthly_counts, fig_monthly_amounts = create_monthly_charts(pivot_counts, pivot_amounts)
                     
-                    st.write("**Full Period vs Selected Period Comparison:**")
-                    comp_col1, comp_col2, comp_col3, = st.columns(3)
+                    # Display charts
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.plotly_chart(fig_monthly_counts, use_container_width=True, key="main_monthly_counts")
+                    with col2:
+                        st.plotly_chart(fig_monthly_amounts, use_container_width=True, key="main_monthly_amounts")
                     
-                    with comp_col1:
-                        delta_weighted = scores['weighted_score'] - full_scores['weighted_score']
-                        st.metric("Full Period Weighted Score", f"{full_scores['weighted_score']:.0f}/100", 
-                                delta=f"{delta_weighted:+.0f} difference")
+                    # Monthly summary table
+                    with st.expander("📋 Detailed Monthly Breakdown", expanded=False):
+                        tab1, tab2 = st.tabs(["Transaction Counts", "Transaction Amounts (£)"])
+                        
+                        with tab1:
+                            counts_display = pivot_counts.copy()
+                            counts_display.index = counts_display.index.astype(str)
+                            counts_display = counts_display.astype(int)
+                            st.dataframe(counts_display, use_container_width=True)
+                            
+                            # Add totals
+                            totals_counts = counts_display.sum()
+                            st.write("**Totals:**")
+                            total_cols = st.columns(len(totals_counts))
+                            for i, (cat, total) in enumerate(totals_counts.items()):
+                                with total_cols[i]:
+                                    st.metric(cat, f"{total:,.0f}")
+                        
+                        with tab2:
+                            amounts_display = pivot_amounts.copy()
+                            amounts_display.index = amounts_display.index.astype(str)
+                            amounts_display = amounts_display.round(2)
+                            st.dataframe(amounts_display, use_container_width=True)
+                            
+                            # Add totals
+                            totals_amounts = amounts_display.sum()
+                            st.write("**Totals:**")
+                            total_cols = st.columns(len(totals_amounts))
+                            for i, (cat, total) in enumerate(totals_amounts.items()):
+                                with total_cols[i]:
+                                    st.metric(cat, f"£{total:,.2f}")
+                else:
+                    st.info("Monthly breakdown requires multiple months of data")
+                
+                # Transaction Category Analysis
+                st.markdown("---")
+                st.subheader("💳 Transaction Analysis")
+                
+                categorized_data = categorize_transactions(filtered_df)
+                category_summary = categorized_data['subcategory'].value_counts()
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write("**Transaction Categories:**")
+                    for category, count in category_summary.items():
+                        category_amount = abs(categorized_data[categorized_data['subcategory'] == category]['amount'].sum())
+                        percentage = (count / len(categorized_data)) * 100
+                        st.write(f"• **{category}**: {count} transactions (£{category_amount:,.2f}) - {percentage:.1f}%")
+                
+                with col2:
+                    # Category pie chart
+                    fig_pie = go.Figure(data=[go.Pie(
+                        labels=category_summary.index,
+                        values=category_summary.values,
+                        hole=0.3,
+                        marker_colors=['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+                    )])
                     
-                                     
-                    with comp_col2:
-                        if full_scores['ml_score'] and scores['ml_score']:
-                            delta_ml = scores['ml_score'] - full_scores['ml_score']
-                            st.metric("Full Period ML Probability", f"{full_scores['ml_score']:.1f}%",
-                                    delta=f"{delta_ml:+.1f}% difference")
+                    fig_pie.update_layout(
+                        title="Transaction Distribution",
+                        height=300,
+                        showlegend=True,
+                        legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.01)
+                    )
+                    
+                    st.plotly_chart(fig_pie, use_container_width=True, key="main_category_pie")
+                
+                # NEW: Loans and Debt Repayments Analysis
+                display_loans_repayments_section(filtered_df, analysis_period)
+
+                
+                # Detailed Metrics Table
+                st.markdown("---")
+                st.subheader("📋 Detailed Financial Metrics")
+                
+                # Create metrics table
+                metrics_data = []
+                industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
+                
+                for metric, value in metrics.items():
+                    if metric in industry_thresholds and metric != 'monthly_summary':
+                        threshold = industry_thresholds[metric]
+                        if metric in ['Cash Flow Volatility', 'Average Negative Balance Days per Month', 'Number of Bounced Payments']:
+                            meets_threshold = value <= threshold
+                            comparison = "≤"
                         else:
-                            st.metric("Full Period ML Probability", "N/A")
+                            meets_threshold = value >= threshold
+                            comparison = "≥"
+                        
+                        # Format values appropriately
+                        if isinstance(value, float):
+                            if metric in ['Operating Margin', 'Debt-to-Income Ratio', 'Expense-to-Revenue Ratio']:
+                                formatted_value = f"{value:.3f} ({value*100:.1f}%)"
+                            elif metric in ['Revenue Growth Rate']:
+                                formatted_value = f"{value:.3f} ({value:.1f}%)"
+                            else:
+                                formatted_value = f"{value:.2f}"
+                        else:
+                            formatted_value = f"£{value:,.2f}" if 'Income' in metric or 'Revenue' in metric or 'Debt' in metric or 'Balance' in metric or 'Rate' in metric else str(value)
+                        
+                        metrics_data.append({
+                            'Metric': metric,
+                            'Actual Value': formatted_value,
+                            'Threshold': f"{comparison} {threshold}",
+                            'Status': '✅ Pass' if meets_threshold else '❌ Fail'
+                        })
+                
+                if metrics_data:
+                    df_metrics = pd.DataFrame(metrics_data)
+                    st.dataframe(df_metrics, use_container_width=True, hide_index=True)
+                
+                # Period Comparison (if applicable)
+                if analysis_period != 'All':
+                    st.markdown("---")
+                    with st.expander(f"📈 Compare with Full Period Analysis", expanded=False):
+                        full_metrics = calculate_financial_metrics(df, params['company_age_months'])
+                        full_scores = calculate_all_scores_enhanced(full_metrics, params)
+                        
+                        st.write("**Full Period vs Selected Period Comparison:**")
+                        comp_col1, comp_col2, comp_col3, = st.columns(3)
+                        
+                        with comp_col1:
+                            delta_weighted = scores['weighted_score'] - full_scores['weighted_score']
+                            st.metric("Full Period Weighted Score", f"{full_scores['weighted_score']:.0f}/100", 
+                                    delta=f"{delta_weighted:+.0f} difference")
+                        
+                                         
+                        with comp_col2:
+                            if full_scores['ml_score'] and scores['ml_score']:
+                                delta_ml = scores['ml_score'] - full_scores['ml_score']
+                                st.metric("Full Period ML Probability", f"{full_scores['ml_score']:.1f}%",
+                                        delta=f"{delta_ml:+.1f}% difference")
+                            else:
+                                st.metric("Full Period ML Probability", "N/A")
+                        
+                        with comp_col3:
+                            delta_revenue = metrics.get('Monthly Average Revenue', 0) - full_metrics.get('Monthly Average Revenue', 0)
+                            st.metric("Full Period Monthly Revenue", f"£{full_metrics.get('Monthly Average Revenue', 0):,.0f}",
+                                    delta=f"£{delta_revenue:+,.0f} difference")
+                # NEW: Subprime Lending Analysis Section
+                st.markdown("---")
+                st.subheader("🎯 Subprime Lending Analysis")
+
+                # Subprime scoring overview
+                subprime_col1, subprime_col2, subprime_col3 = st.columns(3)
+
+                with subprime_col1:
+                    score = scores['subprime_score']
+                    if score >= 75:
+                        st.success(f"✅ **Excellent Subprime Candidate**\nScore: {score:.1f}/100")
+                    elif score >= 60:
+                        st.info(f"ℹ️ **Good Subprime Candidate**\nScore: {score:.1f}/100") 
+                    elif score >= 45:
+                        st.warning(f"⚠️ **Conditional Approval**\nScore: {score:.1f}/100")
+                    elif score >= 30:
+                        st.warning(f"⚠️ **Enhanced Monitoring Required**\nScore: {score:.1f}/100")    
+                    else:
+                        st.error(f"❌ **High Risk - Review Required**\nScore: {score:.1f}/100")
+
+                with subprime_col2:
+                    st.write("**Pricing Guidance:**")
+                    pricing = scores['subprime_pricing']
+                    for key, value in pricing.items():
+                        if key in ['suggested_rate', 'max_loan_multiple', 'term_range']:
+                            st.write(f"• **{key.replace('_', ' ').title()}**: {value}")
+
+                with subprime_col3:
+                    st.write("**Monitoring Requirements:**")
+                    monitoring = pricing.get('monitoring', 'Standard reviews')
+                    approval_prob = pricing.get('approval_probability', 'Unknown')
+                    st.write(f"• **Monitoring**: {monitoring}")
+                    st.write(f"• **Approval Probability**: {approval_prob}")
+
+                # Subprime recommendation
+                st.markdown("### 📋 Subprime Lending Recommendation")
+                recommendation = scores['subprime_recommendation']
+                if "APPROVE" in recommendation:
+                    st.success(f"**Recommendation**: {recommendation}")
+                elif "CONDITIONAL" in recommendation:
+                    st.warning(f"**Recommendation**: {recommendation}")
+                elif "SENIOR REVIEW" in recommendation:
+                    st.info(f"**Recommendation**: {recommendation}")
+                else:
+                    st.error(f"**Recommendation**: {recommendation}")
+
+                # Detailed subprime breakdown
+                with st.expander("🔍 **Detailed Subprime Scoring Breakdown**", expanded=False):
+                    st.write("**Scoring Components:**")
+                    for line in scores['subprime_breakdown']:
+                        st.write(f"• {line}")
+
+                # Score comparison for subprime context
+                st.markdown("### 📊 All Scoring Methods Comparison (Subprime Context)")
+
+                comparison_col1, comparison_col2 = st.columns(2)
+
+                with comparison_col1:
+                    # Create comparison chart
+                    fig_subprime_comparison = go.Figure()
+        
+                    score_data = {
+                        'V2 Weighted': scores['weighted_score'],
+                        'ML Probability': scores['ml_score'] if scores['ml_score'] else 0,
+                        'Subprime Optimized': scores['subprime_score']
+                    }
+        
+                    colors = ['#1f77b4', '#d62728', '#2ca02c']
+        
+                    fig_subprime_comparison.add_trace(go.Bar(
+                        x=list(score_data.keys()),
+                        y=list(score_data.values()),
+                        marker_color=colors,
+                        text=[f"{v:.1f}%" if k == "ML Probability" else f"{v:.1f}" for k, v in score_data.items()],
+                        textposition='outside'
+                    ))
+        
+                    fig_subprime_comparison.update_layout(
+                        title="Score Comparison (Subprime Lending Context)",
+                        yaxis_title="Score",
+                        showlegend=False,
+                        height=400,
+                        yaxis=dict(range=[0, 100])
+                    )
+        
+                    st.plotly_chart(fig_subprime_comparison, use_container_width=True, key="subprime_comparison_chart")
+
+                with comparison_col2:
+                    st.write("**Interpretation for Subprime Lending:**")
                     
-                    with comp_col3:
-                        delta_revenue = metrics.get('Monthly Average Revenue', 0) - full_metrics.get('Monthly Average Revenue', 0)
-                        st.metric("Full Period Monthly Revenue", f"£{full_metrics.get('Monthly Average Revenue', 0):,.0f}",
-                                delta=f"£{delta_revenue:+,.0f} difference")
-            # NEW: Subprime Lending Analysis Section
-            st.markdown("---")
-            st.subheader("🎯 Subprime Lending Analysis")
+                    # ML Score interpretation for subprime
+                    ml_score = scores['ml_score'] if scores['ml_score'] else 0
+                    if ml_score >= 25:
+                        ml_interpretation = "🟢 Excellent for subprime"
+                    elif ml_score >= 15:
+                        ml_interpretation = "🟡 Good for subprime"
+                    elif ml_score >= 8:
+                        ml_interpretation = "🟠 Acceptable for subprime"
+                    elif ml_score >= 5:
+                        ml_interpretation = "🔴 High-risk subprime"
+                    else:
+                        ml_interpretation = "⚫ Too risky even for subprime"
+                    
+                    ml_score_display = f"{ml_score:.1f}%" if ml_score is not None else "N/A"
+                    st.write(f"• **ML Model ({ml_score_display})**: {ml_interpretation}")
+                    
+                    # Subprime score interpretation
+                    subprime_score = scores['subprime_score']
+                    if subprime_score >= 65:
+                        subprime_interpretation = "🟢 Premium subprime candidate"
+                    elif subprime_score >= 50:
+                        subprime_interpretation = "🟡 Standard subprime candidate"
+                    elif subprime_score >= 35:
+                        subprime_interpretation = "🟠 High-risk but acceptable"
+                    else:
+                        subprime_interpretation = "🔴 Decline recommended"
+                    
+                    subprime_score_display = f"{subprime_score:.1f}" if subprime_score is not None else "N/A"
+                    st.write(f"• **Subprime Score ({subprime_score_display})**: {subprime_interpretation}")
+                    
+                    # Score convergence analysis
+                    scores_list = [scores['weighted_score'], ml_score, subprime_score]
+                    score_range = max(scores_list) - min(scores_list)
+                    
+                    if score_range <= 15:
+                        convergence = "🟢 High convergence - all methods agree"
+                    elif score_range <= 30:
+                        convergence = "🟡 Moderate convergence - some disagreement"
+                    else:
+                        convergence = "🔴 Low convergence - significant disagreement"
+                    
+                    st.write(f"• **Score Convergence**: {convergence}")
+                    score_range_display = f"{score_range:.1f}" if score_range is not None else "N/A"
+                    st.write(f"• **Score Range**: {score_range_display} points")
+                    
+                    # Primary recommendation
+                    st.markdown("**🎯 Primary Recommendation (Subprime Context):**")
+                    if subprime_score >= 50:
+                        st.success("✅ **APPROVE** with appropriate subprime pricing")
+                    elif subprime_score >= 35:
+                        st.warning("⚠️ **CONDITIONAL APPROVAL** with enhanced monitoring")
+                    else:
+                        st.error("❌ **DECLINE** - Risk too high even for subprime")
 
-            # Subprime scoring overview
-            subprime_col1, subprime_col2, subprime_col3 = st.columns(3)
-
-            with subprime_col1:
-                score = scores['subprime_score']
-                if score >= 75:
-                    st.success(f"✅ **Excellent Subprime Candidate**\nScore: {score:.1f}/100")
-                elif score >= 60:
-                    st.info(f"ℹ️ **Good Subprime Candidate**\nScore: {score:.1f}/100") 
-                elif score >= 45:
-                    st.warning(f"⚠️ **Conditional Approval**\nScore: {score:.1f}/100")
-                elif score >= 30:
-                    st.warning(f"⚠️ **Enhanced Monitoring Required**\nScore: {score:.1f}/100")    
-                else:
-                    st.error(f"❌ **High Risk - Review Required**\nScore: {score:.1f}/100")
-
-            with subprime_col2:
-                st.write("**Pricing Guidance:**")
-                pricing = scores['subprime_pricing']
-                for key, value in pricing.items():
-                    if key in ['suggested_rate', 'max_loan_multiple', 'term_range']:
-                        st.write(f"• **{key.replace('_', ' ').title()}**: {value}")
-
-            with subprime_col3:
-                st.write("**Monitoring Requirements:**")
-                monitoring = pricing.get('monitoring', 'Standard reviews')
-                approval_prob = pricing.get('approval_probability', 'Unknown')
-                st.write(f"• **Monitoring**: {monitoring}")
-                st.write(f"• **Approval Probability**: {approval_prob}")
-
-            # Subprime recommendation
-            st.markdown("### 📋 Subprime Lending Recommendation")
-            recommendation = scores['subprime_recommendation']
-            if "APPROVE" in recommendation:
-                st.success(f"**Recommendation**: {recommendation}")
-            elif "CONDITIONAL" in recommendation:
-                st.warning(f"**Recommendation**: {recommendation}")
-            elif "SENIOR REVIEW" in recommendation:
-                st.info(f"**Recommendation**: {recommendation}")
-            else:
-                st.error(f"**Recommendation**: {recommendation}")
-
-            # Detailed subprime breakdown
-            with st.expander("🔍 **Detailed Subprime Scoring Breakdown**", expanded=False):
-                st.write("**Scoring Components:**")
-                for line in scores['subprime_breakdown']:
-                    st.write(f"• {line}")
-
-            # Score comparison for subprime context
-            st.markdown("### 📊 All Scoring Methods Comparison (Subprime Context)")
-
-            comparison_col1, comparison_col2 = st.columns(2)
-
-            with comparison_col1:
-                # Create comparison chart
-                fig_subprime_comparison = go.Figure()
-    
-                score_data = {
-                    'V2 Weighted': scores['weighted_score'],
-                    'ML Probability': scores['ml_score'] if scores['ml_score'] else 0,
-                    'Subprime Optimized': scores['subprime_score']
-                }
-    
-                colors = ['#1f77b4', '#d62728', '#2ca02c']
-    
-                fig_subprime_comparison.add_trace(go.Bar(
-                    x=list(score_data.keys()),
-                    y=list(score_data.values()),
-                    marker_color=colors,
-                    text=[f"{v:.1f}%" if k == "ML Probability" else f"{v:.1f}" for k, v in score_data.items()],
-                    textposition='outside'
-                ))
-    
-                fig_subprime_comparison.update_layout(
-                    title="Score Comparison (Subprime Lending Context)",
-                    yaxis_title="Score",
-                    showlegend=False,
-                    height=400,
-                    yaxis=dict(range=[0, 100])
-                )
-    
-                st.plotly_chart(fig_subprime_comparison, use_container_width=True, key="subprime_comparison_chart")
-
-            with comparison_col2:
-                st.write("**Interpretation for Subprime Lending:**")
+                st.markdown("---")
+                st.success("🎯 Enhanced Dashboard complete with Primary Scoring Systems - All sections rendered successfully")
                 
-                # ML Score interpretation for subprime
-                ml_score = scores['ml_score'] if scores['ml_score'] else 0
-                if ml_score >= 25:
-                    ml_interpretation = "🟢 Excellent for subprime"
-                elif ml_score >= 15:
-                    ml_interpretation = "🟡 Good for subprime"
-                elif ml_score >= 8:
-                    ml_interpretation = "🟠 Acceptable for subprime"
-                elif ml_score >= 5:
-                    ml_interpretation = "🔴 High-risk subprime"
-                else:
-                    ml_interpretation = "⚫ Too risky even for subprime"
                 
-                ml_score_display = f"{ml_score:.1f}" if ml_score is not None else "N/A"
-                st.write(f"• **ML Model ({ml_score_display}%)**: {ml_interpretation}")
-                
-                # Subprime score interpretation
-                subprime_score = scores['subprime_score']
-                if subprime_score >= 65:
-                    subprime_interpretation = "🟢 Premium subprime candidate"
-                elif subprime_score >= 50:
-                    subprime_interpretation = "🟡 Standard subprime candidate"
-                elif subprime_score >= 35:
-                    subprime_interpretation = "🟠 High-risk but acceptable"
-                else:
-                    subprime_interpretation = "🔴 Decline recommended"
-                
-                subprime_score_display = f"{subprime_score:.1f}" if subprime_score is not None else "N/A"
-                st.write(f"• **Subprime Score ({subprime_score_display})**: {subprime_interpretation}")
-                
-                # Score convergence analysis
-                scores_list = [scores['weighted_score'], ml_score, subprime_score]
-                score_range = max(scores_list) - min(scores_list)
-                
-                if score_range <= 15:
-                    convergence = "🟢 High convergence - all methods agree"
-                elif score_range <= 30:
-                    convergence = "🟡 Moderate convergence - some disagreement"
-                else:
-                    convergence = "🔴 Low convergence - significant disagreement"
-                
-                st.write(f"• **Score Convergence**: {convergence}")
-                score_range_display = f"{score_range:.1f}" if score_range is not None else "N/A"
-                st.write(f"• **Score Range**: {score_range_display} points")
-                
-                # Primary recommendation
-                st.markdown("**🎯 Primary Recommendation (Subprime Context):**")
-                if subprime_score >= 50:
-                    st.success("✅ **APPROVE** with appropriate subprime pricing")
-                elif subprime_score >= 35:
-                    st.warning("⚠️ **CONDITIONAL APPROVAL** with enhanced monitoring")
-                else:
-                    st.error("❌ **DECLINE** - Risk too high even for subprime")
-
-            st.markdown("---")
-            st.success("🎯 Enhanced Dashboard complete with Primary Scoring Systems - All sections rendered successfully")
-            
-            
-        except Exception as e:
-            st.error(f"❌ Unexpected error during processing: {e}")
-    
-    else:
-        st.info("👆 Upload a JSON transaction file to begin analysis")
-
-# COPY THIS ENTIRE BLOCK and paste it at the very end of your app/main.py file
-# (After all the existing functions but before the "if __name__ == "__main__":" line)
-
-def analyze_loans_and_repayments(df):
-    """Comprehensive analysis of loans received and debt repayments"""
-    if df.empty:
-        return {}
-    
-    # Apply categorization to ensure we have subcategories
-    categorized_data = categorize_transactions(df.copy())
-    
-    # Extract loans and repayments
-    loans_data = categorized_data[categorized_data['subcategory'] == 'Loans'].copy()
-    repayments_data = categorized_data[categorized_data['subcategory'] == 'Debt Repayments'].copy()
-    
-    # Prepare date columns
-    for data in [loans_data, repayments_data]:
-        if not data.empty:
-            data['date'] = pd.to_datetime(data['date'])
-            data['month'] = data['date'].dt.to_period('M')
-            data['amount_abs'] = abs(data['amount'])
-    
-    analysis = {}
-    
-    # === LOANS ANALYSIS ===
-    if not loans_data.empty:
-        analysis['total_loans_received'] = loans_data['amount_abs'].sum()
-        analysis['loan_count'] = len(loans_data)
-        analysis['avg_loan_amount'] = loans_data['amount_abs'].mean()
-        analysis['largest_loan'] = loans_data['amount_abs'].max()
-        analysis['smallest_loan'] = loans_data['amount_abs'].min()
+            except Exception as e:
+                st.error(f"❌ Unexpected error during processing: {e}")
         
-        # Monthly loans
-        analysis['loans_by_month'] = loans_data.groupby('month')['amount_abs'].agg(['count', 'sum']).reset_index()
-        analysis['loans_by_month']['month_str'] = analysis['loans_by_month']['month'].astype(str)
+        else:
+            st.info("👆 Upload a JSON transaction file to begin analysis")
+
+    # COPY THIS ENTIRE BLOCK and paste it at the very end of your app/main.py file
+    # (After all the existing functions but before the "if __name__ == "__main__":" line)
+
+    def analyze_loans_and_repayments(df):
+        """Comprehensive analysis of loans received and debt repayments"""
+        if df.empty:
+            return {}
         
-        # Lender analysis
-        loans_data['lender_clean'] = loans_data['name'].str.lower().str.strip()
-        analysis['loans_by_lender'] = loans_data.groupby('lender_clean')['amount_abs'].agg(['count', 'sum']).reset_index()
-        analysis['loans_by_lender'] = analysis['loans_by_lender'].sort_values('sum', ascending=False)
-    else:
-        analysis.update({
-            'total_loans_received': 0, 'loan_count': 0, 'avg_loan_amount': 0,
-            'largest_loan': 0, 'smallest_loan': 0, 'loans_by_month': pd.DataFrame(),
-            'loans_by_lender': pd.DataFrame()
-        })
-    
-    # === REPAYMENTS ANALYSIS ===
-    if not repayments_data.empty:
-        analysis['total_repayments_made'] = repayments_data['amount_abs'].sum()
-        analysis['repayment_count'] = len(repayments_data)
-        analysis['avg_repayment_amount'] = repayments_data['amount_abs'].mean()
-        analysis['largest_repayment'] = repayments_data['amount_abs'].max()
-        analysis['smallest_repayment'] = repayments_data['amount_abs'].min()
+        # Apply categorization to ensure we have subcategories
+        categorized_data = categorize_transactions(df.copy())
         
-        # Monthly repayments
-        analysis['repayments_by_month'] = repayments_data.groupby('month')['amount_abs'].agg(['count', 'sum']).reset_index()
-        analysis['repayments_by_month']['month_str'] = analysis['repayments_by_month']['month'].astype(str)
+        # Extract loans and repayments
+        loans_data = categorized_data[categorized_data['subcategory'] == 'Loans'].copy()
+        repayments_data = categorized_data[categorized_data['subcategory'] == 'Debt Repayments'].copy()
         
-        # Recipient analysis
-        repayments_data['recipient_clean'] = repayments_data['name'].str.lower().str.strip()
-        analysis['repayments_by_recipient'] = repayments_data.groupby('recipient_clean')['amount_abs'].agg(['count', 'sum']).reset_index()
-        analysis['repayments_by_recipient'] = analysis['repayments_by_recipient'].sort_values('sum', ascending=False)
-    else:
-        analysis.update({
-            'total_repayments_made': 0, 'repayment_count': 0, 'avg_repayment_amount': 0,
-            'largest_repayment': 0, 'smallest_repayment': 0, 'repayments_by_month': pd.DataFrame(),
-            'repayments_by_recipient': pd.DataFrame()
-        })
-    
-    # === COMBINED ANALYSIS ===
-    analysis['net_borrowing'] = analysis['total_loans_received'] - analysis['total_repayments_made']
-    analysis['repayment_ratio'] = (analysis['total_repayments_made'] / analysis['total_loans_received']) if analysis['total_loans_received'] > 0 else 0
-    
-    # Monthly net borrowing trend
-    if not loans_data.empty or not repayments_data.empty:
-        all_months = set()
+        # Prepare date columns
+        for data in [loans_data, repayments_data]:
+            if not data.empty:
+                data['date'] = pd.to_datetime(data['date'])
+                data['month'] = data['date'].dt.to_period('M')
+                data['amount_abs'] = abs(data['amount'])
+        
+        analysis = {}
+        
+        # === LOANS ANALYSIS ===
         if not loans_data.empty:
-            all_months.update(loans_data['month'].unique())
-        if not repayments_data.empty:
-            all_months.update(repayments_data['month'].unique())
-        
-        monthly_net = []
-        for month in sorted(all_months):
-            month_loans = loans_data[loans_data['month'] == month]['amount_abs'].sum() if not loans_data.empty else 0
-            month_repayments = repayments_data[repayments_data['month'] == month]['amount_abs'].sum() if not repayments_data.empty else 0
-            monthly_net.append({
-                'month': month,
-                'month_str': str(month),
-                'loans': month_loans,
-                'repayments': month_repayments,
-                'net_borrowing': month_loans - month_repayments
+            analysis['total_loans_received'] = loans_data['amount_abs'].sum()
+            analysis['loan_count'] = len(loans_data)
+            analysis['avg_loan_amount'] = loans_data['amount_abs'].mean()
+            analysis['largest_loan'] = loans_data['amount_abs'].max()
+            analysis['smallest_loan'] = loans_data['amount_abs'].min()
+            
+            # Monthly loans
+            analysis['loans_by_month'] = loans_data.groupby('month')['amount_abs'].agg(['count', 'sum']).reset_index()
+            analysis['loans_by_month']['month_str'] = analysis['loans_by_month']['month'].astype(str)
+            
+            # Lender analysis
+            loans_data['lender_clean'] = loans_data['name'].str.lower().str.strip()
+            analysis['loans_by_lender'] = loans_data.groupby('lender_clean')['amount_abs'].agg(['count', 'sum']).reset_index()
+            analysis['loans_by_lender'] = analysis['loans_by_lender'].sort_values('sum', ascending=False)
+        else:
+            analysis.update({
+                'total_loans_received': 0, 'loan_count': 0, 'avg_loan_amount': 0,
+                'largest_loan': 0, 'smallest_loan': 0, 'loans_by_month': pd.DataFrame(),
+                'loans_by_lender': pd.DataFrame()
             })
         
-        analysis['monthly_net_borrowing'] = pd.DataFrame(monthly_net)
-    else:
-        analysis['monthly_net_borrowing'] = pd.DataFrame()
-    
-    return analysis
+        # === REPAYMENTS ANALYSIS ===
+        if not repayments_data.empty:
+            analysis['total_repayments_made'] = repayments_data['amount_abs'].sum()
+            analysis['repayment_count'] = len(repayments_data)
+            analysis['avg_repayment_amount'] = repayments_data['amount_abs'].mean()
+            analysis['largest_repayment'] = repayments_data['amount_abs'].max()
+            analysis['smallest_repayment'] = repayments_data['amount_abs'].min()
+            
+            # Monthly repayments
+            analysis['repayments_by_month'] = repayments_data.groupby('month')['amount_abs'].agg(['count', 'sum']).reset_index()
+            analysis['repayments_by_month']['month_str'] = analysis['repayments_by_month']['month'].astype(str)
+            
+            # Recipient analysis
+            repayments_data['recipient_clean'] = repayments_data['name'].str.lower().str.strip()
+            analysis['repayments_by_recipient'] = repayments_data.groupby('recipient_clean')['amount_abs'].agg(['count', 'sum']).reset_index()
+            analysis['repayments_by_recipient'] = analysis['repayments_by_recipient'].sort_values('sum', ascending=False)
+        else:
+            analysis.update({
+                'total_repayments_made': 0, 'repayment_count': 0, 'avg_repayment_amount': 0,
+                'largest_repayment': 0, 'smallest_repayment': 0, 'repayments_by_month': pd.DataFrame(),
+                'repayments_by_recipient': pd.DataFrame()
+            })
+        
+        # === COMBINED ANALYSIS ===
+        analysis['net_borrowing'] = analysis['total_loans_received'] - analysis['total_repayments_made']
+        analysis['repayment_ratio'] = (analysis['total_repayments_made'] / analysis['total_loans_received']) if analysis['total_loans_received'] > 0 else 0
+        
+        # Monthly net borrowing trend
+        if not loans_data.empty or not repayments_data.empty:
+            all_months = set()
+            if not loans_data.empty:
+                all_months.update(loans_data['month'].unique())
+            if not repayments_data.empty:
+                all_months.update(repayments_data['month'].unique())
+            
+            monthly_net = []
+            for month in sorted(all_months):
+                month_loans = loans_data[loans_data['month'] == month]['amount_abs'].sum() if not loans_data.empty else 0
+                month_repayments = repayments_data[repayments_data['month'] == month]['amount_abs'].sum() if not repayments_data.empty else 0
+                monthly_net.append({
+                    'month': month,
+                    'month_str': str(month),
+                    'loans': month_loans,
+                    'repayments': month_repayments,
+                    'net_borrowing': month_loans - month_repayments
+                })
+            
+            analysis['monthly_net_borrowing'] = pd.DataFrame(monthly_net)
+        else:
+            analysis['monthly_net_borrowing'] = pd.DataFrame()
+        
+        return analysis
 
-def create_loans_repayments_charts(analysis):
-    """Create charts for loans and repayments analysis"""
-    charts = {}
-    
-    # 1. Monthly Loans vs Repayments
-    if not analysis['monthly_net_borrowing'].empty:
-        monthly_data = analysis['monthly_net_borrowing']
+    def create_loans_repayments_charts(analysis):
+        """Create charts for loans and repayments analysis"""
+        charts = {}
         
-        fig_monthly = go.Figure()
-        
-        fig_monthly.add_trace(go.Bar(
-            name='Loans Received',
-            x=monthly_data['month_str'],
-            y=monthly_data['loans'],
-            marker_color='lightcoral',
-            opacity=0.8
-        ))
-        
-        fig_monthly.add_trace(go.Bar(
-            name='Debt Repayments',
-            x=monthly_data['month_str'],
-            y=-monthly_data['repayments'],  # Negative for visual distinction
-            marker_color='lightblue',
-            opacity=0.8
-        ))
-        
-        fig_monthly.add_trace(go.Scatter(
-            name='Net Borrowing',
-            x=monthly_data['month_str'],
-            y=monthly_data['net_borrowing'],
-            mode='lines+markers',
-            line=dict(color='darkgreen', width=3),
-            marker=dict(size=8)
-        ))
-        
-        fig_monthly.update_layout(
-            title="Monthly Loans vs Repayments",
-            xaxis_title="Month",
-            yaxis_title="Amount (£)",
-            barmode='relative',
-            height=400
-        )
-        
-        charts['monthly_comparison'] = fig_monthly
-    
-    # 2. Loans by Lender (Top 10)
-    if not analysis['loans_by_lender'].empty:
-        top_lenders = analysis['loans_by_lender'].head(10)
-        
-        fig_lenders = go.Figure(data=[
-            go.Bar(
-                x=top_lenders['sum'],
-                y=[name.title()[:30] + '...' if len(name) > 30 else name.title() for name in top_lenders['lender_clean']],
-                orientation='h',
+        # 1. Monthly Loans vs Repayments
+        if not analysis['monthly_net_borrowing'].empty:
+            monthly_data = analysis['monthly_net_borrowing']
+            
+            fig_monthly = go.Figure()
+            
+            fig_monthly.add_trace(go.Bar(
+                name='Loans Received',
+                x=monthly_data['month_str'],
+                y=monthly_data['loans'],
                 marker_color='lightcoral',
-                text=[f"£{amount:,.0f}" for amount in top_lenders['sum']],
-                textposition='auto'
-            )
-        ])
-        
-        fig_lenders.update_layout(
-            title="Loans by Lender (Top 10)",
-            xaxis_title="Total Amount (£)",
-            yaxis_title="Lender",
-            height=400,
-            yaxis=dict(autorange="reversed")
-        )
-        
-        charts['loans_by_lender'] = fig_lenders
-    
-    # 3. Repayments by Recipient (Top 10)
-    if not analysis['repayments_by_recipient'].empty:
-        top_recipients = analysis['repayments_by_recipient'].head(10)
-        
-        fig_recipients = go.Figure(data=[
-            go.Bar(
-                x=top_recipients['sum'],
-                y=[name.title()[:30] + '...' if len(name) > 30 else name.title() for name in top_recipients['recipient_clean']],
-                orientation='h',
+                opacity=0.8
+            ))
+            
+            fig_monthly.add_trace(go.Bar(
+                name='Debt Repayments',
+                x=monthly_data['month_str'],
+                y=-monthly_data['repayments'],  # Negative for visual distinction
                 marker_color='lightblue',
-                text=[f"£{amount:,.0f}" for amount in top_recipients['sum']],
-                textposition='auto'
+                opacity=0.8
+            ))
+            
+            fig_monthly.add_trace(go.Scatter(
+                name='Net Borrowing',
+                x=monthly_data['month_str'],
+                y=monthly_data['net_borrowing'],
+                mode='lines+markers',
+                line=dict(color='darkgreen', width=3),
+                marker=dict(size=8)
+            ))
+            
+            fig_monthly.update_layout(
+                title="Monthly Loans vs Repayments",
+                xaxis_title="Month",
+                yaxis_title="Amount (£)",
+                barmode='relative',
+                height=400
             )
-        ])
+            
+            charts['monthly_comparison'] = fig_monthly
         
-        fig_recipients.update_layout(
-            title="Repayments by Recipient (Top 10)",
-            xaxis_title="Total Amount (£)",
-            yaxis_title="Recipient",
-            height=400,
-            yaxis=dict(autorange="reversed")
-        )
-        
-        charts['repayments_by_recipient'] = fig_recipients
-    
-    # 4. Cumulative Borrowing Position
-    if not analysis['monthly_net_borrowing'].empty:
-        monthly_data = analysis['monthly_net_borrowing'].copy()
-        monthly_data['cumulative_borrowing'] = monthly_data['net_borrowing'].cumsum()
-        
-        fig_cumulative = go.Figure()
-        
-        fig_cumulative.add_trace(go.Scatter(
-            x=monthly_data['month_str'],
-            y=monthly_data['cumulative_borrowing'],
-            mode='lines+markers',
-            fill='tonexty',
-            name='Cumulative Net Borrowing',
-            line=dict(color='purple', width=3),
-            marker=dict(size=8)
-        ))
-        
-        fig_cumulative.add_hline(y=0, line_dash="dash", line_color="black", opacity=0.5)
-        
-        fig_cumulative.update_layout(
-            title="Cumulative Net Borrowing Position",
-            xaxis_title="Month",
-            yaxis_title="Cumulative Amount (£)",
-            height=400
-        )
-        
-        charts['cumulative_borrowing'] = fig_cumulative
-    
-    return charts
-
-def display_loans_repayments_section(df, analysis_period):
-    """Display the complete loans and repayments analysis section"""
-    st.markdown("---")
-    st.subheader("💰 Loans and Debt Repayments Analysis")
-    
-    # Filter data by period if needed
-    filtered_df = filter_data_by_period(df, analysis_period)
-    
-    # Perform analysis
-    analysis = analyze_loans_and_repayments(filtered_df)
-    
-    # Key Metrics Row
-    col1, col2, col3, col4, col5 = st.columns(5)
-    
-    with col1:
-        st.metric(
-            "Total Loans Received", 
-            f"£{analysis['total_loans_received']:,.0f}",
-            help=f"From {analysis['loan_count']} loan transactions"
-        )
-    
-    with col2:
-        st.metric(
-            "Total Repayments Made", 
-            f"£{analysis['total_repayments_made']:,.0f}",
-            help=f"From {analysis['repayment_count']} repayment transactions"
-        )
-    
-    with col3:
-        net_borrowing = analysis['net_borrowing']
-        st.metric(
-            "Net Borrowing Position", 
-            f"£{abs(net_borrowing):,.0f}",
-            delta="Outstanding" if net_borrowing > 0 else "Net Repaid" if net_borrowing < 0 else "Balanced"
-        )
-    
-    with col4:
-        repayment_ratio_raw = analysis.get('repayment_ratio', 0)
-        if repayment_ratio_raw is not None:
-            repayment_ratio = repayment_ratio_raw * 100
-            st.metric(
-                "Repayment Ratio", 
-                f"{repayment_ratio:.1f}%",
-                help="Percentage of loans that have been repaid"
-            )
-        else:
-            st.metric(
-                "Repayment Ratio", 
-                "N/A",
-                help="Percentage of loans that have been repaid"
-            )
-    
-    with col5:
-        avg_loan = analysis['avg_loan_amount']
-        st.metric(
-            "Average Loan Amount", 
-            f"£{avg_loan:,.0f}" if avg_loan > 0 else "N/A"
-        )
-    
-    # Risk Assessment Row
-    st.markdown("### 🎯 Risk Assessment")
-    risk_col1, risk_col2, risk_col3 = st.columns(3)
-    
-    with risk_col1:
-        if analysis['loan_count'] == 0:
-            st.info("✅ **No External Debt** - Business operates without external financing")
-        elif analysis['repayment_ratio'] >= 0.8:
-            st.success("✅ **Good Repayment Behavior** - Consistently repays debt obligations")
-        elif analysis['repayment_ratio'] >= 0.5:
-            st.warning("⚠️ **Moderate Debt Management** - Some outstanding obligations")
-        else:
-            st.error("🚨 **High Debt Risk** - Low repayment ratio indicates potential issues")
-    
-    with risk_col2:
-        if analysis['loan_count'] == 0:
-            st.info("📊 **No Borrowing History** - Cannot assess borrowing patterns")
-        elif analysis['loan_count'] <= 3:
-            st.success("📊 **Conservative Borrowing** - Infrequent use of external financing")
-        elif analysis['loan_count'] <= 10:
-            st.warning("📊 **Moderate Borrowing** - Regular use of external financing")
-        else:
-            st.error("📊 **High Borrowing Frequency** - Heavy reliance on external financing")
-    
-    with risk_col3:
-        if analysis['net_borrowing'] <= 0:
-            st.success("💰 **Positive Net Position** - More repaid than borrowed")
-        elif analysis['net_borrowing'] <= analysis['total_loans_received'] * 0.3:
-            st.info("💰 **Manageable Outstanding** - Reasonable debt burden")
-        else:
-            st.warning("💰 **High Outstanding Debt** - Significant borrowing position")
-    
-    # Charts Section
-    if analysis['loan_count'] > 0 or analysis['repayment_count'] > 0:
-        st.markdown("### 📈 Borrowing and Repayment Patterns")
-        
-        charts = create_loans_repayments_charts(analysis)
-        
-        # Row 1: Monthly comparison and cumulative position
-        if 'monthly_comparison' in charts and 'cumulative_borrowing' in charts:
-            col1, col2 = st.columns(2)
-            with col1:
-                st.plotly_chart(charts['monthly_comparison'], use_container_width=True, key="loans_monthly_comparison")
-            with col2:
-                st.plotly_chart(charts['cumulative_borrowing'], use_container_width=True, key="loans_cumulative")
-        
-        # Row 2: Lender and recipient analysis
-        chart_row2_col1, chart_row2_col2 = st.columns(2)
-        
-        if 'loans_by_lender' in charts and charts['loans_by_lender'] is not None:
-            with chart_row2_col1:
-                st.plotly_chart(charts['loans_by_lender'], use_container_width=True, key="loans_by_lender")
-        else:
-            with chart_row2_col1:
-                st.info("No loan data available for lender analysis")
-        
-        if 'repayments_by_recipient' in charts and charts['repayments_by_recipient'] is not None:
-            with chart_row2_col2:
-                st.plotly_chart(charts['repayments_by_recipient'], use_container_width=True, key="repayments_by_recipient")
-        else:
-            with chart_row2_col2:
-                st.info("No repayment data available for recipient analysis")
-    
-    # Detailed Breakdown Tables
-    with st.expander("📋 Detailed Loan and Repayment Breakdown", expanded=False):
-        tab1, tab2, tab3 = st.tabs(["Loans Received", "Repayments Made", "Monthly Summary"])
-        
-        with tab1:
-            if not analysis['loans_by_lender'].empty:
-                st.write("**Loans by Lender:**")
-                display_loans = analysis['loans_by_lender'].copy()
-                display_loans['lender_clean'] = display_loans['lender_clean'].str.title()
-                display_loans.columns = ['Lender', 'Number of Loans', 'Total Amount (£)']
-                display_loans['Total Amount (£)'] = display_loans['Total Amount (£)'].apply(lambda x: f"£{x:,.2f}")
-                st.dataframe(display_loans, use_container_width=True, hide_index=True)
-            else:
-                st.info("No loan transactions found in the selected period.")
-        
-        with tab2:
-            if not analysis['repayments_by_recipient'].empty:
-                st.write("**Repayments by Recipient:**")
-                display_repayments = analysis['repayments_by_recipient'].copy()
-                display_repayments['recipient_clean'] = display_repayments['recipient_clean'].str.title()
-                display_repayments.columns = ['Recipient', 'Number of Repayments', 'Total Amount (£)']
-                display_repayments['Total Amount (£)'] = display_repayments['Total Amount (£)'].apply(lambda x: f"£{x:,.2f}")
-                st.dataframe(display_repayments, use_container_width=True, hide_index=True)
-            else:
-                st.info("No repayment transactions found in the selected period.")
-        
-        with tab3:
-            if not analysis['monthly_net_borrowing'].empty:
-                st.write("**Monthly Borrowing Summary:**")
-                display_monthly = analysis['monthly_net_borrowing'].copy()
-                display_monthly['loans'] = display_monthly['loans'].apply(lambda x: f"£{x:,.2f}")
-                display_monthly['repayments'] = display_monthly['repayments'].apply(lambda x: f"£{x:,.2f}")
-                display_monthly['net_borrowing'] = display_monthly['net_borrowing'].apply(
-                    lambda x: f"£{x:,.2f}" if x >= 0 else f"-£{abs(x):,.2f}"
+        # 2. Loans by Lender (Top 10)
+        if not analysis['loans_by_lender'].empty:
+            top_lenders = analysis['loans_by_lender'].head(10)
+            
+            fig_lenders = go.Figure(data=[
+                go.Bar(
+                    x=top_lenders['sum'],
+                    y=[name.title()[:30] + '...' if len(name) > 30 else name.title() for name in top_lenders['lender_clean']],
+                    orientation='h',
+                    marker_color='lightcoral',
+                    text=[f"£{amount:,.0f}" for amount in top_lenders['sum']],
+                    textposition='auto'
                 )
-                display_monthly = display_monthly[['month_str', 'loans', 'repayments', 'net_borrowing']]
-                display_monthly.columns = ['Month', 'Loans Received', 'Repayments Made', 'Net Borrowing']
-                st.dataframe(display_monthly, use_container_width=True, hide_index=True)
+            ])
+            
+            fig_lenders.update_layout(
+                title="Loans by Lender (Top 10)",
+                xaxis_title="Total Amount (£)",
+                yaxis_title="Lender",
+                height=400,
+                yaxis=dict(autorange="reversed")
+            )
+            
+            charts['loans_by_lender'] = fig_lenders
+        
+        # 3. Repayments by Recipient (Top 10)
+        if not analysis['repayments_by_recipient'].empty:
+            top_recipients = analysis['repayments_by_recipient'].head(10)
+            
+            fig_recipients = go.Figure(data=[
+                go.Bar(
+                    x=top_recipients['sum'],
+                    y=[name.title()[:30] + '...' if len(name) > 30 else name.title() for name in top_recipients['recipient_clean']],
+                    orientation='h',
+                    marker_color='lightblue',
+                    text=[f"£{amount:,.0f}" for amount in top_recipients['sum']],
+                    textposition='auto'
+                )
+            ])
+            
+            fig_recipients.update_layout(
+                title="Repayments by Recipient (Top 10)",
+                xaxis_title="Total Amount (£)",
+                yaxis_title="Recipient",
+                height=400,
+                yaxis=dict(autorange="reversed")
+            )
+            
+            charts['repayments_by_recipient'] = fig_recipients
+        
+        # 4. Cumulative Borrowing Position
+        if not analysis['monthly_net_borrowing'].empty:
+            monthly_data = analysis['monthly_net_borrowing'].copy()
+            monthly_data['cumulative_borrowing'] = monthly_data['net_borrowing'].cumsum()
+            
+            fig_cumulative = go.Figure()
+            
+            fig_cumulative.add_trace(go.Scatter(
+                x=monthly_data['month_str'],
+                y=monthly_data['cumulative_borrowing'],
+                mode='lines+markers',
+                fill='tonexty',
+                name='Cumulative Net Borrowing',
+                line=dict(color='purple', width=3),
+                marker=dict(size=8)
+            ))
+            
+            fig_cumulative.add_hline(y=0, line_dash="dash", line_color="black", opacity=0.5)
+            
+            fig_cumulative.update_layout(
+                title="Cumulative Net Borrowing Position",
+                xaxis_title="Month",
+                yaxis_title="Cumulative Amount (£)",
+                height=400
+            )
+            
+            charts['cumulative_borrowing'] = fig_cumulative
+        
+        return charts
+
+    def display_loans_repayments_section(df, analysis_period):
+        """Display the complete loans and repayments analysis section"""
+        st.markdown("---")
+        st.subheader("💰 Loans and Debt Repayments Analysis")
+        
+        # Filter data by period if needed
+        filtered_df = filter_data_by_period(df, analysis_period)
+        
+        # Perform analysis
+        analysis = analyze_loans_and_repayments(filtered_df)
+        
+        # Key Metrics Row
+        col1, col2, col3, col4, col5 = st.columns(5)
+        
+        with col1:
+            st.metric(
+                "Total Loans Received", 
+                f"£{analysis['total_loans_received']:,.0f}",
+                help=f"From {analysis['loan_count']} loan transactions"
+            )
+        
+        with col2:
+            st.metric(
+                "Total Repayments Made", 
+                f"£{analysis['total_repayments_made']:,.0f}",
+                help=f"From {analysis['repayment_count']} repayment transactions"
+            )
+        
+        with col3:
+            net_borrowing = analysis['net_borrowing']
+            st.metric(
+                "Net Borrowing Position", 
+                f"£{abs(net_borrowing):,.0f}",
+                delta="Outstanding" if net_borrowing > 0 else "Net Repaid" if net_borrowing < 0 else "Balanced"
+            )
+        
+        with col4:
+            repayment_ratio_raw = analysis.get('repayment_ratio', 0)
+            if repayment_ratio_raw is not None:
+                repayment_ratio = repayment_ratio_raw * 100
+                st.metric(
+                    "Repayment Ratio", 
+                    f"{repayment_ratio:.1f}%",
+                    help="Percentage of loans that have been repaid"
+                )
             else:
-                st.info("No loan or repayment data found for monthly analysis.")
-    
-    return analysis
+                st.metric(
+                    "Repayment Ratio", 
+                    "N/A",
+                    help="Percentage of loans that have been repaid"
+                )
+        
+        with col5:
+            avg_loan = analysis['avg_loan_amount']
+            st.metric(
+                "Average Loan Amount", 
+                f"£{avg_loan:,.0f}" if avg_loan > 0 else "N/A"
+            )
+        
+        # Risk Assessment Row
+        st.markdown("### 🎯 Risk Assessment")
+        risk_col1, risk_col2, risk_col3 = st.columns(3)
+        
+        with risk_col1:
+            if analysis['loan_count'] == 0:
+                st.info("✅ **No External Debt** - Business operates without external financing")
+            elif analysis['repayment_ratio'] >= 0.8:
+                st.success("✅ **Good Repayment Behavior** - Consistently repays debt obligations")
+            elif analysis['repayment_ratio'] >= 0.5:
+                st.warning("⚠️ **Moderate Debt Management** - Some outstanding obligations")
+            else:
+                st.error("🚨 **High Debt Risk** - Low repayment ratio indicates potential issues")
+        
+        with risk_col2:
+            if analysis['loan_count'] == 0:
+                st.info("📊 **No Borrowing History** - Cannot assess borrowing patterns")
+            elif analysis['loan_count'] <= 3:
+                st.success("📊 **Conservative Borrowing** - Infrequent use of external financing")
+            elif analysis['loan_count'] <= 10:
+                st.warning("📊 **Moderate Borrowing** - Regular use of external financing")
+            else:
+                st.error("📊 **High Borrowing Frequency** - Heavy reliance on external financing")
+        
+        with risk_col3:
+            if analysis['net_borrowing'] <= 0:
+                st.success("💰 **Positive Net Position** - More repaid than borrowed")
+            elif analysis['net_borrowing'] <= analysis['total_loans_received'] * 0.3:
+                st.info("💰 **Manageable Outstanding** - Reasonable debt burden")
+            else:
+                st.warning("💰 **High Outstanding Debt** - Significant borrowing position")
+        
+        # Charts Section
+        if analysis['loan_count'] > 0 or analysis['repayment_count'] > 0:
+            st.markdown("### 📈 Borrowing and Repayment Patterns")
+            
+            charts = create_loans_repayments_charts(analysis)
+            
+            # Row 1: Monthly comparison and cumulative position
+            if 'monthly_comparison' in charts and 'cumulative_borrowing' in charts:
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.plotly_chart(charts['monthly_comparison'], use_container_width=True, key="loans_monthly_comparison")
+                with col2:
+                    st.plotly_chart(charts['cumulative_borrowing'], use_container_width=True, key="loans_cumulative")
+            
+            # Row 2: Lender and recipient analysis
+            chart_row2_col1, chart_row2_col2 = st.columns(2)
+            
+            if 'loans_by_lender' in charts and charts['loans_by_lender'] is not None:
+                with chart_row2_col1:
+                    st.plotly_chart(charts['loans_by_lender'], use_container_width=True, key="loans_by_lender")
+            else:
+                with chart_row2_col1:
+                    st.info("No loan data available for lender analysis")
+            
+            if 'repayments_by_recipient' in charts and charts['repayments_by_recipient'] is not None:
+                with chart_row2_col2:
+                    st.plotly_chart(charts['repayments_by_recipient'], use_container_width=True, key="repayments_by_recipient")
+            else:
+                with chart_row2_col2:
+                    st.info("No repayment data available for recipient analysis")
+        
+        # Detailed Breakdown Tables
+        with st.expander("📋 Detailed Loan and Repayment Breakdown", expanded=False):
+            tab1, tab2, tab3 = st.tabs(["Loans Received", "Repayments Made", "Monthly Summary"])
+            
+            with tab1:
+                if not analysis['loans_by_lender'].empty:
+                    st.write("**Loans by Lender:**")
+                    display_loans = analysis['loans_by_lender'].copy()
+                    display_loans['lender_clean'] = display_loans['lender_clean'].str.title()
+                    display_loans.columns = ['Lender', 'Number of Loans', 'Total Amount (£)']
+                    display_loans['Total Amount (£)'] = display_loans['Total Amount (£)'].apply(lambda x: f"£{x:,.2f}")
+                    st.dataframe(display_loans, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No loan transactions found in the selected period.")
+            
+            with tab2:
+                if not analysis['repayments_by_recipient'].empty:
+                    st.write("**Repayments by Recipient:**")
+                    display_repayments = analysis['repayments_by_recipient'].copy()
+                    display_repayments['recipient_clean'] = display_repayments['recipient_clean'].str.title()
+                    display_repayments.columns = ['Recipient', 'Number of Repayments', 'Total Amount (£)']
+                    display_repayments['Total Amount (£)'] = display_repayments['Total Amount (£)'].apply(lambda x: f"£{x:,.2f}")
+                    st.dataframe(display_repayments, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No repayment transactions found in the selected period.")
+            
+            with tab3:
+                if not analysis['monthly_net_borrowing'].empty:
+                    st.write("**Monthly Borrowing Summary:**")
+                    display_monthly = analysis['monthly_net_borrowing'].copy()
+                    display_monthly['loans'] = display_monthly['loans'].apply(lambda x: f"£{x:,.2f}")
+                    display_monthly['repayments'] = display_monthly['repayments'].apply(lambda x: f"£{x:,.2f}")
+                    display_monthly['net_borrowing'] = display_monthly['net_borrowing'].apply(
+                        lambda x: f"£{x:,.2f}" if x >= 0 else f"-£{abs(x):,.2f}"
+                    )
+                    display_monthly = display_monthly[['month_str', 'loans', 'repayments', 'net_borrowing']]
+                    display_monthly.columns = ['Month', 'Loans Received', 'Repayments Made', 'Net Borrowing']
+                    st.dataframe(display_monthly, use_container_width=True, hide_index=True)
+                else:
+                    st.info("No loan or repayment data found for monthly analysis.")
+        
+        return analysis
+        
+    except Exception as e:
+        st.error(f"❌ Unexpected error during processing: {e}")
+    else:
+        st.info("👆 Upload a JSON transaction file to begin analysis")
+except Exception as e:
+    import traceback
+    full_traceback = traceback.format_exc()
+    st.error(f"❌ Application Error: {str(e)}")
+    st.code(full_traceback)
+    print(full_traceback)
+    return   
 
 
 if __name__ == "__main__":
     main()
+        
+        
+    
