@@ -142,116 +142,6 @@ if not SUBPRIME_SCORING_AVAILABLE:
                 'recommendation': 'Subprime scoring import failed - check file structure',
                 'breakdown': ['Import failed - check console for details']
             }
-# NEW IMPORT: Add adaptive scoring module with proper path handling
-ADAPTIVE_SCORING_AVAILABLE = False
-
-def setup_adaptive_scoring():
-    """Setup adaptive scoring import with detailed error reporting"""
-    global ADAPTIVE_SCORING_AVAILABLE
-    
-    print("🔍 Starting adaptive scoring import attempts...")
-    
-    try:
-        # Attempt 1: Direct import (if already in same directory)
-        print("  Attempt 1: Direct import...")
-        from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
-        ADAPTIVE_SCORING_AVAILABLE = True
-        print("✅ Adaptive scoring module loaded successfully (direct import)")
-        return True
-    except ImportError as e:
-        print(f"  ❌ Direct import failed: {e}")
-    except Exception as e:
-        print(f"  ❌ Direct import failed with error: {e}")
-    
-    try:
-        # Attempt 2: Import from app folder
-        print("  Attempt 2: Import from app folder...")
-        from app.adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
-        ADAPTIVE_SCORING_AVAILABLE = True
-        print("✅ Adaptive scoring module loaded successfully (from app folder)")
-        return True
-    except ImportError as e:
-        print(f"  ❌ App folder import failed: {e}")
-    except Exception as e:
-        print(f"  ❌ App folder import failed with error: {e}")
-    
-    try:
-        # Attempt 3: Add app folder to path and import
-        print("  Attempt 3: Adding app folder to path...")
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        app_dir = os.path.join(current_dir, 'app')
-        if app_dir not in sys.path:
-            sys.path.insert(0, app_dir)
-            print(f"    Added to path: {app_dir}")
-        
-        from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
-        ADAPTIVE_SCORING_AVAILABLE = True
-        print("✅ Adaptive scoring module loaded successfully (with app path adjustment)")
-        return True
-    except ImportError as e:
-        print(f"  ❌ Path adjustment import failed: {e}")
-    except Exception as e:
-        print(f"  ❌ Path adjustment import failed with error: {e}")
-    
-    try:
-        # Attempt 4: Try parent directory then app
-        print("  Attempt 4: Trying parent directory...")
-        parent_dir = os.path.dirname(current_dir)
-        app_dir = os.path.join(parent_dir, 'app')
-        if app_dir not in sys.path:
-            sys.path.insert(0, app_dir)
-            print(f"    Added to path: {app_dir}")
-        
-        from adaptive_score_calculation import get_improved_weighted_score, get_detailed_scoring_breakdown
-        ADAPTIVE_SCORING_AVAILABLE = True
-        print("✅ Adaptive scoring module loaded successfully (from parent/app path)")
-        return True
-    except ImportError as e:
-        print(f"  ❌ Parent directory import failed: {e}")
-    except Exception as e:
-        print(f"  ❌ Parent directory import failed with error: {e}")
-    
-    try:
-        # Attempt 5: Force reload and import (since file exists)
-        print("  Attempt 5: Force reload...")
-        import importlib.util
-        import sys
-        
-        # Find the file
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        module_path = os.path.join(current_dir, 'adaptive_score_calculation.py')
-        
-        if os.path.exists(module_path):
-            print(f"    Found module at: {module_path}")
-            spec = importlib.util.spec_from_file_location("adaptive_score_calculation", module_path)
-            module = importlib.util.module_from_spec(spec)
-            sys.modules["adaptive_score_calculation"] = module
-            spec.loader.exec_module(module)
-            
-            # Test the functions
-            get_improved_weighted_score = module.get_improved_weighted_score
-            get_detailed_scoring_breakdown = module.get_detailed_scoring_breakdown
-            
-            ADAPTIVE_SCORING_AVAILABLE = True
-            print("✅ Adaptive scoring module loaded successfully (force reload)")
-            return True
-        else:
-            print(f"    Module not found at expected path: {module_path}")
-            
-    except Exception as e:
-        print(f"  ❌ Force reload failed with error: {e}")
-        import traceback
-        print(f"    Detailed error: {traceback.format_exc()}")
-    
-    # If all attempts fail
-    ADAPTIVE_SCORING_AVAILABLE = False
-    print("⚠️ All import attempts failed")
-    print("   The adaptive_score_calculation.py file exists but cannot be imported")
-    print("   This usually means there's a syntax error or missing dependency in the file")
-    return False
-
-# Run the setup
-setup_adaptive_scoring()
 
 st.set_page_config(
     page_title="Business Finance Scorecard",
@@ -456,42 +346,6 @@ PENALTIES = {
     'website_or_social_outdated': 3, 'uses_generic_email': 1, 'no_online_presence': 2
 }
 
-# Enhanced debug info function
-def show_debug_info():
-    """Show debug information about file structure and imports"""
-    with st.expander("🔧 Debug Information", expanded=False):
-        st.write(f"**Adaptive Scoring Available:** {ADAPTIVE_SCORING_AVAILABLE}")
-        if ADAPTIVE_SCORING_AVAILABLE:
-            st.success("✅ Enhanced adaptive scoring is enabled")
-        else:
-            st.warning("⚠️ Using original scoring only - adaptive_score_calculation.py not found")
-        
-        # Show current working directory and file structure
-        current_dir = os.getcwd()
-        st.write(f"**Current Working Directory:** {current_dir}")
-        
-        # List files in current directory
-        try:
-            files = [f for f in os.listdir('.') if f.endswith('.py')]
-            st.write(f"**Python files in current directory:** {files}")
-        except Exception as e:
-            st.write(f"Could not list files in current directory: {e}")
-        
-        # Check app folder
-        app_folder = os.path.join(current_dir, 'app')
-        if os.path.exists(app_folder):
-            try:
-                app_files = [f for f in os.listdir(app_folder) if f.endswith('.py')]
-                st.write(f"**Python files in app folder:** {app_files}")
-                if 'adaptive_score_calculation.py' in app_files:
-                    st.success("✅ Found adaptive_score_calculation.py in app folder!")
-                else:
-                    st.warning("⚠️ adaptive_score_calculation.py not found in app folder")
-            except Exception as e:
-                st.write(f"Could not list files in app folder: {e}")
-        else:
-            st.write("**App folder:** Not found in current directory")
-        
         # Show Python path
         st.write("**Python Path Includes:**")
         for i, path in enumerate(sys.path[:5]):  # Show first 5 paths
@@ -499,9 +353,8 @@ def show_debug_info():
         if len(sys.path) > 5:
             st.write(f"  ... and {len(sys.path) - 5} more paths")
 
-# NEW HELPER FUNCTIONS: Add scoring comparison functions
-def calculate_both_weighted_scores(metrics, params, industry_thresholds):
-    """Calculate both original and adaptive weighted scores for comparison"""
+def calculate_weighted_scores(metrics, params, industry_thresholds):
+    """Calculate original weighted score only"""
     
     # Original weighted score (keep existing logic)
     original_weighted_score = 0
@@ -533,35 +386,7 @@ def calculate_both_weighted_scores(metrics, params, industry_thresholds):
     
     original_weighted_score = max(0, original_weighted_score - penalties)
     
-    # Adaptive weighted score (if available)
-    if ADAPTIVE_SCORING_AVAILABLE:
-        try:
-            # Import the functions dynamically
-            if 'adaptive_score_calculation' in sys.modules:
-                adaptive_module = sys.modules['adaptive_score_calculation']
-            elif 'app.adaptive_score_calculation' in sys.modules:
-                adaptive_module = sys.modules['app.adaptive_score_calculation']
-            else:
-                # Try to import again
-                try:
-                    import adaptive_score_calculation as adaptive_module
-                except ImportError:
-                    from app import adaptive_score_calculation as adaptive_module
-            
-            adaptive_weighted_score, raw_adaptive_score, scoring_details = adaptive_module.get_detailed_scoring_breakdown(
-                metrics, params['directors_score'], industry_thresholds['Sector Risk'], industry_thresholds, 
-                params['company_age_months'], params.get('personal_default_12m', False), 
-                params.get('business_ccj', False), params.get('director_ccj', False), 
-                params.get('website_or_social_outdated', False), params.get('uses_generic_email', False), 
-                params.get('no_online_presence', False), PENALTIES
-            )
-            return original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details
-        except Exception as e:
-            print(f"Error in adaptive scoring calculation: {e}")
-            return original_weighted_score, original_weighted_score, original_weighted_score, []
-    else:
-        return original_weighted_score, original_weighted_score, original_weighted_score, []
-
+   
 def load_models():
     """Load ML models"""
     try:
@@ -891,28 +716,15 @@ def calculate_all_scores_enhanced(metrics, params):
         print(f"  ERROR creating SubprimeScoring: {e}")
         print(f"  This is why subprime score is not working!")
     
-    # Calculate both weighted scores (original and adaptive)
-    result = calculate_both_weighted_scores(metrics, params, industry_thresholds)
+    # Calculate weighted scores 
+    weighted_score = calculate_both_weighted_scores(metrics, params, industry_thresholds)
 
-    # Safety check for scoring_details
-    if len(result) == 4:
-        original_weighted_score, adaptive_weighted_score, raw_adaptive_score, scoring_details = result
-    elif len(result) == 3:
-        original_weighted_score, adaptive_weighted_score, raw_adaptive_score = result
-        scoring_details = []  # Default empty list
-    else:
-        # Fallback
-        original_weighted_score = 60
-        adaptive_weighted_score = 70.9
-        raw_adaptive_score = 70.9
-        scoring_details = []
-
+   
     print(f"🔍 DEBUG - Scoring details type: {type(scoring_details)}, length: {len(scoring_details) if isinstance(scoring_details, list) else 'Not a list'}")
 
         
     print(f"  Original Weighted Score: {original_weighted_score}/100")
-    print(f"  Adaptive Weighted Score: {adaptive_weighted_score:.1f}%")
-    
+        
     # NEW: Subprime scoring - WITH ERROR HANDLING
     print(f"\n🎯 DEBUG - Attempting Subprime Scoring:")
     try:
@@ -1060,9 +872,6 @@ def calculate_all_scores_enhanced(metrics, params):
     
     return {
         'weighted_score': original_weighted_score,
-        'adaptive_weighted_score': adaptive_weighted_score,
-        'raw_adaptive_score': raw_adaptive_score,
-        'scoring_details': scoring_details,
         'industry_score': industry_score,
         'ml_score': ml_score,
         'adjusted_ml_score': adjusted_ml_score,
@@ -1256,31 +1065,30 @@ def calculate_revenue_insights(df):
     }
 
 def create_score_charts(scores, metrics):
-    """Create clean bar charts for scores - ENHANCED with adaptive scoring"""
+    """Create clean bar charts for scores - Updated for 3 scoring methods"""
     
     # Score comparison chart
     fig_scores = go.Figure()
     
     score_data = {
-        'Original Weighted': scores['weighted_score'],
-        'Adaptive Weighted': scores.get('adaptive_weighted_score', scores['weighted_score']),
-        'Adjusted ML': scores.get('adjusted_ml_score', scores.get('ml_score', 0)),
-        'Subprime Score': scores.get('subprime_score', 0)
+        'Subprime Score': scores.get('subprime_score', 0),
+        'V2 Weighted': scores['weighted_score'],
+        'Adjusted ML': scores.get('adjusted_ml_score', scores.get('ml_score', 0))
     }
     
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728']
+    colors = ['#2ca02c', '#1f77b4', '#ff7f0e']  # Green, Blue, Orange
     
     fig_scores.add_trace(go.Bar(
         x=list(score_data.keys()),
         y=list(score_data.values()),
         marker_color=colors,
-        text=[f"{v:.1f}%" for v in score_data.values()],
+        text=[f"{v:.1f}" + ("%" if k == "Adjusted ML" else "/100") for k, v in score_data.items()],
         textposition='outside'
     ))
     
     fig_scores.update_layout(
-        title="All Scoring Methods Comparison",
-        yaxis_title="Score (%)",
+        title="Primary Scoring Methods Comparison",
+        yaxis_title="Score",
         showlegend=False,
         height=400,
         yaxis=dict(range=[0, 100])
@@ -1501,7 +1309,7 @@ def create_categorized_csv(df):
     return export_df.to_csv(index=False)
 
 def main():
-    """Main application - ENHANCED with adaptive scoring"""
+    """Main application"""
     st.title("🏦 Business Finance Scorecard")
     st.markdown("---")
     
@@ -1584,7 +1392,7 @@ def main():
                 return
             
             # Display data info and export
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 st.success(f"✅ Loaded {len(df)} transactions")
             with col2:
@@ -1613,48 +1421,14 @@ def main():
             scores = calculate_all_scores_enhanced(metrics, params)
             revenue_insights = calculate_revenue_insights(filtered_df)
 
-            # ENHANCED DASHBOARD RENDERING with adaptive scoring
+            # ENHANCED DASHBOARD RENDERING 
             period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
             st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
 
             # Key Scoring Methods
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3 = st.columns(3)  # Change from 4 to 3 columns
 
             with col1:
-                st.metric(
-                    "🏛️ Original Weighted", 
-                    f"{scores['weighted_score']:.0f}/100",
-                    help="Traditional binary threshold scoring"
-                )
-
-            with col2:
-                if ADAPTIVE_SCORING_AVAILABLE and 'adaptive_weighted_score' in scores:
-                    adaptive_score = scores['adaptive_weighted_score']
-                    delta = adaptive_score - scores['weighted_score']
-                    st.metric(
-                        "🧠 Adaptive Weighted", 
-                        f"{adaptive_score:.1f}%", 
-                        delta=f"{delta:+.1f}",
-                        help="Continuous scoring with partial credit"
-                    )
-                else:
-                    st.metric("🧠 Adaptive Weighted", "N/A")
-
-            with col3:
-                if scores.get('adjusted_ml_score'):
-                    raw_ml = scores.get('ml_score', 0)
-                    adjusted_ml = scores['adjusted_ml_score']
-                    delta = adjusted_ml - raw_ml
-                    st.metric(
-                        "🤖 Adjusted ML", 
-                        f"{adjusted_ml:.1f}%", 
-                        delta=f"+{delta:.1f}",
-                        help="ML model with growth business adjustments"
-                    )
-                else:
-                    st.metric("🤖 Adjusted ML", "N/A")
-
-            with col4:
                 subprime_score = scores.get('subprime_score', 0)
                 tier = scores.get('subprime_tier', 'N/A')
                 tier_colors = {
@@ -1668,100 +1442,101 @@ def main():
                     help="Primary score for subprime lending decisions"
                 )
 
+            with col2:
+                st.metric(
+                    "🏛️ V2 Weighted", 
+                    f"{scores['weighted_score']:.0f}/100",
+                    help="Binary threshold scoring system"
+                )
+
+            with col3:
+                if scores.get('adjusted_ml_score'):
+                    raw_ml = scores.get('ml_score', 0)
+                    adjusted_ml = scores['adjusted_ml_score']
+                    delta = adjusted_ml - raw_ml
+                    st.metric(
+                        "🤖 Adjusted ML", 
+                        f"{adjusted_ml:.1f}%", 
+                        delta=f"+{delta:.1f}",
+                        help="ML model (future use - not for decisions yet)"
+                    )
+                else:
+                    st.metric("🤖 Adjusted ML", "N/A")
+                    
+            st.info("""
+            **🎯 Scoring Decision Hierarchy:**
+            1. **Subprime Score** - Primary lending decision
+            2. **V2 Weighted** - Secondary validation 
+            3. **ML Score** - Future use only (monitoring)
+            """)
+
                            
                 # Score improvement analysis
                 
-                st.markdown("### 📈 Scoring Methodology Comparison")
+                st.markdown("### 📈 Primary Scoring Methods")
 
-                method_col1, method_col2 = st.columns(2)
+                # Create three columns for the three scoring methods
+                method_col1, method_col2, method_col3 = st.columns(3)
 
                 with method_col1:
                     st.markdown("""
-                    **🏛️ Original Weighted Scoring:**
-                    - ✅ Simple and transparent
-                    - ✅ Easy to understand thresholds
-                    - ❌ Binary pass/fail (harsh on borderline cases)
-                    - ❌ Sharp cutoffs can cause dramatic swings
-    
-                    **🤖 Adjusted ML Probability:**
-                    - ✅ Growth business adjustments
-                    - ✅ Recognizes strong DSCR + losses = growth profile
-                    - ✅ More accurate for your business model
-                    - ❌ Complex to explain to stakeholders
-                    """)
-
-                with method_col2:
-                    st.markdown("""
-                    **🧠 Adaptive Weighted Scoring:**
-                    - ✅ Gradual transitions near thresholds
-                    - ✅ Partial credit for near-threshold performance
-                    - ✅ Better alignment with ML predictions
-                    - ✅ More nuanced risk assessment
-    
-                    **🎯 Subprime Scoring (Most Relevant):**
+                    **🎯 Subprime Score (PRIMARY):**
                     - ✅ Designed for growth businesses with temporary losses
                     - ✅ Focuses on ability to pay (DSCR) and growth trajectory
                     - ✅ Industry-specific risk adjustments
                     - ✅ **Primary recommendation for lending decisions**
+                    - ✅ Best discrimination in your historical data
                     """)
-                # Detailed breakdown (enhanced expandable section)
-                if scores.get('scoring_details'):
-                    with st.expander("🔍 **Detailed Adaptive Scoring Breakdown**", expanded=False):
-                        st.markdown("**Component Score Analysis:**")
-                        
-                        scoring_details = scores.get('scoring_details', [])
-                        
-                        # Create a more structured display of scoring details
-                        detail_data = []
-                        for detail in scoring_details:
-                            if " → " in detail and " vs " in detail:
-                                parts = detail.split(" → ")
-                                if len(parts) == 2:
-                                    metric_part = parts[0]
-                                    score_part = parts[1].replace(" pts", "")
-                                    
-                                    if ": " in metric_part and " vs " in metric_part:
-                                        metric_name = metric_part.split(": ")[0]
-                                        values_part = metric_part.split(": ")[1]
-                                        
-                                        if " vs " in values_part:
-                                            actual_val = values_part.split(" vs ")[0]
-                                            threshold_val = values_part.split(" vs ")[1]
-                                            
-                                            detail_data.append({
-                                                'Component': metric_name,
-                                                'Actual Value': actual_val,
-                                                'Threshold': threshold_val,
-                                                'Points Earned': score_part
-                                            })
-                            else:
-                                # Handle penalty entries
-                                detail_data.append({
-                                    'Component': detail.split(":")[0] if ":" in detail else detail,
-                                    'Actual Value': '-',
-                                    'Threshold': '-',
-                                    'Points Earned': detail.split(":")[1] if ":" in detail else '0'
-                                })
-                        
-                        if detail_data:
-                            breakdown_df = pd.DataFrame(detail_data)
+
+                with method_col2:
+                    st.markdown("""
+                    **🏛️ V2 Weighted Score (SECONDARY):**
+                    - ✅ Simple and transparent binary thresholds
+                    - ✅ Easy to understand and explain
+                    - ✅ Good discrimination between good/bad loans
+                    - ✅ Validation tool for subprime decisions
+                    - ⚠️ Can be harsh on borderline cases
+                    """)
+
+                with method_col3:
+                    st.markdown("""
+                    **🤖 Adjusted ML Score (FUTURE):**
+                    - ⚠️ **Not ready for lending decisions**
+                    - ⚠️ Insufficient training data (need 100+ loans)
+                    - ✅ Growth business adjustments included
+                    - ✅ Future-proofing for when dataset grows
+                    - 📊 Currently for monitoring/comparison only
+                    """)
+                # Detailed breakdown for V2 Weighted scoring
+                with st.expander("🔍 **Detailed V2 Weighted Scoring Breakdown**", expanded=False):
+                    st.markdown("**Component Analysis:**")
+    
+                    if scores.get('score_breakdown'):
+                        breakdown_data = []
+                        for metric, data in scores['score_breakdown'].items():
+                            status = '✅ Pass' if data['meets'] else '❌ Fail'
+                            breakdown_data.append({
+                                'Metric': metric,
+                                'Actual Value': f"{data['actual']:.3f}",
+                                'Meets Threshold': status
+                            })
+        
+                        if breakdown_data:
+                            breakdown_df = pd.DataFrame(breakdown_data)
                             st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
-                        else:
-                            # Fallback to simple list if parsing fails
-                            for detail in scoring_details:
-                                st.write(f"• {detail}")
-                        
+        
                         # Summary statistics
-                        total_possible = 105  # Max possible adaptive score
-                        current_raw = scores.get('raw_adaptive_score', 0)
-                        utilization = (current_raw / total_possible) * 100
-                        
+                        total_metrics = len(scores.get('score_breakdown', {}))
+                        passed_metrics = sum(1 for data in scores.get('score_breakdown', {}).values() if data.get('meets', False))
+        
                         st.markdown(f"""
-                        **📊 Scoring Summary:**
-                        - **Raw Score**: {current_raw:.1f}/{total_possible} points
-                        - **Utilization**: {utilization:.1f}% of maximum possible
-                        - **ML-Aligned Score**: {adaptive_score:.1f}% (after sigmoid transformation)
+                        **📊 V2 Weighted Summary:**
+                        - **Metrics Passed**: {passed_metrics}/{total_metrics}
+                        - **Pass Rate**: {(passed_metrics/total_metrics)*100:.1f}% of thresholds met
+                        - **Final Score**: {scores['weighted_score']:.0f}/100
                         """)
+                    else:
+                        st.info("No detailed breakdown available for V2 Weighted scoring")
 
             # Revenue Insights
             st.markdown("---")
@@ -1954,15 +1729,8 @@ def main():
                         st.metric("Full Period Weighted Score", f"{full_scores['weighted_score']:.0f}/100", 
                                 delta=f"{delta_weighted:+.0f} difference")
                     
+                                     
                     with comp_col2:
-                        if ADAPTIVE_SCORING_AVAILABLE:
-                            delta_adaptive = scores.get('adaptive_weighted_score', 0) - full_scores.get('adaptive_weighted_score', 0)
-                            st.metric("Full Period Adaptive Score", f"{full_scores.get('adaptive_weighted_score', 0):.1f}%",
-                                    delta=f"{delta_adaptive:+.1f}% difference")
-                        else:
-                            st.metric("Full Period Adaptive Score", "N/A")
-                    
-                    with comp_col3:
                         if full_scores['ml_score'] and scores['ml_score']:
                             delta_ml = scores['ml_score'] - full_scores['ml_score']
                             st.metric("Full Period ML Probability", f"{full_scores['ml_score']:.1f}%",
@@ -1970,7 +1738,7 @@ def main():
                         else:
                             st.metric("Full Period ML Probability", "N/A")
                     
-                    with comp_col4:
+                    with comp_col3:
                         delta_revenue = metrics.get('Monthly Average Revenue', 0) - full_metrics.get('Monthly Average Revenue', 0)
                         st.metric("Full Period Monthly Revenue", f"£{full_metrics.get('Monthly Average Revenue', 0):,.0f}",
                                 delta=f"£{delta_revenue:+,.0f} difference")
@@ -2034,32 +1802,31 @@ def main():
             with comparison_col1:
                 # Create comparison chart
                 fig_subprime_comparison = go.Figure()
-                
+    
                 score_data = {
-                    'Traditional Weighted': scores['weighted_score'],
-                    'Adaptive Weighted': scores.get('adaptive_weighted_score', scores['weighted_score']),
+                    'V2 Weighted': scores['weighted_score'],
                     'ML Probability': scores['ml_score'] if scores['ml_score'] else 0,
                     'Subprime Optimized': scores['subprime_score']
                 }
-                
-                colors = ['#1f77b4', '#ff7f0e', '#d62728', '#2ca02c']
-                
+    
+                colors = ['#1f77b4', '#d62728', '#2ca02c']
+    
                 fig_subprime_comparison.add_trace(go.Bar(
                     x=list(score_data.keys()),
                     y=list(score_data.values()),
                     marker_color=colors,
-                    text=[f"{v:.1f}%" for v in score_data.values()],
+                    text=[f"{v:.1f}%" if k == "ML Probability" else f"{v:.1f}" for k, v in score_data.items()],
                     textposition='outside'
                 ))
-                
+    
                 fig_subprime_comparison.update_layout(
                     title="Score Comparison (Subprime Lending Context)",
-                    yaxis_title="Score (%)",
+                    yaxis_title="Score",
                     showlegend=False,
                     height=400,
                     yaxis=dict(range=[0, 100])
                 )
-                
+    
                 st.plotly_chart(fig_subprime_comparison, use_container_width=True, key="subprime_comparison_chart")
 
             with comparison_col2:
@@ -2094,7 +1861,7 @@ def main():
                 st.write(f"• **Subprime Score ({subprime_score:.1f})**: {subprime_interpretation}")
                 
                 # Score convergence analysis
-                scores_list = [scores['weighted_score'], scores.get('adaptive_weighted_score', 0), ml_score, subprime_score]
+                scores_list = [scores['weighted_score'], ml_score, subprime_score]
                 score_range = max(scores_list) - min(scores_list)
                 
                 if score_range <= 15:
@@ -2117,10 +1884,7 @@ def main():
                     st.error("❌ **DECLINE** - Risk too high even for subprime")
 
             st.markdown("---")
-            if ADAPTIVE_SCORING_AVAILABLE:
-                st.success("🎯 Enhanced Dashboard complete with Adaptive Scoring and Subprime Analysis - All sections rendered successfully")
-            else:
-                st.info("🎯 Dashboard complete with Subprime Analysis - Install adaptive_score_calculation.py for enhanced scoring features")
+            st.success("🎯 Enhanced Dashboard complete with Primary Scoring Systems - All sections rendered successfully")
             
             
         except Exception as e:
