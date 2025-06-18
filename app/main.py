@@ -1705,7 +1705,7 @@ def main():
                     - ✅ **Primary recommendation for lending decisions**
                     """)
                 # Detailed breakdown (enhanced expandable section)
-                if scoring_details:
+                if scores.get('scoring_details'):
                     with st.expander("🔍 **Detailed Adaptive Scoring Breakdown**", expanded=False):
                         st.markdown("**Component Score Analysis:**")
                         
