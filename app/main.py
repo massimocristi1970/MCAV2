@@ -1098,13 +1098,13 @@ def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
     operating_margin = metrics.get('Operating Margin', 0)
     
     if dscr >= 3.0 and operating_margin < 0:
-        adjustment += 15
+        adjustment += 4
         adjustment_reasons.append(f"Strong DSCR ({dscr:.1f}) despite losses (+15)")
     elif dscr >= 2.0 and operating_margin < 0:
-        adjustment += 12
+        adjustment += 3
         adjustment_reasons.append(f"Good DSCR ({dscr:.1f}) despite losses (+12)")
     elif dscr >= 1.5 and operating_margin < 0:
-        adjustment += 8
+        adjustment += 2
         adjustment_reasons.append(f"Adequate DSCR ({dscr:.1f}) despite losses (+8)")
     
     # Factor 2: High growth trajectory
@@ -1113,36 +1113,36 @@ def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
         growth = growth / 100
     
     if growth >= 0.2:  # 20%+ growth
-        adjustment += 12
+        adjustment += 3
         adjustment_reasons.append(f"High growth ({growth*100:.1f}%) (+12)")
     elif growth >= 0.15:  # 15%+ growth
-        adjustment += 8
+        adjustment += 2
         adjustment_reasons.append(f"Strong growth ({growth*100:.1f}%) (+8)")
     elif growth >= 0.1:  # 10%+ growth
-        adjustment += 5
+        adjustment += 1
         adjustment_reasons.append(f"Good growth ({growth*100:.1f}%) (+5)")
     
     # Factor 3: Growth + DSCR combination (compounding effect)
     if growth >= 0.15 and dscr >= 2.0:
-        adjustment += 10
+        adjustment += 3
         adjustment_reasons.append("Growth + Strong DSCR combination (+10)")
     elif growth >= 0.1 and dscr >= 1.5:
-        adjustment += 5
+        adjustment += 1
         adjustment_reasons.append("Growth + Good DSCR combination (+5)")
     
     # Factor 4: Director reliability
     directors_score = params.get('directors_score', 0)
     if directors_score >= 80:
-        adjustment += 3
+        adjustment += 1
         adjustment_reasons.append(f"Excellent director score ({directors_score}) (+3)")
     elif directors_score >= 70:
-        adjustment += 2
+        adjustment += 1
         adjustment_reasons.append(f"Good director score ({directors_score}) (+2)")
     
     # Factor 5: Young company bonus (growth trajectory more important)
     company_age = params.get('company_age_months', 0)
     if company_age <= 36 and growth >= 0.15:  # Young + high growth
-        adjustment += 5
+        adjustment += 2
         adjustment_reasons.append(f"Young high-growth company ({company_age}m, {growth*100:.1f}%) (+5)")
     
     # Factor 6: Revenue scale adjustment
@@ -1150,14 +1150,14 @@ def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
     monthly_revenue = metrics.get('Monthly Average Revenue', 0)
     
     if monthly_revenue >= 10000:  # £10k+ monthly revenue
-        adjustment += 3
+        adjustment += 1
         adjustment_reasons.append(f"Strong revenue scale (£{monthly_revenue:,.0f}/month) (+3)")
     elif monthly_revenue >= 5000:  # £5k+ monthly revenue
-        adjustment += 2
+        adjustment += 1
         adjustment_reasons.append(f"Good revenue scale (£{monthly_revenue:,.0f}/month) (+2)")
     
     # Apply adjustment with cap
-    adjusted_score = min(85, raw_ml_score + adjustment)  # Cap at 85%
+    adjusted_score = min(50, raw_ml_score + adjustment)  # Cap at 85%
     
     print(f"  Adjustment Factors:")
     for reason in adjustment_reasons:
@@ -1177,13 +1177,13 @@ def get_ml_score_interpretation(adjusted_score, raw_score):
     
     improvement = adjusted_score - raw_score
     
-    if adjusted_score >= 60:
+    if adjusted_score >= 80:
         risk_level = "Low Risk"
         color = "🟢"
-    elif adjusted_score >= 40:
+    elif adjusted_score >= 70:
         risk_level = "Moderate Risk" 
         color = "🟡"
-    elif adjusted_score >= 25:
+    elif adjusted_score >= 60:
         risk_level = "Higher Risk"
         color = "🟠"
     else:
@@ -1983,12 +1983,14 @@ def main():
 
             with subprime_col1:
                 score = scores['subprime_score']
-                if score >= 65:
+                if score >= 75:
                     st.success(f"✅ **Excellent Subprime Candidate**\nScore: {score:.1f}/100")
-                elif score >= 50:
+                elif score >= 60:
                     st.info(f"ℹ️ **Good Subprime Candidate**\nScore: {score:.1f}/100") 
-                elif score >= 35:
+                elif score >= 45:
                     st.warning(f"⚠️ **Conditional Approval**\nScore: {score:.1f}/100")
+                elif score >= 30:
+                    st.warning(f"⚠️ **Enhanced Monitoring Required**\nScore: {score:.1f}/100")    
                 else:
                     st.error(f"❌ **High Risk - Review Required**\nScore: {score:.1f}/100")
 

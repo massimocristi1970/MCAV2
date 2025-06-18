@@ -42,12 +42,28 @@ class SubprimeScoring:
             'IT Services and Support Companies': 1.1,
             'Business Consultants': 1.05,
             'Education': 1.05,
+            'Engineering': 1.05,
+            'Telecommunications': 1.05,
             
             # Standard risk (no adjustment)
             'Manufacturing': 1.0,
             'Retail': 1.0,
             'Food Service': 1.0,
             'Tradesman': 1.0,
+            'Courier Services (Independent and Regional Operators)': 1.0,
+            'Grocery Stores and Mini-Markets': 1.0,
+            'Estate Agent': 1.0,
+            'Import / Export': 1.0,
+            'Marketing / Advertising / Design': 1.0,
+            'Off-Licence Business': 1.0,
+            'Wholesaler / Distributor': 1.0,
+            'Auto Repair Shops': 1.0,
+            'Printing / Publishing': 1.0,
+            'Recruitment': 1.0,
+            'Personal Services': 1.0,
+            'E-Commerce Retailers': 1.0,
+            'Fitness Centres and Gyms': 1.0,
+            'Other': 1.0,
             
             # Higher risk but still acceptable with pricing
             'Restaurants and Cafes': 0.9,
@@ -273,33 +289,33 @@ class SubprimeScoring:
         growth = metrics.get('Revenue Growth Rate', 0)
         directors_score = params.get('directors_score', 0)
         
-        # Tier 1: Premium Subprime (65+ score with strong fundamentals)
-        if (score >= 65 and dscr >= 2.0 and growth >= 0.15 and directors_score >= 75):
+        # Tier 1: Premium Subprime (75+ score with strong fundamentals)
+        if (score >= 75 and dscr >= 2.0 and growth >= 0.15 and directors_score >= 75):
             return "Tier 1", {
                 "risk_level": "Premium Subprime",
-                "suggested_rate": "1.4-1.45 factor rate",
+                "suggested_rate": "1.4-1.5 factor rate",
                 "max_loan_multiple": "6x monthly revenue",
                 "term_range": "12-24 months",
                 "monitoring": "Quarterly reviews",
                 "approval_probability": "Very High"
             }
         
-        # Tier 2: Standard Subprime (50-65 score)
-        elif (score >= 50 and dscr >= 1.5):
+        # Tier 2: Standard Subprime (60-75 score)
+        elif (score >= 60 and dscr >= 1.5):
             return "Tier 2", {
                 "risk_level": "Standard Subprime", 
-                "suggested_rate": "1.45-1.55 factor rate",
+                "suggested_rate": "1.5-1.6 factor rate",
                 "max_loan_multiple": "4x monthly revenue",
                 "term_range": "6-18 months",
                 "monitoring": "Monthly reviews",
                 "approval_probability": "High"
             }
         
-        # Tier 3: High-Risk Subprime (35-50 score)
-        elif (score >= 35 and dscr >= 1.2 and directors_score >= 55):
+        # Tier 3: High-Risk Subprime (40-60 score)
+        elif (score >= 45 and dscr >= 1.2 and directors_score >= 55):
             return "Tier 3", {
                 "risk_level": "High-Risk Subprime",
-                "suggested_rate": "1.55-1.65 factor rate", 
+                "suggested_rate": "1.6-1.75 factor rate", 
                 "max_loan_multiple": "3x monthly revenue",
                 "term_range": "6-12 months",
                 "monitoring": "Bi-weekly reviews",
@@ -307,10 +323,10 @@ class SubprimeScoring:
             }
         
         # Tier 4: Enhanced Monitoring Required
-        elif (score >= 25 and dscr >= 1.0):
+        elif (score >= 30 and dscr >= 1.0):
             return "Tier 4", {
                 "risk_level": "Enhanced Monitoring Required",
-                "suggested_rate": "1.65-1.8 factor rate",
+                "suggested_rate": "1.75-2.0 factor rate",
                 "max_loan_multiple": "2x monthly revenue", 
                 "term_range": "3-9 months",
                 "monitoring": "Weekly reviews + daily balance monitoring",
@@ -379,10 +395,12 @@ class SubprimeScoring:
             convergence = "Low"
         
         # Primary recommendation based on subprime score (most relevant)
-        if subprime_score >= 50:
+        if subprime_score >= 60:
             primary_rec = "Approve with appropriate subprime pricing"
-        elif subprime_score >= 35:
+        elif subprime_score >= 45:
             primary_rec = "Conditional approval with enhanced monitoring"
+        elif subprime_score >= 30:
+            primary_rec = "Enhanced monitoring required - senior review"    
         else:
             primary_rec = "Decline - risk too high even for subprime"
         
