@@ -712,7 +712,7 @@ def calculate_all_scores_enhanced(metrics, params):
         print(f"  This is why subprime score is not working!")
     
     # Calculate weighted scores 
-    weighted_score = calculate_both_weighted_scores(metrics, params, industry_thresholds)
+    weighted_score = calculate_weighted_scores(metrics, params, industry_thresholds)
 
    
     print(f"🔍 DEBUG - Scoring details type: {type(scoring_details)}, length: {len(scoring_details) if isinstance(scoring_details, list) else 'Not a list'}")
