@@ -346,12 +346,7 @@ PENALTIES = {
     'website_or_social_outdated': 3, 'uses_generic_email': 1, 'no_online_presence': 2
 }
 
-        # Show Python path
-        st.write("**Python Path Includes:**")
-        for i, path in enumerate(sys.path[:5]):  # Show first 5 paths
-            st.write(f"  {i+1}. {path}")
-        if len(sys.path) > 5:
-            st.write(f"  ... and {len(sys.path) - 5} more paths")
+        
 
 def calculate_weighted_scores(metrics, params, industry_thresholds):
     """Calculate original weighted score only"""
