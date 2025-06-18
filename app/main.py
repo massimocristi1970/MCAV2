@@ -616,9 +616,19 @@ def calculate_financial_metrics(data, company_age_months):
                 # Debug output
                 print(f"  Revenue Growth Rate Calculation:")
                 print(f"    Monthly changes: {revenue_growth_changes.tolist()}")
-                print(f"    Median change: {revenue_growth_rate:.3f} ({revenue_growth_rate*100:.1f}%)")
+            if len(revenue_growth_changes) > 0:
+                revenue_growth_rate = revenue_growth_changes.median()
+                revenue_growth_rate = max(-0.5, min(0.5, revenue_growth_rate))  # Cap between -50% and +50%
+    
+                # Safe formatting with None check
+                if revenue_growth_rate is not None:
+                    print(f"    Median change: {revenue_growth_rate:.3f} ({revenue_growth_rate*100:.1f}%)")
+                else:
+                    print(f"    Median change: None (using 0.0%)")
+                    revenue_growth_rate = 0
             else:
-               revenue_growth_rate = 0
+                revenue_growth_rate = 0
+                print(f"    No growth data available, using 0.0%")
                 
             gross_burn_rate = monthly_summary['monthly_expenses'].mean()
         else:
@@ -1866,7 +1876,8 @@ def main():
                     convergence = "🔴 Low convergence - significant disagreement"
                 
                 st.write(f"• **Score Convergence**: {convergence}")
-                st.write(f"• **Score Range**: {score_range:.1f} points")
+                score_range_display = f"{score_range:.1f}" if score_range is not None else "N/A"
+                st.write(f"• **Score Range**: {score_range_display} points")
                 
                 # Primary recommendation
                 st.markdown("**🎯 Primary Recommendation (Subprime Context):**")
@@ -2149,12 +2160,20 @@ def display_loans_repayments_section(df, analysis_period):
         )
     
     with col4:
-        repayment_ratio = analysis['repayment_ratio'] * 100
-        st.metric(
-            "Repayment Ratio", 
-            f"{repayment_ratio:.1f}%",
-            help="Percentage of loans that have been repaid"
-        )
+        repayment_ratio_raw = analysis.get('repayment_ratio', 0)
+        if repayment_ratio_raw is not None:
+            repayment_ratio = repayment_ratio_raw * 100
+            st.metric(
+                "Repayment Ratio", 
+                f"{repayment_ratio:.1f}%",
+                help="Percentage of loans that have been repaid"
+            )
+        else:
+            st.metric(
+                "Repayment Ratio", 
+                "N/A",
+                help="Percentage of loans that have been repaid"
+            )
     
     with col5:
         avg_loan = analysis['avg_loan_amount']
