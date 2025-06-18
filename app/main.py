@@ -1536,7 +1536,7 @@ def main():
             st.markdown("---")
             st.subheader("💰 Revenue Insights")
 
-            rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
+            rev_col1, rev_col2, rev_col3, = st.columns(3)
             with rev_col1:
                 sources_count = revenue_insights.get('unique_revenue_sources', 0)
                 st.metric("Unique Revenue Sources", f"{sources_count}")
@@ -1716,7 +1716,7 @@ def main():
                     full_scores = calculate_all_scores_enhanced(full_metrics, params)
                     
                     st.write("**Full Period vs Selected Period Comparison:**")
-                    comp_col1, comp_col2, comp_col3, comp_col4 = st.columns(4)
+                    comp_col1, comp_col2, comp_col3, = st.columns(3)
                     
                     with comp_col1:
                         delta_weighted = scores['weighted_score'] - full_scores['weighted_score']
