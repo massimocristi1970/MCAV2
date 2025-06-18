@@ -1308,9 +1308,7 @@ def main():
     st.title("🏦 Business Finance Scorecard")
     st.markdown("---")
     
-    # Add debug information
-    show_debug_info()
-    
+       
     # Sidebar inputs
     st.sidebar.header("Business Parameters")
     
