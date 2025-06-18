@@ -1837,7 +1837,8 @@ def main():
                 else:
                     ml_interpretation = "⚫ Too risky even for subprime"
                 
-                st.write(f"• **ML Model ({ml_score:.1f}%)**: {ml_interpretation}")
+                ml_score_display = f"{ml_score:.1f}" if ml_score is not None else "N/A"
+                st.write(f"• **ML Model ({ml_score_display}%)**: {ml_interpretation}")
                 
                 # Subprime score interpretation
                 subprime_score = scores['subprime_score']
@@ -1850,7 +1851,8 @@ def main():
                 else:
                     subprime_interpretation = "🔴 Decline recommended"
                 
-                st.write(f"• **Subprime Score ({subprime_score:.1f})**: {subprime_interpretation}")
+                subprime_score_display = f"{subprime_score:.1f}" if subprime_score is not None else "N/A"
+                st.write(f"• **Subprime Score ({subprime_score_display})**: {subprime_interpretation}")
                 
                 # Score convergence analysis
                 scores_list = [scores['weighted_score'], ml_score, subprime_score]
