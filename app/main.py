@@ -715,9 +715,7 @@ def calculate_all_scores_enhanced(metrics, params):
     weighted_score = calculate_weighted_scores(metrics, params, industry_thresholds)
 
    
-    print(f"🔍 DEBUG - Scoring details type: {type(scoring_details)}, length: {len(scoring_details) if isinstance(scoring_details, list) else 'Not a list'}")
-
-        
+          
     print(f"  Original Weighted Score: {original_weighted_score}/100")
         
     # NEW: Subprime scoring - WITH ERROR HANDLING
