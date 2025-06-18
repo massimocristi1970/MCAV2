@@ -1385,7 +1385,7 @@ def main():
                 return
             
             # Display data info and export
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
             with col1:
                 st.success(f"✅ Loaded {len(df)} transactions")
             with col2:
@@ -1536,7 +1536,7 @@ def main():
             st.markdown("---")
             st.subheader("💰 Revenue Insights")
 
-            rev_col1, rev_col2, rev_col3, = st.columns(3)
+            rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
             with rev_col1:
                 sources_count = revenue_insights.get('unique_revenue_sources', 0)
                 st.metric("Unique Revenue Sources", f"{sources_count}")
