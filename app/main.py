@@ -1466,72 +1466,73 @@ def main():
             """)
 
                            
-                # Score improvement analysis
+            # Score improvement analysis
                 
-                st.markdown("### 📈 Primary Scoring Methods")
+            st.markdown("### 📈 Primary Scoring Methods")
 
-                # Create three columns for the three scoring methods
-                method_col1, method_col2, method_col3 = st.columns(3)
+            # Create three columns for the three scoring methods
+            method_col1, method_col2, method_col3 = st.columns(3)
 
-                with method_col1:
-                    st.markdown("""
-                    **🎯 Subprime Score (PRIMARY):**
-                    - ✅ Designed for growth businesses with temporary losses
-                    - ✅ Focuses on ability to pay (DSCR) and growth trajectory
-                    - ✅ Industry-specific risk adjustments
-                    - ✅ **Primary recommendation for lending decisions**
-                    - ✅ Best discrimination in your historical data
-                    """)
+            with method_col1:
+                st.markdown("""
+                **🎯 Subprime Score (PRIMARY):**
+                - ✅ Designed for growth businesses with temporary losses
+                - ✅ Focuses on ability to pay (DSCR) and growth trajectory
+                - ✅ Industry-specific risk adjustments
+                - ✅ **Primary recommendation for lending decisions**
+                - ✅ Best discrimination in your historical data
+                """)
 
-                with method_col2:
-                    st.markdown("""
-                    **🏛️ V2 Weighted Score (SECONDARY):**
-                    - ✅ Simple and transparent binary thresholds
-                    - ✅ Easy to understand and explain
-                    - ✅ Good discrimination between good/bad loans
-                    - ✅ Validation tool for subprime decisions
-                    - ⚠️ Can be harsh on borderline cases
-                    """)
+            with method_col2:
+                st.markdown("""
+                **🏛️ V2 Weighted Score (SECONDARY):**
+                - ✅ Simple and transparent binary thresholds
+                - ✅ Easy to understand and explain
+                - ✅ Good discrimination between good/bad loans
+                - ✅ Validation tool for subprime decisions
+                - ⚠️ Can be harsh on borderline cases
+                """)
 
-                with method_col3:
-                    st.markdown("""
-                    **🤖 Adjusted ML Score (FUTURE):**
-                    - ⚠️ **Not ready for lending decisions**
-                    - ⚠️ Insufficient training data (need 100+ loans)
-                    - ✅ Growth business adjustments included
-                    - ✅ Future-proofing for when dataset grows
-                    - 📊 Currently for monitoring/comparison only
-                    """)
-                # Detailed breakdown for V2 Weighted scoring
-                with st.expander("🔍 **Detailed V2 Weighted Scoring Breakdown**", expanded=False):
-                    st.markdown("**Component Analysis:**")
+            with method_col3:
+                st.markdown("""
+                **🤖 Adjusted ML Score (FUTURE):**
+                - ⚠️ **Not ready for lending decisions**
+                - ⚠️ Insufficient training data (need 100+ loans)
+                - ✅ Growth business adjustments included
+                - ✅ Future-proofing for when dataset grows
+                - 📊 Currently for monitoring/comparison only
+                """)
+                
+            # Detailed breakdown for V2 Weighted scoring
+            with st.expander("🔍 **Detailed V2 Weighted Scoring Breakdown**", expanded=False):
+                st.markdown("**Component Analysis:**")
     
-                    if scores.get('score_breakdown'):
-                        breakdown_data = []
-                        for metric, data in scores['score_breakdown'].items():
-                            status = '✅ Pass' if data['meets'] else '❌ Fail'
-                            breakdown_data.append({
-                                'Metric': metric,
-                                'Actual Value': f"{data['actual']:.3f}",
-                                'Meets Threshold': status
-                            })
+                if scores.get('score_breakdown'):
+                    breakdown_data = []
+                    for metric, data in scores['score_breakdown'].items():
+                        status = '✅ Pass' if data['meets'] else '❌ Fail'
+                        breakdown_data.append({
+                            'Metric': metric,
+                            'Actual Value': f"{data['actual']:.3f}",
+                            'Meets Threshold': status
+                        })
         
-                        if breakdown_data:
-                            breakdown_df = pd.DataFrame(breakdown_data)
-                            st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
+                    if breakdown_data:
+                        breakdown_df = pd.DataFrame(breakdown_data)
+                        st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
         
-                        # Summary statistics
-                        total_metrics = len(scores.get('score_breakdown', {}))
-                        passed_metrics = sum(1 for data in scores.get('score_breakdown', {}).values() if data.get('meets', False))
+                    # Summary statistics
+                    total_metrics = len(scores.get('score_breakdown', {}))
+                    passed_metrics = sum(1 for data in scores.get('score_breakdown', {}).values() if data.get('meets', False))
         
-                        st.markdown(f"""
-                        **📊 V2 Weighted Summary:**
-                        - **Metrics Passed**: {passed_metrics}/{total_metrics}
-                        - **Pass Rate**: {(passed_metrics/total_metrics)*100:.1f}% of thresholds met
-                        - **Final Score**: {scores['weighted_score']:.0f}/100
-                        """)
-                    else:
-                        st.info("No detailed breakdown available for V2 Weighted scoring")
+                    st.markdown(f"""
+                    **📊 V2 Weighted Summary:**
+                    - **Metrics Passed**: {passed_metrics}/{total_metrics}
+                    - **Pass Rate**: {(passed_metrics/total_metrics)*100:.1f}% of thresholds met
+                    - **Final Score**: {scores['weighted_score']:.0f}/100
+                    """)
+                else:
+                    st.info("No detailed breakdown available for V2 Weighted scoring")
 
             # Revenue Insights
             st.markdown("---")
