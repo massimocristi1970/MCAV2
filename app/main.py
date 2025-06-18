@@ -349,29 +349,29 @@ PENALTIES = {
         
 
 def calculate_weighted_scores(metrics, params, industry_thresholds):
-    """Calculate original weighted score only"""
+    """Calculate weighted score only"""
     
-    # Original weighted score (keep existing logic)
-    original_weighted_score = 0
+    # weighted score (keep existing logic)
+    weighted_score = 0
     for metric, weight in WEIGHTS.items():
         if metric == 'Company Age (Months)':
             if params['company_age_months'] >= 6:
-                original_weighted_score += weight
+                weighted_score += weight
         elif metric == 'Directors Score':
             if params['directors_score'] >= industry_thresholds['Directors Score']:
-                original_weighted_score += weight
+                weighted_score += weight
         elif metric == 'Sector Risk':
             sector_risk = industry_thresholds['Sector Risk']
             if sector_risk <= industry_thresholds['Sector Risk']:
-                original_weighted_score += weight
+                weighted_score += weight
         elif metric in metrics:
             threshold = industry_thresholds.get(metric, 0)
             if metric in ['Cash Flow Volatility', 'Average Negative Balance Days per Month', 'Number of Bounced Payments']:
                 if metrics[metric] <= threshold:
-                    original_weighted_score += weight
+                    weighted_score += weight
             else:
                 if metrics[metric] >= threshold:
-                    original_weighted_score += weight
+                    weighted_score += weight
     
     # Apply penalties
     penalties = 0
@@ -379,7 +379,7 @@ def calculate_weighted_scores(metrics, params, industry_thresholds):
         if params.get(flag, False):
             penalties += penalty
     
-    original_weighted_score = max(0, original_weighted_score - penalties)
+    weighted_score = max(0, weighted_score - penalties)
     
    
 def load_models():
@@ -716,7 +716,7 @@ def calculate_all_scores_enhanced(metrics, params):
 
    
           
-    print(f"  Original Weighted Score: {original_weighted_score}/100")
+    print(f"  Weighted Score: {weighted_score}/100")
         
     # NEW: Subprime scoring - WITH ERROR HANDLING
     print(f"\n🎯 DEBUG - Attempting Subprime Scoring:")
@@ -864,7 +864,7 @@ def calculate_all_scores_enhanced(metrics, params):
     print(f"="*50)
     
     return {
-        'weighted_score': original_weighted_score,
+        'weighted_score': weighted_score,
         'industry_score': industry_score,
         'ml_score': ml_score,
         'adjusted_ml_score': adjusted_ml_score,
