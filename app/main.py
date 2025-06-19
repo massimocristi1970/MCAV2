@@ -10,6 +10,8 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import sys
 import os
+import base64
+from io import BytesIO
 
 # Add debug info about file structure
 def debug_file_structure():
@@ -1696,6 +1698,320 @@ def display_loans_repayments_section(df, analysis_period):
                 st.info("No loan or repayment data found for monthly analysis.")
     
     return analysis
+class DashboardExporter:
+    """Safe dashboard export system integrated directly into main.py"""
+    
+    def __init__(self):
+        self.export_timestamp = datetime.now()
+    
+    def export_dashboard_data(
+        self, 
+        company_name: str,
+        params: dict,
+        metrics: dict, 
+        scores: dict,
+        analysis_period: str,
+        revenue_insights: dict,
+        loans_analysis: dict = None
+    ) -> dict:
+        """Prepare all dashboard data for export."""
+        
+        export_data = {
+            'export_info': {
+                'company_name': company_name,
+                'export_timestamp': self.export_timestamp.isoformat(),
+                'analysis_period': analysis_period,
+                'generated_by': 'Business Finance Scorecard v2.0'
+            },
+            'business_parameters': {
+                'industry': params.get('industry'),
+                'requested_loan': params.get('requested_loan'),
+                'directors_score': params.get('directors_score'),
+                'company_age_months': params.get('company_age_months'),
+                'risk_factors': {
+                    'personal_default_12m': params.get('personal_default_12m', False),
+                    'business_ccj': params.get('business_ccj', False),
+                    'director_ccj': params.get('director_ccj', False),
+                    'website_or_social_outdated': params.get('website_or_social_outdated', False),
+                    'uses_generic_email': params.get('uses_generic_email', False),
+                    'no_online_presence': params.get('no_online_presence', False)
+                }
+            },
+            'financial_metrics': metrics,
+            'scoring_results': {
+                'subprime_score': scores.get('subprime_score'),
+                'subprime_tier': scores.get('subprime_tier'),
+                'subprime_recommendation': scores.get('subprime_recommendation'),
+                'v2_weighted_score': scores.get('weighted_score'),
+                'ml_score': scores.get('ml_score'),
+                'adjusted_ml_score': scores.get('adjusted_ml_score'),
+                'industry_score': scores.get('industry_score'),
+                'loan_risk': scores.get('loan_risk')
+            },
+            'revenue_insights': revenue_insights,
+            'loans_analysis': loans_analysis or {}
+        }
+        
+        return export_data
+    
+    def generate_html_report(self, export_data: dict) -> str:
+        """Generate comprehensive HTML report."""
+        
+        # Helper function for score styling
+        def get_score_class(score):
+            if score >= 70:
+                return "high"
+            elif score >= 40:
+                return "medium"
+            else:
+                return "low"
+        
+        # Generate loans section HTML if data exists
+        loans_section = ""
+        if export_data['loans_analysis'] and export_data['loans_analysis'].get('loan_count', 0) > 0:
+            loans_section = f"""
+            <div class="section">
+                <h2>💰 Loans & Debt Analysis</h2>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <h4>Total Loans Received</h4>
+                        <div>£{export_data['loans_analysis'].get('total_loans_received', 0):,.0f}</div>
+                        <p>{export_data['loans_analysis'].get('loan_count', 0)} transactions</p>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Total Repayments</h4>
+                        <div>£{export_data['loans_analysis'].get('total_repayments_made', 0):,.0f}</div>
+                        <p>{export_data['loans_analysis'].get('repayment_count', 0)} transactions</p>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Net Borrowing</h4>
+                        <div>£{export_data['loans_analysis'].get('net_borrowing', 0):,.0f}</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Repayment Ratio</h4>
+                        <div>{export_data['loans_analysis'].get('repayment_ratio', 0)*100:.1f}%</div>
+                    </div>
+                </div>
+            </div>
+            """
+        
+        html_template = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Business Finance Scorecard Report - {export_data['export_info']['company_name']}</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }}
+                .header {{ background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }}
+                .section {{ margin-bottom: 30px; padding: 15px; border-left: 4px solid #007bff; }}
+                .metric-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }}
+                .metric-card {{ background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }}
+                .score-high {{ color: #28a745; font-weight: bold; }}
+                .score-medium {{ color: #ffc107; font-weight: bold; }}
+                .score-low {{ color: #dc3545; font-weight: bold; }}
+                .table-responsive {{ overflow-x: auto; }}
+                table {{ width: 100%; border-collapse: collapse; margin: 10px 0; }}
+                th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }}
+                th {{ background-color: #f8f9fa; font-weight: bold; }}
+                .footer {{ margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #6c757d; }}
+            </style>
+        </head>
+        <body>
+            <!-- Header Section -->
+            <div class="header">
+                <h1>🏦 Business Finance Scorecard Report</h1>
+                <h2>{export_data['export_info']['company_name']}</h2>
+                <p><strong>Generated:</strong> {datetime.fromisoformat(export_data['export_info']['export_timestamp']).strftime('%B %d, %Y at %I:%M %p')}</p>
+                <p><strong>Analysis Period:</strong> {export_data['export_info']['analysis_period']}</p>
+                <p><strong>Industry:</strong> {export_data['business_parameters']['industry']}</p>
+            </div>
+            
+            <!-- Executive Summary -->
+            <div class="section">
+                <h2>📊 Executive Summary</h2>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <h3>🎯 Subprime Score</h3>
+                        <div class="score-{get_score_class(export_data['scoring_results']['subprime_score'])}">{export_data['scoring_results']['subprime_score']:.1f}/100</div>
+                        <p>{export_data['scoring_results']['subprime_tier']}</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>🏛️ V2 Weighted</h3>
+                        <div class="score-{get_score_class(export_data['scoring_results']['v2_weighted_score'])}">{export_data['scoring_results']['v2_weighted_score']:.0f}/100</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>🤖 ML Score</h3>
+                        <div class="score-{get_score_class(export_data['scoring_results'].get('adjusted_ml_score', 0))}">{export_data['scoring_results'].get('adjusted_ml_score', 0):.1f}%</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>💰 Requested Loan</h3>
+                        <div>£{export_data['business_parameters']['requested_loan']:,.0f}</div>
+                        <p>{export_data['scoring_results']['loan_risk']}</p>
+                    </div>
+                </div>
+                
+                <h3>📋 Primary Recommendation</h3>
+                <p><strong>{export_data['scoring_results']['subprime_recommendation']}</strong></p>
+            </div>
+            
+            <!-- Financial Metrics -->
+            <div class="section">
+                <h2>💰 Financial Performance</h2>
+                <div class="table-responsive">
+                    <table>
+                        <tr><th>Metric</th><th>Value</th></tr>
+                        <tr><td>Total Revenue</td><td>£{export_data['financial_metrics'].get('Total Revenue', 0):,.2f}</td></tr>
+                        <tr><td>Monthly Average Revenue</td><td>£{export_data['financial_metrics'].get('Monthly Average Revenue', 0):,.2f}</td></tr>
+                        <tr><td>Net Income</td><td>£{export_data['financial_metrics'].get('Net Income', 0):,.2f}</td></tr>
+                        <tr><td>Operating Margin</td><td>{export_data['financial_metrics'].get('Operating Margin', 0)*100:.1f}%</td></tr>
+                        <tr><td>Revenue Growth Rate</td><td>{export_data['financial_metrics'].get('Revenue Growth Rate', 0)*100:.1f}%</td></tr>
+                        <tr><td>Debt Service Coverage Ratio</td><td>{export_data['financial_metrics'].get('Debt Service Coverage Ratio', 0):.2f}</td></tr>
+                        <tr><td>Cash Flow Volatility</td><td>{export_data['financial_metrics'].get('Cash Flow Volatility', 0):.3f}</td></tr>
+                        <tr><td>Average Month-End Balance</td><td>£{export_data['financial_metrics'].get('Average Month-End Balance', 0):,.2f}</td></tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Revenue Analysis -->
+            <div class="section">
+                <h2>📈 Revenue Insights</h2>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <h4>Revenue Sources</h4>
+                        <div>{export_data['revenue_insights'].get('unique_revenue_sources', 0)}</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Avg Daily Revenue</h4>
+                        <div>£{export_data['revenue_insights'].get('avg_daily_revenue_amount', 0):,.2f}</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Revenue Active Days</h4>
+                        <div>{export_data['revenue_insights'].get('total_revenue_days', 0)}</div>
+                    </div>
+                    <div class="metric-card">
+                        <h4>Transactions/Day</h4>
+                        <div>{export_data['revenue_insights'].get('avg_revenue_transactions_per_day', 0):.1f}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loans Analysis -->
+            {loans_section}
+            
+            <!-- Risk Factors -->
+            <div class="section">
+                <h2>⚠️ Risk Factors Assessment</h2>
+                <div class="table-responsive">
+                    <table>
+                        <tr><th>Risk Factor</th><th>Status</th></tr>
+                        <tr><td>Personal Defaults (12m)</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['personal_default_12m'] else '✅ No'}</td></tr>
+                        <tr><td>Business CCJs</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['business_ccj'] else '✅ No'}</td></tr>
+                        <tr><td>Director CCJs</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['director_ccj'] else '✅ No'}</td></tr>
+                        <tr><td>Outdated Web Presence</td><td>{'⚠️ Yes' if export_data['business_parameters']['risk_factors']['website_or_social_outdated'] else '✅ No'}</td></tr>
+                        <tr><td>Generic Email</td><td>{'⚠️ Yes' if export_data['business_parameters']['risk_factors']['uses_generic_email'] else '✅ No'}</td></tr>
+                        <tr><td>No Online Presence</td><td>{'⚠️ Yes' if export_data['business_parameters']['risk_factors']['no_online_presence'] else '✅ No'}</td></tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Business Parameters -->
+            <div class="section">
+                <h2>🏢 Business Information</h2>
+                <div class="table-responsive">
+                    <table>
+                        <tr><th>Parameter</th><th>Value</th></tr>
+                        <tr><td>Company Name</td><td>{export_data['export_info']['company_name']}</td></tr>
+                        <tr><td>Industry</td><td>{export_data['business_parameters']['industry']}</td></tr>
+                        <tr><td>Company Age</td><td>{export_data['business_parameters']['company_age_months']} months</td></tr>
+                        <tr><td>Directors Score</td><td>{export_data['business_parameters']['directors_score']}/100</td></tr>
+                        <tr><td>Requested Loan Amount</td><td>£{export_data['business_parameters']['requested_loan']:,.0f}</td></tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="footer">
+                <p><strong>Report Generated by:</strong> {export_data['export_info']['generated_by']}</p>
+                <p><strong>Disclaimer:</strong> This report is for informational purposes only and should not be considered as financial advice. 
+                All lending decisions should involve comprehensive due diligence and risk assessment.</p>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return html_template
+    
+    def create_export_buttons(
+        self,
+        company_name: str,
+        params: dict,
+        metrics: dict, 
+        scores: dict,
+        analysis_period: str,
+        revenue_insights: dict,
+        loans_analysis: dict = None
+    ) -> None:
+        """Create export buttons in Streamlit interface."""
+        
+        st.markdown("---")
+        st.subheader("📥 Export Dashboard Report")
+        
+        # Prepare export data
+        export_data = self.export_dashboard_data(
+            company_name, params, metrics, scores, 
+            analysis_period, revenue_insights, loans_analysis
+        )
+        
+        # Create columns for export buttons
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            # HTML Export
+            html_report = self.generate_html_report(export_data)
+            st.download_button(
+                label="📄 Export HTML Report",
+                data=html_report,
+                file_name=f"{company_name.replace(' ', '_')}_financial_report_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+                mime="text/html",
+                help="Download comprehensive HTML report (opens in any browser)",
+                type="primary"
+            )
+        
+        with col2:
+            # JSON Export
+            json_data = json.dumps(export_data, indent=2, default=str)
+            st.download_button(
+                label="📊 Export JSON Data",
+                data=json_data,
+                file_name=f"{company_name.replace(' ', '_')}_data_{datetime.now().strftime('%Y%m%d_%H%M')}.json",
+                mime="application/json",
+                help="Download all data in JSON format for further analysis"
+            )
+        
+        with col3:
+            # CSV Export (Financial Metrics)
+            metrics_df = pd.DataFrame([
+                {'Metric': k, 'Value': v} for k, v in metrics.items() 
+                if k != 'monthly_summary' and isinstance(v, (int, float))
+            ])
+            csv_data = metrics_df.to_csv(index=False)
+            st.download_button(
+                label="📈 Export CSV Metrics",
+                data=csv_data,
+                file_name=f"{company_name.replace(' ', '_')}_metrics_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                mime="text/csv",
+                help="Download financial metrics as CSV"
+            )
+        
+        # Export information
+        st.info(f"""
+        **📊 Export Options Available:**
+        - **HTML Report**: ✅ Complete dashboard in professional web format
+        - **JSON Data**: ✅ All data for external analysis and integration
+        - **CSV Metrics**: ✅ Financial metrics for spreadsheet analysis
+        
+        **Export includes**: All scoring results, financial metrics, revenue insights, risk factors, loans analysis, and business parameters.
+        """)
 
 def main():
     """Main application"""
@@ -2272,8 +2588,25 @@ def main():
                         st.error("❌ **DECLINE** - Risk too high even for subprime")
 
                 st.markdown("---")
-                st.success("🎯 Enhanced Dashboard complete with Primary Scoring Systems - All sections rendered successfully")
-                
+                # Dashboard Export Section
+                try:
+                    exporter = DashboardExporter()
+                    exporter.create_export_buttons(
+                        company_name=company_name,
+                        params=params,
+                        metrics=metrics,
+                        scores=scores,
+                        analysis_period=analysis_period,
+                        revenue_insights=revenue_insights,
+                        loans_analysis=analysis  # from display_loans_repayments_section
+                    )
+                    
+                    st.success("🎯 Enhanced Dashboard complete with Export Functionality")
+                    
+                except Exception as e:
+                    st.error(f"❌ Export functionality error: {str(e)}")
+                    st.success("🎯 Enhanced Dashboard complete (export disabled due to error)")
+                    
             except Exception as e:
                 st.error(f"❌ Unexpected error during processing: {e}")
                 import traceback
