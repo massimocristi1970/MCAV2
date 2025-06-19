@@ -2598,7 +2598,7 @@ def main():
                         scores=scores,
                         analysis_period=analysis_period,
                         revenue_insights=revenue_insights,
-                        loans_analysis=analysis  # from display_loans_repayments_section
+                        loans_analysis=None  # Will be added when loans analysis is available
                     )
                     
                     st.success("🎯 Enhanced Dashboard complete with Export Functionality")
