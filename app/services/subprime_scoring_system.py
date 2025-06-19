@@ -1,7 +1,7 @@
-# subprime_scoring_system.py
+# Enhanced subprime_scoring_system.py with risk factor penalties
 """
-Subprime Business Finance Scoring System
-Designed for alternative lenders serving subprime business market
+Subprime Business Finance Scoring System - ENHANCED VERSION
+Now includes risk factor penalties that match the V2 weighted system
 """
 
 import pandas as pd
@@ -10,7 +10,7 @@ from typing import Dict, Any, Tuple, List
 from datetime import datetime
 
 class SubprimeScoring:
-    """Enhanced scoring system specifically designed for subprime business lending."""
+    """Enhanced scoring system specifically designed for subprime business lending with risk factor penalties."""
     
     def __init__(self):
         # Subprime-optimized weights - focus on ability to pay and growth trajectory
@@ -33,6 +33,16 @@ class SubprimeScoring:
             'minimum_growth': -0.1,                # Can accept some decline if other factors strong
             'minimum_balance': 500,                # Lower liquidity requirement
             'maximum_negative_days': 5,            # More tolerance for cash flow gaps
+        }
+        
+        # NEW: Risk factor penalties specifically calibrated for subprime market
+        self.risk_factor_penalties = {
+            "personal_default_12m": 8,             # Higher penalty - personal credit crucial
+            "business_ccj": 12,                    # Severe penalty - business litigation risk
+            "director_ccj": 8,                     # High penalty - director financial issues
+            'website_or_social_outdated': 3,       # Minor penalty - operational concerns
+            'uses_generic_email': 2,               # Very minor penalty - professionalism
+            'no_online_presence': 4                # Moderate penalty - business viability
         }
         
         # Industry risk adjustments for subprime context
@@ -75,7 +85,7 @@ class SubprimeScoring:
     
     def calculate_subprime_score(self, metrics: Dict[str, Any], params: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Calculate comprehensive subprime business score.
+        Calculate comprehensive subprime business score with risk factor penalties.
         
         Returns detailed scoring breakdown with risk tier and pricing guidance.
         """
@@ -92,8 +102,12 @@ class SubprimeScoring:
         # Calculate stability penalty
         stability_penalty = self._calculate_stability_penalty(metrics)
         
-        # Final score calculation
-        final_score = max(0, min(100, industry_adjusted_score + growth_bonus - stability_penalty))
+        # NEW: Apply risk factor penalties
+        risk_factor_penalty = self._calculate_risk_factor_penalties(params)
+        
+        # Final score calculation - NOW INCLUDES RISK FACTOR PENALTIES
+        pre_penalty_score = industry_adjusted_score + growth_bonus - stability_penalty
+        final_score = max(0, min(100, pre_penalty_score - risk_factor_penalty))
         
         # Determine risk tier and pricing
         risk_tier, pricing_guidance = self._determine_risk_tier(final_score, metrics, params)
@@ -101,7 +115,7 @@ class SubprimeScoring:
         # Generate detailed breakdown
         breakdown = self._generate_scoring_breakdown(
             base_score, industry_adjusted_score, growth_bonus, 
-            stability_penalty, final_score, metrics, params
+            stability_penalty, risk_factor_penalty, final_score, metrics, params
         )
         
         return {
@@ -282,6 +296,48 @@ class SubprimeScoring:
         
         return min(penalty, 20)  # Cap penalty at 20 points
     
+    def _calculate_risk_factor_penalties(self, params: Dict[str, Any]) -> float:
+        """NEW: Calculate penalties for risk factors (CCJs, defaults, etc.)"""
+        
+        total_penalty = 0
+        applied_penalties = []
+        
+        # Check each risk factor and apply penalties
+        if params.get('personal_default_12m', False):
+            penalty = self.risk_factor_penalties['personal_default_12m']
+            total_penalty += penalty
+            applied_penalties.append(f"Personal Default 12m: -{penalty}")
+        
+        if params.get('business_ccj', False):
+            penalty = self.risk_factor_penalties['business_ccj']
+            total_penalty += penalty
+            applied_penalties.append(f"Business CCJ: -{penalty}")
+        
+        if params.get('director_ccj', False):
+            penalty = self.risk_factor_penalties['director_ccj']
+            total_penalty += penalty
+            applied_penalties.append(f"Director CCJ: -{penalty}")
+        
+        if params.get('website_or_social_outdated', False):
+            penalty = self.risk_factor_penalties['website_or_social_outdated']
+            total_penalty += penalty
+            applied_penalties.append(f"Outdated Web Presence: -{penalty}")
+        
+        if params.get('uses_generic_email', False):
+            penalty = self.risk_factor_penalties['uses_generic_email']
+            total_penalty += penalty
+            applied_penalties.append(f"Generic Email: -{penalty}")
+        
+        if params.get('no_online_presence', False):
+            penalty = self.risk_factor_penalties['no_online_presence']
+            total_penalty += penalty
+            applied_penalties.append(f"No Online Presence: -{penalty}")
+        
+        # Store applied penalties for breakdown
+        params['_applied_risk_penalties'] = applied_penalties
+        
+        return total_penalty
+    
     def _determine_risk_tier(self, score: float, metrics: Dict[str, Any], params: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
         """Determine risk tier and pricing guidance based on score and factors."""
         
@@ -289,8 +345,15 @@ class SubprimeScoring:
         growth = metrics.get('Revenue Growth Rate', 0)
         directors_score = params.get('directors_score', 0)
         
-        # Tier 1: Premium Subprime (75+ score with strong fundamentals)
-        if (score >= 75 and dscr >= 2.0 and growth >= 0.15 and directors_score >= 75):
+        # Risk factors impact tier determination
+        has_major_risk_factors = (
+            params.get('personal_default_12m', False) or 
+            params.get('business_ccj', False) or 
+            params.get('director_ccj', False)
+        )
+        
+        # Tier 1: Premium Subprime (75+ score with strong fundamentals AND no major risk factors)
+        if (score >= 75 and dscr >= 2.0 and growth >= 0.15 and directors_score >= 75 and not has_major_risk_factors):
             return "Tier 1", {
                 "risk_level": "Premium Subprime",
                 "suggested_rate": "1.4-1.5 factor rate",
@@ -300,36 +363,38 @@ class SubprimeScoring:
                 "approval_probability": "Very High"
             }
         
-        # Tier 2: Standard Subprime (60-75 score)
+        # Tier 2: Standard Subprime (60-75 score, some risk factors acceptable)
         elif (score >= 60 and dscr >= 1.5):
+            rate_adjustment = "+0.1" if has_major_risk_factors else ""
             return "Tier 2", {
                 "risk_level": "Standard Subprime", 
-                "suggested_rate": "1.5-1.6 factor rate",
+                "suggested_rate": f"1.5-1.6{rate_adjustment} factor rate",
                 "max_loan_multiple": "4x monthly revenue",
                 "term_range": "6-18 months",
-                "monitoring": "Monthly reviews",
-                "approval_probability": "High"
+                "monitoring": "Monthly reviews" + (" + enhanced due diligence" if has_major_risk_factors else ""),
+                "approval_probability": "High" if not has_major_risk_factors else "Moderate-High"
             }
         
         # Tier 3: High-Risk Subprime (40-60 score)
         elif (score >= 45 and dscr >= 1.2 and directors_score >= 55):
+            rate_adjustment = "+0.15" if has_major_risk_factors else ""
             return "Tier 3", {
                 "risk_level": "High-Risk Subprime",
-                "suggested_rate": "1.6-1.75 factor rate", 
+                "suggested_rate": f"1.6-1.75{rate_adjustment} factor rate", 
                 "max_loan_multiple": "3x monthly revenue",
                 "term_range": "6-12 months",
-                "monitoring": "Bi-weekly reviews",
-                "approval_probability": "Moderate"
+                "monitoring": "Bi-weekly reviews" + (" + continuous risk monitoring" if has_major_risk_factors else ""),
+                "approval_probability": "Moderate" if not has_major_risk_factors else "Low-Moderate"
             }
         
-        # Tier 4: Enhanced Monitoring Required
-        elif (score >= 30 and dscr >= 1.0):
+        # Tier 4: Enhanced Monitoring Required (major risk factors push here regardless of score)
+        elif (score >= 30 and dscr >= 1.0) or has_major_risk_factors:
             return "Tier 4", {
                 "risk_level": "Enhanced Monitoring Required",
-                "suggested_rate": "1.75-2.0 factor rate",
+                "suggested_rate": "1.75-2.0+ factor rate",
                 "max_loan_multiple": "2x monthly revenue", 
                 "term_range": "3-9 months",
-                "monitoring": "Weekly reviews + daily balance monitoring",
+                "monitoring": "Weekly reviews + daily balance monitoring + personal guarantees required",
                 "approval_probability": "Low - Senior review required"
             }
         
@@ -345,14 +410,15 @@ class SubprimeScoring:
             }
     
     def _generate_scoring_breakdown(self, base_score, industry_score, growth_bonus, 
-                                  stability_penalty, final_score, metrics, params) -> List[str]:
-        """Generate detailed scoring breakdown."""
+                                  stability_penalty, risk_factor_penalty, final_score, metrics, params) -> List[str]:
+        """Generate detailed scoring breakdown including risk factor penalties."""
         
         breakdown = [
             f"Base Subprime Score: {base_score:.1f}/100",
             f"Industry Adjustment: {industry_score - base_score:+.1f} points",
             f"Growth Momentum Bonus: +{growth_bonus:.1f} points",
             f"Stability Penalty: -{stability_penalty:.1f} points",
+            f"Risk Factor Penalties: -{risk_factor_penalty:.1f} points",  # NEW LINE
             f"Final Score: {final_score:.1f}/100",
             "",
             "Key Factors:",
@@ -363,19 +429,39 @@ class SubprimeScoring:
             f"• Operating Margin: {metrics.get('Operating Margin', 0)*100:.1f}%"
         ]
         
+        # Add risk factor details if any were applied
+        applied_penalties = params.get('_applied_risk_penalties', [])
+        if applied_penalties:
+            breakdown.append("")
+            breakdown.append("Risk Factor Penalties Applied:")
+            for penalty in applied_penalties:
+                breakdown.append(f"• {penalty}")
+        
         return breakdown
     
     def _generate_recommendation(self, risk_tier: str, metrics: Dict[str, Any], params: Dict[str, Any]) -> str:
-        """Generate lending recommendation based on risk tier."""
+        """Generate lending recommendation based on risk tier and risk factors."""
+        
+        has_major_risk_factors = (
+            params.get('personal_default_12m', False) or 
+            params.get('business_ccj', False) or 
+            params.get('director_ccj', False)
+        )
         
         if risk_tier == "Tier 1":
-            return "APPROVE - Excellent subprime candidate with strong fundamentals and growth trajectory."
+            return "APPROVE - Excellent subprime candidate with strong fundamentals and minimal risk factors."
         elif risk_tier == "Tier 2": 
-            return "APPROVE - Good subprime candidate. Standard monitoring and pricing recommended."
+            if has_major_risk_factors:
+                return "APPROVE - Good subprime candidate. Enhanced monitoring recommended due to risk factors."
+            else:
+                return "APPROVE - Good subprime candidate. Standard monitoring and pricing recommended."
         elif risk_tier == "Tier 3":
-            return "CONDITIONAL APPROVE - Acceptable with enhanced terms and close monitoring."
+            if has_major_risk_factors:
+                return "CONDITIONAL APPROVE - Acceptable with enhanced terms, close monitoring, and additional security due to risk factors."
+            else:
+                return "CONDITIONAL APPROVE - Acceptable with enhanced terms and close monitoring."
         elif risk_tier == "Tier 4":
-            return "SENIOR REVIEW - High risk but potentially acceptable with strict conditions."
+            return "SENIOR REVIEW - High risk due to poor metrics or significant risk factors. Requires senior approval and strict conditions."
         else:
             return "DECLINE - Risk profile exceeds acceptable parameters for subprime lending."
     
@@ -418,9 +504,9 @@ class SubprimeScoring:
         }
 
 
-# Example usage and testing
-def test_subprime_scoring():
-    """Test the subprime scoring system with your example data."""
+# Example usage and testing with risk factors
+def test_subprime_scoring_with_risk_factors():
+    """Test the enhanced subprime scoring system with risk factors."""
     
     # Your example business metrics
     test_metrics = {
@@ -435,28 +521,90 @@ def test_subprime_scoring():
         'Average Month-End Balance': 13861.52
     }
     
-    test_params = {
-        'directors_score': 75,
-        'company_age_months': 18,
-        'industry': 'IT Services and Support Companies'  # Example
-    }
+    # Test different risk factor combinations
+    test_scenarios = [
+        {
+            'name': 'No Risk Factors',
+            'params': {
+                'directors_score': 75,
+                'company_age_months': 18,
+                'industry': 'IT Services and Support Companies',
+                'personal_default_12m': False,
+                'business_ccj': False,
+                'director_ccj': False,
+                'website_or_social_outdated': False,
+                'uses_generic_email': False,
+                'no_online_presence': False
+            }
+        },
+        {
+            'name': 'Minor Risk Factors',
+            'params': {
+                'directors_score': 75,
+                'company_age_months': 18,
+                'industry': 'IT Services and Support Companies',
+                'personal_default_12m': False,
+                'business_ccj': False,
+                'director_ccj': False,
+                'website_or_social_outdated': True,
+                'uses_generic_email': True,
+                'no_online_presence': False
+            }
+        },
+        {
+            'name': 'Major Risk Factors',
+            'params': {
+                'directors_score': 75,
+                'company_age_months': 18,
+                'industry': 'IT Services and Support Companies',
+                'personal_default_12m': True,
+                'business_ccj': True,
+                'director_ccj': False,
+                'website_or_social_outdated': False,
+                'uses_generic_email': False,
+                'no_online_presence': False
+            }
+        },
+        {
+            'name': 'All Risk Factors',
+            'params': {
+                'directors_score': 75,
+                'company_age_months': 18,
+                'industry': 'IT Services and Support Companies',
+                'personal_default_12m': True,
+                'business_ccj': True,
+                'director_ccj': True,
+                'website_or_social_outdated': True,
+                'uses_generic_email': True,
+                'no_online_presence': True
+            }
+        }
+    ]
     
     scorer = SubprimeScoring()
-    result = scorer.calculate_subprime_score(test_metrics, test_params)
     
-    print("=== SUBPRIME SCORING ANALYSIS ===")
-    print(f"Subprime Score: {result['subprime_score']}/100")
-    print(f"Risk Tier: {result['risk_tier']}")
-    print(f"Recommendation: {result['recommendation']}")
-    print("\nPricing Guidance:")
-    for key, value in result['pricing_guidance'].items():
-        print(f"  {key}: {value}")
+    print("=== ENHANCED SUBPRIME SCORING WITH RISK FACTORS ===\n")
     
-    print(f"\nDetailed Breakdown:")
-    for line in result['breakdown']:
-        print(f"  {line}")
+    for scenario in test_scenarios:
+        print(f"🧪 TEST SCENARIO: {scenario['name']}")
+        print("=" * 50)
+        
+        result = scorer.calculate_subprime_score(test_metrics, scenario['params'])
+        
+        print(f"Subprime Score: {result['subprime_score']}/100")
+        print(f"Risk Tier: {result['risk_tier']}")
+        print(f"Recommendation: {result['recommendation']}")
+        print("\nPricing Guidance:")
+        for key, value in result['pricing_guidance'].items():
+            print(f"  {key}: {value}")
+        
+        print(f"\nDetailed Breakdown:")
+        for line in result['breakdown']:
+            print(f"  {line}")
+        
+        print("\n" + "="*70 + "\n")
     
-    return result
+    return True
 
 if __name__ == "__main__":
-    test_result = test_subprime_scoring()
+    test_subprime_scoring_with_risk_factors()
