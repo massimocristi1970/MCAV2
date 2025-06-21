@@ -21,8 +21,6 @@ def debug_file_structure():
     print(f"  Current file location: {__file__}")
     print(f"  Current directory: {current_dir}")
     
-    # ADD THIS CLASS TO YOUR main.py (before your first function definition)
-
 class MLScalerInsights:
     """
     ML validation specifically calibrated for your training data patterns
@@ -253,7 +251,9 @@ class MLScalerInsights:
         else:
             recommendations.append("⚠️ Prioritize subprime and weighted scores over ML score")
         
-        return recommendations
+        return recommendations 
+
+
     
     # Check for services directory
     services_dir = os.path.join(current_dir, 'services')
