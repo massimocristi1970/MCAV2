@@ -723,6 +723,33 @@ def calculate_all_scores_enhanced(metrics, params):
     print(f"  Sector Risk: {sector_risk}")
     print(f"  Directors Score: {params['directors_score']}")
     print(f"  Company Age: {params['company_age_months']} months")
+    
+    # ADD THIS BLOCK to your calculate_all_scores_enhanced function
+    # Right after the debug prints about industry/sector/directors/age
+
+    # NEW: Safe ML validation
+    try:
+        ml_validator = MLScalerInsights()
+        ml_validation = ml_validator.validate_business_data(metrics, params)
+    
+        if ml_validation.get('available', False):
+            print(f"\n🤖 ML Validation:")
+            print(f"  Data Quality: {ml_validation['data_quality_score']}/100")
+            print(f"  ML Confidence: {ml_validation['ml_confidence']}")
+            print(f"  Different Metrics: {ml_validation['outlier_count']}")
+        
+            if ml_validation.get('outliers'):
+                print(f"  Notable differences:")
+                for outlier in ml_validation['outliers'][:2]:
+                    print(f"    • {outlier['feature']}: {outlier.get('interpretation', 'differs from training')}")
+        else:
+            ml_validation = {'available': False}
+            print(f"\n🤖 ML Validation: Not available")
+        
+    except Exception as e:
+        ml_validation = {'available': False}
+        print(f"\n🤖 ML Validation: Error - {e}")
+
 
     # DEBUG: Check subprime scoring availability
     print(f"\n🔍 DEBUG - Subprime Scoring Check:")
@@ -904,7 +931,8 @@ def calculate_all_scores_enhanced(metrics, params):
         'subprime_tier': subprime_result['risk_tier'],
         'subprime_pricing': subprime_result['pricing_guidance'],
         'subprime_recommendation': subprime_result['recommendation'],
-        'subprime_breakdown': subprime_result['breakdown']
+        'subprime_breakdown': subprime_result['breakdown'],
+        'ml_validation': ml_validation 
     }
 
 def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
