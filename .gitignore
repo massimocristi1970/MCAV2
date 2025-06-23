@@ -6,3 +6,6 @@ venv/
 *.csv
 *.xlsx
 *.zip
+MCAV2_BatchProcessor/data/json_files/filenames.txt
+MCAV2_BatchProcessor/data/json_files/filenames_with_paths.txt
+README.md
