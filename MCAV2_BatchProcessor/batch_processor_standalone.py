@@ -542,69 +542,82 @@ def load_models():
     except:
         return None, None
 
-# SUBPRIME SCORING CLASS
-class SubprimeScoring:
-    """Enhanced scoring system specifically designed for subprime business lending."""
+# TIGHTENED SUBPRIME SCORING CLASS - More Realistic Risk Assessment
+class TightenedSubprimeScoring:
+    """Enhanced scoring system with tightened thresholds for realistic subprime business lending."""
     
     def __init__(self):
-        # Subprime-optimized weights
+        # TIGHTENED subprime weights - emphasize cash flow stability and debt management
         self.subprime_weights = {
-            'Debt Service Coverage Ratio': 28,
-            'Revenue Growth Rate': 20,
-            'Directors Score': 16,
-            'Average Month-End Balance': 12,
-            'Cash Flow Volatility': 8,
-            'Operating Margin': 6,
-            'Net Income': 4,
-            'Average Negative Balance Days per Month': 4,
-            'Company Age (Months)': 2,
+            'Debt Service Coverage Ratio': 35,  # Increased from 28
+            'Cash Flow Volatility': 15,         # Increased from 8 
+            'Directors Score': 18,              # Increased from 16
+            'Average Month-End Balance': 10,    # Reduced from 12
+            'Revenue Growth Rate': 8,           # Reduced from 20 (less emphasis on growth)
+            'Operating Margin': 6,              # Same
+            'Average Negative Balance Days per Month': 6,  # Increased from 4
+            'Company Age (Months)': 2,          # Same
         }
         
-        # Industry risk adjustments
+        # TIGHTENED industry multipliers - more conservative across the board
         self.industry_multipliers = {
-            'Medical Practices (GPs, Clinics, Dentists)': 1.1,
-            'IT Services and Support Companies': 1.1,
-            'Business Consultants': 1.05,
-            'Education': 1.05,
-            'Engineering': 1.05,
-            'Telecommunications': 1.05,
-            'Manufacturing': 1.0,
-            'Retail': 1.0,
-            'Food Service': 1.0,
-            'Tradesman': 1.0,
-            'Other': 1.0,
-            'Restaurants and Cafes': 0.9,
-            'Construction Firms': 0.9,
-            'Beauty Salons and Spas': 0.9,
-            'Bars and Pubs': 0.85,
-            'Event Planning and Management Firms': 0.8,
+            'Medical Practices (GPs, Clinics, Dentists)': 1.05,  # Reduced from 1.1
+            'IT Services and Support Companies': 1.05,           # Reduced from 1.1
+            'Pharmacies (Independent or Small Chains)': 1.03,    # New, conservative
+            'Business Consultants': 1.0,                        # Reduced from 1.05
+            'Education': 1.0,                                    # Reduced from 1.05
+            'Engineering': 1.0,                                  # Reduced from 1.05
+            'Telecommunications': 0.98,                          # Reduced from 1.05
+            'Manufacturing': 0.95,                               # Reduced from 1.0
+            'Retail': 0.93,                                      # Reduced from 1.0
+            'Food Service': 0.90,                                # Reduced from 1.0
+            'Tradesman': 0.88,                                   # Reduced from 1.0
+            'Other': 0.85,                                       # Reduced from 1.0
+            'Restaurants and Cafes': 0.80,                       # Reduced from 0.9
+            'Construction Firms': 0.78,                          # Reduced from 0.9
+            'Beauty Salons and Spas': 0.75,                      # Reduced from 0.9
+            'Bars and Pubs': 0.70,                               # Reduced from 0.85
+            'Event Planning and Management Firms': 0.65,         # Reduced from 0.8
+        }
+        
+        # ENHANCED penalty system - much stricter
+        self.enhanced_penalties = {
+            'personal_default_12m': 8,           # Increased from 3
+            'business_ccj': 12,                  # Increased from 5
+            'director_ccj': 8,                   # Increased from 3
+            'website_or_social_outdated': 5,     # Increased from 3
+            'uses_generic_email': 3,             # Increased from 1
+            'no_online_presence': 6,             # Increased from 2
         }
     
     def calculate_subprime_score(self, metrics, params):
-        """Calculate comprehensive subprime business score."""
+        """Calculate tightened subprime business score."""
         
-        # Calculate base weighted score
-        base_score = self._calculate_base_subprime_score(metrics, params)
+        # Calculate base weighted score with TIGHTENED thresholds
+        base_score = self._calculate_tightened_base_score(metrics, params)
         
-        # Apply industry adjustment
+        # Apply industry adjustment (more conservative)
         industry_adjusted_score = self._apply_industry_adjustment(base_score, params.get('industry'))
         
-        # Calculate growth momentum bonus
-        growth_bonus = self._calculate_growth_momentum_bonus(metrics)
+        # Calculate growth momentum bonus (reduced impact)
+        growth_bonus = self._calculate_conservative_growth_bonus(metrics)
         
-        # Calculate stability penalty
-        stability_penalty = self._calculate_stability_penalty(metrics)
+        # Calculate ENHANCED stability penalty 
+        stability_penalty = self._calculate_enhanced_stability_penalty(metrics, params)
         
-        # Final score calculation
-        final_score = max(0, min(100, industry_adjusted_score + growth_bonus - stability_penalty))
+        # Apply ENHANCED risk factor penalties
+        risk_penalty = self._calculate_enhanced_risk_penalties(params)
         
-        # Determine risk tier and pricing
-        risk_tier, pricing_guidance = self._determine_risk_tier(final_score, metrics, params)
+        # Final score calculation - much more conservative
+        final_score = max(0, min(100, industry_adjusted_score + growth_bonus - stability_penalty - risk_penalty))
+        
+        # Determine risk tier with TIGHTENED criteria
+        risk_tier, pricing_guidance = self._determine_tightened_risk_tier(final_score, metrics, params)
         
         # Generate detailed breakdown
-        breakdown = self._generate_scoring_breakdown(
+        breakdown = self._generate_tightened_breakdown(
             base_score, industry_adjusted_score, growth_bonus, 
-            stability_penalty, final_score, metrics, params
+            stability_penalty, risk_penalty, final_score, metrics, params
         )
         
         return {
@@ -612,205 +625,237 @@ class SubprimeScoring:
             'risk_tier': risk_tier,
             'pricing_guidance': pricing_guidance,
             'breakdown': breakdown,
-            'recommendation': self._generate_recommendation(risk_tier, metrics, params)
+            'recommendation': self._generate_tightened_recommendation(risk_tier, metrics, params)
         }
     
-    def _calculate_base_subprime_score(self, metrics, params):
-        """Calculate base score using subprime-optimized weights."""
+    def _calculate_tightened_base_score(self, metrics, params):
+        """Calculate base score with MUCH TIGHTER thresholds."""
         
         score = 0
         max_possible = sum(self.subprime_weights.values())
         
-        # Debt Service Coverage Ratio (28 points)
+        # DEBT SERVICE COVERAGE RATIO (35 points) - MUCH TIGHTER
         dscr = metrics.get('Debt Service Coverage Ratio', 0)
-        if dscr >= 3.0:
+        if dscr >= 3.5:        # Raised from 3.0
             score += self.subprime_weights['Debt Service Coverage Ratio']
-        elif dscr >= 2.0:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.9
-        elif dscr >= 1.5:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.8
-        elif dscr >= 1.2:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.6
-        elif dscr >= 1.0:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.3
+        elif dscr >= 2.5:      # Raised from 2.0
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.85  # Reduced from 0.9
+        elif dscr >= 2.0:      # Raised from 1.5
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.70  # Reduced from 0.8
+        elif dscr >= 1.5:      # Raised from 1.2
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.45  # Reduced from 0.6
+        elif dscr >= 1.2:      # Raised from 1.0
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.20  # Reduced from 0.3
+        # Below 1.2 gets 0 points (was 1.0)
         
-        # Revenue Growth Rate (20 points)
-        growth = metrics.get('Revenue Growth Rate', 0)
-        if growth >= 0.3:
-            score += self.subprime_weights['Revenue Growth Rate']
-        elif growth >= 0.2:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.9
-        elif growth >= 0.1:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.7
-        elif growth >= 0.05:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.5
-        elif growth >= 0:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.3
-        elif growth >= -0.1:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.1
-        
-        # Directors Score (16 points)
-        directors_score = params.get('directors_score', 0)
-        if directors_score >= 85:
-            score += self.subprime_weights['Directors Score']
-        elif directors_score >= 75:
-            score += self.subprime_weights['Directors Score'] * 0.9
-        elif directors_score >= 65:
-            score += self.subprime_weights['Directors Score'] * 0.7
-        elif directors_score >= 55:
-            score += self.subprime_weights['Directors Score'] * 0.5
-        elif directors_score >= 45:
-            score += self.subprime_weights['Directors Score'] * 0.3
-        
-        # Average Month-End Balance (12 points)
-        balance = metrics.get('Average Month-End Balance', 0)
-        if balance >= 10000:
-            score += self.subprime_weights['Average Month-End Balance']
-        elif balance >= 5000:
-            score += self.subprime_weights['Average Month-End Balance'] * 0.8
-        elif balance >= 2000:
-            score += self.subprime_weights['Average Month-End Balance'] * 0.6
-        elif balance >= 500:
-            score += self.subprime_weights['Average Month-End Balance'] * 0.4
-        
-        # Cash Flow Volatility (8 points) - Inverse scoring
+        # CASH FLOW VOLATILITY (15 points) - MUCH STRICTER
         volatility = metrics.get('Cash Flow Volatility', 1.0)
-        if volatility <= 0.15:
+        if volatility <= 0.10:     # Tightened from 0.15
             score += self.subprime_weights['Cash Flow Volatility']
-        elif volatility <= 0.3:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.8
-        elif volatility <= 0.5:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.6
-        elif volatility <= 0.8:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.4
-        elif volatility <= 1.0:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.2
+        elif volatility <= 0.20:   # Tightened from 0.3
+            score += self.subprime_weights['Cash Flow Volatility'] * 0.75  # Reduced from 0.8
+        elif volatility <= 0.30:   # Tightened from 0.5
+            score += self.subprime_weights['Cash Flow Volatility'] * 0.50  # Reduced from 0.6
+        elif volatility <= 0.45:   # Tightened from 0.8
+            score += self.subprime_weights['Cash Flow Volatility'] * 0.25  # Reduced from 0.4
+        # Above 0.45 gets 0 points (was 1.0)
         
-        # Operating Margin (6 points)
+        # DIRECTORS SCORE (18 points) - TIGHTER
+        directors_score = params.get('directors_score', 0)
+        if directors_score >= 80:      # Raised from 85
+            score += self.subprime_weights['Directors Score']
+        elif directors_score >= 70:    # Reduced from 75
+            score += self.subprime_weights['Directors Score'] * 0.80  # Reduced from 0.9
+        elif directors_score >= 60:    # Reduced from 65
+            score += self.subprime_weights['Directors Score'] * 0.55  # Reduced from 0.7
+        elif directors_score >= 50:    # Reduced from 55
+            score += self.subprime_weights['Directors Score'] * 0.30  # Reduced from 0.5
+        elif directors_score >= 40:    # Reduced from 45
+            score += self.subprime_weights['Directors Score'] * 0.10  # Reduced from 0.3
+        # Below 40 gets 0 points (was 45)
+        
+        # AVERAGE MONTH-END BALANCE (10 points) - TIGHTER
+        balance = metrics.get('Average Month-End Balance', 0)
+        if balance >= 15000:       # Raised from 10000
+            score += self.subprime_weights['Average Month-End Balance']
+        elif balance >= 8000:      # Raised from 5000
+            score += self.subprime_weights['Average Month-End Balance'] * 0.70  # Reduced from 0.8
+        elif balance >= 4000:      # Raised from 2000
+            score += self.subprime_weights['Average Month-End Balance'] * 0.45  # Reduced from 0.6
+        elif balance >= 1000:      # Raised from 500
+            score += self.subprime_weights['Average Month-End Balance'] * 0.20  # Reduced from 0.4
+        # Below £1000 gets 0 points (was £500)
+        
+        # REVENUE GROWTH RATE (8 points) - LESS EMPHASIS, TIGHTER
+        growth = metrics.get('Revenue Growth Rate', 0)
+        if growth >= 0.25:         # Raised from 0.3
+            score += self.subprime_weights['Revenue Growth Rate']
+        elif growth >= 0.15:       # Reduced from 0.2
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.80  # Reduced from 0.9
+        elif growth >= 0.05:       # Reduced from 0.1
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.60  # Reduced from 0.7
+        elif growth >= 0:          # Same as 0.05
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.40  # Reduced from 0.5
+        elif growth >= -0.05:      # Tightened from -0.1
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.20  # Increased from 0.1
+        # Below -5% gets 0 points (was -10%)
+        
+        # OPERATING MARGIN (6 points) - TIGHTER
         margin = metrics.get('Operating Margin', 0)
-        if margin >= 0.1:
+        if margin >= 0.12:         # Raised from 0.1
             score += self.subprime_weights['Operating Margin']
-        elif margin >= 0.05:
-            score += self.subprime_weights['Operating Margin'] * 0.8
-        elif margin >= 0:
-            score += self.subprime_weights['Operating Margin'] * 0.6
-        elif margin >= -0.05:
-            score += self.subprime_weights['Operating Margin'] * 0.4
-        elif margin >= -0.1:
-            score += self.subprime_weights['Operating Margin'] * 0.2
+        elif margin >= 0.08:       # Raised from 0.05
+            score += self.subprime_weights['Operating Margin'] * 0.75  # Reduced from 0.8
+        elif margin >= 0.03:       # Raised from 0
+            score += self.subprime_weights['Operating Margin'] * 0.50  # Reduced from 0.6
+        elif margin >= 0:          # Same as -0.05
+            score += self.subprime_weights['Operating Margin'] * 0.25  # Reduced from 0.4
+        # Negative margins get 0 points (was -0.1)
         
-        # Net Income (4 points)
-        net_income = metrics.get('Net Income', 0)
-        if net_income >= 5000:
-            score += self.subprime_weights['Net Income']
-        elif net_income >= 0:
-            score += self.subprime_weights['Net Income'] * 0.8
-        elif net_income >= -10000:
-            score += self.subprime_weights['Net Income'] * 0.5
-        elif net_income >= -25000:
-            score += self.subprime_weights['Net Income'] * 0.2
-        
-        # Negative Balance Days (4 points)
+        # NEGATIVE BALANCE DAYS (6 points) - STRICTER
         neg_days = metrics.get('Average Negative Balance Days per Month', 0)
-        if neg_days <= 1:
+        if neg_days == 0:          # Only perfect score gets full points
             score += self.subprime_weights['Average Negative Balance Days per Month']
-        elif neg_days <= 3:
-            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.7
-        elif neg_days <= 5:
-            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.4
+        elif neg_days <= 1:        # Tightened from 1
+            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.60  # Reduced from 0.7
+        elif neg_days <= 2:        # Tightened from 3
+            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.30  # Reduced from 0.4
+        # Above 2 days gets 0 points (was 5)
         
-        # Company Age (2 points)
+        # COMPANY AGE (2 points) - SLIGHTLY TIGHTER
         age_months = params.get('company_age_months', 0)
-        if age_months >= 24:
+        if age_months >= 36:       # Raised from 24
             score += self.subprime_weights['Company Age (Months)']
-        elif age_months >= 12:
-            score += self.subprime_weights['Company Age (Months)'] * 0.7
-        elif age_months >= 6:
-            score += self.subprime_weights['Company Age (Months)'] * 0.4
+        elif age_months >= 18:     # Raised from 12
+            score += self.subprime_weights['Company Age (Months)'] * 0.60  # Reduced from 0.7
+        elif age_months >= 12:     # Raised from 6
+            score += self.subprime_weights['Company Age (Months)'] * 0.30  # Reduced from 0.4
+        # Below 12 months gets 0 points (was 6)
         
         # Convert to percentage
         return (score / max_possible) * 100
     
     def _apply_industry_adjustment(self, base_score, industry):
-        """Apply industry-specific risk adjustments."""
-        multiplier = self.industry_multipliers.get(industry, 0.95)
+        """Apply TIGHTENED industry-specific risk adjustments."""
+        multiplier = self.industry_multipliers.get(industry, 0.80)  # Default more conservative
         return base_score * multiplier
     
-    def _calculate_growth_momentum_bonus(self, metrics):
-        """Calculate bonus for strong growth momentum."""
+    def _calculate_conservative_growth_bonus(self, metrics):
+        """Calculate REDUCED bonus for growth momentum."""
         bonus = 0
         growth = metrics.get('Revenue Growth Rate', 0)
         dscr = metrics.get('Debt Service Coverage Ratio', 0)
+        volatility = metrics.get('Cash Flow Volatility', 1.0)
         
-        if growth >= 0.25 and dscr >= 2.0:
-            bonus += 5
-        elif growth >= 0.15 and dscr >= 1.5:
-            bonus += 3
-        elif growth >= 0.1 and dscr >= 1.2:
-            bonus += 1
+        # MUCH STRICTER criteria for bonuses
+        if growth >= 0.30 and dscr >= 2.5 and volatility <= 0.15:  # Raised all thresholds
+            bonus += 3  # Reduced from 5
+        elif growth >= 0.20 and dscr >= 2.0 and volatility <= 0.25:  # Raised thresholds
+            bonus += 2  # Reduced from 3
+        elif growth >= 0.15 and dscr >= 1.8 and volatility <= 0.35:  # Much stricter
+            bonus += 1  # Same
         
         return bonus
     
-    def _calculate_stability_penalty(self, metrics):
-        """Calculate penalty for extreme instability."""
+    def _calculate_enhanced_stability_penalty(self, metrics, params):
+        """Calculate MUCH HIGHER penalty for instability."""
         penalty = 0
         volatility = metrics.get('Cash Flow Volatility', 0)
         operating_margin = metrics.get('Operating Margin', 0)
         neg_days = metrics.get('Average Negative Balance Days per Month', 0)
+        dscr = metrics.get('Debt Service Coverage Ratio', 0)
         
-        if volatility > 1.0:
-            penalty += (volatility - 1.0) * 10
+        # VOLATILITY penalties - much stricter
+        if volatility > 0.8:           # Reduced threshold from 1.0
+            penalty += (volatility - 0.8) * 25  # Increased multiplier from 10
+        elif volatility > 0.5:         # New intermediate penalty
+            penalty += (volatility - 0.5) * 15
         
-        if operating_margin < -0.15:
-            penalty += abs(operating_margin - (-0.15)) * 50
+        # OPERATING MARGIN penalties - stricter
+        if operating_margin < -0.05:   # Tightened from -0.15
+            penalty += abs(operating_margin - (-0.05)) * 80  # Increased from 50
         
-        if neg_days > 5:
-            penalty += (neg_days - 5) * 2
+        # NEGATIVE BALANCE penalties - much stricter
+        if neg_days > 2:               # Reduced from 5
+            penalty += (neg_days - 2) * 4  # Increased from 2
         
-        return min(penalty, 20)
+        # DSCR penalties - new addition
+        if dscr < 1.2:                 # New penalty for low DSCR
+            penalty += (1.2 - dscr) * 15
+        
+        return min(penalty, 35)  # Increased cap from 20
     
-    def _determine_risk_tier(self, score, metrics, params):
-        """Determine risk tier and pricing guidance."""
+    def _calculate_enhanced_risk_penalties(self, params):
+        """Calculate MUCH HIGHER penalties for risk factors."""
+        penalty = 0
+        
+        for factor, penalty_points in self.enhanced_penalties.items():
+            if params.get(factor, False):
+                penalty += penalty_points
+        
+        # COMPOUND penalty for multiple risk factors
+        risk_count = sum(1 for factor in self.enhanced_penalties.keys() if params.get(factor, False))
+        if risk_count >= 3:            # 3 or more risk factors
+            penalty += risk_count * 3   # Additional compound penalty
+        elif risk_count >= 2:          # 2 risk factors  
+            penalty += risk_count * 1.5
+        
+        return min(penalty, 25)  # Cap total risk penalties
+    
+    def _determine_tightened_risk_tier(self, score, metrics, params):
+        """Determine risk tier with MUCH TIGHTER criteria."""
         dscr = metrics.get('Debt Service Coverage Ratio', 0)
         growth = metrics.get('Revenue Growth Rate', 0)
         directors_score = params.get('directors_score', 0)
+        volatility = metrics.get('Cash Flow Volatility', 1.0)
+        operating_margin = metrics.get('Operating Margin', 0)
         
-        if (score >= 75 and dscr >= 2.0 and growth >= 0.15 and directors_score >= 75):
+        # TIER 1 - MUCH STRICTER (Premium Subprime)
+        if (score >= 80 and dscr >= 2.5 and growth >= 0.20 and directors_score >= 75 and 
+            volatility <= 0.20 and operating_margin >= 0.08):
             return "Tier 1", {
                 "risk_level": "Premium Subprime",
-                "suggested_rate": "1.4-1.5 factor rate",
-                "max_loan_multiple": "6x monthly revenue",
-                "term_range": "12-24 months",
-                "monitoring": "Quarterly reviews",
+                "suggested_rate": "1.35-1.45 factor rate",  # Slightly better rates
+                "max_loan_multiple": "5x monthly revenue",   # Reduced from 6x
+                "term_range": "12-18 months",                # Reduced max term
+                "monitoring": "Monthly reviews",             # Increased from quarterly
                 "approval_probability": "Very High"
             }
-        elif (score >= 60 and dscr >= 1.5):
+        
+        # TIER 2 - STRICTER (Standard Subprime)
+        elif (score >= 65 and dscr >= 2.0 and directors_score >= 65 and volatility <= 0.35):
             return "Tier 2", {
                 "risk_level": "Standard Subprime", 
-                "suggested_rate": "1.5-1.6 factor rate",
-                "max_loan_multiple": "4x monthly revenue",
-                "term_range": "6-18 months",
-                "monitoring": "Monthly reviews",
+                "suggested_rate": "1.5-1.65 factor rate",   # Increased from 1.5-1.6
+                "max_loan_multiple": "3.5x monthly revenue", # Reduced from 4x
+                "term_range": "6-15 months",                 # Reduced max term
+                "monitoring": "Bi-weekly reviews",           # Increased from monthly
                 "approval_probability": "High"
             }
-        elif (score >= 45 and dscr >= 1.2 and directors_score >= 55):
+        
+        # TIER 3 - STRICTER (High-Risk Subprime)
+        elif (score >= 50 and dscr >= 1.5 and directors_score >= 55 and volatility <= 0.50):
             return "Tier 3", {
                 "risk_level": "High-Risk Subprime",
-                "suggested_rate": "1.6-1.75 factor rate", 
-                "max_loan_multiple": "3x monthly revenue",
-                "term_range": "6-12 months",
-                "monitoring": "Bi-weekly reviews",
+                "suggested_rate": "1.65-1.8 factor rate",   # Increased from 1.6-1.75
+                "max_loan_multiple": "2.5x monthly revenue", # Reduced from 3x
+                "term_range": "4-12 months",                 # Reduced range
+                "monitoring": "Weekly reviews + alerts",     # Enhanced monitoring
                 "approval_probability": "Moderate"
             }
-        elif (score >= 30 and dscr >= 1.0):
+        
+        # TIER 4 - MUCH STRICTER (Enhanced Monitoring)
+        elif (score >= 35 and dscr >= 1.3 and directors_score >= 45):
             return "Tier 4", {
                 "risk_level": "Enhanced Monitoring Required",
-                "suggested_rate": "1.75-2.0 factor rate",
-                "max_loan_multiple": "2x monthly revenue", 
-                "term_range": "3-9 months",
-                "monitoring": "Weekly reviews + daily balance monitoring",
-                "approval_probability": "Low - Senior review required"
+                "suggested_rate": "1.8-2.1 factor rate",    # Increased from 1.75-2.0
+                "max_loan_multiple": "2x monthly revenue",   # Same
+                "term_range": "3-6 months",                  # Reduced max term
+                "monitoring": "Daily balance + weekly calls", # Enhanced
+                "approval_probability": "Low - Senior review + guarantees required"
             }
+        
+        # DECLINE - MUCH MORE LIKELY
         else:
             return "Decline", {
                 "risk_level": "Decline",
@@ -818,53 +863,57 @@ class SubprimeScoring:
                 "max_loan_multiple": "N/A",
                 "term_range": "N/A", 
                 "monitoring": "N/A",
-                "approval_probability": "Decline - Risk too high"
+                "approval_probability": "Decline - Risk exceeds acceptable parameters"
             }
     
-    def _generate_scoring_breakdown(self, base_score, industry_score, growth_bonus, 
-                                  stability_penalty, final_score, metrics, params):
-        """Generate detailed scoring breakdown."""
+    def _generate_tightened_breakdown(self, base_score, industry_score, growth_bonus, 
+                                    stability_penalty, risk_penalty, final_score, metrics, params):
+        """Generate detailed scoring breakdown with tightened criteria."""
         breakdown = [
-            f"Base Subprime Score: {base_score:.1f}/100",
+            f"Base Tightened Score: {base_score:.1f}/100",
             f"Industry Adjustment: {industry_score - base_score:+.1f} points",
             f"Growth Momentum Bonus: +{growth_bonus:.1f} points",
             f"Stability Penalty: -{stability_penalty:.1f} points",
+            f"Risk Factor Penalty: -{risk_penalty:.1f} points",
             f"Final Score: {final_score:.1f}/100",
             "",
-            "Key Factors:",
-            f"• DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f}",
-            f"• Revenue Growth: {metrics.get('Revenue Growth Rate', 0)*100:.1f}%",
-            f"• Directors Score: {params.get('directors_score', 0)}/100", 
-            f"• Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f}",
-            f"• Operating Margin: {metrics.get('Operating Margin', 0)*100:.1f}%"
+            "Key Metrics (Tightened Thresholds):",
+            f"• DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f} (Need 2.0+ for good score)",
+            f"• Revenue Growth: {metrics.get('Revenue Growth Rate', 0)*100:.1f}% (Need 15%+ for good score)",
+            f"• Directors Score: {params.get('directors_score', 0)}/100 (Need 70+ for good score)", 
+            f"• Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.20 for good score)",
+            f"• Operating Margin: {metrics.get('Operating Margin', 0)*100:.1f}% (Need 8%+ for good score)",
+            f"• Negative Balance Days: {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need 0-1 for good score)"
         ]
         return breakdown
     
-    def _generate_recommendation(self, risk_tier, metrics, params):
-        """Generate lending recommendation."""
+    def _generate_tightened_recommendation(self, risk_tier, metrics, params):
+        """Generate lending recommendation with tightened criteria."""
         if risk_tier == "Tier 1":
-            return "APPROVE - Excellent subprime candidate with strong fundamentals and growth trajectory."
+            return "APPROVE - Excellent subprime candidate meeting tightened criteria."
         elif risk_tier == "Tier 2": 
-            return "APPROVE - Good subprime candidate. Standard monitoring and pricing recommended."
+            return "APPROVE - Good subprime candidate with enhanced monitoring."
         elif risk_tier == "Tier 3":
-            return "CONDITIONAL APPROVE - Acceptable with enhanced terms and close monitoring."
+            return "CONDITIONAL APPROVE - Marginal case requiring strict terms and close monitoring."
         elif risk_tier == "Tier 4":
-            return "SENIOR REVIEW - High risk but potentially acceptable with strict conditions."
+            return "SENIOR REVIEW - High risk requiring guarantees and daily monitoring."
         else:
-            return "DECLINE - Risk profile exceeds acceptable parameters for subprime lending."
+            return "DECLINE - Does not meet tightened subprime lending criteria."
 
-def calculate_all_scores_enhanced(metrics, params):
-    """Enhanced scoring calculation with subprime scoring"""
+
+# UPDATED CALCULATION FUNCTION to use tightened scoring
+def calculate_all_scores_tightened(metrics, params):
+    """Enhanced scoring calculation with TIGHTENED subprime scoring"""
     industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
     sector_risk = industry_thresholds['Sector Risk']
     
-    # Calculate weighted scores 
+    # Calculate weighted scores (unchanged)
     weighted_score = calculate_weighted_scores(metrics, params, industry_thresholds)
     
-    # Subprime scoring
+    # TIGHTENED subprime scoring
     try:
-        subprime_scorer = SubprimeScoring()
-        subprime_result = subprime_scorer.calculate_subprime_score(metrics, params)
+        tightened_scorer = TightenedSubprimeScoring()
+        subprime_result = tightened_scorer.calculate_subprime_score(metrics, params)
     except Exception as e:
         subprime_result = {
             'subprime_score': 0,
@@ -908,7 +957,7 @@ def calculate_all_scores_enhanced(metrics, params):
     if sector_risk <= industry_thresholds['Sector Risk']:
         industry_score += 1
     
-    # ML Score (simplified - load models if available)
+    # ML Score (unchanged - load models if available)
     model, scaler = load_models()
     ml_score = None
 
@@ -941,7 +990,7 @@ def calculate_all_scores_enhanced(metrics, params):
         except Exception as e:
             ml_score = None
     
-    # Loan Risk
+    # Loan Risk (unchanged)
     monthly_revenue = metrics.get('Monthly Average Revenue', 0)
     if monthly_revenue > 0:
         ratio = params['requested_loan'] / monthly_revenue
@@ -1526,7 +1575,7 @@ class BatchProcessor:
             # Step 9: Calculate all scores
             debug_info['debug_step'] = 'Calculating scoring algorithms'
             
-            scores = calculate_all_scores_enhanced(metrics, params)
+            scores = calculate_all_scores_tightened(metrics, params)
             
             debug_info['scoring_calculation_successful'] = True
             debug_info['calculated_scores'] = {
