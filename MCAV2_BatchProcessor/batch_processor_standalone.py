@@ -1032,77 +1032,22 @@ class BatchProcessor:
         self.debug_log = []
     
     def clean_company_name(self, name):
-        """Enhanced company name cleaning for better matching with specific pattern handling"""
+        """Simple cleaning that preserves matching"""
         if not name:
             return ""
-        
+    
         # Convert to string and lowercase
         clean_name = str(name).lower().strip()
-        
-        # Remove file extensions and common file patterns
-        clean_name = re.sub(r'\.(json|csv|xlsx?|txt)$', '', clean_name, flags=re.IGNORECASE)
-        
-        # Handle special characters that might be replaced with underscores or asterisks
-        # Replace asterisks and underscores with spaces first
-        clean_name = clean_name.replace('*', ' ').replace('_', ' ').replace('-', ' ')
-        
-        # Remove transaction report and other file-specific suffixes
-        file_patterns = [
-            r'\s*transaction\s*report\s*',
-            r'\s*app\s*\d*\s*',
-            r'\s*-\s*app\s*\d*\s*',
-            r'\s*\d+,\d+\s*',
-            r'\s*\d+\s*$',  # Numbers at the end
-            r'\s*v\d+\s*',
-            r'\s*\(\d+\)\s*',
-            r'\s*p\d+\s*',
-            r'\s*ltd\s*app\s*\d*\s*'  # Handle "Ltd App" patterns
-        ]
-        
-        for pattern in file_patterns:
-            clean_name = re.sub(pattern, ' ', clean_name, flags=re.IGNORECASE)
-        
-        # Handle specific problematic patterns
-        specific_fixes = [
-            # Remove .com extensions from company names
-            (r'\.com\b', ''),
-            # Handle hyphenated names that become spaced
-            (r'\bhans\s+lec\b', 'hans lec'),
-            (r'\bsaint\s+giovanni\s+de\s+la\s+mode\b', 'saint giovanni de la mode'),
-            # Handle numbered suffixes
-            (r'\b4\s+men\b', '4 men'),
-            # Remove trailing numbers and special patterns
-            (r'\s+\d+$', ''),
-            # Handle "inc" vs "inc ltd" variations
-            (r'\bweird\s*inc\b', 'weird inc'),
-        ]
-        
-        for pattern, replacement in specific_fixes:
-            clean_name = re.sub(pattern, replacement, clean_name, flags=re.IGNORECASE)
-        
-        # Remove common business suffixes but preserve them for better matching
-        business_suffixes = [
-            r'\b(ltd|limited|llc|inc|corp|corporation|co|company|plc|llp|private|pvt)\b'
-        ]
-        
-        # Don't remove suffixes completely, just normalize them
-        clean_name = re.sub(r'\b(limited)\b', 'ltd', clean_name, flags=re.IGNORECASE)
-        clean_name = re.sub(r'\b(corporation)\b', 'corp', clean_name, flags=re.IGNORECASE)
-        
-        # Remove common words that don't help with matching but preserve important ones
-        common_words_to_remove = [
-            r'\b(the|and|&|of|for|in|at|by|with|from|to|as)\b'
-        ]
-        
-        for word in common_words_to_remove:
-            clean_name = re.sub(word, ' ', clean_name, flags=re.IGNORECASE)
-        
-        # Remove punctuation except spaces and apostrophes
-        clean_name = re.sub(r'[^\w\s\']', ' ', clean_name)
-        
+    
+        # Remove ONLY obvious filename junk
+        clean_name = re.sub(r'_\d+,\d+\.json$', '', clean_name)
+        clean_name = re.sub(r'_\d+,\d+$', '', clean_name) 
+        clean_name = re.sub(r'\.json$', '', clean_name)
+        clean_name = re.sub(r'\s+transaction\s+report$', '', clean_name)
+    
         # Normalize whitespace
-        clean_name = ' '.join(clean_name.split())
-        
+        clean_name = re.sub(r'\s+', ' ', clean_name).strip()
+    
         return clean_name
     
     def create_name_variations(self, name):
@@ -1229,6 +1174,8 @@ class BatchProcessor:
     def fuzzy_match_company(self, search_name, csv_companies, debug_info):
         """FIXED: Fuzzy match company name with detailed debugging"""
         
+        print(f"DEBUG START: fuzzy_match_company called with search_name='{search_name}', csv_companies count={len(csv_companies) if csv_companies else 0}")
+        
         if not search_name or not csv_companies:
             debug_info['fuzzy_match_debug'] = "No search name or CSV companies provided"
             return None, 0, "none", False
@@ -1252,13 +1199,14 @@ class BatchProcessor:
         
         if RAPIDFUZZ_AVAILABLE:
             debug_info['fuzzy_match_debug'] = "Using RapidFuzz for matching"
+            print(f"DEBUG FUZZY: Trying to match '{clean_search}' against {len(clean_csv_companies)} companies")
             
             # Try multiple strategies
             strategies = [
-                ('token_sort_ratio', fuzz.token_sort_ratio, 70),
-                ('token_set_ratio', fuzz.token_set_ratio, 65),
-                ('partial_ratio', fuzz.partial_ratio, 75),
-                ('ratio', fuzz.ratio, 80)
+                ('token_sort_ratio', fuzz.token_sort_ratio, 60),
+                ('token_set_ratio', fuzz.token_set_ratio, 55),
+                ('partial_ratio', fuzz.partial_ratio, 65),
+                ('ratio', fuzz.ratio, 70)
             ]
             
             for strategy_name, strategy_func, min_score in strategies:
@@ -1284,6 +1232,8 @@ class BatchProcessor:
                         
                 except Exception as e:
                     debug_info[f'{strategy_name}_error'] = str(e)
+                    
+                print(f"DEBUG: No match found for '{clean_search}' against first CSV company '{list(clean_csv_companies.keys())[0] if clean_csv_companies else 'None'}'")
         else:
             # Fallback exact matching
             debug_info['fuzzy_match_debug'] = "Using fallback exact matching"
@@ -1403,7 +1353,7 @@ class BatchProcessor:
                 csv_companies = list(parameter_mapping.keys())
                 debug_info['csv_companies_available'] = csv_companies
                 
-                matched_company, score, strategy, success = self.simple_match_test(
+                matched_company, score, strategy, success = self.fuzzy_match_company(
                     company_name, csv_companies, debug_info
                 )
                 
