@@ -1,0 +1,301 @@
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\22Lush Limited Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\A&A Building Construction Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\A1 Painting and Decorating LTD.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Accounted Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Advanced Automotive Performance Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Akar Food Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Alex Sounthhampton_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\All in the wrap Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Allure Salon (UK) Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Alma Deli Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Anthony Healthcare Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Anzin Marketing Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Apollo Cornwall Travel Limited Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Apollo Supermarket.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Apollo Supermarket_1,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\applicationdata -Funded Loans.zip
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\application_data.zip
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Apprintable Limited Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\AS Cladding and Roofing Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Ashby Street Motors Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\BBD Services Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Bedew Skin Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Befirst Constructions Ltd - Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Beforethefall_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Besachkarma Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Beyond Social Media (UK) Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Big bro bao ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Blisshealth Concepts Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Boiler Solutions.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Bottom Line Consultants Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Bound Studios Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Bramble and Willow Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Brookhouse Hypnotherapy Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\BTWBTW Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Bulgarian Food Pirin Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Bunker Publishing_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\By Old Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Cakes by Aleina Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Camliamo London Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Ceiling Suppliers Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Charles Bread Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Chillbeam Limited Ob 2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Chocholivenetworks201.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Christ Advocates Church Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Coordinate Saas Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\CoreERP Solutions_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Crunch Group Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\CS Sport_1,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\D&C Couriers Ltd app 2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Data4est Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Deli Ice Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Deluxe Lounge_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Dentouch Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\DLC Lighting Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Drillskillz Consults Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\DTS Materials Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\E-gener8.com_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Elar One Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Ellevate Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Elm Pub Group Ltd TA As The Bull Inn_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Elpromotions Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Els Management Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Elsco Private Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Ephos Group Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Erfan Carpet.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\filenames_with_paths.txt
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Flight Training Essex ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Foolgood Salons Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Four Paws app1.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Four Paws app2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Four Paws app3.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Four Paws Walking and Training Limited app 4.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Four Paws Walking and Training Ltd app 5.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Four the Willows Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\French Sole Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\FS Fashionista Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Fugazzo Trading Limited Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Furfamilyfair Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Future Analytics Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Fylde Conservation Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Gas Records_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\GC Bike Repairs Ltd (2).json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\GC Bike Repairs Ltd 2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\GC Bike Repairs Ltd 3.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\GC Bike Repairs Ltd app 2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\GC Bike Repairs Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Get Outside Events Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\GIT Support LTD.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\GIT Support LTD_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Go Commercial Finance Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Golden Triangle Financial Services Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Good Geezers Welling Ltd Transaction Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Good Geezers Welling Ltd Transaction Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Gozone Care Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Green Future Search Lab_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\GreenSec Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Gwynne and HHyde Plumbing and Heating Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Hair and Beauty Palace Ventures Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Hans Lec Design_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Hans-Lec Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Happy Travel Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Happy Travel Limitedv2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Harbour_galley_1,1.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Harley Street Hair Transplants_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Hashmis and Bukharis Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Hemming Logistics Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Hewitt and Hyland Leisure Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Hidden Pretty Gifts Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\House of Mystery.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\HumbleEgg Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Hursley Childcare Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Hussains Leicester Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Hussains Leicester Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\I Crash Mobiles Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\IBBmedialtd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\IBBmedialtd.json.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Ifracture Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Ifracture Ltdv2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Initiate Theatre Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Irresistiable Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Ivy Aesthetic Clinic Academy Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Jay Heath Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\JB Bars Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Jemark Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Kam marketing Group Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Ketco Direct Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Kids Tech Company Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Kimbo and Sons Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Kimbo and Sons Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\King of Steel Media Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\King of steel media.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Krafty Designs 4 You Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Kurkland Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Lime Service Group Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Lime Service Group Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\London Recruiting.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\London Recruiting_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\London21 Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Lopez Plant Hire Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Luenire Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Lumi SKN Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Made this for you Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Made this for you Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Madestays Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Madinska & Co Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Madinska & Co Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Maj Trade Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Mannerhaus Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Manzil Property Management_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Marvellous Glow Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Master Brewer Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Matches Talent Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Matches Talent Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\MBRB Limited Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\MBRB Limited Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Mckat Magic Masala Pvt Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Mecn Marketing Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Meli's Landscaping Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Mh Home Renovations Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Michel-Reynolds Agency Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Mikaiel Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Mikaiel Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Milton Fire Safety.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Milton Fire Safety_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Mitz Traders Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Mitz Traders Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Momokakkoii Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Moonlight SMC Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Moviescape Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Moving Ewe Ltdv2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Mr Eats Group Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\MSFMart UK Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Muscle Makers Gym Limited - app1.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Muscle Makers Gym Limited -app2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Neu Hair 4 Men Ltd Transactions.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Neu Hair_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Nikolov 92 Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Noble Executive Limited P1.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Noble Executive Limited P1_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Noble Executive Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Noble Executive Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Noble_Executive_Limited_Combined.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\OM Clinic Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Optimum Vehicles Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Oxford Driveways and Roofing Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Oxford Driveways and Roofing Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Palmcoco Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Palmcoco Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Patina House Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Peekzoon Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Peekzoon Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Pemienterprize Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Phoenix Group Services Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Phone Expert Services Ltd 2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Phone Expert Services Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Phone Expert Services.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Phone Expert Services_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\PJ PHOTOGRAPHY LIVERPOOL LIMITED_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Plaid Transaction report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Platform 10 Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\PLH Services Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Porkies Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Post Production Sorted Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Prudent Healthcare Services Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\ps & sons ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Punchard Group Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\R A F Chilamena Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\R A F Chilamena Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\R W Waste Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Rachel Thoburn Aesthetics.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Radcat Limited Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Ratz Vintage Clothing Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Recognised London Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Regulatory Consultantcy Services Ltd _0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Retail 24 Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Richer Education_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Rigby Barbers Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Rishi and Sisters Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Rockaway Toys Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Rosethorn Studio Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\rothwell local store ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Sady cs Ltd _0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Saffron Private Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\SAINT_GIOVANNI_DE_LA_MODE_LTD_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Santaire Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Scrandiggity LTD_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\SCS Facilities Services Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Sercasa Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Serenix Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Serenix Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Shakespeares Shepherd Huts Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Shepsgourmetkitchen Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Silk Route Import & Export Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\silk route import & export ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Simpli Print Group Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Simpli Print Group Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\SIMPLY_LOCAL_RICHMOND_LTD_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Slip Surp Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Smart Alloys South West Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Smith Trades Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Smiths Trades Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Smithstrade Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Snapes Organic Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Something a bit different Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\South Coast_1,1.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Spencers Group Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Spooktacular Ghost Hunting Events UK Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Standout Aesthetics Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Standout Aesthetics Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Staplehurst Coffee Ltd _0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Starks Flooring Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Starks Flooring Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Stevnson Property Services Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Stockport Jungle Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\STRIKECLUB_LTD-_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Suede Hosting Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\T & L Hurley Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\T44J Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\TECHARA_LIMITED_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\The Body Fix Coach Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\The Boot Country Pub Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\The CEO Lounge Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\The Comfy Clothing Wardrobe Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\The Coven Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\The Fuel Agency (UK) Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\The Gangway Sheringham Limited_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\The Gluten Free World Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\The Nail Label Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Them Paint Guys Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\THE_HOP_HOUSE_LTD_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\THE_THIRSTY_TURTLE_LIMITED_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Thor Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Total Math Tutoring Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\TradeDesk Team Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Transaction Report - Hashmis and Bukharis Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Transaction Report - Jemark.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\TTND Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Uban Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Ultimate 2020 Group TA Trade Glaze.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Uteachmi Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Vageman Fish Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Verve GB_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Victory and Joel Ltd _0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Vision ET Consilium Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Vision Science Academy Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Voltanic Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Voltanic Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\We Design it Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\We Style Any Dog Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Weird Inc Ltd _0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\White Canvas Bridal Ltd - app2.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\White Canvas Bridal Ltd Transaction Report.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\White Sea Technologies Limited.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Wild Bru and Lavers Ltd_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Wye Valley Catering_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\XTC Clothing_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Xydrobe Ltd Transaction Report_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\YLK GROUP LTD_0,0.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Yoga Management Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\YS TRaders Ltd.json
+C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files\Zainobu Ltd.json
