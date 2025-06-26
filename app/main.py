@@ -696,7 +696,7 @@ def map_transaction_category(transaction):
         r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
         r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|\bbizcap[\s\-]?uk\b|"
         r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|"
-        r"\bloans?\b|\bdebt\b|\brepayment\b|\binstal?ments?\b|\bpay[\s\-]?back\b|\brepay(?:ing|ment|ed)?\b|\bcleared\b",
+        r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]?back\b|\brepay(?:ing|ment|ed)?\b",
         combined_text
     ):
         return "Debt Repayments"
