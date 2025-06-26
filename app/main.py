@@ -752,7 +752,11 @@ def map_transaction_category(transaction):
         if any(category.startswith(p) for p in patterns):
             return label
 
-    return "Uncategorised"
+   # Default fallback: debit transactions become Expenses, credit transactions stay Uncategorised
+    if is_debit:
+        return "Expenses"
+    else:
+        return "Uncategorised"
 
 def categorize_transactions(data):
     """Apply categorization"""
