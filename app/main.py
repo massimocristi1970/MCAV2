@@ -701,6 +701,10 @@ def map_transaction_category(transaction):
         combined_text
     ):
         return "Debt Repayments"
+
+    # Failed payment patterns
+    if re.search(r"(unpaid|returned|bounced|insufficient\s+funds|nsf|declined|failed|reversed|chargeback|unp\b)", combined_text, re.IGNORECASE):
+        return "Failed Payment"
         
     # Step 1.5: Business expense override (before Plaid fallback)
     if re.search(r"(facebook|facebk|fb\.me|outlook|office365|microsoft|google\s+ads|linkedin|twitter|adobe|zoom|slack|shopify|wix|squarespace|mailchimp|hubspot|hmrc\s*vat|hmrc|hm\s*revenue|hm\s*customs)", combined_text, re.IGNORECASE):
