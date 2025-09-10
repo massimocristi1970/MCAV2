@@ -898,7 +898,7 @@ def calculate_financial_metrics(data, company_age_months):
         # Bounced payments - scan transaction names
         bounced_payments = 0
         if 'name_y' in data.columns:
-            failed_payment_keywords = ['unpaid', 'returned', 'bounced', 'insufficient', 'failed', 'declined']
+            failed_payment_keywords = ['unpaid', 'returned', 'bounced', 'insufficient', 'failed', 'declined', 'nsf', 'unp']
             for keyword in failed_payment_keywords:
                 bounced_payments += data['name_y'].str.contains(keyword, case=False, na=False).sum()
         
