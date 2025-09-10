@@ -307,7 +307,7 @@ class FinancialAnalyzer:
         # Keywords indicating payment failures
         failure_keywords = [
             'unpaid', 'returned', 'bounced', 'insufficient', 'failed', 
-            'declined', 'reversed', 'chargeback'
+            'declined', 'reversed', 'chargeback', 'nsf', 'unp'
         ]
         
         descriptions = data['name_y'].fillna('').str.lower()
