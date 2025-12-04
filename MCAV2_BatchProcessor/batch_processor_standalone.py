@@ -255,14 +255,26 @@ def map_transaction_category(transaction):
         description = str(description)
     description = description.lower()
 
-    category = transaction.get("personal_finance_category.detailed", "")
+    # Handle nested personal_finance_category field
+    pfc = transaction.get("personal_finance_category", {})
+    if isinstance(pfc, dict):
+        category = pfc. get("detailed", "")
+    else:
+        category = transaction.get("personal_finance_category.detailed", "")  # Fallback for flattened data
+    
     if isinstance(category, list):
         category = " ".join(map(str, category))
     else:
-        category = str(category)
+        category = str(category) if category else ""
     category = category.lower().strip().replace(" ", "_")
 
     amount = transaction.get("amount", 0)
+    
+    # ADDED: Define missing variables
+    is_credit = amount > 0  # Positive amounts are incoming (credits/income)
+    is_debit = amount < 0   # Negative amounts are outgoing (debits/expenses)
+    combined_text = f"{name} {description} {category}".lower()
+    
     # Step 1: Custom keyword overrides
     if is_credit and re.search(
         r"(?i)\b("
@@ -319,7 +331,7 @@ def map_transaction_category(transaction):
         return "Failed Payment"
         
     # Step 1.5: Business expense override (before Plaid fallback)
-    if re.search(r"(facebook|facebk|fb\.me|outlook|office365|microsoft|google\s+ads|linkedin|twitter|adobe|zoom|slack|shopify|wix|squarespace|mailchimp|hubspot|hmrc\s*vat|hmrc|hm\s*revenue|hm\s*customs)", combined_text, re.IGNORECASE):
+    if re.search(r"(facebook|facebk|fb\.me|outlook|office365|microsoft|google\s+ads|linkedin|twitter|adobe|zoom|slack|shopify|wix|squarespace|mailchimp|hubspot|hmrc\s*vat|hmrc|hm\s*revenue|hm\s*customs|companies\s*house|gov\.uk|dvla|council\s*tax|business\s*rates|utilities|electric|gas|water|internet|phone|mobile|rent|insurance|accounting|accountant|solicitor|lawyer|legal)", combined_text, re.IGNORECASE):
         return "Expenses"
 
     # Step 2: Plaid category fallback
@@ -375,9 +387,16 @@ def categorize_transactions(data):
     if data.empty:
         return data
         
-    data = data.copy()
-    data['subcategory'] = data.apply(map_transaction_category, axis=1)
-    data['is_revenue'] = data['subcategory'].isin(['Income', 'Special Inflow'])
+    data = data. copy()
+    
+    try:
+        data['subcategory'] = data.apply(map_transaction_category, axis=1)
+    except Exception as e:
+        print(f"ERROR in categorize_transactions: {e}")
+        # Fallback: set all to Uncategorised
+        data['subcategory'] = 'Uncategorised'
+    
+    data['is_revenue'] = data['subcategory']. isin(['Income', 'Special Inflow'])
     data['is_expense'] = data['subcategory'].isin(['Expenses', 'Special Outflow'])
     data['is_debt_repayment'] = data['subcategory'].isin(['Debt Repayments'])
     data['is_debt'] = data['subcategory'].isin(['Loans'])
