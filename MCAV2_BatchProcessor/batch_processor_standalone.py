@@ -1923,9 +1923,9 @@ def main():
         index=list(INDUSTRY_THRESHOLDS.keys()).index('Other')
     )
     
-    default_loan = st.sidebar.number_input("Fallback Requested Loan (£)", min_value=0.0, value=25000.0, step=1000.0)
+    default_loan = st.sidebar.number_input("Fallback Requested Loan (£)", min_value=0.0, value=5000.0, step=1000.0)
     default_directors_score = st.sidebar.slider("Fallback Director Credit Score", 0, 100, 75)
-    default_company_age = st.sidebar.number_input("Fallback Company Age (Months)", min_value=0, value=24, step=1)
+    default_company_age = st.sidebar.number_input("Fallback Company Age (Months)", min_value=0, value=12, step=1)
     
     # Risk factors
     st.sidebar.subheader("🚨 Default Risk Factors")
