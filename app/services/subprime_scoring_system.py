@@ -9,30 +9,33 @@ import numpy as np
 from typing import Dict, Any, Tuple, List
 from datetime import datetime
 
+from sklearn import metrics
+
 class SubprimeScoring:
     """Enhanced scoring system specifically designed for subprime business lending with risk factor penalties."""
     
     def __init__(self):
-        # Subprime-optimized weights - focus on ability to pay and growth trajectory
+    # TIGHTENED subprime weights for £1-10k short-term lending (6-9 months)
+    # Emphasizes cash flow stability over growth for short-term repayment ability
         self.subprime_weights = {
             'Debt Service Coverage Ratio': 28,      # PRIMARY - Current ability to service debt
-            'Revenue Growth Rate': 20,              # HIGH - Growth trajectory toward profitability
+            'Average Month-End Balance': 18,        # INCREASED - Critical for short-term loans
             'Directors Score': 16,                  # HIGH - Personal reliability crucial in subprime
-            'Average Month-End Balance': 12,        # HIGH - Liquidity buffer essential
-            'Cash Flow Volatility': 8,              # MODERATE - Some volatility expected
+            'Cash Flow Volatility': 12,             # INCREASED - Stability crucial for short terms
+            'Revenue Growth Rate': 10,              # REDUCED - Less relevant for 6-9 month loans
             'Operating Margin': 6,                  # LOW - Current losses more acceptable
             'Net Income': 4,                        # LOW - Growth more important than current profit
             'Average Negative Balance Days per Month': 4,  # Monitor but don't over-penalize
             'Company Age (Months)': 2,              # MINIMAL - Less relevant for growth businesses
         }
-        
-        # Risk tolerance thresholds for subprime market
+    
+    # TIGHTENED risk tolerance thresholds for short-term subprime lending
         self.subprime_thresholds = {
-            'minimum_dscr': 1.2,                   # Lower than traditional (was 1.4+)
-            'maximum_volatility': 1.0,             # Higher than traditional (was 0.12)
-            'minimum_growth': -0.1,                # Can accept some decline if other factors strong
-            'minimum_balance': 500,                # Lower liquidity requirement
-            'maximum_negative_days': 5,            # More tolerance for cash flow gaps
+            'minimum_dscr': 1.3,                   # RAISED from 1.2 - need margin for loan payment
+            'maximum_volatility': 0.6,             # LOWERED from 1.0 - stability critical for short terms
+            'minimum_growth': -0.05,               # TIGHTENED from -0.1 - less tolerance for decline
+            'minimum_balance': 1500,               # RAISED from 500 - need buffer for payments
+            'maximum_negative_days': 3,            # LOWERED from 5 - less tolerance for cash gaps
         }
         
         # NEW: Risk factor penalties specifically calibrated for subprime market
@@ -133,34 +136,33 @@ class SubprimeScoring:
         max_possible = sum(self.subprime_weights.values())
         
         # Debt Service Coverage Ratio (28 points)
+        # Debt Service Coverage Ratio (28 points) - TIGHTENED for short-term lending
         dscr = metrics.get('Debt Service Coverage Ratio', 0)
         if dscr >= 3.0:
             score += self.subprime_weights['Debt Service Coverage Ratio']
+        elif dscr >= 2.5:
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.85
         elif dscr >= 2.0:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.9
-        elif dscr >= 1.5:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.8
-        elif dscr >= 1.2:  # Minimum threshold for subprime
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.6
-        elif dscr >= 1.0:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.3
-        # Below 1.0 gets 0 points
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.7
+        elif dscr >= 1.5:  # RAISED minimum threshold
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.5
+        elif dscr >= 1.3:  # RAISED from 1.0
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.25
+        # Below 1.3 gets 0 points (was 1.0) 
         
-        # Revenue Growth Rate (20 points)
+        # Revenue Growth Rate (10 points) - REDUCED weight for short-term lending
         growth = metrics.get('Revenue Growth Rate', 0)
-        if growth >= 0.3:  # 30%+ growth
+        if growth >= 0.25:  # 25%+ growth
             score += self.subprime_weights['Revenue Growth Rate']
-        elif growth >= 0.2:  # 20-30% growth
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.9
-        elif growth >= 0.1:  # 10-20% growth
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.7
-        elif growth >= 0.05:  # 5-10% growth
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.5
-        elif growth >= 0:  # Flat to 5% growth
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.3
-        elif growth >= -0.1:  # Small decline acceptable
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.1
-        # Worse than -10% gets 0 points
+        elif growth >= 0.15:  # 15-25% growth
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.8
+        elif growth >= 0.08:  # 8-15% growth
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.6
+        elif growth >= 0.03:  # 3-8% growth
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.4
+        elif growth >= 0:  # Flat to 3% growth
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.2
+        # Below 0% gets 0 points (TIGHTENED - no credit for decline)
         
         # Directors Score (16 points)
         directors_score = params.get('directors_score', 0)
@@ -176,31 +178,33 @@ class SubprimeScoring:
             score += self.subprime_weights['Directors Score'] * 0.3
         # Below 45 gets 0 points
         
-        # Average Month-End Balance (12 points)
+        # Average Month-End Balance (18 points) - INCREASED weight, TIGHTENED thresholds
         balance = metrics.get('Average Month-End Balance', 0)
-        if balance >= 10000:
+        if balance >= 12000:
             score += self.subprime_weights['Average Month-End Balance']
-        elif balance >= 5000:
+        elif balance >= 8000:
             score += self.subprime_weights['Average Month-End Balance'] * 0.8
-        elif balance >= 2000:
+        elif balance >= 5000:
             score += self.subprime_weights['Average Month-End Balance'] * 0.6
-        elif balance >= 500:  # Minimum for subprime
+        elif balance >= 3000:
             score += self.subprime_weights['Average Month-End Balance'] * 0.4
-        # Below £500 gets 0 points
+        elif balance >= 1500:  # RAISED minimum from £500
+            score += self.subprime_weights['Average Month-End Balance'] * 0.2
+        # Below £1500 gets 0 points (was £500)
         
-        # Cash Flow Volatility (8 points) - Inverse scoring
+        # Cash Flow Volatility (12 points) - INCREASED weight, TIGHTENED thresholds
         volatility = metrics.get('Cash Flow Volatility', 1.0)
         if volatility <= 0.15:
             score += self.subprime_weights['Cash Flow Volatility']
-        elif volatility <= 0.3:
+        elif volatility <= 0.25:
             score += self.subprime_weights['Cash Flow Volatility'] * 0.8
-        elif volatility <= 0.5:
+        elif volatility <= 0.35:
             score += self.subprime_weights['Cash Flow Volatility'] * 0.6
-        elif volatility <= 0.8:
+        elif volatility <= 0.45:
             score += self.subprime_weights['Cash Flow Volatility'] * 0.4
-        elif volatility <= 1.0:  # Maximum tolerance for subprime
+        elif volatility <= 0.6:  # LOWERED max tolerance from 1.0
             score += self.subprime_weights['Cash Flow Volatility'] * 0.2
-        # Above 1.0 gets 0 points
+        # Above 0.6 gets 0 points (was 1.0)
         
         # Operating Margin (6 points) - More tolerant of losses
         margin = metrics.get('Operating Margin', 0)
@@ -228,15 +232,17 @@ class SubprimeScoring:
             score += self.subprime_weights['Net Income'] * 0.2
         # Worse than -£25k gets 0 points
         
-        # Negative Balance Days (4 points)
+        # Negative Balance Days (4 points) - TIGHTENED thresholds
         neg_days = metrics.get('Average Negative Balance Days per Month', 0)
-        if neg_days <= 1:
+        if neg_days == 0:
             score += self.subprime_weights['Average Negative Balance Days per Month']
-        elif neg_days <= 3:
+        elif neg_days <= 1:
             score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.7
-        elif neg_days <= 5:  # Higher tolerance
+        elif neg_days <= 2:
             score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.4
-        # More than 5 days gets 0 points
+        elif neg_days <= 3:  # LOWERED max tolerance from 5
+            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.2
+        # More than 3 days gets 0 points (was 5)
         
         # Company Age (2 points) - Minimal weight
         age_months = params.get('company_age_months', 0)
@@ -352,53 +358,54 @@ class SubprimeScoring:
             params.get('director_ccj', False)
         )
         
-        # Tier 1: Premium Subprime (75+ score with strong fundamentals AND no major risk factors)
-        if (score >= 75 and dscr >= 2.0 and growth >= 0.15 and directors_score >= 75 and not has_major_risk_factors):
+        # Tier 1: Premium Subprime - TIGHTENED (82+ score with strong fundamentals)
+        if (score >= 82 and dscr >= 2.5 and growth >= 0.15 and directors_score >= 75 
+            and not has_major_risk_factors and metrics.get('Cash Flow Volatility', 1.0) <= 0.3):
             return "Tier 1", {
                 "risk_level": "Premium Subprime",
-                "suggested_rate": "1.4-1.5 factor rate",
-                "max_loan_multiple": "6x monthly revenue",
-                "term_range": "12-24 months",
-                "monitoring": "Quarterly reviews",
+                "suggested_rate": "1.5-1.6 factor rate",
+                "max_loan_multiple": "4x monthly revenue",
+                "term_range": "6-12 months",
+                "monitoring": "Monthly reviews",
                 "approval_probability": "Very High"
             }
-        
-        # Tier 2: Standard Subprime (60-75 score, some risk factors acceptable)
-        elif (score >= 60 and dscr >= 1.5):
+
+        # Tier 2: Standard Subprime - TIGHTENED (70-82 score)
+        elif (score >= 70 and dscr >= 2.0 and metrics.get('Cash Flow Volatility', 1.0) <= 0.45):
             rate_adjustment = "+0.1" if has_major_risk_factors else ""
             return "Tier 2", {
                 "risk_level": "Standard Subprime", 
-                "suggested_rate": f"1.5-1.6{rate_adjustment} factor rate",
-                "max_loan_multiple": "4x monthly revenue",
-                "term_range": "6-18 months",
-                "monitoring": "Monthly reviews" + (" + enhanced due diligence" if has_major_risk_factors else ""),
+                "suggested_rate": f"1.7-1.85{rate_adjustment} factor rate",
+                "max_loan_multiple": "3x monthly revenue",
+                "term_range": "6-9 months",
+                "monitoring": "Bi-weekly reviews" + (" + enhanced due diligence" if has_major_risk_factors else ""),
                 "approval_probability": "High" if not has_major_risk_factors else "Moderate-High"
             }
-        
-        # Tier 3: High-Risk Subprime (40-60 score)
-        elif (score >= 45 and dscr >= 1.2 and directors_score >= 55):
+
+        # Tier 3: High-Risk Subprime - TIGHTENED (55-70 score)
+        elif (score >= 55 and dscr >= 1.5 and directors_score >= 55 and metrics.get('Cash Flow Volatility', 1.0) <= 0.55):
             rate_adjustment = "+0.15" if has_major_risk_factors else ""
             return "Tier 3", {
                 "risk_level": "High-Risk Subprime",
-                "suggested_rate": f"1.6-1.75{rate_adjustment} factor rate", 
-                "max_loan_multiple": "3x monthly revenue",
-                "term_range": "6-12 months",
-                "monitoring": "Bi-weekly reviews" + (" + continuous risk monitoring" if has_major_risk_factors else ""),
+                "suggested_rate": f"1.85-2.0{rate_adjustment} factor rate", 
+                "max_loan_multiple": "2.    5x monthly revenue",
+                "term_range": "4-6 months",
+                "monitoring": "Weekly reviews" + (" + continuous risk monitoring" if has_major_risk_factors else ""),
                 "approval_probability": "Moderate" if not has_major_risk_factors else "Low-Moderate"
             }
-        
-        # Tier 4: Enhanced Monitoring Required (major risk factors push here regardless of score)
-        elif (score >= 30 and dscr >= 1.0) or has_major_risk_factors:
+
+        # Tier 4: Enhanced Monitoring Required - TIGHTENED (40-55 score)
+        elif (score >= 40 and dscr >= 1.3) or has_major_risk_factors:
             return "Tier 4", {
                 "risk_level": "Enhanced Monitoring Required",
-                "suggested_rate": "1.75-2.0+ factor rate",
+                "suggested_rate": "2.0-2.2+ factor rate",
                 "max_loan_multiple": "2x monthly revenue", 
-                "term_range": "3-9 months",
-                "monitoring": "Weekly reviews + daily balance monitoring + personal guarantees required",
+                "term_range": "3-6 months",
+                "monitoring": "Weekly reviews + daily balance monitoring + personal guarantees REQUIRED",
                 "approval_probability": "Low - Senior review required"
             }
-        
-        # Decline
+
+        # Decline - More applications will fall here with tightened thresholds
         else:
             return "Decline", {
                 "risk_level": "Decline",
@@ -406,7 +413,7 @@ class SubprimeScoring:
                 "max_loan_multiple": "N/A",
                 "term_range": "N/A", 
                 "monitoring": "N/A",
-                "approval_probability": "Decline - Risk too high"
+                "approval_probability": "Decline - Risk too high for short-term subprime lending"
             }
     
     def _generate_scoring_breakdown(self, base_score, industry_score, growth_bonus, 
