@@ -263,28 +263,30 @@ def map_transaction_category(transaction):
     category = category.lower().strip().replace(" ", "_")
 
     amount = transaction.get("amount", 0)
+    combined_text = f"{name} {description}"
+
+    is_credit = amount < 0
+    is_debit = amount > 0
+
     # Step 1: Custom keyword overrides
     if is_credit and re.search(
         r"(?i)\b("
         r"stripe|sumup|zettle|square|take\s*payments|shopify|card\s+settlement|daily\s+takings|payout"
         r"|paypal|go\s*cardless|klarna|worldpay|izettle|ubereats|just\s*eat|deliveroo|uber|bolt"
         r"|fresha|treatwell|taskrabbit|terminal|pos\s+deposit|revolut"
-        r"|capital\s+one|evo\s*payments?|tink|teya(\s+solutions)?|talech"
+        r"|capital\s+on\s+tap|capital\s+one|evo\s*payments?|tink|teya(\s+solutions)?|talech"
         r"|barclaycard|elavon|adyen|payzone|verifone|ingenico"
         r"|nmi|trust\s+payments?|global\s+payments?|checkout\.com|epdq|santander|handepay"
-        r"|dojo|valitor|paypoint|mypos|moneris|paymentsense"
+        r"|dojo|valitor|paypoint|mypos|moneris"
         r"|merchant\s+services|payment\s+sense"
-        r"|bcard\d*\s*bcard|bcard\d+|bcard\s+\d+"
         r")\b", 
         combined_text
     ):
         return "Income"
-    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited)", combined_text):
-        # Check if it contains funding indicators (including within reference numbers)
-        if re.search(r"(fnd|fund|funding)", combined_text):
-            return "Loans"
-        else:
-            return "Income"
+    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited)(?!.*\b(fnd|fund|funding)\b)", combined_text):
+        return "Income"
+    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited).*\b(fnd|fund|funding)\b", combined_text):
+        return "Loans"
     if is_credit and re.search(
         r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|"
         r"\bfleximize\b|\bmarketfinance\b|\bliberis\b|\besme[\s\-]?loans\b|\bthincats\b|"
@@ -295,7 +297,7 @@ def map_transaction_category(transaction):
         r"\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
         r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
         r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|"
-        r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|\bloans?\b",
+        r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bloans?\b",
         combined_text
     ):
         return "Loans"
@@ -309,18 +311,10 @@ def map_transaction_category(transaction):
         r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
         r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|\bbizcap[\s\-]?uk\b|"
         r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|"
-        r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b",
+        r"\bloans?\b|\bdebt\b|\brepayment\b|\binstal?ments?\b|\bpay[\s\-]?back\b|\brepay(?:ing|ment|ed)?\b|\bcleared\b",
         combined_text
     ):
         return "Debt Repayments"
-
-    # Failed payment patterns
-    if re.search(r"(unpaid|returned|bounced|insufficient\s+funds|nsf|declined|failed|reversed|chargeback|unp\b)", combined_text, re.IGNORECASE):
-        return "Failed Payment"
-        
-    # Step 1.5: Business expense override (before Plaid fallback)
-    if re.search(r"(facebook|facebk|fb\.me|outlook|office365|microsoft|google\s+ads|linkedin|twitter|adobe|zoom|slack|shopify|wix|squarespace|mailchimp|hubspot|hmrc\s*vat|hmrc|hm\s*revenue|hm\s*customs)", combined_text, re.IGNORECASE):
-        return "Expenses"
 
     # Step 2: Plaid category fallback
     plaid_map = {
@@ -478,7 +472,7 @@ def calculate_financial_metrics(data, company_age_months):
         # Bounced payments
         bounced_payments = 0
         if 'name' in data.columns:
-            failed_payment_keywords = ['unpaid', 'returned', 'bounced', 'insufficient', 'failed', 'declined', 'nsf', 'unp']
+            failed_payment_keywords = ['unpaid', 'returned', 'bounced', 'insufficient', 'failed', 'declined']
             for keyword in failed_payment_keywords:
                 bounced_payments += data['name'].str.contains(keyword, case=False, na=False).sum()
         
