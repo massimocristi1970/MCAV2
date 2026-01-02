@@ -10,7 +10,7 @@ MAJOR FIXES:
 5. ADDED detailed debugging throughout the process
 """
 
-from sklearn import metrics
+
 from typing import Dict, Any, Tuple, List
 import streamlit as st
 import pandas as pd
