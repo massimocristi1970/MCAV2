@@ -235,8 +235,8 @@ WEIGHTS = {
 }
 
 PENALTIES = {
-    "personal_default_12m": 3, "business_ccj": 5, "director_ccj": 3,
-    'website_or_social_outdated': 3, 'uses_generic_email': 1, 'no_online_presence': 2
+    "business_ccj": 5, "director_ccj": 3,
+    'poor_or_no_online_presence': 3, 'uses_generic_email':  1
 }
 
 # TRANSACTION CATEGORIZATION FUNCTIONS
@@ -594,15 +594,13 @@ class TightenedSubprimeScoring:
             'Bars and Pubs': 0.70,                               # Reduced from 0.85
             'Event Planning and Management Firms': 0.65,         # Reduced from 0.8
         }
-        
+
         # ENHANCED penalty system - much stricter
         self.enhanced_penalties = {
-            'personal_default_12m': 8,           # Increased from 3
-            'business_ccj': 12,                  # Increased from 5
-            'director_ccj': 8,                   # Increased from 3
-            'website_or_social_outdated': 5,     # Increased from 3
-            'uses_generic_email': 3,             # Increased from 1
-            'no_online_presence': 6,             # Increased from 2
+            'business_ccj': 12,  # Increased from 5
+            'director_ccj': 8,  # Increased from 3
+            'poor_or_no_online_presence': 5,  # Combined online presence penalty
+            'uses_generic_email': 3,  # Increased from 1
         }
     
     def calculate_subprime_score(self, metrics, params):
@@ -676,20 +674,20 @@ class TightenedSubprimeScoring:
         elif volatility <= 0.6:  # Max tolerance
             score += self.subprime_weights['Cash Flow Volatility'] * 0.2
         # Above 0.6 gets 0 points
-        
-        # DIRECTORS SCORE (18 points) - TIGHTER
+
+        # DIRECTORS SCORE (16 points) - MATCHED to main scoring system
         directors_score = params.get('directors_score', 0)
-        if directors_score >= 80:      # Raised from 85
+        if directors_score >= 85:
             score += self.subprime_weights['Directors Score']
-        elif directors_score >= 70:    # Reduced from 75
-            score += self.subprime_weights['Directors Score'] * 0.80  # Reduced from 0.9
-        elif directors_score >= 60:    # Reduced from 65
-            score += self.subprime_weights['Directors Score'] * 0.55  # Reduced from 0.7
-        elif directors_score >= 50:    # Reduced from 55
-            score += self.subprime_weights['Directors Score'] * 0.30  # Reduced from 0.5
-        elif directors_score >= 40:    # Reduced from 45
-            score += self.subprime_weights['Directors Score'] * 0.10  # Reduced from 0.3
-        # Below 40 gets 0 points (was 45)
+        elif directors_score >= 75:
+            score += self.subprime_weights['Directors Score'] * 0.90
+        elif directors_score >= 65:
+            score += self.subprime_weights['Directors Score'] * 0.70
+        elif directors_score >= 55:
+            score += self.subprime_weights['Directors Score'] * 0.50
+        elif directors_score >= 45:
+            score += self.subprime_weights['Directors Score'] * 0.30
+        # Below 45 gets 0 points
         
         # AVERAGE MONTH-END BALANCE (18 points) - MATCHED to main scoring
         balance = metrics.get('Average Month-End Balance', 0)
@@ -803,23 +801,21 @@ class TightenedSubprimeScoring:
             penalty += (1.2 - dscr) * 15
         
         return min(penalty, 35)  # Increased cap from 20
-    
+
     def _calculate_enhanced_risk_penalties(self, params):
-        """Calculate MUCH HIGHER penalties for risk factors."""
+        """Calculate penalties for risk factors with cap to prevent 'death by 1000 cuts'."""
         penalty = 0
-        
+
         for factor, penalty_points in self.enhanced_penalties.items():
             if params.get(factor, False):
                 penalty += penalty_points
-        
-        # COMPOUND penalty for multiple risk factors
-        risk_count = sum(1 for factor in self.enhanced_penalties.keys() if params.get(factor, False))
-        if risk_count >= 3:            # 3 or more risk factors
-            penalty += risk_count * 3   # Additional compound penalty
-        elif risk_count >= 2:          # 2 risk factors  
-            penalty += risk_count * 1.5
-        
-        return min(penalty, 25)  # Cap total risk penalties
+
+        # Cap maximum penalty to prevent excessive stacking
+        max_penalty_cap = 15
+        if penalty > max_penalty_cap:
+            penalty = max_penalty_cap
+
+        return penalty
     
     def _determine_tightened_risk_tier(self, score, metrics, params):
         """Determine risk tier - MATCHED to main subprime_scoring_system.py"""
@@ -827,11 +823,10 @@ class TightenedSubprimeScoring:
         growth = metrics.get('Revenue Growth Rate', 0)
         directors_score = params.get('directors_score', 0)
         volatility = metrics.get('Cash Flow Volatility', 1.0)
-    
+
         has_major_risk_factors = (
-            params.get('personal_default_12m', False) or 
-            params.get('business_ccj', False) or 
-            params.get('director_ccj', False)
+                params.get('business_ccj', False) or
+                params.get('director_ccj', False)
         )
     
         # TIER 1 - Premium Subprime (82+ score) - MATCHED
@@ -847,7 +842,7 @@ class TightenedSubprimeScoring:
             }
     
         # TIER 2 - Standard Subprime (70-82 score) - MATCHED
-        elif (score >= 70 and dscr >= 2.0 and volatility <= 0.45):
+        elif (score >= 60 and dscr >= 1.5 and volatility <= 0.60):
             rate_adjustment = "+0.1" if has_major_risk_factors else ""
             return "Tier 2", {
                 "risk_level": "Standard Subprime", 
@@ -859,7 +854,7 @@ class TightenedSubprimeScoring:
             }
     
         # TIER 3 - High-Risk Subprime (55-70 score) - MATCHED
-        elif (score >= 55 and dscr >= 1.5 and directors_score >= 55 and volatility <= 0.55):
+        elif (score >= 50 and dscr >= 1.3 and directors_score >= 50 and volatility <= 0.70):
             rate_adjustment = "+0.15" if has_major_risk_factors else ""
             return "Tier 3", {
                 "risk_level": "High-Risk Subprime",
@@ -871,7 +866,7 @@ class TightenedSubprimeScoring:
             }
     
         # TIER 4 - Enhanced Monitoring (40-55 score) - MATCHED
-        elif (score >= 40 and dscr >= 1.3) or has_major_risk_factors:
+        elif (score >= 35 and dscr >= 1.1) or has_major_risk_factors:
             return "Tier 4", {
                 "risk_level": "Enhanced Monitoring Required",
                 "suggested_rate": "2.0-2.2+ factor rate",
@@ -1492,10 +1487,10 @@ class BatchProcessor:
                     params['requested_loan'] = float(params['requested_loan'])
                 if 'company_age_months' in params:
                     params['company_age_months'] = int(float(params['company_age_months']))
-                
+
                 # Convert boolean risk factors
-                risk_factors = ['personal_default_12m', 'business_ccj', 'director_ccj', 
-                               'website_or_social_outdated', 'uses_generic_email', 'no_online_presence']
+                risk_factors = ['business_ccj', 'director_ccj',
+                                'poor_or_no_online_presence', 'uses_generic_email']
                 
                 for factor in risk_factors:
                     if factor in params:
@@ -1875,7 +1870,7 @@ def main():
             # Show available columns
             available_cols = list(param_df.columns)
             expected_cols = ['company_name', 'industry', 'directors_score', 'requested_loan', 'company_age_months',
-                           'personal_default_12m', 'business_ccj', 'director_ccj']
+                             'business_ccj', 'director_ccj', 'poor_or_no_online_presence', 'uses_generic_email']
             
             missing_cols = [col for col in expected_cols if col not in available_cols]
             if missing_cols:
@@ -1952,27 +1947,23 @@ def main():
     default_loan = st.sidebar.number_input("Fallback Requested Loan (£)", min_value=0.0, value=5000.0, step=1000.0)
     default_directors_score = st.sidebar.slider("Fallback Director Credit Score", 0, 100, 75)
     default_company_age = st.sidebar.number_input("Fallback Company Age (Months)", min_value=0, value=12, step=1)
-    
+
     # Risk factors
     st.sidebar.subheader("🚨 Default Risk Factors")
-    default_personal_default = st.sidebar.checkbox("Personal Defaults (12m)", False)
     default_business_ccj = st.sidebar.checkbox("Business CCJs", False)
     default_director_ccj = st.sidebar.checkbox("Director CCJs", False)
-    default_outdated_web = st.sidebar.checkbox("Outdated Web Presence", False)
+    default_poor_or_no_online = st.sidebar.checkbox("Poor/No Online Presence", False)
     default_generic_email = st.sidebar.checkbox("Generic Email", False)
-    default_no_online = st.sidebar.checkbox("No Online Presence", False)
-    
+
     default_params = {
         'industry': default_industry,
         'requested_loan': default_loan,
         'directors_score': default_directors_score,
         'company_age_months': default_company_age,
-        'personal_default_12m': default_personal_default,
         'business_ccj': default_business_ccj,
         'director_ccj': default_director_ccj,
-        'website_or_social_outdated': default_outdated_web,
-        'uses_generic_email': default_generic_email,
-        'no_online_presence': default_no_online
+        'poor_or_no_online_presence': default_poor_or_no_online,
+        'uses_generic_email': default_generic_email
     }
     
     # NEW: Show diagnostic section here (after parameter_mapping is loaded)
@@ -2382,7 +2373,7 @@ def main():
         
         **CSV Parameter Mapping Format:**
         ```
-        company_name,industry,directors_score,requested_loan,personal_default_12m,director_ccj
+        company_name,industry,directors_score,requested_loan,director_ccj
         ABC Manufacturing Ltd,Manufacturing,78,35000,FALSE,FALSE
         Smith's Restaurant,Restaurants and Cafes,65,50000,TRUE,FALSE
         Tech Solutions UK,IT Services and Support Companies,82,75000,FALSE,TRUE

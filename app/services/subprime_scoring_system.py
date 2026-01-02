@@ -37,16 +37,14 @@ class SubprimeScoring:
             'minimum_balance': 1500,               # RAISED from 500 - need buffer for payments
             'maximum_negative_days': 3,            # LOWERED from 5 - less tolerance for cash gaps
         }
-        
-        # NEW: Risk factor penalties specifically calibrated for subprime market
-        self.risk_factor_penalties = {
-            "personal_default_12m": 8,             # Higher penalty - personal credit crucial
-            "business_ccj": 12,                    # Severe penalty - business litigation risk
-            "director_ccj": 8,                     # High penalty - director financial issues
-            'website_or_social_outdated': 3,       # Minor penalty - operational concerns
-            'uses_generic_email': 2,               # Very minor penalty - professionalism
-            'no_online_presence': 4                # Moderate penalty - business viability
-        }
+
+    # NEW: Risk factor penalties specifically calibrated for subprime market
+    self.risk_factor_penalties = {
+        "business_ccj": 12,  # Severe penalty - business litigation risk
+        "director_ccj": 8,  # High penalty - director financial issues
+        'poor_or_no_online_presence': 4,  # Moderate penalty - business viability/operational concerns
+        'uses_generic_email': 2  # Very minor penalty - professionalism
+    }
         
         # Industry risk adjustments for subprime context
         self.industry_multipliers = {
@@ -309,11 +307,7 @@ class SubprimeScoring:
         applied_penalties = []
         
         # Check each risk factor and apply penalties
-        if params.get('personal_default_12m', False):
-            penalty = self.risk_factor_penalties['personal_default_12m']
-            total_penalty += penalty
-            applied_penalties.append(f"Personal Default 12m: -{penalty}")
-        
+
         if params.get('business_ccj', False):
             penalty = self.risk_factor_penalties['business_ccj']
             total_penalty += penalty
@@ -324,24 +318,26 @@ class SubprimeScoring:
             total_penalty += penalty
             applied_penalties.append(f"Director CCJ: -{penalty}")
         
-        if params.get('website_or_social_outdated', False):
-            penalty = self.risk_factor_penalties['website_or_social_outdated']
-            total_penalty += penalty
-            applied_penalties.append(f"Outdated Web Presence: -{penalty}")
-        
+
         if params.get('uses_generic_email', False):
             penalty = self.risk_factor_penalties['uses_generic_email']
             total_penalty += penalty
             applied_penalties.append(f"Generic Email: -{penalty}")
-        
-        if params.get('no_online_presence', False):
-            penalty = self.risk_factor_penalties['no_online_presence']
+
+        if params.get('poor_or_no_online_presence', False):
+            penalty = self.risk_factor_penalties['poor_or_no_online_presence']
             total_penalty += penalty
-            applied_penalties.append(f"No Online Presence: -{penalty}")
-        
+            applied_penalties.append(f"Poor/No Online Presence:  -{penalty}")
+
+        # Cap maximum penalty to prevent "death by 1000 cuts"
+        max_penalty_cap = 15
+        if total_penalty > max_penalty_cap:
+            applied_penalties.append(f"Penalty capped:  -{total_penalty} reduced to -{max_penalty_cap}")
+            total_penalty = max_penalty_cap
+
         # Store applied penalties for breakdown
         params['_applied_risk_penalties'] = applied_penalties
-        
+
         return total_penalty
     
     def _determine_risk_tier(self, score: float, metrics: Dict[str, Any], params: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
@@ -350,12 +346,10 @@ class SubprimeScoring:
         dscr = metrics.get('Debt Service Coverage Ratio', 0)
         growth = metrics.get('Revenue Growth Rate', 0)
         directors_score = params.get('directors_score', 0)
-        
-        # Risk factors impact tier determination
+
         has_major_risk_factors = (
-            params.get('personal_default_12m', False) or 
-            params.get('business_ccj', False) or 
-            params.get('director_ccj', False)
+                params.get('business_ccj', False) or
+                params.get('director_ccj', False)
         )
         
         # Tier 1: Premium Subprime - TIGHTENED (82+ score with strong fundamentals)
@@ -371,7 +365,7 @@ class SubprimeScoring:
             }
 
         # Tier 2: Standard Subprime - TIGHTENED (70-82 score)
-        elif (score >= 70 and dscr >= 2.0 and metrics.get('Cash Flow Volatility', 1.0) <= 0.45):
+        elif (score >= 60 and dscr >= 1.5 and metrics.get('Cash Flow Volatility', 1.0) <= 0.60):
             rate_adjustment = "+0.1" if has_major_risk_factors else ""
             return "Tier 2", {
                 "risk_level": "Standard Subprime", 
@@ -383,7 +377,8 @@ class SubprimeScoring:
             }
 
         # Tier 3: High-Risk Subprime - TIGHTENED (55-70 score)
-        elif (score >= 55 and dscr >= 1.5 and directors_score >= 55 and metrics.get('Cash Flow Volatility', 1.0) <= 0.55):
+        elif (score >= 50 and dscr >= 1.3 and directors_score >= 50 and metrics.get('Cash Flow Volatility',
+                                                                                    1.0) <= 0.70):
             rate_adjustment = "+0.15" if has_major_risk_factors else ""
             return "Tier 3", {
                 "risk_level": "High-Risk Subprime",
@@ -395,7 +390,7 @@ class SubprimeScoring:
             }
 
         # Tier 4: Enhanced Monitoring Required - TIGHTENED (40-55 score)
-        elif (score >= 40 and dscr >= 1.3) or has_major_risk_factors:
+        elif (score >= 35 and dscr >= 1.1) or has_major_risk_factors:
             return "Tier 4", {
                 "risk_level": "Enhanced Monitoring Required",
                 "suggested_rate": "2.0-2.2+ factor rate",
@@ -450,8 +445,7 @@ class SubprimeScoring:
         """Generate lending recommendation based on risk tier and risk factors."""
         
         has_major_risk_factors = (
-            params.get('personal_default_12m', False) or 
-            params.get('business_ccj', False) or 
+            params.get('business_ccj', False) or
             params.get('director_ccj', False)
         )
         
@@ -536,12 +530,10 @@ def test_subprime_scoring_with_risk_factors():
                 'directors_score': 75,
                 'company_age_months': 18,
                 'industry': 'IT Services and Support Companies',
-                'personal_default_12m': False,
                 'business_ccj': False,
                 'director_ccj': False,
-                'website_or_social_outdated': False,
                 'uses_generic_email': False,
-                'no_online_presence': False
+                'poor_or_no_online_presence': False
             }
         },
         {
@@ -550,12 +542,10 @@ def test_subprime_scoring_with_risk_factors():
                 'directors_score': 75,
                 'company_age_months': 18,
                 'industry': 'IT Services and Support Companies',
-                'personal_default_12m': False,
                 'business_ccj': False,
                 'director_ccj': False,
-                'website_or_social_outdated': True,
                 'uses_generic_email': True,
-                'no_online_presence': False
+                'poor_or_no_online_presence': False
             }
         },
         {
@@ -564,12 +554,10 @@ def test_subprime_scoring_with_risk_factors():
                 'directors_score': 75,
                 'company_age_months': 18,
                 'industry': 'IT Services and Support Companies',
-                'personal_default_12m': True,
                 'business_ccj': True,
                 'director_ccj': False,
-                'website_or_social_outdated': False,
                 'uses_generic_email': False,
-                'no_online_presence': False
+                'poor_or_no_online_presence': False
             }
         },
         {
@@ -578,12 +566,10 @@ def test_subprime_scoring_with_risk_factors():
                 'directors_score': 75,
                 'company_age_months': 18,
                 'industry': 'IT Services and Support Companies',
-                'personal_default_12m': True,
                 'business_ccj': True,
                 'director_ccj': True,
-                'website_or_social_outdated': True,
                 'uses_generic_email': True,
-                'no_online_presence': True
+                'poor_or_no_online_presence': True
             }
         }
     ]

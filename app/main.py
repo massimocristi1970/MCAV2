@@ -575,8 +575,8 @@ WEIGHTS = {
 }
 
 PENALTIES = {
-    "personal_default_12m": 3, "business_ccj": 5, "director_ccj": 3,
-    'website_or_social_outdated': 3, 'uses_generic_email': 1, 'no_online_presence': 2
+    "business_ccj": 5, "director_ccj": 3,
+    'poor_or_no_online_presence': 3, 'uses_generic_email': 1
 }
 
 def calculate_weighted_scores(metrics, params, industry_thresholds):
@@ -2003,13 +2003,11 @@ class DashboardExporter:
                 'requested_loan': params.get('requested_loan'),
                 'directors_score': params.get('directors_score'),
                 'company_age_months': params.get('company_age_months'),
-                'risk_factors': {
-                    'personal_default_12m': params.get('personal_default_12m', False),
-                    'business_ccj': params.get('business_ccj', False),
+                'risk_factors':  {
+                    'business_ccj': params. get('business_ccj', False),
                     'director_ccj': params.get('director_ccj', False),
-                    'website_or_social_outdated': params.get('website_or_social_outdated', False),
-                    'uses_generic_email': params.get('uses_generic_email', False),
-                    'no_online_presence': params.get('no_online_presence', False)
+                    'poor_or_no_online_presence': params.get('poor_or_no_online_presence', False),
+                    'uses_generic_email': params.get('uses_generic_email', False)
                 }
             },
             'financial_metrics': metrics,
@@ -2179,12 +2177,10 @@ class DashboardExporter:
                 <div class="table-responsive">
                     <table>
                         <tr><th>Risk Factor</th><th>Status</th></tr>
-                        <tr><td>Personal Defaults (12m)</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['personal_default_12m'] else '✅ No'}</td></tr>
                         <tr><td>Business CCJs</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['business_ccj'] else '✅ No'}</td></tr>
                         <tr><td>Director CCJs</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['director_ccj'] else '✅ No'}</td></tr>
-                        <tr><td>Outdated Web Presence</td><td>{'⚠️ Yes' if export_data['business_parameters']['risk_factors']['website_or_social_outdated'] else '✅ No'}</td></tr>
-                        <tr><td>Generic Email</td><td>{'⚠️ Yes' if export_data['business_parameters']['risk_factors']['uses_generic_email'] else '✅ No'}</td></tr>
-                        <tr><td>No Online Presence</td><td>{'⚠️ Yes' if export_data['business_parameters']['risk_factors']['no_online_presence'] else '✅ No'}</td></tr>
+                        <tr><td>Poor/No Online Presence</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['poor_or_no_online_presence'] else '✅ No'}</td></tr>
+                        <tr><td>Generic Email</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['uses_generic_email'] else '✅ No'}</td></tr>
                     </table>
                 </div>
             </div>
@@ -2302,14 +2298,12 @@ def main():
         requested_loan = st.sidebar.number_input("Requested Loan (£)", min_value=0.0, value=25000.0, step=1000.0)
         directors_score = st.sidebar.slider("Director Credit Score", 0, 100, 75)
         company_age_months = st.sidebar.number_input("Company Age (Months)", min_value=0, value=24, step=1)
-        
+
         st.sidebar.subheader("Risk Factors")
-        personal_default_12m = st.sidebar.checkbox("Personal Defaults (12m)")
         business_ccj = st.sidebar.checkbox("Business CCJs")
         director_ccj = st.sidebar.checkbox("Director CCJs")
-        website_or_social_outdated = st.sidebar.checkbox("Outdated Web Presence")
+        poor_or_no_online_presence = st.sidebar.checkbox("Poor/No Online Presence")
         uses_generic_email = st.sidebar.checkbox("Generic Email")
-        no_online_presence = st.sidebar.checkbox("No Online Presence")
         
         # Time period filter
         st.sidebar.subheader("📅 Analysis Period")
@@ -2318,19 +2312,17 @@ def main():
             ["All", "3", "6", "9", "12"],
             help="Choose how many months of data to analyze"
         )
-        
+
         params = {
             'company_name': company_name,
             'industry': industry,
             'requested_loan': requested_loan,
             'directors_score': directors_score,
             'company_age_months': company_age_months,
-            'personal_default_12m': personal_default_12m,
             'business_ccj': business_ccj,
             'director_ccj': director_ccj,
-            'website_or_social_outdated': website_or_social_outdated,
-            'uses_generic_email': uses_generic_email,
-            'no_online_presence': no_online_presence
+            'poor_or_no_online_presence': poor_or_no_online_presence,
+            'uses_generic_email': uses_generic_email
         }
         
         # File upload
