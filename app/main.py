@@ -2337,9 +2337,17 @@ def main():
                 if not string_data.strip():
                     st.error("❌ Uploaded file is empty")
                     return
-                
+
                 json_data = json.loads(string_data)
-                transactions = json_data.get('transactions', [])
+
+                # Handle both formats:  direct list OR dictionary with 'transactions' key
+                if isinstance(json_data, list):
+                    transactions = json_data  # Direct list format
+                elif isinstance(json_data, dict):
+                    transactions = json_data.get('transactions', [])  # Dictionary format
+                else:
+                    st.error("❌ Unexpected JSON format - expected list or dictionary")
+                    return
                 
                 if not transactions:
                     st.error("❌ No transactions found in JSON file")

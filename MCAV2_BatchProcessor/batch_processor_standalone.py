@@ -1880,6 +1880,7 @@ class BatchProcessor:
         
         try:
             # Step 1: Validate transaction data
+            # Lines 1883-1902 - FIXED CODE
             # Handle case where json_data is a list
             if isinstance(json_data, list):
                 if len(json_data) > 0 and isinstance(json_data[0], dict):
@@ -1888,15 +1889,23 @@ class BatchProcessor:
                     raise ValueError("JSON file contains a list but first item is not a dictionary")
 
             # Check if this is a single transaction file (no 'transactions' key)
-            if 'transactions' in json_data:
-                transactions = json_data.get('transactions', [])
-            else:
-                # This file IS a single transaction - wrap it in a list
-                if 'transaction_id' in json_data or 'amount' in json_data:
-                    transactions = [json_data]
-                    print(f"DEBUG: Single transaction file detected: {filename}")
+            # HANDLE BOTH LIST AND DICT formats
+            if isinstance(json_data, list):
+                # Direct list format
+                transactions = json_data
+            elif isinstance(json_data, dict):
+                # Dictionary format - check for 'transactions' key
+                if 'transactions' in json_data:
+                    transactions = json_data.get('transactions', [])
                 else:
-                    transactions = []
+                    # This file IS a single transaction - wrap it in a list
+                    if 'transaction_id' in json_data or 'amount' in json_data:
+                        transactions = [json_data]
+                        print(f"DEBUG: Single transaction file detected: {filename}")
+                    else:
+                        transactions = []
+            else:
+                raise ValueError("Unexpected JSON format - expected list or dictionary")
 
             if not transactions:
                 raise ValueError("No transactions found in JSON")
