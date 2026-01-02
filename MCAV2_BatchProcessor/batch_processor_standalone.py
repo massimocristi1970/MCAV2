@@ -378,7 +378,7 @@ def map_transaction_category(transaction):
         if any(category.startswith(p) for p in patterns):
             return label
 
-   # Default fallback: debit transactions become Expenses, credit transactions stay Uncategorised
+    # Default fallback: debit transactions become Expenses, credit transactions stay Uncategorised
     if is_debit:
         return "Expenses"
     else:
@@ -389,7 +389,7 @@ def categorize_transactions(data):
     if data.empty:
         return data
         
-    data = data. copy()
+    data = data.copy()
     
     try:
         data['subcategory'] = data.apply(map_transaction_category, axis=1)
@@ -398,7 +398,7 @@ def categorize_transactions(data):
         # Fallback: set all to Uncategorised
         data['subcategory'] = 'Uncategorised'
     
-    data['is_revenue'] = data['subcategory']. isin(['Income', 'Special Inflow'])
+    data['is_revenue'] = data['subcategory'].isin(['Income', 'Special Inflow'])
     data['is_expense'] = data['subcategory'].isin(['Expenses', 'Special Outflow'])
     data['is_debt_repayment'] = data['subcategory'].isin(['Debt Repayments'])
     data['is_debt'] = data['subcategory'].isin(['Loans'])
