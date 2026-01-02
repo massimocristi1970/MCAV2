@@ -437,8 +437,8 @@ class SubprimeScoring:
 
         breakdown = [
             f"Base Score: {base_score:.1f}/100",
-            f"Industry Adjustment: {industry_score - base_score: +.1f} points",
-            f"Growth Momentum Bonus: +{growth_bonus:. 1f} points",
+            f"Industry Adjustment: {industry_score - base_score:+.1f} points",
+            f"Growth Momentum Bonus: +{growth_bonus:.1f} points",
             f"Stability Penalty: -{stability_penalty:.1f} points",
             f"Risk Factor Penalties: -{risk_factor_penalty:.1f} points",
             f"Final Score: {final_score:.1f}/100",
@@ -449,7 +449,7 @@ class SubprimeScoring:
             f"• Directors Score: {params.get('directors_score', 0)}/100 (Need 55+ for good score)",
             f"• Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.50 for good score)",
             f"• Operating Margin: {metrics.get('Operating Margin', 0) * 100:.1f}% (Need 3%+ for good score)",
-            f"• Negative Balance Days:  {metrics.get('Average Negative Balance Days per Month', 0):. 0f} (Need <5 for good score)"
+            f"• Negative Balance Days: {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need <5 for good score)"
         ]
 
         # Add risk factor details if any were applied
