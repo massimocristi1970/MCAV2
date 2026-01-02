@@ -274,18 +274,18 @@ def map_transaction_category(transaction):
 
     # Step 1: Custom keyword overrides
     if is_credit and re.search(
-        r"(?i)\b("
-        r"stripe|sumup|zettle|square|take\s*payments|shopify|card\s+settlement|daily\s+takings|payout"
-        r"|paypal|go\s*cardless|klarna|worldpay|izettle|ubereats|just\s*eat|deliveroo|uber|bolt"
-        r"|fresha|treatwell|taskrabbit|terminal|pos\s+deposit|revolut"
-        r"|capital\s+on\s+tap|capital\s+one|evo\s*payments?|tink|teya(\s+solutions)?|talech"
-        r"|barclaycard|elavon|adyen|payzone|verifone|ingenico"
-        r"|nmi|trust\s+payments?|global\s+payments?|checkout\.com|epdq|santander|handepay"
-        r"|dojo|valitor|paypoint|mypos|moneris|paymentsense"
-        r"|merchant\s+services|payment\s+sense"
-        r"|bcard\d*\s*bcard|bcard\d+|bcard\s+\d+"
-        r")\b", 
-        combined_text
+            r"(?i)\b("
+            r"stripe|sumup|zettle|square|take\s*payments|shopify|card\s+settlement|daily\s+takings|payout"
+            r"|paypal|go\s*cardless|klarna|worldpay|izettle|ubereats|just\s*eat|deliveroo|uber|bolt"
+            r"|fresha|treatwell|taskrabbit|terminal|pos\s+deposit|revolut"
+            r"|capital\s+one|evo\s*payments?|tink|teya(\s+solutions)?|talech"
+            r"|barclaycard|elavon|adyen|payzone|verifone|ingenico"
+            r"|nmi|trust\s+payments?|global\s+payments?|checkout\.com|epdq|santander|handepay"
+            r"|dojo|valitor|paypoint|mypos|moneris|paymentsense"
+            r"|merchant\s+services|payment\s+sense"
+            r"|bcard\d*\s*bcard|bcard\d+|bcard\s+\d+"
+            r")\b",
+            combined_text
     ):
         return "Income"
     if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited)", combined_text):
@@ -295,40 +295,43 @@ def map_transaction_category(transaction):
         else:
             return "Income"
     if is_credit and re.search(
-        r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|"
-        r"\bfleximize\b|\bmarketfinance\b|\bliberis\b|\besme[\s\-]?loans\b|\bthincats\b|"
-        r"\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
-        r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|"
-        r"\bmerchant[\s\-]?money\b|\bkriya\b|\buncapped\b|"
-        r"\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|\bstart[\s\-]?up[\s\-]?loans\b|"
-        r"\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
-        r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
-        r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|"
-        r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|\bloans?\b",
-        combined_text
+            r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|"
+            r"\bfleximize\b|\bmarketfinance\b|\bliberis\b|\besme[\s\-]?loans\b|\bthincats\b|"
+            r"\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
+            r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|"
+            r"\bmerchant[\s\-]?money\b|\bcapital[\s\-]?on[\s\-]?tap\b|\bkriya\b|\buncapped\b|"
+            r"\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|\bstart[\s\-]?up[\s\-]?loans\b|"
+            r"\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
+            r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
+            r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|"
+            r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|\bloans?\b",
+            combined_text
     ):
         return "Loans"
 
     if is_debit and re.search(
-        r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|\bfleximize\b|\bmarketfinance\b|\bliberis\b|"
-        r"\besme[\s\-]?loans\b|\bthincats\b|\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
-        r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|\bmerchant[\s\-]?money\b|"
-        r"\bkriya\b|\buncapped\b|\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|"
-        r"\bstart[\s\-]?up[\s\-]?loans\b|\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
-        r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
-        r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|\bbizcap[\s\-]?uk\b|"
-        r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|"
-        r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b",
-        combined_text
+            r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|\bfleximize\b|\bmarketfinance\b|\bliberis\b|"
+            r"\besme[\s\-]?loans\b|\bthincats\b|\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
+            r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|\bmerchant[\s\-]?money\b|"
+            r"\bcapital[\s\-]?on[\s\-]?tap\b|\bkriya\b|\buncapped\b|\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|"
+            r"\bstart[\s\-]?up[\s\-]?loans\b|\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
+            r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
+            r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|\bbizcap[\s\-]?uk\b|"
+            r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|"
+            r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b",
+            combined_text
     ):
         return "Debt Repayments"
 
     # Failed payment patterns
-    if re.search(r"(unpaid|returned|bounced|insufficient\s+funds|\bnsf\b|declined|failed|reversed|chargeback|unp\b)", combined_text, re.IGNORECASE):
+    if re.search(r"(unpaid|returned|bounced|insufficient\s+funds|nsf|declined|failed|reversed|chargeback|unp\b)",
+                 combined_text, re.IGNORECASE):
         return "Failed Payment"
-        
+
     # Step 1.5: Business expense override (before Plaid fallback)
-    if re.search(r"(facebook|facebk|fb\.me|outlook|office365|microsoft|google\s+ads|linkedin|twitter|adobe|zoom|slack|shopify|wix|squarespace|mailchimp|hubspot|hmrc\s*vat|hmrc|hm\s*revenue|hm\s*customs)", combined_text, re.IGNORECASE):
+    if re.search(
+            r"(facebook|facebk|fb\.me|outlook|office365|microsoft|google\s+ads|linkedin|twitter|adobe|zoom|slack|shopify|wix|squarespace|mailchimp|hubspot|hmrc\s*vat|hmrc|hm\s*revenue|hm\s*customs)",
+            combined_text, re.IGNORECASE):
         return "Expenses"
 
     # Step 2: Plaid category fallback with validation
@@ -384,110 +387,123 @@ def map_transaction_category(transaction):
     else:
         return "Uncategorised"
 
+
 def categorize_transactions(data):
     """Apply categorization"""
     if data.empty:
         return data
-        
+
     data = data.copy()
-    
-    try:
-        data['subcategory'] = data.apply(map_transaction_category, axis=1)
-    except Exception as e:
-        print(f"ERROR in categorize_transactions: {e}")
-        # Fallback: set all to Uncategorised
-        data['subcategory'] = 'Uncategorised'
-    
+    data['subcategory'] = data.apply(map_transaction_category, axis=1)
     data['is_revenue'] = data['subcategory'].isin(['Income', 'Special Inflow'])
     data['is_expense'] = data['subcategory'].isin(['Expenses', 'Special Outflow'])
     data['is_debt_repayment'] = data['subcategory'].isin(['Debt Repayments'])
     data['is_debt'] = data['subcategory'].isin(['Loans'])
-    
+
     return data
 
 # FINANCIAL METRICS CALCULATION
 def calculate_financial_metrics(data, company_age_months):
-    """Calculate comprehensive financial metrics"""
+    """Calculate comprehensive financial metrics - ENHANCED VERSION"""
     if data.empty:
         return {}
-    
+
     try:
         data = categorize_transactions(data)
-        
-        # Use absolute values for all amounts
+
+        # FIXED: Use absolute values for all amounts
         total_revenue = abs(data.loc[data['is_revenue'], 'amount'].sum()) if data['is_revenue'].any() else 0
         total_expenses = abs(data.loc[data['is_expense'], 'amount'].sum()) if data['is_expense'].any() else 0
         net_income = total_revenue - total_expenses
-        total_debt_repayments = abs(data.loc[data['is_debt_repayment'], 'amount'].sum()) if data['is_debt_repayment'].any() else 0
+        total_debt_repayments = abs(data.loc[data['is_debt_repayment'], 'amount'].sum()) if data[
+            'is_debt_repayment'].any() else 0
         total_debt = abs(data.loc[data['is_debt'], 'amount'].sum()) if data['is_debt'].any() else 0
-        
+
         # Ensure minimum values to prevent division by zero
-        total_revenue = max(total_revenue, 1)
-        
+        total_revenue = max(total_revenue, 1)  # Minimum £1 to prevent division by zero
+
         # Time-based calculations
         data['date'] = pd.to_datetime(data['date'])
         data['year_month'] = data['date'].dt.to_period('M')
         unique_months = data['year_month'].nunique()
         months_count = max(unique_months, 1)
-        
+
         monthly_avg_revenue = total_revenue / months_count
-        
-        # Financial ratios
-        debt_to_income_ratio = min(total_debt / total_revenue, 10) if total_revenue > 0 else 0
+
+        # Financial ratios - ENHANCED
+        debt_to_income_ratio = min(total_debt / total_revenue, 10) if total_revenue > 0 else 0  # Cap at 10x
         expense_to_revenue_ratio = total_expenses / total_revenue if total_revenue > 0 else 1
-        operating_margin = max(-1, min(1, net_income / total_revenue)) if total_revenue > 0 else -1
-        
-        # Debt Service Coverage Ratio calculation
+        operating_margin = max(-1, min(1,
+                                       net_income / total_revenue)) if total_revenue > 0 else -1  # Cap between -100% and 100%
+
+        # FIXED: Debt Service Coverage Ratio calculation
         if total_debt_repayments > 0:
             debt_service_coverage_ratio = total_revenue / total_debt_repayments
         elif total_debt > 0:
+            # Estimate minimum required payments (10% of debt as annual payment)
             estimated_annual_payment = total_debt * 0.1
             debt_service_coverage_ratio = total_revenue / estimated_annual_payment if estimated_annual_payment > 0 else 0
         else:
-            debt_service_coverage_ratio = 10
-        
+            debt_service_coverage_ratio = 10  # No debt = excellent coverage
+
+        # Cap DSCR at reasonable maximum
         debt_service_coverage_ratio = min(debt_service_coverage_ratio, 50)
-        
-        # Monthly analysis
+
+        # Monthly analysis - ENHANCED
         monthly_summary = data.groupby('year_month').agg({
             'amount': [
                 lambda x: abs(x[data.loc[x.index, 'is_revenue']].sum()) if data.loc[x.index, 'is_revenue'].any() else 0,
                 lambda x: abs(x[data.loc[x.index, 'is_expense']].sum()) if data.loc[x.index, 'is_expense'].any() else 0
             ]
         }).round(2)
-        
+
         monthly_summary.columns = ['monthly_revenue', 'monthly_expenses']
-        
-        # Volatility metrics
+
+        # Volatility metrics - ENHANCED
         if len(monthly_summary) > 1:
             revenue_values = monthly_summary['monthly_revenue']
             revenue_mean = revenue_values.mean()
-            
+
             if revenue_mean > 0:
-                cash_flow_volatility = min(revenue_values.std() / revenue_mean, 2.0)
+                cash_flow_volatility = min(revenue_values.std() / revenue_mean, 2.0)  # Cap at 200%
             else:
-                cash_flow_volatility = 0.5
-                
+                cash_flow_volatility = 0.5  # Default moderate volatility
+
+            # Revenue growth calculation - FIXED
             revenue_growth_changes = revenue_values.pct_change().dropna()
             if len(revenue_growth_changes) > 0:
+                # Don't multiply by 100 - store as decimal (0.245 = 24.5%)
                 revenue_growth_rate = revenue_growth_changes.median()
-                revenue_growth_rate = max(-0.5, min(0.5, revenue_growth_rate))
+                revenue_growth_rate = max(-0.5, min(0.5, revenue_growth_rate))  # Cap between -50% and +50%
+
+                # Debug output
+                print(f"  Revenue Growth Rate Calculation:")
+                print(f"    Monthly changes: {revenue_growth_changes.tolist()}")
+
+                # Safe formatting with None check
+                if revenue_growth_rate is not None:
+                    print(f"    Median change: {revenue_growth_rate:.3f} ({revenue_growth_rate * 100:.1f}%)")
+                else:
+                    print(f"    Median change: None (using 0.0%)")
+                    revenue_growth_rate = 0
             else:
                 revenue_growth_rate = 0
-                
+                print(f"    No growth data available, using 0.0%")
+
             gross_burn_rate = monthly_summary['monthly_expenses'].mean()
         else:
-            cash_flow_volatility = 0.1
+            cash_flow_volatility = 0.1  # Low volatility for single month
             revenue_growth_rate = 0
             gross_burn_rate = total_expenses / months_count
-        
-        # Balance metrics
+
+        # Balance metrics - IMPROVED with realistic estimates
         if 'balances.available' in data.columns and not data['balances.available'].isna().all():
             avg_month_end_balance = data['balances.available'].mean()
         else:
+            # Estimate based on revenue and expenses
             monthly_net = (total_revenue - total_expenses) / months_count
-            avg_month_end_balance = max(1000, monthly_net * 0.5)
-        
+            avg_month_end_balance = max(1000, monthly_net * 0.5)  # Conservative estimate
+
         # Negative balance days - estimated
         if cash_flow_volatility > 0.3:
             avg_negative_days = min(10, int(cash_flow_volatility * 10))
@@ -495,14 +511,34 @@ def calculate_financial_metrics(data, company_age_months):
             avg_negative_days = 3
         else:
             avg_negative_days = 0
-        
-        # Bounced payments
+
+        # Bounced payments - scan transaction names
         bounced_payments = 0
-        if 'name' in data.columns:
-            failed_payment_keywords = ['unpaid', 'returned', 'bounced', 'insufficient', 'failed', 'declined']
+        if 'name_y' in data.columns:
+            failed_payment_keywords = ['unpaid', 'returned', 'bounced', 'insufficient', 'failed', 'declined', 'nsf',
+                                       'unp']
             for keyword in failed_payment_keywords:
-                bounced_payments += data['name'].str.contains(keyword, case=False, na=False).sum()
-        
+                bounced_payments += data['name_y'].str.contains(keyword, case=False, na=False).sum()
+
+        # DEBUGGING: Print key values
+        print(f"\n🔍 DEBUG - Financial Metrics:")
+        print(f"  Total Revenue: £{total_revenue:,.2f}" if total_revenue is not None else "  Total Revenue: N/A")
+        print(f"  Total Expenses: £{total_expenses:,.2f}" if total_expenses is not None else "  Total Expenses: N/A")
+        print(f"  Net Income: £{net_income:,.2f}" if net_income is not None else "  Net Income: N/A")
+        print(
+            f"  DSCR: {debt_service_coverage_ratio:.2f}" if debt_service_coverage_ratio is not None else "  DSCR: N/A")
+        print(
+            f"  Operating Margin: {operating_margin:.3f} ({operating_margin * 100:.1f}%)" if operating_margin is not None else "  Operating Margin: N/A")
+        print(
+            f"  Cash Flow Volatility: {cash_flow_volatility:.3f}" if cash_flow_volatility is not None else "  Cash Flow Volatility: N/A")
+        print(
+            f"  Revenue Growth Rate: {revenue_growth_rate:.2f}%" if revenue_growth_rate is not None else "  Revenue Growth Rate: N/A")
+        print(
+            f"  Avg Month-End Balance: £{avg_month_end_balance:,.2f}" if avg_month_end_balance is not None else "  Avg Month-End Balance: N/A")
+        print(
+            f"  Avg Negative Days: {avg_negative_days}" if avg_negative_days is not None else "  Avg Negative Days: N/A")
+        print(f"  Bounced Payments: {bounced_payments}" if bounced_payments is not None else "  Bounced Payments: N/A")
+
         return {
             "Total Revenue": round(total_revenue, 2),
             "Monthly Average Revenue": round(monthly_avg_revenue, 2),
@@ -522,9 +558,11 @@ def calculate_financial_metrics(data, company_age_months):
             "Number of Bounced Payments": bounced_payments,
             "monthly_summary": monthly_summary
         }
-        
+
     except Exception as e:
-        print(f"Error calculating metrics: {e}")
+        st.error(f"Error calculating metrics: {e}")
+        import traceback
+        print(f"Full error traceback: {traceback.format_exc()}")
         return {}
 
 # SCORING CALCULATION FUNCTIONS
