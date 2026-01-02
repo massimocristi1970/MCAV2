@@ -2763,7 +2763,7 @@ def main():
                         st.write(f"• {line}")
                 
                 # NEW: Comprehensive Score Diagnostics
-                if 'diagnostics' in scores and scores.get('diagnostics'):
+                if scores.get('diagnostics'):
                     with st.expander("📊 **Score Diagnostics - Detailed Analysis**", expanded=False):
                         diagnostics = scores['diagnostics']
                         

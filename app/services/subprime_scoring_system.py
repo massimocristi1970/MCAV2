@@ -975,10 +975,10 @@ class SubprimeScoring:
         # Calculate achievable improvement (50% of gap)
         if metric == 'Cash Flow Volatility' or metric == 'Negative Balance Days':
             achievable_improvement = gap * 0.5
-            achievable_value = actual - achievable_improvement if metric == 'Cash Flow Volatility' else actual - achievable_improvement
+            achievable_value = actual - achievable_improvement  # Need to REDUCE these metrics
         else:
             achievable_improvement = gap * 0.5
-            achievable_value = actual + achievable_improvement
+            achievable_value = actual + achievable_improvement  # Need to INCREASE these metrics
         
         # Estimate point gain (roughly 50% of points lost)
         estimated_gain = points_lost * 0.5
