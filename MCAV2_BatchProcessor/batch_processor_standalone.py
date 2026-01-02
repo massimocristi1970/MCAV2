@@ -1902,10 +1902,10 @@ class BatchProcessor:
         else:
             debug_info['fuzzy_match_debug'] = f"No matches found for '{clean_search}'"
             return None, 0, "none", False
-    
+
     def process_single_application(self, json_data, filename, default_params=None, parameter_mapping=None):
         """FIXED: Process a single application with working fuzzy matching and comprehensive debugging"""
-        
+
         # Initialize debug info with comprehensive tracking
         debug_info = {
             'filename': filename,
@@ -1915,16 +1915,20 @@ class BatchProcessor:
             'parameter_mapping_count': len(parameter_mapping) if parameter_mapping else 0,
             'rapidfuzz_available': RAPIDFUZZ_AVAILABLE
         }
-        
+
         try:
-            # Step 1: Validate transaction data
+            # Step 1: Validate transaction data AND preserve original json_data for metadata extraction
+            original_json_data = json_data  # Keep original for metadata extraction
+
             # HANDLE BOTH LIST AND DICT formats properly
             if isinstance(json_data, list):
                 # Direct list format - USE ALL TRANSACTIONS
                 transactions = json_data
-                print(f"DEBUG: Direct list format detected: {len(transactions)} transactions")
+                json_data_dict = {}  # No metadata available from list format
+                print(f"DEBUG: Direct list format detected:  {len(transactions)} transactions")
 
             elif isinstance(json_data, dict):
+                json_data_dict = json_data  # Keep dict for metadata extraction
                 # Dictionary format - check for 'transactions' key
                 if 'transactions' in json_data:
                     transactions = json_data.get('transactions', [])
@@ -1936,57 +1940,60 @@ class BatchProcessor:
                         print(f"DEBUG: Single transaction file detected: {filename}")
                     else:
                         transactions = []
-                        print(f"DEBUG:  Empty or invalid JSON structure in {filename}")
+                        print(f"DEBUG: Empty or invalid JSON structure in {filename}")
             else:
                 raise ValueError("Unexpected JSON format - expected list or dictionary")
 
             if not transactions:
                 raise ValueError("No transactions found in JSON")
-            
+
             debug_info['transaction_count'] = len(transactions)
             debug_info['debug_step'] = f'Found {len(transactions)} transactions'
-            
+            print(f"✅ Loaded {len(transactions)} transactions from {filename}")
+
             # Convert to DataFrame
             df = pd.json_normalize(transactions)
             debug_info['dataframe_shape'] = df.shape
             debug_info['dataframe_columns'] = list(df.columns)
-            
+
             # Validate required columns
             required_columns = ['date', 'amount', 'name']
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
                 debug_info['missing_columns'] = missing_columns
                 raise ValueError(f"Missing required columns: {missing_columns}")
-            
+
             debug_info['debug_step'] = 'Required columns validated'
-            
+
             # Clean data
             df['date'] = pd.to_datetime(df['date'], errors='coerce')
             df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
             original_count = len(df)
             df = df.dropna(subset=['date', 'amount'])
-            
+
             debug_info['original_transaction_count'] = original_count
             debug_info['cleaned_transaction_count'] = len(df)
             debug_info['dropped_transactions'] = original_count - len(df)
-            
+
             if df.empty:
                 raise ValueError("No valid transactions after data cleaning")
-            
-            debug_info['debug_step'] = f'Data cleaned: {len(df)} valid transactions'
-            
+
+            debug_info['debug_step'] = f'Data cleaned:  {len(df)} valid transactions'
+
             # Step 2: FIXED company name extraction
             params = default_params.copy() if default_params else {}
-            
+
             # Extract company name with comprehensive tracking
-            company_name, extraction_method = self.extract_company_name_from_json(json_data, filename)
+            # Use json_data_dict for metadata extraction (safe for both list and dict)
+            company_name, extraction_method = self.extract_company_name_from_json(
+                json_data_dict if isinstance(original_json_data, dict) else {}, filename)
             debug_info['extracted_company_name'] = company_name
             debug_info['extraction_method'] = extraction_method
             debug_info['debug_step'] = f'Company name extracted: "{company_name}" via {extraction_method}'
-            
+
             params['company_name'] = company_name
             params['original_filename'] = filename
-            
+
             # Initialize fuzzy match results with comprehensive tracking
             debug_info.update({
                 'fuzzy_match_company': 'No match attempted',
@@ -1998,38 +2005,39 @@ class BatchProcessor:
                 'csv_companies_count': 0,
                 'parameters_applied_from_csv': 0
             })
-            
-            # Step 3: FIXED fuzzy matching with comprehensive CSV data handling
+
+            # Step 3:  FIXED fuzzy matching with comprehensive CSV data handling
             if parameter_mapping and company_name:
                 debug_info['debug_step'] = 'Starting fuzzy matching process'
                 debug_info['fuzzy_match_debug'] = 'Fuzzy matching initiated'
-                
+
                 csv_companies = list(parameter_mapping.keys())
                 debug_info['csv_companies_available'] = csv_companies
-                
+
                 matched_company, score, strategy, success = self.fuzzy_match_company(
                     company_name, csv_companies, debug_info
                 )
-                
+
                 if success and matched_company:
                     debug_info['fuzzy_match_company'] = matched_company
                     debug_info['fuzzy_match_score'] = score
                     debug_info['fuzzy_match_strategy'] = strategy
                     debug_info['fuzzy_match_success'] = True
-                    debug_info['debug_step'] = f'FUZZY MATCH SUCCESS: "{company_name}" -> "{matched_company}" ({score}% confidence via {strategy})'
-                    
+                    debug_info[
+                        'debug_step'] = f'FUZZY MATCH SUCCESS: "{company_name}" -> "{matched_company}" ({score}% confidence via {strategy})'
+
                     # Apply CSV parameters with tracking
                     csv_params = parameter_mapping[matched_company]
                     debug_info['csv_parameters_available'] = csv_params
-                    
+
                     params_applied = 0
                     applied_params = {}
-                    
+
                     # Apply each parameter with validation and tracking
                     for param_key, param_value in csv_params.items():
                         if param_key == 'company_name' or param_key == 'filename':
                             continue  # Skip these meta fields
-                        
+
                         if pd.notna(param_value) and param_value != '' and param_value is not None:
                             # Convert boolean strings to actual booleans
                             if isinstance(param_value, str):
@@ -2037,81 +2045,88 @@ class BatchProcessor:
                                     param_value = True
                                 elif param_value.lower() in ['false', '0', 'no', 'n']:
                                     param_value = False
-                            
+
                             # Apply parameter
                             params[param_key] = param_value
                             applied_params[param_key] = param_value
                             params_applied += 1
-                    
+
                     debug_info['parameters_applied_from_csv'] = params_applied
                     debug_info['applied_csv_parameters'] = applied_params
-                    debug_info['debug_step'] += f', Applied {params_applied} CSV parameters: {list(applied_params.keys())}'
-                    
+                    debug_info[
+                        'debug_step'] += f', Applied {params_applied} CSV parameters:  {list(applied_params.keys())}'
+
                 else:
                     debug_info['fuzzy_match_success'] = False
-                    debug_info['debug_step'] = f'FUZZY MATCH FAILED: No match found for "{company_name}" in {len(csv_companies)} CSV companies'
+                    debug_info[
+                        'debug_step'] = f'FUZZY MATCH FAILED:  No match found for "{company_name}" in {len(csv_companies)} CSV companies'
                     debug_info['fuzzy_match_debug'] = f'Failed to find match for "{company_name}" against CSV companies'
-                    
+
             elif not parameter_mapping:
                 debug_info['debug_step'] = 'No CSV parameter mapping provided'
                 debug_info['fuzzy_match_debug'] = 'No CSV parameter mapping available'
             elif not company_name:
                 debug_info['debug_step'] = 'No company name extracted for matching'
                 debug_info['fuzzy_match_debug'] = 'No company name available for matching'
-            
-            # Step 4: Try to extract application-specific data from JSON
+
+            # Step 4: Try to extract application-specific data from JSON (ONLY if dict format)
             debug_info['debug_step'] = 'Checking for JSON metadata'
-            
-            # Check for application metadata in JSON
-            metadata_found = {}
-            app_data = json_data.get('application_data', {})
-            if app_data:
-                debug_info['json_application_data_found'] = True
-                for key in ['industry', 'directors_score', 'requested_loan', 'company_age_months']:
-                    if key in app_data and app_data[key] is not None:
-                        params[key] = app_data[key]
-                        metadata_found[key] = app_data[key]
-            
-            # Check for metadata in root JSON
-            root_metadata = {}
-            metadata_fields = {
-                'industry': json_data.get('industry'),
-                'directors_score': json_data.get('directors_score'), 
-                'requested_loan': json_data.get('requested_loan'),
-                'company_age_months': json_data.get('company_age_months')
-            }
-            
-            for key, value in metadata_fields.items():
-                if value is not None and pd.notna(value):
-                    params[key] = value
-                    root_metadata[key] = value
-            
-            debug_info['json_metadata_found'] = {**metadata_found, **root_metadata}
-            debug_info['debug_step'] = f'JSON metadata extraction complete, found: {list(debug_info["json_metadata_found"].keys())}'
-            
+
+            if isinstance(original_json_data, dict):
+                # Check for application metadata in JSON
+                metadata_found = {}
+                app_data = json_data_dict.get('application_data', {})
+                if app_data:
+                    debug_info['json_application_data_found'] = True
+                    for key in ['industry', 'directors_score', 'requested_loan', 'company_age_months']:
+                        if key in app_data and app_data[key] is not None:
+                            params[key] = app_data[key]
+                            metadata_found[key] = app_data[key]
+
+                # Check for metadata in root JSON
+                root_metadata = {}
+                metadata_fields = {
+                    'industry': json_data_dict.get('industry'),
+                    'directors_score': json_data_dict.get('directors_score'),
+                    'requested_loan': json_data_dict.get('requested_loan'),
+                    'company_age_months': json_data_dict.get('company_age_months')
+                }
+
+                for key, value in metadata_fields.items():
+                    if value is not None and pd.notna(value):
+                        params[key] = value
+                        root_metadata[key] = value
+
+                debug_info['json_metadata_found'] = {**metadata_found, **root_metadata}
+                debug_info[
+                    'debug_step'] = f'JSON metadata extraction complete, found: {list(debug_info["json_metadata_found"].keys())}'
+            else:
+                debug_info['json_metadata_found'] = {}
+                debug_info['debug_step'] = 'No JSON metadata available (list format)'
+
             # Step 5: Validate and set required parameters
             debug_info['debug_step'] = 'Validating and setting required parameters'
-            
+
             # List of absolutely required parameters for processing
             critical_params = ['directors_score', 'requested_loan', 'industry', 'company_age_months']
             missing_critical = []
-            
+
             for param in critical_params:
                 if param not in params or params[param] is None or pd.isna(params[param]):
                     missing_critical.append(param)
-            
+
             debug_info['missing_critical_parameters'] = missing_critical
             debug_info['using_defaults_for'] = missing_critical
             debug_info['using_defaults'] = len(missing_critical) > 0
-            
+
             # Set company name if still missing
             if 'company_name' not in params or not params['company_name']:
                 params['company_name'] = filename.replace('.json', '').replace('_', ' ').title()
                 debug_info['company_name_set_from_filename'] = True
-            
+
             # Step 6: Data type validation and conversion
             debug_info['debug_step'] = 'Converting parameter data types'
-            
+
             try:
                 # Convert numeric parameters
                 if 'directors_score' in params:
@@ -2124,7 +2139,7 @@ class BatchProcessor:
                 # Convert boolean risk factors
                 risk_factors = ['business_ccj', 'director_ccj',
                                 'poor_or_no_online_presence', 'uses_generic_email']
-                
+
                 for factor in risk_factors:
                     if factor in params:
                         value = params[factor]
@@ -2134,40 +2149,40 @@ class BatchProcessor:
                             params[factor] = bool(value)
                         else:
                             params[factor] = bool(value)
-                
+
                 debug_info['parameter_conversion_successful'] = True
-                
+
             except (ValueError, TypeError) as e:
                 debug_info['parameter_conversion_error'] = str(e)
                 raise ValueError(f"Invalid parameter data types: {e}")
-            
+
             # Step 7: Parameter validation
             debug_info['debug_step'] = 'Validating parameter ranges'
-            
+
             # Validate parameter ranges
             if not (0 <= params['directors_score'] <= 100):
                 raise ValueError(f"Directors score must be 0-100, got {params['directors_score']}")
-            
+
             if params['requested_loan'] <= 0:
                 raise ValueError(f"Requested loan must be positive, got {params['requested_loan']}")
-            
+
             if params['company_age_months'] < 0:
                 raise ValueError(f"Company age must be non-negative, got {params['company_age_months']}")
-            
+
             if params['industry'] not in INDUSTRY_THRESHOLDS:
                 raise ValueError(f"Unknown industry: {params['industry']}")
-            
+
             debug_info['parameter_validation_successful'] = True
-            debug_info['final_parameters'] = {k: v for k, v in params.items() if k not in ['company_name']}  # Don't include potentially long company names
-            
+            debug_info['final_parameters'] = {k: v for k, v in params.items() if k not in ['company_name']}
+
             # Step 8: Calculate financial metrics
             debug_info['debug_step'] = 'Calculating financial metrics'
-            
+
             metrics = calculate_financial_metrics(df, params['company_age_months'])
-            
+
             if not metrics:
                 raise ValueError("Could not calculate financial metrics from transaction data")
-            
+
             debug_info['metrics_calculation_successful'] = True
             debug_info['key_metrics'] = {
                 'Total Revenue': metrics.get('Total Revenue', 0),
@@ -2175,12 +2190,12 @@ class BatchProcessor:
                 'Debt Service Coverage Ratio': metrics.get('Debt Service Coverage Ratio', 0),
                 'Operating Margin': metrics.get('Operating Margin', 0)
             }
-            
+
             # Step 9: Calculate all scores
             debug_info['debug_step'] = 'Calculating scoring algorithms'
-            
+
             scores = calculate_all_scores_tightened(metrics, params)
-            
+
             debug_info['scoring_calculation_successful'] = True
             debug_info['calculated_scores'] = {
                 'subprime_score': scores.get('subprime_score', 0),
@@ -2188,24 +2203,24 @@ class BatchProcessor:
                 'ml_score': scores.get('ml_score', None),
                 'subprime_tier': scores.get('subprime_tier', 'Unknown')
             }
-            
+
             # Step 10: Combine all results
             debug_info['debug_step'] = 'Combining final results'
-            
+
             # Create comprehensive result with all debug information
             result = {
                 # Debug and tracking information
                 **debug_info,
-                
+
                 # Application parameters
                 **params,
-                
+
                 # Financial metrics
                 **metrics,
-                
+
                 # Scores
                 **scores,
-                
+
                 # Additional metadata
                 'transaction_count': len(df),
                 'date_range_start': df['date'].min().isoformat(),
@@ -2213,10 +2228,10 @@ class BatchProcessor:
                 'total_amount': abs(df['amount']).sum(),
                 'processing_successful': True
             }
-            
+
             debug_info['debug_step'] = 'Processing completed successfully'
             result['debug_step'] = 'Processing completed successfully'
-            
+
             self.processed_count += 1
             self.debug_log.append({
                 'filename': filename,
@@ -2227,12 +2242,12 @@ class BatchProcessor:
                 'parameters_from_csv': debug_info.get('parameters_applied_from_csv', 0),
                 'using_defaults': debug_info.get('using_defaults', False)
             })
-            
+
             return result
-            
+
         except Exception as e:
             self.error_count += 1
-            
+
             # Create detailed error information
             error_info = {
                 'filename': filename,
@@ -2246,7 +2261,7 @@ class BatchProcessor:
                 'transaction_count': debug_info.get('transaction_count', 0),
                 'processing_stage': debug_info.get('debug_step', 'Unknown')
             }
-            
+
             self.error_log.append(error_info)
             self.debug_log.append({
                 'filename': filename,
@@ -2254,7 +2269,7 @@ class BatchProcessor:
                 'error': str(e),
                 'debug_step': debug_info.get('debug_step', 'Unknown')
             })
-            
+
             return None
     
     def process_batch(self, files_data, default_params, parameter_mapping=None, progress_bar=None):
