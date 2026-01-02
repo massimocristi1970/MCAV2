@@ -11,21 +11,14 @@ MAJOR FIXES:
 """
 
 
-from typing import Dict, Any, Tuple, List
-import streamlit as st
-import pandas as pd
-import numpy as np
-import json
-import os
-import zipfile
-import tempfile
-from datetime import datetime, timedelta
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import re
-from pathlib import Path
-import joblib
+from typing import Dict, Any, Tuple, List  # ✅ Type hints - KEEP
+import streamlit as st                      # ✅ UI framework - KEEP
+import pandas as pd                         # ✅ Data processing - KEEP
+import numpy as np                          # ✅ Calculations - KEEP
+import json                                 # ✅ File handling - KEEP
+import os                                   # ✅ File operations - KEEP
+from datetime import datetime, timedelta    # ✅ Timestamps - KEEP
+import re                                   # ✅ Transaction categorization - KEEP
 
 # Try to import rapidfuzz, fallback if not available
 try:
