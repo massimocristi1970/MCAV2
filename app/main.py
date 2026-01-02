@@ -2287,7 +2287,7 @@ class DashboardExporter:
 def main():
     """Main application"""
     try:
-        st.title("🏦 Business Finance Scorecard")
+        st.title("Business Finance Scorecard")
         st.markdown("---")
            
         # Sidebar inputs
@@ -2295,9 +2295,9 @@ def main():
         
         company_name = st.sidebar.text_input("Company Name", "Sample Business Ltd")
         industry = st.sidebar.selectbox("Industry", list(INDUSTRY_THRESHOLDS.keys()))
-        requested_loan = st.sidebar.number_input("Requested Loan (£)", min_value=0.0, value=25000.0, step=1000.0)
+        requested_loan = st.sidebar.number_input("Requested Loan (£)", min_value=0.0, value=5000.0, step=1000.0)
         directors_score = st.sidebar.slider("Director Credit Score", 0, 100, 75)
-        company_age_months = st.sidebar.number_input("Company Age (Months)", min_value=0, value=24, step=1)
+        company_age_months = st.sidebar.number_input("Company Age (Months)", min_value=0, value=12, step=1)
 
         st.sidebar.subheader("Risk Factors")
         business_ccj = st.sidebar.checkbox("Business CCJs")
@@ -2306,7 +2306,7 @@ def main():
         uses_generic_email = st.sidebar.checkbox("Generic Email")
         
         # Time period filter
-        st.sidebar.subheader("📅 Analysis Period")
+        st.sidebar.subheader("Analysis Period")
         analysis_period = st.sidebar.selectbox(
             "Select Time Period",
             ["All", "3", "6", "9", "12"],
@@ -2393,7 +2393,7 @@ def main():
 
                 # ENHANCED DASHBOARD RENDERING 
                 period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
-                st.header(f"📊 Financial Dashboard: {company_name} ({period_label})")
+                st.header(f"Financial Dashboard: {company_name} ({period_label})")
 
                 # Key Scoring Methods
                 col1, col2, col3 = st.columns(3)  # Change from 4 to 3 columns
@@ -2406,7 +2406,7 @@ def main():
                         "Tier 4": "🔴", "Decline": "⚫"
                     }
                     st.metric(
-                        f"🎯 Subprime Score", 
+                        f"Subprime Score",
                         f"{subprime_score:.1f}/100",
                         delta=f"{tier_colors.get(tier, '⚪')} {tier}",
                         help="Primary score for subprime lending decisions"
@@ -2431,24 +2431,24 @@ def main():
                             help="ML model (future use - not for decisions yet)"
                         )
                     else:
-                        st.metric("🤖 Adjusted ML", "N/A")
+                        st.metric("Adjusted ML", "N/A")
                         
                 st.info("""
-                **🎯 Scoring Decision Hierarchy:**
+                **Scoring Decision Hierarchy:**
                 1. **Subprime Score** - Primary lending decision
                 2. **V2 Weighted** - Secondary validation 
                 3. **ML Score** - Future use only (monitoring)
                 """)
 
                 # Score improvement analysis
-                st.markdown("### 📈 Primary Scoring Methods")
+                st.markdown("### Primary Scoring Methods")
 
                 # Create three columns for the three scoring methods
                 method_col1, method_col2, method_col3 = st.columns(3)
 
                 with method_col1:
                     st.markdown("""
-                    **🎯 Subprime Score (PRIMARY):**
+                    **Subprime Score (PRIMARY):**
                     - ✅ Designed for growth businesses with temporary losses
                     - ✅ Focuses on ability to pay (DSCR) and growth trajectory
                     - ✅ Industry-specific risk adjustments
@@ -2458,7 +2458,7 @@ def main():
 
                 with method_col2:
                     st.markdown("""
-                    **🏛️ V2 Weighted Score (SECONDARY):**
+                    ** V2 Weighted Score (SECONDARY):**
                     - ✅ Simple and transparent binary thresholds
                     - ✅ Easy to understand and explain
                     - ✅ Good discrimination between good/bad loans
@@ -2468,7 +2468,7 @@ def main():
 
                 with method_col3:
                     st.markdown("""
-                    **🤖 Adjusted ML Score (FUTURE):**
+                    **Adjusted ML Score (FUTURE):**
                     - ⚠️ **Not ready for lending decisions**
                     - ⚠️ Insufficient training data (need 100+ loans)
                     - ✅ Growth business adjustments included
@@ -2499,7 +2499,7 @@ def main():
                         passed_metrics = sum(1 for data in scores.get('score_breakdown', {}).values() if data.get('meets', False))
             
                         st.markdown(f"""
-                        **📊 V2 Weighted Summary:**
+                        **V2 Weighted Summary:**
                         - **Metrics Passed**: {passed_metrics}/{total_metrics}
                         - **Pass Rate**: {(passed_metrics/total_metrics)*100:.1f}% of thresholds met
                         - **Final Score**: {scores['weighted_score']:.0f}/100
@@ -2533,7 +2533,7 @@ def main():
 
                 # Charts Section
                 st.markdown("---")
-                st.subheader("📈 Charts & Analysis")
+                st.subheader("Charts & Analysis")
 
                 # Row 1: Enhanced Score and Financial Charts
                 col1, col2 = st.columns(2)
@@ -2557,7 +2557,7 @@ def main():
                 
                 # Monthly Breakdown Section
                 st.markdown("---")
-                st.subheader("📊 Monthly Breakdown by Category")
+                st.subheader("Monthly Breakdown by Category")
                 
                 pivot_counts, pivot_amounts = create_monthly_breakdown(filtered_df)
                 
@@ -2573,7 +2573,7 @@ def main():
                         st.plotly_chart(fig_monthly_amounts, use_container_width=True, key="main_monthly_amounts")
                     
                     # Monthly summary table
-                    with st.expander("📋 Detailed Monthly Breakdown", expanded=False):
+                    with st.expander("Detailed Monthly Breakdown", expanded=False):
                         tab1, tab2 = st.tabs(["Transaction Counts", "Transaction Amounts (£)"])
                         
                         with tab1:
@@ -2608,7 +2608,7 @@ def main():
                 
                 # Transaction Category Analysis
                 st.markdown("---")
-                st.subheader("💳 Transaction Analysis")
+                st.subheader("Transaction Analysis")
                 
                 categorized_data = categorize_transactions(filtered_df)
                 category_summary = categorized_data['subcategory'].value_counts()
@@ -2644,7 +2644,7 @@ def main():
 
                 # Detailed Metrics Table
                 st.markdown("---")
-                st.subheader("📋 Detailed Financial Metrics")
+                st.subheader("Detailed Financial Metrics")
                 
                 # Create metrics table
                 metrics_data = []
@@ -2685,7 +2685,7 @@ def main():
                 # Period Comparison (if applicable)
                 if analysis_period != 'All':
                     st.markdown("---")
-                    with st.expander(f"📈 Compare with Full Period Analysis", expanded=False):
+                    with st.expander(f"Compare with Full Period Analysis", expanded=False):
                         full_metrics = calculate_financial_metrics(df, params['company_age_months'])
                         full_scores = calculate_all_scores_enhanced(full_metrics, params)
                         
@@ -2712,7 +2712,7 @@ def main():
                 
                 # NEW: Subprime Lending Analysis Section
                 st.markdown("---")
-                st.subheader("🎯 Subprime Lending Analysis")
+                st.subheader("Subprime Lending Analysis")
 
                 # Subprime scoring overview
                 subprime_col1, subprime_col2, subprime_col3 = st.columns(3)
@@ -2745,7 +2745,7 @@ def main():
                     st.write(f"• **Approval Probability**: {approval_prob}")
 
                 # Subprime recommendation
-                st.markdown("### 📋 Subprime Lending Recommendation")
+                st.markdown("### Subprime Lending Recommendation")
                 recommendation = scores['subprime_recommendation']
                 if "APPROVE" in recommendation:
                     st.success(f"**Recommendation**: {recommendation}")
@@ -2764,10 +2764,10 @@ def main():
                 
                 # NEW: Comprehensive Score Diagnostics
                 if scores.get('diagnostics'):
-                    with st.expander("📊 **Score Diagnostics - Detailed Analysis**", expanded=False):
+                    with st.expander("**Score Diagnostics - Detailed Analysis**", expanded=False):
                         diagnostics = scores['diagnostics']
                         
-                        st.markdown("### 📈 Metric Performance Summary")
+                        st.markdown("### Metric Performance Summary")
                         
                         # Create metric breakdown table
                         if diagnostics.get('metric_breakdown'):
@@ -2860,7 +2860,7 @@ def main():
                         return
     
                     st.markdown("---")
-                    st.subheader("🤖 ML Score Reliability Assessment")
+                    st.subheader("ML Score Reliability Assessment")
     
                     col1, col2, col3 = st.columns(3)
     
@@ -2897,7 +2897,7 @@ def main():
                         st.warning("⚠️ **Low Reliability**: Rely more on subprime and weighted scores")        
 
                 # Score comparison for subprime context
-                st.markdown("### 📊 All Scoring Methods Comparison (Subprime Context)")
+                st.markdown("### All Scoring Methods Comparison (Subprime Context)")
 
                 comparison_col1, comparison_col2 = st.columns(2)
 
@@ -2994,11 +2994,11 @@ def main():
                         loans_analysis=None,  # Will be added when loans analysis is available
                         
                     )
-                    st.success("🎯 Enhanced Dashboard complete with Export Functionality")
+                    st.success("Enhanced Dashboard complete with Export Functionality")
                     
                 except Exception as e:
                     st.error(f"❌ Export functionality error: {str(e)}")
-                    st.success("🎯 Enhanced Dashboard complete (export disabled due to error)")
+                    st.success("Enhanced Dashboard complete (export disabled due to error)")
                     
             except Exception as e:
                 st.error(f"❌ Unexpected error during processing: {e}")
@@ -3008,7 +3008,7 @@ def main():
                 print(full_traceback)
         
         else:
-            st.info("👆 Upload a JSON transaction file to begin analysis")
+            st.info("Upload a JSON transaction file to begin analysis")
 
     except Exception as e:
         st.error(f"❌ Application Error: {str(e)}")
