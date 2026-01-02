@@ -18,8 +18,9 @@ OUTPUT_XLSX = r"C:\Users\massi\OneDrive - Savvy Loan Products Ltd\Merchant Cash 
 
 
 # Column detection (we'll auto-detect, but these hints help)
-POSSIBLE_FILENAME_COLS = ["filename", "file", "json_file", "json", "path", "application_file", "app_file", "record"]
+POSSIBLE_FILENAME_COLS = ["application_id", "filename", "file", "json_file", "json", "path", "application_file", "app_file", "record"]
 POSSIBLE_OUTCOME_COLS = ["outcome", "label", "paid", "paid_flag", "repaid", "status"]
+
 
 # Outcomes:
 # 0 = not paid
@@ -289,41 +290,46 @@ def build_mca_features(transactions):
 def load_outcomes(path_xlsx):
     df = pd.read_excel(path_xlsx)
 
-    # Detect outcome column
-    out_col = None
-    for c in df.columns:
-        if str(c).strip().lower() in POSSIBLE_OUTCOME_COLS:
-            out_col = c
-            break
-    if out_col is None:
-        # fallback: pick first numeric-ish column with only 0/1 values (within a sample)
-        for c in df.columns:
-            s = pd.to_numeric(df[c], errors="coerce")
-            sample = s.dropna().head(200)
-            if len(sample) >= 5 and set(sample.unique()).issubset({0, 1}):
-                out_col = c
-                break
+    # We KNOW your sheet has these columns (avoid auto-detect headaches)
+    expected_file_col = "application_id"
+    expected_out_col = "outcome"
 
-    # Detect filename column
-    file_col = None
-    for c in df.columns:
-        if str(c).strip().lower() in POSSIBLE_FILENAME_COLS:
-            file_col = c
-            break
-    if file_col is None:
-        # heuristic: column that looks like filenames
-        for c in df.columns:
-            if _looks_like_filename(df[c]):
-                file_col = c
-                break
+    # Normalise for case/whitespace just in case Excel headers differ slightly
+    cols_lc = {str(c).strip().lower(): c for c in df.columns}
+
+    file_col = cols_lc.get(expected_file_col)
+    out_col = cols_lc.get(expected_out_col)
 
     if file_col is None or out_col is None:
         raise ValueError(
-            "Could not confidently detect filename and outcome columns in the outcomes Excel.\n"
-            f"Columns found: {list(df.columns)}\n"
-            "Fix: rename your columns to something like 'filename' and 'outcome' (or 'label'), "
-            "or update POSSIBLE_*_COLS in the script."
+            "Outcomes Excel missing required columns.\n"
+            f"Expected columns: {expected_file_col}, {expected_out_col}\n"
+            f"Columns found: {list(df.columns)}"
         )
+
+    df = df[[file_col, out_col]].copy()
+
+    # Clean / normalise keys (supports full path or just filename; with or without .json)
+    df[file_col] = df[file_col].apply(_normalise_filename_cell)
+
+    # Ensure outcomes are numeric 0/1
+    df[out_col] = pd.to_numeric(df[out_col], errors="coerce").astype("Int64")
+
+    mapping = {}
+    for _, row in df.iterrows():
+        key = str(row[file_col]).strip()
+        oc = row[out_col]
+        if not key or pd.isna(oc):
+            continue
+
+        oc = int(oc)
+
+        # Map both "RECORD_123.json" and "RECORD_123"
+        mapping[key] = oc
+        mapping[_strip_json_ext(key)] = oc
+
+    return mapping, file_col, out_col
+
 
     df = df[[file_col, out_col]].copy()
     df[file_col] = df[file_col].apply(_normalise_filename_cell)
