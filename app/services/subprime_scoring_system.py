@@ -121,13 +121,17 @@ class SubprimeScoring:
             base_score, industry_adjusted_score, growth_bonus,
             stability_penalty, risk_factor_penalty, final_score, metrics, params
         )
+        
+        # Generate comprehensive diagnostics
+        diagnostics = self._generate_score_diagnostics(metrics, params, final_score)
 
         return {
             'subprime_score': round(final_score, 1),
             'risk_tier': risk_tier,
             'pricing_guidance': pricing_guidance,
             'breakdown': breakdown,
-            'recommendation': self._generate_recommendation(risk_tier, metrics, params)
+            'recommendation': self._generate_recommendation(risk_tier, metrics, params),
+            'diagnostics': diagnostics
         }
 
     def _calculate_base_subprime_score(self, metrics: Dict[str, Any], params: Dict[str, Any]) -> float:
@@ -433,8 +437,8 @@ class SubprimeScoring:
 
         breakdown = [
             f"Base Score: {base_score:.1f}/100",
-            f"Industry Adjustment: {industry_score - base_score: +.1f} points",
-            f"Growth Momentum Bonus: +{growth_bonus:. 1f} points",
+            f"Industry Adjustment: {industry_score - base_score:+.1f} points",
+            f"Growth Momentum Bonus: +{growth_bonus:.1f} points",
             f"Stability Penalty: -{stability_penalty:.1f} points",
             f"Risk Factor Penalties: -{risk_factor_penalty:.1f} points",
             f"Final Score: {final_score:.1f}/100",
@@ -445,7 +449,7 @@ class SubprimeScoring:
             f"• Directors Score: {params.get('directors_score', 0)}/100 (Need 55+ for good score)",
             f"• Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.50 for good score)",
             f"• Operating Margin: {metrics.get('Operating Margin', 0) * 100:.1f}% (Need 3%+ for good score)",
-            f"• Negative Balance Days:  {metrics.get('Average Negative Balance Days per Month', 0):. 0f} (Need <5 for good score)"
+            f"• Negative Balance Days: {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need <5 for good score)"
         ]
 
         # Add risk factor details if any were applied
@@ -482,6 +486,543 @@ class SubprimeScoring:
             return "SENIOR REVIEW - Higher risk profile, requires additional review and guarantees."
         else:
             return "DECLINE - Consider reapplying after 3-6 months of improved trading performance."
+
+    def _generate_score_diagnostics(self, metrics: Dict[str, Any], params: Dict[str, Any], final_score: float) -> Dict[str, Any]:
+        """
+        Generate detailed diagnostics showing why the score is what it is.
+        
+        This provides comprehensive insights into:
+        - How each metric performed
+        - What's hurting the score most  
+        - What's helping the score
+        - Specific improvement suggestions
+        """
+        
+        diagnostics = {
+            'metric_breakdown': [],
+            'top_negative_factors': [],
+            'top_positive_factors': [],
+            'threshold_failures': [],
+            'improvement_suggestions': []
+        }
+        
+        # Track metric performance with detailed breakdown
+        metric_performance = []
+        
+        # DEBT SERVICE COVERAGE RATIO
+        dscr = metrics.get('Debt Service Coverage Ratio', 0)
+        dscr_threshold_full = 1.8
+        dscr_threshold_min = 0.8
+        dscr_max_points = self.subprime_weights['Debt Service Coverage Ratio']
+        
+        if dscr >= dscr_threshold_full:
+            dscr_points = dscr_max_points
+            dscr_percentage = 100.0
+            dscr_status = 'PASS'
+        elif dscr >= 1.5:
+            dscr_points = dscr_max_points * 0.85
+            dscr_percentage = 85.0
+            dscr_status = 'PARTIAL'
+        elif dscr >= 1.2:
+            dscr_points = dscr_max_points * 0.70
+            dscr_percentage = 70.0
+            dscr_status = 'PARTIAL'
+        elif dscr >= 1.0:
+            dscr_points = dscr_max_points * 0.55
+            dscr_percentage = 55.0
+            dscr_status = 'PARTIAL'
+        elif dscr >= dscr_threshold_min:
+            dscr_points = dscr_max_points * 0.35
+            dscr_percentage = 35.0
+            dscr_status = 'PARTIAL'
+        else:
+            dscr_points = 0
+            dscr_percentage = 0
+            dscr_status = 'FAIL'
+        
+        metric_performance.append({
+            'metric': 'Debt Service Coverage Ratio',
+            'actual_value': dscr,
+            'threshold_full_points': dscr_threshold_full,
+            'threshold_min_points': dscr_threshold_min,
+            'points_earned': round(dscr_points, 2),
+            'points_possible': dscr_max_points,
+            'percentage': round(dscr_percentage, 1),
+            'status': dscr_status,
+            'gap_to_full': max(0, dscr_threshold_full - dscr)
+        })
+        
+        # CASH FLOW VOLATILITY
+        volatility = metrics.get('Cash Flow Volatility', 1.0)
+        vol_threshold_full = 0.35
+        vol_threshold_max = 1.0
+        vol_max_points = self.subprime_weights['Cash Flow Volatility']
+        
+        if volatility <= vol_threshold_full:
+            vol_points = vol_max_points
+            vol_percentage = 100.0
+            vol_status = 'PASS'
+        elif volatility <= 0.50:
+            vol_points = vol_max_points * 0.80
+            vol_percentage = 80.0
+            vol_status = 'PARTIAL'
+        elif volatility <= 0.65:
+            vol_points = vol_max_points * 0.60
+            vol_percentage = 60.0
+            vol_status = 'PARTIAL'
+        elif volatility <= 0.80:
+            vol_points = vol_max_points * 0.40
+            vol_percentage = 40.0
+            vol_status = 'PARTIAL'
+        elif volatility <= vol_threshold_max:
+            vol_points = vol_max_points * 0.20
+            vol_percentage = 20.0
+            vol_status = 'PARTIAL'
+        else:
+            vol_points = 0
+            vol_percentage = 0
+            vol_status = 'FAIL'
+        
+        metric_performance.append({
+            'metric': 'Cash Flow Volatility',
+            'actual_value': volatility,
+            'threshold_full_points': vol_threshold_full,
+            'threshold_min_points': vol_threshold_max,
+            'points_earned': round(vol_points, 2),
+            'points_possible': vol_max_points,
+            'percentage': round(vol_percentage, 1),
+            'status': vol_status,
+            'gap_to_full': max(0, volatility - vol_threshold_full)
+        })
+        
+        # DIRECTORS SCORE
+        directors = params.get('directors_score', 50)
+        dir_threshold_full = 70
+        dir_threshold_min = 25
+        dir_max_points = self.subprime_weights['Directors Score']
+        
+        if directors >= dir_threshold_full:
+            dir_points = dir_max_points
+            dir_percentage = 100.0
+            dir_status = 'PASS'
+        elif directors >= 55:
+            dir_points = dir_max_points * 0.80
+            dir_percentage = 80.0
+            dir_status = 'PARTIAL'
+        elif directors >= 45:
+            dir_points = dir_max_points * 0.60
+            dir_percentage = 60.0
+            dir_status = 'PARTIAL'
+        elif directors >= 35:
+            dir_points = dir_max_points * 0.40
+            dir_percentage = 40.0
+            dir_status = 'PARTIAL'
+        elif directors >= dir_threshold_min:
+            dir_points = dir_max_points * 0.20
+            dir_percentage = 20.0
+            dir_status = 'PARTIAL'
+        else:
+            dir_points = 0
+            dir_percentage = 0
+            dir_status = 'FAIL'
+        
+        metric_performance.append({
+            'metric': 'Directors Score',
+            'actual_value': directors,
+            'threshold_full_points': dir_threshold_full,
+            'threshold_min_points': dir_threshold_min,
+            'points_earned': round(dir_points, 2),
+            'points_possible': dir_max_points,
+            'percentage': round(dir_percentage, 1),
+            'status': dir_status,
+            'gap_to_full': max(0, dir_threshold_full - directors)
+        })
+        
+        # AVERAGE MONTH-END BALANCE
+        balance = metrics.get('Average Month-End Balance', 0)
+        bal_threshold_full = 2000
+        bal_threshold_min = 100
+        bal_max_points = self.subprime_weights['Average Month-End Balance']
+        
+        if balance >= bal_threshold_full:
+            bal_points = bal_max_points
+            bal_percentage = 100.0
+            bal_status = 'PASS'
+        elif balance >= 1000:
+            bal_points = bal_max_points * 0.80
+            bal_percentage = 80.0
+            bal_status = 'PARTIAL'
+        elif balance >= 500:
+            bal_points = bal_max_points * 0.60
+            bal_percentage = 60.0
+            bal_status = 'PARTIAL'
+        elif balance >= 250:
+            bal_points = bal_max_points * 0.40
+            bal_percentage = 40.0
+            bal_status = 'PARTIAL'
+        elif balance >= bal_threshold_min:
+            bal_points = bal_max_points * 0.20
+            bal_percentage = 20.0
+            bal_status = 'PARTIAL'
+        else:
+            bal_points = 0
+            bal_percentage = 0
+            bal_status = 'FAIL'
+        
+        metric_performance.append({
+            'metric': 'Average Month-End Balance',
+            'actual_value': balance,
+            'threshold_full_points': bal_threshold_full,
+            'threshold_min_points': bal_threshold_min,
+            'points_earned': round(bal_points, 2),
+            'points_possible': bal_max_points,
+            'percentage': round(bal_percentage, 1),
+            'status': bal_status,
+            'gap_to_full': max(0, bal_threshold_full - balance)
+        })
+        
+        # REVENUE GROWTH RATE
+        growth = metrics.get('Revenue Growth Rate', 0)
+        growth_threshold_full = 0.10  # 10%
+        growth_threshold_min = -0.15  # -15%
+        growth_max_points = self.subprime_weights['Revenue Growth Rate']
+        
+        if growth >= growth_threshold_full:
+            growth_points = growth_max_points
+            growth_percentage = 100.0
+            growth_status = 'PASS'
+        elif growth >= 0.05:
+            growth_points = growth_max_points * 0.80
+            growth_percentage = 80.0
+            growth_status = 'PARTIAL'
+        elif growth >= 0:
+            growth_points = growth_max_points * 0.60
+            growth_percentage = 60.0
+            growth_status = 'PARTIAL'
+        elif growth >= -0.05:
+            growth_points = growth_max_points * 0.40
+            growth_percentage = 40.0
+            growth_status = 'PARTIAL'
+        elif growth >= growth_threshold_min:
+            growth_points = growth_max_points * 0.20
+            growth_percentage = 20.0
+            growth_status = 'PARTIAL'
+        else:
+            growth_points = 0
+            growth_percentage = 0
+            growth_status = 'FAIL'
+        
+        metric_performance.append({
+            'metric': 'Revenue Growth Rate',
+            'actual_value': growth,
+            'threshold_full_points': growth_threshold_full,
+            'threshold_min_points': growth_threshold_min,
+            'points_earned': round(growth_points, 2),
+            'points_possible': growth_max_points,
+            'percentage': round(growth_percentage, 1),
+            'status': growth_status,
+            'gap_to_full': max(0, growth_threshold_full - growth)
+        })
+        
+        # OPERATING MARGIN
+        margin = metrics.get('Operating Margin', 0)
+        margin_threshold_full = 0.05  # 5%
+        margin_threshold_min = -0.03  # -3%
+        margin_max_points = self.subprime_weights['Operating Margin']
+        
+        if margin >= margin_threshold_full:
+            margin_points = margin_max_points
+            margin_percentage = 100.0
+            margin_status = 'PASS'
+        elif margin >= 0.03:
+            margin_points = margin_max_points * 0.80
+            margin_percentage = 80.0
+            margin_status = 'PARTIAL'
+        elif margin >= 0.01:
+            margin_points = margin_max_points * 0.60
+            margin_percentage = 60.0
+            margin_status = 'PARTIAL'
+        elif margin >= 0:
+            margin_points = margin_max_points * 0.40
+            margin_percentage = 40.0
+            margin_status = 'PARTIAL'
+        elif margin >= margin_threshold_min:
+            margin_points = margin_max_points * 0.20
+            margin_percentage = 20.0
+            margin_status = 'PARTIAL'
+        else:
+            margin_points = 0
+            margin_percentage = 0
+            margin_status = 'FAIL'
+        
+        metric_performance.append({
+            'metric': 'Operating Margin',
+            'actual_value': margin,
+            'threshold_full_points': margin_threshold_full,
+            'threshold_min_points': margin_threshold_min,
+            'points_earned': round(margin_points, 2),
+            'points_possible': margin_max_points,
+            'percentage': round(margin_percentage, 1),
+            'status': margin_status,
+            'gap_to_full': max(0, margin_threshold_full - margin)
+        })
+        
+        # NEGATIVE BALANCE DAYS
+        neg_days = metrics.get('Average Negative Balance Days per Month', 0)
+        neg_threshold_full = 2
+        neg_threshold_max = 15
+        neg_max_points = self.subprime_weights['Average Negative Balance Days per Month']
+        
+        if neg_days <= neg_threshold_full:
+            neg_points = neg_max_points
+            neg_percentage = 100.0
+            neg_status = 'PASS'
+        elif neg_days <= 5:
+            neg_points = neg_max_points * 0.80
+            neg_percentage = 80.0
+            neg_status = 'PARTIAL'
+        elif neg_days <= 8:
+            neg_points = neg_max_points * 0.60
+            neg_percentage = 60.0
+            neg_status = 'PARTIAL'
+        elif neg_days <= 12:
+            neg_points = neg_max_points * 0.40
+            neg_percentage = 40.0
+            neg_status = 'PARTIAL'
+        elif neg_days <= neg_threshold_max:
+            neg_points = neg_max_points * 0.20
+            neg_percentage = 20.0
+            neg_status = 'PARTIAL'
+        else:
+            neg_points = 0
+            neg_percentage = 0
+            neg_status = 'FAIL'
+        
+        metric_performance.append({
+            'metric': 'Negative Balance Days',
+            'actual_value': neg_days,
+            'threshold_full_points': neg_threshold_full,
+            'threshold_min_points': neg_threshold_max,
+            'points_earned': round(neg_points, 2),
+            'points_possible': neg_max_points,
+            'percentage': round(neg_percentage, 1),
+            'status': neg_status,
+            'gap_to_full': max(0, neg_days - neg_threshold_full)
+        })
+        
+        # COMPANY AGE
+        age = params.get('company_age_months', 0)
+        age_threshold_full = 18
+        age_threshold_min = 3
+        age_max_points = self.subprime_weights['Company Age (Months)']
+        
+        if age >= age_threshold_full:
+            age_points = age_max_points
+            age_percentage = 100.0
+            age_status = 'PASS'
+        elif age >= 12:
+            age_points = age_max_points * 0.80
+            age_percentage = 80.0
+            age_status = 'PARTIAL'
+        elif age >= 9:
+            age_points = age_max_points * 0.60
+            age_percentage = 60.0
+            age_status = 'PARTIAL'
+        elif age >= 6:
+            age_points = age_max_points * 0.40
+            age_percentage = 40.0
+            age_status = 'PARTIAL'
+        elif age >= age_threshold_min:
+            age_points = age_max_points * 0.20
+            age_percentage = 20.0
+            age_status = 'PARTIAL'
+        else:
+            age_points = 0
+            age_percentage = 0
+            age_status = 'FAIL'
+        
+        metric_performance.append({
+            'metric': 'Company Age',
+            'actual_value': age,
+            'threshold_full_points': age_threshold_full,
+            'threshold_min_points': age_threshold_min,
+            'points_earned': round(age_points, 2),
+            'points_possible': age_max_points,
+            'percentage': round(age_percentage, 1),
+            'status': age_status,
+            'gap_to_full': max(0, age_threshold_full - age)
+        })
+        
+        # Add all metrics to breakdown
+        diagnostics['metric_breakdown'] = metric_performance
+        
+        # Calculate TOP NEGATIVE FACTORS (biggest points lost)
+        negative_factors = []
+        for perf in metric_performance:
+            points_lost = perf['points_possible'] - perf['points_earned']
+            if points_lost > 0.5:  # Only include if significant loss
+                suggestion = self._get_improvement_suggestion(perf)
+                negative_factors.append({
+                    'metric': perf['metric'],
+                    'points_lost': round(points_lost, 2),
+                    'suggestion': suggestion
+                })
+        
+        # Sort by points lost and take top 3
+        negative_factors.sort(key=lambda x: x['points_lost'], reverse=True)
+        diagnostics['top_negative_factors'] = negative_factors[:3]
+        
+        # Calculate TOP POSITIVE FACTORS (best performers)
+        positive_factors = []
+        for perf in metric_performance:
+            if perf['percentage'] >= 60:  # Only include if doing reasonably well
+                status_desc = self._get_status_description(perf)
+                positive_factors.append({
+                    'metric': perf['metric'],
+                    'points_earned': perf['points_earned'],
+                    'status': status_desc
+                })
+        
+        # Sort by points earned and take top 3
+        positive_factors.sort(key=lambda x: x['points_earned'], reverse=True)
+        diagnostics['top_positive_factors'] = positive_factors[:3]
+        
+        # THRESHOLD FAILURES
+        threshold_failures = []
+        for perf in metric_performance:
+            if perf['status'] == 'FAIL':
+                threshold_failures.append({
+                    'metric': perf['metric'],
+                    'actual': perf['actual_value'],
+                    'required_minimum': perf['threshold_min_points'],
+                    'impact': f"0 points (vs max {perf['points_possible']})"
+                })
+        
+        diagnostics['threshold_failures'] = threshold_failures
+        
+        # IMPROVEMENT SUGGESTIONS
+        suggestions = []
+        
+        # Focus on top 2-3 biggest gaps
+        for neg_factor in diagnostics['top_negative_factors'][:2]:
+            for perf in metric_performance:
+                if perf['metric'] == neg_factor['metric']:
+                    suggestion = self._create_specific_suggestion(perf, final_score)
+                    if suggestion:
+                        suggestions.append(suggestion)
+        
+        # Add tier movement suggestion
+        current_tier = self._get_tier_from_score(final_score)
+        next_tier_score = self._get_next_tier_threshold(final_score)
+        if next_tier_score:
+            points_needed = next_tier_score - final_score
+            suggestions.append(
+                f"You need {points_needed:.1f} more points to move from {current_tier} to the next tier"
+            )
+        
+        diagnostics['improvement_suggestions'] = suggestions
+        
+        return diagnostics
+    
+    def _get_improvement_suggestion(self, perf: Dict[str, Any]) -> str:
+        """Generate improvement suggestion for a metric"""
+        metric = perf['metric']
+        actual = perf['actual_value']
+        target = perf['threshold_full_points']
+        
+        if metric == 'Debt Service Coverage Ratio':
+            return f"Improve DSCR from {actual:.2f} to {target:.2f} for full points"
+        elif metric == 'Cash Flow Volatility':
+            return f"Reduce volatility from {actual:.3f} to below {target:.2f}"
+        elif metric == 'Directors Score':
+            return f"Director score of {int(target)}+ would help (currently {int(actual)})"
+        elif metric == 'Average Month-End Balance':
+            return f"Increase balance from £{actual:,.0f} to £{target:,.0f}"
+        elif metric == 'Revenue Growth Rate':
+            return f"Improve growth from {actual*100:.1f}% to {target*100:.1f}%+"
+        elif metric == 'Operating Margin':
+            return f"Improve margin from {actual*100:.1f}% to above {target*100:.1f}%"
+        elif metric == 'Negative Balance Days':
+            return f"Reduce negative days from {int(actual)} to {int(target)} or fewer"
+        elif metric == 'Company Age':
+            return f"Company age will naturally improve ({int(actual)} months currently)"
+        else:
+            return f"Improve {metric} to meet threshold"
+    
+    def _get_status_description(self, perf: Dict[str, Any]) -> str:
+        """Get status description for a positive factor"""
+        percentage = perf['percentage']
+        points = perf['points_earned']
+        max_points = perf['points_possible']
+        
+        if percentage >= 95:
+            return f"Full points - excellent performance ({points}/{max_points})"
+        elif percentage >= 80:
+            return f"{percentage:.0f}% - strong performance ({points:.1f}/{max_points})"
+        else:
+            return f"{percentage:.0f}% - good performance ({points:.1f}/{max_points})"
+    
+    def _create_specific_suggestion(self, perf: Dict[str, Any], current_score: float) -> str:
+        """Create specific improvement suggestion with point impact"""
+        metric = perf['metric']
+        actual = perf['actual_value']
+        gap = perf['gap_to_full']
+        points_lost = perf['points_possible'] - perf['points_earned']
+        
+        if points_lost < 1:
+            return None
+        
+        # Calculate achievable improvement (50% of gap)
+        if metric == 'Cash Flow Volatility' or metric == 'Negative Balance Days':
+            achievable_improvement = gap * 0.5
+            achievable_value = actual - achievable_improvement  # Need to REDUCE these metrics
+        else:
+            achievable_improvement = gap * 0.5
+            achievable_value = actual + achievable_improvement  # Need to INCREASE these metrics
+        
+        # Estimate point gain (roughly 50% of points lost)
+        estimated_gain = points_lost * 0.5
+        
+        if metric == 'Debt Service Coverage Ratio':
+            return f"Improving DSCR from {actual:.2f} to {achievable_value:.2f} would add ~{estimated_gain:.1f} points"
+        elif metric == 'Cash Flow Volatility':
+            return f"Reducing volatility from {actual:.3f} to {achievable_value:.3f} would add ~{estimated_gain:.1f} points"
+        elif metric == 'Directors Score':
+            return f"Improving Directors Score from {int(actual)} to {int(achievable_value)} would add ~{estimated_gain:.1f} points"
+        elif metric == 'Average Month-End Balance':
+            return f"Increasing balance from £{actual:,.0f} to £{achievable_value:,.0f} would add ~{estimated_gain:.1f} points"
+        elif metric == 'Revenue Growth Rate':
+            return f"Improving growth from {actual*100:.1f}% to {achievable_value*100:.1f}% would add ~{estimated_gain:.1f} points"
+        elif metric == 'Operating Margin':
+            return f"Improving margin from {actual*100:.1f}% to {achievable_value*100:.1f}% would add ~{estimated_gain:.1f} points"
+        else:
+            return None
+    
+    def _get_tier_from_score(self, score: float) -> str:
+        """Get tier name from score"""
+        if score >= 75:
+            return "Tier 1"
+        elif score >= 60:
+            return "Tier 2"
+        elif score >= 45:
+            return "Tier 3"
+        elif score >= 30:
+            return "Tier 4"
+        else:
+            return "Decline"
+    
+    def _get_next_tier_threshold(self, score: float) -> float:
+        """Get score threshold for next tier"""
+        if score < 30:
+            return 30  # Tier 4
+        elif score < 45:
+            return 45  # Tier 3
+        elif score < 60:
+            return 60  # Tier 2
+        elif score < 75:
+            return 75  # Tier 1
+        else:
+            return None  # Already at top tier
 
     def compare_scoring_methods(self, traditional_score: float, adaptive_score: float,
                                 ml_score: float, subprime_score: float) -> Dict[str, Any]:

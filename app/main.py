@@ -2761,6 +2761,95 @@ def main():
                     st.write("**Scoring Components:**")
                     for line in scores['subprime_breakdown']:
                         st.write(f"• {line}")
+                
+                # NEW: Comprehensive Score Diagnostics
+                if scores.get('diagnostics'):
+                    with st.expander("📊 **Score Diagnostics - Detailed Analysis**", expanded=False):
+                        diagnostics = scores['diagnostics']
+                        
+                        st.markdown("### 📈 Metric Performance Summary")
+                        
+                        # Create metric breakdown table
+                        if diagnostics.get('metric_breakdown'):
+                            metric_data = []
+                            for metric in diagnostics['metric_breakdown']:
+                                # Format actual value based on metric type
+                                actual = metric['actual_value']
+                                if 'Ratio' in metric['metric'] or 'DSCR' in metric['metric']:
+                                    actual_str = f"{actual:.2f}"
+                                elif 'Volatility' in metric['metric']:
+                                    actual_str = f"{actual:.3f}"
+                                elif 'Balance' in metric['metric']:
+                                    actual_str = f"£{actual:,.0f}"
+                                elif 'Growth' in metric['metric'] or 'Margin' in metric['metric']:
+                                    actual_str = f"{actual*100:.1f}%"
+                                elif 'Days' in metric['metric']:
+                                    actual_str = f"{int(actual)}"
+                                elif 'Age' in metric['metric'] or 'Score' in metric['metric']:
+                                    actual_str = f"{int(actual)}"
+                                else:
+                                    actual_str = f"{actual:.2f}"
+                                
+                                # Format threshold based on metric type
+                                threshold = metric['threshold_full_points']
+                                if 'Ratio' in metric['metric'] or 'DSCR' in metric['metric']:
+                                    threshold_str = f"{threshold:.2f}"
+                                elif 'Volatility' in metric['metric']:
+                                    threshold_str = f"≤{threshold:.2f}"
+                                elif 'Balance' in metric['metric']:
+                                    threshold_str = f"£{threshold:,.0f}+"
+                                elif 'Growth' in metric['metric'] or 'Margin' in metric['metric']:
+                                    threshold_str = f"{threshold*100:.1f}%+"
+                                elif 'Days' in metric['metric']:
+                                    threshold_str = f"≤{int(threshold)}"
+                                elif 'Age' in metric['metric'] or 'Score' in metric['metric']:
+                                    threshold_str = f"{int(threshold)}+"
+                                else:
+                                    threshold_str = f"{threshold:.2f}"
+                                
+                                # Status emoji
+                                status_emoji = {'PASS': '✅', 'PARTIAL': '🟡', 'FAIL': '❌'}
+                                
+                                metric_data.append({
+                                    'Metric': metric['metric'],
+                                    'Actual': actual_str,
+                                    'Target': threshold_str,
+                                    'Points': f"{metric['points_earned']:.1f}/{metric['points_possible']}",
+                                    '%': f"{metric['percentage']:.0f}%",
+                                    'Status': f"{status_emoji.get(metric['status'], '⚪')} {metric['status']}"
+                                })
+                            
+                            if metric_data:
+                                df_metrics = pd.DataFrame(metric_data)
+                                st.dataframe(df_metrics, use_container_width=True, hide_index=True)
+                        
+                        # Top Negative Factors
+                        if diagnostics.get('top_negative_factors'):
+                            st.markdown("### 🔴 Top Factors Hurting Your Score")
+                            for i, factor in enumerate(diagnostics['top_negative_factors'], 1):
+                                st.write(f"**{i}. {factor['metric']}**: Lost {factor['points_lost']:.1f} points")
+                                st.write(f"   💡 {factor['suggestion']}")
+                                st.write("")
+                        
+                        # Top Positive Factors
+                        if diagnostics.get('top_positive_factors'):
+                            st.markdown("### 🟢 Top Factors Helping Your Score")
+                            for i, factor in enumerate(diagnostics['top_positive_factors'], 1):
+                                st.write(f"**{i}. {factor['metric']}**: {factor['points_earned']:.1f} points")
+                                st.write(f"   ✨ {factor['status']}")
+                                st.write("")
+                        
+                        # Threshold Failures (if any)
+                        if diagnostics.get('threshold_failures'):
+                            st.markdown("### ⚠️ Critical Threshold Failures")
+                            for failure in diagnostics['threshold_failures']:
+                                st.error(f"**{failure['metric']}**: {failure['actual']} (needs {failure['required_minimum']}+) - {failure['impact']}")
+                        
+                        # Improvement Suggestions
+                        if diagnostics.get('improvement_suggestions'):
+                            st.markdown("### 💡 Improvement Suggestions")
+                            for suggestion in diagnostics['improvement_suggestions']:
+                                st.info(f"• {suggestion}")
                         
                 def display_ml_validation_section(scores):
                     """Display ML validation results in dashboard"""
