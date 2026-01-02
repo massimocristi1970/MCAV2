@@ -45,185 +45,185 @@ st.set_page_config(
 INDUSTRY_THRESHOLDS = dict(sorted({
     'Medical Practices (GPs, Clinics, Dentists)': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 1000, 'Operating Margin': 0.10,
-        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 16000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 900,
-        'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate':  0.06, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 16000,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 900,
+        'Average Negative Balance Days per Month': 3, 'Number of Bounced Payments': 1,
     },
     'Pharmacies (Independent or Small Chains)': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 500, 'Operating Margin': 0.08,
-        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 15000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
-        'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate':  0.05, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 15000,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Average Negative Balance Days per Month': 3, 'Number of Bounced Payments': 1,
     },
     'Business Consultants': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 1000, 'Operating Margin': 0.09,
-        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 14000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
-        'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate':  0.05, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 14000,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Average Negative Balance Days per Month': 3, 'Number of Bounced Payments': 1,
     },
     'IT Services and Support Companies': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 500, 'Operating Margin': 0.12,
-        'Revenue Growth Rate': 0.07, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
-        'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate':  0.07, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 3, 'Number of Bounced Payments': 1,
     },
     'Courier Services (Independent and Regional Operators)': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 500, 'Operating Margin': 0.08,
-        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 12000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 600,
-        'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate':  0.06, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 12000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance':  600,
+        'Average Negative Balance Days per Month': 3, 'Number of Bounced Payments': 1,
     },
     'Grocery Stores and Mini-Markets': {
-        'Debt Service Coverage Ratio': 1.50, 'Net Income': 500, 'Operating Margin': 0.07,
-        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 10000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 600,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Debt Service Coverage Ratio': 1.50, 'Net Income':  500, 'Operating Margin': 0.07,
+        'Revenue Growth Rate':  0.06, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 10000,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Education': {
         'Debt Service Coverage Ratio': 1.45, 'Net Income': 1500, 'Operating Margin': 0.10,
-        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.09, 'Gross Burn Rate': 11500,
+        'Revenue Growth Rate':  0.05, 'Cash Flow Volatility': 0.09, 'Gross Burn Rate': 11500,
         'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Engineering': {
-        'Debt Service Coverage Ratio': 1.55, 'Net Income': 7000, 'Operating Margin': 0.07,
-        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 7000, 'Operating Margin':  0.07,
+        'Revenue Growth Rate':  0.04, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
+        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance':  650,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Estate Agent': {
-        'Debt Service Coverage Ratio': 1.50, 'Net Income': 4500, 'Operating Margin': 0.09,
+        'Debt Service Coverage Ratio':  1.50, 'Net Income': 4500, 'Operating Margin':  0.09,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
-        'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Average Negative Balance Days per Month': 3, 'Number of Bounced Payments': 1,
     },
     'Food Service': {
-        'Debt Service Coverage Ratio': 1.55, 'Net Income': 2500, 'Operating Margin': 0.06,
-        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 11000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 2500, 'Operating Margin':  0.06,
+        'Revenue Growth Rate':  0.06, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 11000,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
-    'Import / Export': {
-        'Debt Service Coverage Ratio': 1.55, 'Net Income': 3000, 'Operating Margin': 0.07,
+    'Import / Export':  {
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 3000, 'Operating Margin':  0.07,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.15, 'Gross Burn Rate': 11000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Directors Score': 75, 'Sector Risk':  0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Manufacturing': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 1500, 'Operating Margin': 0.08,
-        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 13500,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility':  0.11, 'Gross Burn Rate': 13500,
+        'Directors Score': 75, 'Sector Risk':  0, 'Average Month-End Balance': 750,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Marketing / Advertising / Design': {
-        'Debt Service Coverage Ratio': 1.55, 'Net Income': 5000, 'Operating Margin': 0.11,
-        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 13500,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 5000, 'Operating Margin':  0.11,
+        'Revenue Growth Rate':  0.06, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 13500,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Off-Licence Business': {
-        'Debt Service Coverage Ratio': 1.55, 'Net Income': 4500, 'Operating Margin': 0.08,
-        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 14000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 4500, 'Operating Margin':  0.08,
+        'Revenue Growth Rate':  0.06, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 14000,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Telecommunications': {
-        'Debt Service Coverage Ratio': 1.55, 'Net Income': 5000, 'Operating Margin': 0.11,
+        'Debt Service Coverage Ratio': 1.55, 'Net Income': 5000, 'Operating Margin':  0.11,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
-    'Tradesman': {
+    'Tradesman':  {
         'Debt Service Coverage Ratio': 1.40, 'Net Income': 4000, 'Operating Margin': 0.08,
-        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.15, 'Gross Burn Rate': 11500,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
-        'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate':  0.05, 'Cash Flow Volatility': 0.15, 'Gross Burn Rate': 11500,
+        'Directors Score': 75, 'Sector Risk':  0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 5, 'Number of Bounced Payments': 1,
     },
     'Wholesaler / Distributor': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 3500, 'Operating Margin': 0.10,
-        'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate':  0.06, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 13000,
+        'Directors Score':  75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Other': {
-        'Debt Service Coverage Ratio': 1.50, 'Net Income': 3000, 'Operating Margin': 0.08,
-        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 11000,
+        'Debt Service Coverage Ratio': 1.50, 'Net Income': 3000, 'Operating Margin':  0.08,
+        'Revenue Growth Rate':  0.05, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 11000,
         'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Personal Services': {
-        'Debt Service Coverage Ratio': 1.50, 'Net Income': 2000, 'Operating Margin': 0.09,
+        'Debt Service Coverage Ratio': 1.50, 'Net Income': 2000, 'Operating Margin':  0.09,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 12000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Directors Score':  75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Restaurants and Cafes': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 0, 'Operating Margin': 0.05,
-        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 11000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
-        'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate':  0.04, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 11000,
+        'Directors Score': 75, 'Sector Risk':  1, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 5, 'Number of Bounced Payments': 1,
     },
     'Bars and Pubs': {
-        'Debt Service Coverage Ratio': 1.25, 'Net Income': 0, 'Operating Margin': 0.04,
-        'Revenue Growth Rate': 0.03, 'Cash Flow Volatility': 0.18, 'Gross Burn Rate': 10000,
+        'Debt Service Coverage Ratio':  1.25, 'Net Income': 0, 'Operating Margin': 0.04,
+        'Revenue Growth Rate': 0.03, 'Cash Flow Volatility':  0.18, 'Gross Burn Rate': 10000,
         'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
-        'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
+        'Average Negative Balance Days per Month': 5, 'Number of Bounced Payments': 1,
     },
     'Beauty Salons and Spas': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 500, 'Operating Margin': 0.06,
-        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 9500,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 550,
-        'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate':  0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 9500,
+        'Directors Score': 75, 'Sector Risk':  1, 'Average Month-End Balance': 550,
+        'Average Negative Balance Days per Month': 5, 'Number of Bounced Payments': 1,
     },
     'E-Commerce Retailers': {
-        'Debt Service Coverage Ratio': 1.35, 'Net Income': 1000, 'Operating Margin': 0.07,
-        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 10000,
+        'Debt Service Coverage Ratio': 1.35, 'Net Income': 1000, 'Operating Margin':  0.07,
+        'Revenue Growth Rate':  0.05, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 10000,
         'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Event Planning and Management Firms': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 500, 'Operating Margin': 0.05,
-        'Revenue Growth Rate': 0.03, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 10000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate':  0.03, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 10000,
+        'Directors Score':  75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Auto Repair Shops': {
-        'Debt Service Coverage Ratio': 1.40, 'Net Income': 1000, 'Operating Margin': 0.08,
+        'Debt Service Coverage Ratio': 1.40, 'Net Income': 1000, 'Operating Margin':  0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 9500,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 650,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Directors Score': 75, 'Sector Risk':  1, 'Average Month-End Balance': 650,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Fitness Centres and Gyms': {
         'Debt Service Coverage Ratio': 1.35, 'Net Income': 500, 'Operating Margin': 0.06,
-        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.18, 'Gross Burn Rate': 10000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility':  0.18, 'Gross Burn Rate': 10000,
+        'Directors Score':  75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Construction Firms': {
-        'Debt Service Coverage Ratio': 1.30, 'Net Income': 1000, 'Operating Margin': 0.08,
-        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 12500,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
-        'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
+        'Debt Service Coverage Ratio': 1.30, 'Net Income': 1000, 'Operating Margin':  0.08,
+        'Revenue Growth Rate':  0.04, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 12500,
+        'Directors Score': 75, 'Sector Risk':  1, 'Average Month-End Balance': 700,
+        'Average Negative Balance Days per Month': 5, 'Number of Bounced Payments': 1,
     },
     'Printing / Publishing': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 2500, 'Operating Margin': 0.08,
-        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11000,
+        'Revenue Growth Rate':  0.05, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11000,
         'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 650,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
-    'Recruitment': {
+    'Recruitment':  {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 2000, 'Operating Margin': 0.09,
-        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Revenue Growth Rate': 0.05, 'Cash Flow Volatility':  0.10, 'Gross Burn Rate': 13000,
+        'Directors Score':  75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
     'Retail': {
         'Debt Service Coverage Ratio': 1.40, 'Net Income': 2500, 'Operating Margin': 0.09,
-        'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11500,
+        'Revenue Growth Rate':  0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11500,
         'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 620,
-        'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
+        'Average Negative Balance Days per Month': 4, 'Number of Bounced Payments': 1,
     },
-}.items()))
+}. items()))
 
 # Scoring weights
 WEIGHTS = {
@@ -235,8 +235,10 @@ WEIGHTS = {
 }
 
 PENALTIES = {
-    "business_ccj": 5, "director_ccj": 3,
-    'poor_or_no_online_presence': 3, 'uses_generic_email':  1
+    "business_ccj": 12,
+    "director_ccj": 8,
+    'poor_or_no_online_presence': 4,
+    'uses_generic_email':  2
 }
 
 # TRANSACTION CATEGORIZATION FUNCTIONS
@@ -561,46 +563,46 @@ class TightenedSubprimeScoring:
     """Enhanced scoring system with tightened thresholds for realistic subprime business lending."""
     
     def __init__(self):
-        # TIGHTENED subprime weights - MATCHED to subprime_scoring_system. py
+        # Subprime weights - matched to subprime_scoring_system. py
         # For £1-10k short-term lending (6-9 months)
         self.subprime_weights = {
-            'Debt Service Coverage Ratio': 28,  # PRIMARY - matches main scoring
-            'Average Month-End Balance': 18,    # INCREASED - critical for short terms
-            'Directors Score': 16,              # HIGH - personal reliability
-            'Cash Flow Volatility': 12,         # INCREASED - stability crucial
-            'Revenue Growth Rate': 10,          # REDUCED - less relevant short term
-            'Operating Margin': 6,              # Same
-            'Average Negative Balance Days per Month': 4,  # Monitor cash gaps
-            'Company Age (Months)': 2,          # MINIMAL
-        }
-        
-        # TIGHTENED industry multipliers - more conservative across the board
-        self.industry_multipliers = {
-            'Medical Practices (GPs, Clinics, Dentists)': 1.05,  # Reduced from 1.1
-            'IT Services and Support Companies': 1.05,           # Reduced from 1.1
-            'Pharmacies (Independent or Small Chains)': 1.03,    # New, conservative
-            'Business Consultants': 1.0,                        # Reduced from 1.05
-            'Education': 1.0,                                    # Reduced from 1.05
-            'Engineering': 1.0,                                  # Reduced from 1.05
-            'Telecommunications': 0.98,                          # Reduced from 1.05
-            'Manufacturing': 0.95,                               # Reduced from 1.0
-            'Retail': 0.93,                                      # Reduced from 1.0
-            'Food Service': 0.90,                                # Reduced from 1.0
-            'Tradesman': 0.88,                                   # Reduced from 1.0
-            'Other': 0.85,                                       # Reduced from 1.0
-            'Restaurants and Cafes': 0.80,                       # Reduced from 0.9
-            'Construction Firms': 0.78,                          # Reduced from 0.9
-            'Beauty Salons and Spas': 0.75,                      # Reduced from 0.9
-            'Bars and Pubs': 0.70,                               # Reduced from 0.85
-            'Event Planning and Management Firms': 0.65,         # Reduced from 0.8
+            'Debt Service Coverage Ratio': 25,  # PRIMARY - ability to repay
+            'Average Month-End Balance': 18,  # Critical for short terms
+            'Directors Score': 16,  # Personal reliability
+            'Cash Flow Volatility': 14,  # Stability crucial
+            'Revenue Growth Rate': 10,  # Less relevant short term
+            'Operating Margin': 6,  # Profitability indicator
+            'Average Negative Balance Days per Month': 6,  # Monitor cash gaps
+            'Company Age (Months)': 5,  # Business maturity
         }
 
-        # ENHANCED penalty system - much stricter
+        # Industry multipliers - micro enterprise friendly
+        self.industry_multipliers = {
+            'Medical Practices (GPs, Clinics, Dentists)': 1.05,
+            'IT Services and Support Companies': 1.05,
+            'Pharmacies (Independent or Small Chains)': 1.03,
+            'Business Consultants': 1.03,
+            'Education': 1.02,
+            'Engineering': 1.02,
+            'Telecommunications': 1.01,
+            'Manufacturing': 1.0,
+            'Retail': 1.0,
+            'Food Service': 0.98,
+            'Tradesman': 0.98,
+            'Other': 0.97,
+            'Restaurants and Cafes': 0.95,
+            'Construction Firms': 0.95,
+            'Beauty Salons and Spas': 0.95,
+            'Bars and Pubs': 0.93,
+            'Event Planning and Management Firms': 0.92,
+        }
+
+        # Penalty system - balanced for micro enterprises
         self.enhanced_penalties = {
-            'business_ccj': 12,  # Increased from 5
-            'director_ccj': 8,  # Increased from 3
-            'poor_or_no_online_presence': 5,  # Combined online presence penalty
-            'uses_generic_email': 3,  # Increased from 1
+            'business_ccj': 6,
+            'director_ccj': 4,
+            'poor_or_no_online_presence': 2,
+            'uses_generic_email': 1,
         }
     
     def calculate_subprime_score(self, metrics, params):
@@ -640,167 +642,178 @@ class TightenedSubprimeScoring:
             'breakdown': breakdown,
             'recommendation': self._generate_tightened_recommendation(risk_tier, metrics, params)
         }
-    
+
     def _calculate_tightened_base_score(self, metrics, params):
-        """Calculate base score with MUCH TIGHTER thresholds."""
-        
+        """Calculate base score - balanced for micro enterprises."""
+
         score = 0
         max_possible = sum(self.subprime_weights.values())
-        
-        # DEBT SERVICE COVERAGE RATIO (28 points) - MATCHED to main scoring
-        dscr = metrics.get('Debt Service Coverage Ratio', 0)
-        if dscr >= 3.0:
-            score += self.subprime_weights['Debt Service Coverage Ratio']
-        elif dscr >= 2.5:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.85
-        elif dscr >= 2.0:
-                score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.7
-        elif dscr >= 1.5:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.5
-        elif dscr >= 1.3:  # RAISED minimum from 1.0
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.25
-        # Below 1.3 gets 0 points
-        
-        # CASH FLOW VOLATILITY (12 points) - MATCHED to main scoring
-        volatility = metrics.get('Cash Flow Volatility', 1.0)
-        if volatility <= 0.15:
-            score += self.subprime_weights['Cash Flow Volatility']
-        elif volatility <= 0.25:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.8
-        elif volatility <= 0.35:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.6
-        elif volatility <= 0.45:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.4
-        elif volatility <= 0.6:  # Max tolerance
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.2
-        # Above 0.6 gets 0 points
 
-        # DIRECTORS SCORE (16 points) - MATCHED to main scoring system
-        directors_score = params.get('directors_score', 0)
-        if directors_score >= 85:
+        # DEBT SERVICE COVERAGE RATIO (25 points) - micro enterprise friendly
+        dscr = metrics.get('Debt Service Coverage Ratio', 0)
+        if dscr >= 1.8:
+            score += self.subprime_weights['Debt Service Coverage Ratio']
+        elif dscr >= 1.5:
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.85
+        elif dscr >= 1.2:
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.70
+        elif dscr >= 1.0:
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.55
+        elif dscr >= 0.8:
+            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.35
+        # Below 0.8 gets 0 points
+
+        # CASH FLOW VOLATILITY (14 points) - micro enterprise friendly
+        volatility = metrics.get('Cash Flow Volatility', 1.0)
+        if volatility <= 0.35:
+            score += self.subprime_weights['Cash Flow Volatility']
+        elif volatility <= 0.50:
+            score += self.subprime_weights['Cash Flow Volatility'] * 0.80
+        elif volatility <= 0.65:
+            score += self.subprime_weights['Cash Flow Volatility'] * 0.60
+        elif volatility <= 0.80:
+            score += self.subprime_weights['Cash Flow Volatility'] * 0.40
+        elif volatility <= 1.0:
+            score += self.subprime_weights['Cash Flow Volatility'] * 0.20
+        # Above 1.0 gets 0 points
+
+        # DIRECTORS SCORE (16 points) - balanced approach
+        directors_score = params.get('directors_score', 50)
+        if directors_score >= 70:
             score += self.subprime_weights['Directors Score']
-        elif directors_score >= 75:
-            score += self.subprime_weights['Directors Score'] * 0.90
-        elif directors_score >= 65:
-            score += self.subprime_weights['Directors Score'] * 0.70
         elif directors_score >= 55:
-            score += self.subprime_weights['Directors Score'] * 0.50
+            score += self.subprime_weights['Directors Score'] * 0.80
         elif directors_score >= 45:
-            score += self.subprime_weights['Directors Score'] * 0.30
-        # Below 45 gets 0 points
-        
-        # AVERAGE MONTH-END BALANCE (18 points) - MATCHED to main scoring
+            score += self.subprime_weights['Directors Score'] * 0.60
+        elif directors_score >= 35:
+            score += self.subprime_weights['Directors Score'] * 0.40
+        elif directors_score >= 25:
+            score += self.subprime_weights['Directors Score'] * 0.20
+        # Below 25 gets 0 points
+
+        # AVERAGE MONTH-END BALANCE (18 points) - micro enterprise friendly
         balance = metrics.get('Average Month-End Balance', 0)
-        if balance >= 12000:
+        if balance >= 2000:
             score += self.subprime_weights['Average Month-End Balance']
-        elif balance >= 8000:
-            score += self.subprime_weights['Average Month-End Balance'] * 0.8
-        elif balance >= 5000:
-            score += self.subprime_weights['Average Month-End Balance'] * 0.6
-        elif balance >= 3000:
-            score += self.subprime_weights['Average Month-End Balance'] * 0.4
-        elif balance >= 1500:  # RAISED minimum from £500
-            score += self.subprime_weights['Average Month-End Balance'] * 0.2
-        # Below £1500 gets 0 points
-        
-        # REVENUE GROWTH RATE (10 points) - MATCHED to main scoring
+        elif balance >= 1000:
+            score += self.subprime_weights['Average Month-End Balance'] * 0.80
+        elif balance >= 500:
+            score += self.subprime_weights['Average Month-End Balance'] * 0.60
+        elif balance >= 250:
+            score += self.subprime_weights['Average Month-End Balance'] * 0.40
+        elif balance >= 100:
+            score += self.subprime_weights['Average Month-End Balance'] * 0.20
+        # Below £100 gets 0 points
+
+        # REVENUE GROWTH RATE (10 points) - realistic for micro enterprises
         growth = metrics.get('Revenue Growth Rate', 0)
-        if growth >= 0.25:
+        if growth >= 0.05:
             score += self.subprime_weights['Revenue Growth Rate']
-        elif growth >= 0.15:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.8
-        elif growth >= 0.08:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.6
-        elif growth >= 0.03:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.4
-        elif growth >= 0:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.2
-        # Below 0% gets 0 points (no credit for decline)
-        
-        # OPERATING MARGIN (6 points) - TIGHTER
+        elif growth >= 0.0:
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.80
+        elif growth >= -0.05:
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.60
+        elif growth >= -0.10:
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.40
+        elif growth >= -0.15:
+            score += self.subprime_weights['Revenue Growth Rate'] * 0.20
+        # Below -15% gets 0 points
+
+        # OPERATING MARGIN (6 points) - micro enterprise friendly
         margin = metrics.get('Operating Margin', 0)
-        if margin >= 0.12:         # Raised from 0.1
+        if margin >= 0.05:
             score += self.subprime_weights['Operating Margin']
-        elif margin >= 0.08:       # Raised from 0.05
-            score += self.subprime_weights['Operating Margin'] * 0.75  # Reduced from 0.8
-        elif margin >= 0.03:       # Raised from 0
-            score += self.subprime_weights['Operating Margin'] * 0.50  # Reduced from 0.6
-        elif margin >= 0:          # Same as -0.05
-            score += self.subprime_weights['Operating Margin'] * 0.25  # Reduced from 0.4
-        # Negative margins get 0 points (was -0.1)
-        
-        # NEGATIVE BALANCE DAYS (6 points) - STRICTER
+        elif margin >= 0.03:
+            score += self.subprime_weights['Operating Margin'] * 0.80
+        elif margin >= 0.01:
+            score += self.subprime_weights['Operating Margin'] * 0.60
+        elif margin >= 0:
+            score += self.subprime_weights['Operating Margin'] * 0.40
+        elif margin >= -0.03:
+            score += self.subprime_weights['Operating Margin'] * 0.20
+        # Below -3% margin gets 0 points
+
+        # NEGATIVE BALANCE DAYS (6 points) - micro enterprise friendly
         neg_days = metrics.get('Average Negative Balance Days per Month', 0)
-        if neg_days == 0:          # Only perfect score gets full points
+        if neg_days <= 2:
             score += self.subprime_weights['Average Negative Balance Days per Month']
-        elif neg_days <= 1:        # Tightened from 1
-            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.60  # Reduced from 0.7
-        elif neg_days <= 2:        # Tightened from 3
-            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.30  # Reduced from 0.4
-        # Above 2 days gets 0 points (was 5)
-        
-        # COMPANY AGE (2 points) - SLIGHTLY TIGHTER
+        elif neg_days <= 5:
+            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.80
+        elif neg_days <= 8:
+            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.60
+        elif neg_days <= 12:
+            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.40
+        elif neg_days <= 15:
+            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.20
+        # Above 15 days gets 0 points
+
+        # COMPANY AGE (5 points) - balanced approach
         age_months = params.get('company_age_months', 0)
-        if age_months >= 36:       # Raised from 24
+        if age_months >= 18:
             score += self.subprime_weights['Company Age (Months)']
-        elif age_months >= 18:     # Raised from 12
-            score += self.subprime_weights['Company Age (Months)'] * 0.60  # Reduced from 0.7
-        elif age_months >= 12:     # Raised from 6
-            score += self.subprime_weights['Company Age (Months)'] * 0.30  # Reduced from 0.4
-        # Below 12 months gets 0 points (was 6)
-        
+        elif age_months >= 12:
+            score += self.subprime_weights['Company Age (Months)'] * 0.80
+        elif age_months >= 9:
+            score += self.subprime_weights['Company Age (Months)'] * 0.60
+        elif age_months >= 6:
+            score += self.subprime_weights['Company Age (Months)'] * 0.40
+        elif age_months >= 3:
+            score += self.subprime_weights['Company Age (Months)'] * 0.20
+        # Below 3 months gets 0 points
+
         # Convert to percentage
         return (score / max_possible) * 100
-    
+
     def _apply_industry_adjustment(self, base_score, industry):
-        """Apply TIGHTENED industry-specific risk adjustments."""
-        multiplier = self.industry_multipliers.get(industry, 0.80)  # Default more conservative
+        """Apply industry-specific risk adjustments - balanced approach."""
+        multiplier = self.industry_multipliers.get(industry, 0.95)  # Default reasonable
         return base_score * multiplier
-    
+
     def _calculate_conservative_growth_bonus(self, metrics):
-        """Calculate REDUCED bonus for growth momentum."""
+        """Calculate bonus for growth momentum - micro enterprise friendly."""
         bonus = 0
         growth = metrics.get('Revenue Growth Rate', 0)
         dscr = metrics.get('Debt Service Coverage Ratio', 0)
         volatility = metrics.get('Cash Flow Volatility', 1.0)
-        
-        # MUCH STRICTER criteria for bonuses
-        if growth >= 0.30 and dscr >= 2.5 and volatility <= 0.15:  # Raised all thresholds
-            bonus += 3  # Reduced from 5
-        elif growth >= 0.20 and dscr >= 2.0 and volatility <= 0.25:  # Raised thresholds
-            bonus += 2  # Reduced from 3
-        elif growth >= 0.15 and dscr >= 1.8 and volatility <= 0.35:  # Much stricter
-            bonus += 1  # Same
-        
+
+        # Achievable criteria for micro enterprises
+        if growth >= 0.15 and dscr >= 1.8 and volatility <= 0.35:
+            bonus += 5
+        elif growth >= 0.10 and dscr >= 1.5 and volatility <= 0.50:
+            bonus += 3
+        elif growth >= 0.05 and dscr >= 1.2 and volatility <= 0.65:
+            bonus += 2
+        elif growth >= 0.0 and dscr >= 1.0 and volatility <= 0.80:
+            bonus += 1
+
         return bonus
-    
+
     def _calculate_enhanced_stability_penalty(self, metrics, params):
-        """Calculate MUCH HIGHER penalty for instability."""
+        """Calculate penalty for instability - balanced for micro enterprises."""
         penalty = 0
         volatility = metrics.get('Cash Flow Volatility', 0)
         operating_margin = metrics.get('Operating Margin', 0)
         neg_days = metrics.get('Average Negative Balance Days per Month', 0)
         dscr = metrics.get('Debt Service Coverage Ratio', 0)
-        
-        # VOLATILITY penalties - much stricter
-        if volatility > 0.8:           # Reduced threshold from 1.0
-            penalty += (volatility - 0.8) * 25  # Increased multiplier from 10
-        elif volatility > 0.5:         # New intermediate penalty
-            penalty += (volatility - 0.5) * 15
-        
-        # OPERATING MARGIN penalties - stricter
-        if operating_margin < -0.05:   # Tightened from -0.15
-            penalty += abs(operating_margin - (-0.05)) * 80  # Increased from 50
-        
-        # NEGATIVE BALANCE penalties - much stricter
-        if neg_days > 2:               # Reduced from 5
-            penalty += (neg_days - 2) * 4  # Increased from 2
-        
-        # DSCR penalties - new addition
-        if dscr < 1.2:                 # New penalty for low DSCR
-            penalty += (1.2 - dscr) * 15
-        
-        return min(penalty, 35)  # Increased cap from 20
+
+        # VOLATILITY penalties - only for extreme cases
+        if volatility > 1.0:
+            penalty += (volatility - 1.0) * 10
+
+        # OPERATING MARGIN penalties - only for significant losses
+        if operating_margin < -0.10:
+            penalty += abs(operating_margin - (-0.10)) * 30
+
+        # NEGATIVE BALANCE penalties - more forgiving
+        if neg_days > 10:
+            penalty += (neg_days - 10) * 1.
+            5
+
+        # DSCR penalties - only for very low DSCR
+        if dscr < 0.8:
+            penalty += (0.8 - dscr) * 8
+
+        return min(penalty, 15)  # Cap at 15 points max
 
     def _calculate_enhanced_risk_penalties(self, params):
         """Calculate penalties for risk factors with cap to prevent 'death by 1000 cuts'."""
@@ -810,8 +823,8 @@ class TightenedSubprimeScoring:
             if params.get(factor, False):
                 penalty += penalty_points
 
-        # Cap maximum penalty to prevent excessive stacking
-        max_penalty_cap = 15
+        # Cap maximum penalty to prevent excessive stacking - micro enterprise friendly
+        max_penalty_cap = 12
         if penalty > max_penalty_cap:
             penalty = max_penalty_cap
 
@@ -828,10 +841,10 @@ class TightenedSubprimeScoring:
                 params.get('business_ccj', False) or
                 params.get('director_ccj', False)
         )
-    
-        # TIER 1 - Premium Subprime (82+ score) - MATCHED
-        if (score >= 82 and dscr >= 2.5 and growth >= 0.15 and directors_score >= 75 
-            and not has_major_risk_factors and volatility <= 0.3):
+
+        # TIER 1 - Premium Subprime
+        if (score >= 75 and dscr >= 2.0 and growth >= 0.10 and directors_score >= 70
+                and not has_major_risk_factors and volatility <= 0.45):
             return "Tier 1", {
                 "risk_level": "Premium Subprime",
                 "suggested_rate": "1.5-1.6 factor rate",
@@ -840,21 +853,21 @@ class TightenedSubprimeScoring:
                 "monitoring": "Monthly reviews",
                 "approval_probability": "Very High"
             }
-    
-        # TIER 2 - Standard Subprime (70-82 score) - MATCHED
-        elif (score >= 60 and dscr >= 1.5 and volatility <= 0.60):
+
+        # TIER 2 - Standard Subprime
+        elif (score >= 55 and dscr >= 1.3 and volatility <= 0.70):
             rate_adjustment = "+0.1" if has_major_risk_factors else ""
             return "Tier 2", {
-                "risk_level": "Standard Subprime", 
+                "risk_level": "Standard Subprime",
                 "suggested_rate": f"1.7-1.85{rate_adjustment} factor rate",
                 "max_loan_multiple": "3x monthly revenue",
                 "term_range": "6-9 months",
                 "monitoring": "Bi-weekly reviews" + (" + enhanced due diligence" if has_major_risk_factors else ""),
                 "approval_probability": "High" if not has_major_risk_factors else "Moderate-High"
             }
-    
-        # TIER 3 - High-Risk Subprime (55-70 score) - MATCHED
-        elif (score >= 50 and dscr >= 1.3 and directors_score >= 50 and volatility <= 0.70):
+
+        # TIER 3 - High-Risk Subprime
+        elif (score >= 42 and dscr >= 1.0 and directors_score >= 45 and volatility <= 0.85):
             rate_adjustment = "+0.15" if has_major_risk_factors else ""
             return "Tier 3", {
                 "risk_level": "High-Risk Subprime",
@@ -864,9 +877,9 @@ class TightenedSubprimeScoring:
                 "monitoring": "Weekly reviews" + (" + continuous risk monitoring" if has_major_risk_factors else ""),
                 "approval_probability": "Moderate" if not has_major_risk_factors else "Low-Moderate"
             }
-    
-        # TIER 4 - Enhanced Monitoring (40-55 score) - MATCHED
-        elif (score >= 35 and dscr >= 1.1) or has_major_risk_factors:
+
+        # TIER 4 - Enhanced Monitoring
+        elif (score >= 30 and dscr >= 0.8) or has_major_risk_factors:
             return "Tier 4", {
                 "risk_level": "Enhanced Monitoring Required",
                 "suggested_rate": "2.0-2.2+ factor rate",
@@ -875,51 +888,52 @@ class TightenedSubprimeScoring:
                 "monitoring": "Weekly reviews + daily balance monitoring + personal guarantees REQUIRED",
                 "approval_probability": "Low - Senior review required"
             }
-    
-        # DECLINE - More applications will fall here
+
+        # TIER 5 - DECLINE (only for very poor applications)
         else:
             return "Decline", {
-                "risk_level": "Decline",
+                "risk_level": "Below Minimum Standards",
                 "suggested_rate": "N/A",
                 "max_loan_multiple": "N/A",
-                "term_range": "N/A", 
-                "monitoring": "N/A",
-                "approval_probability": "Decline - Risk too high for short-term subprime lending"
+                "term_range": "N/A",
+                "monitoring": "Application declined - consider reapplying after 3-6 months of improved trading",
+                "approval_probability": "None - Declined",
+                "decline_reasons": self._get_decline_reasons(score, metrics, params)
             }
-    
-    def _generate_tightened_breakdown(self, base_score, industry_score, growth_bonus, 
-                                    stability_penalty, risk_penalty, final_score, metrics, params):
-        """Generate detailed scoring breakdown with tightened criteria."""
+
+    def _generate_tightened_breakdown(self, base_score, industry_score, growth_bonus,
+                                      stability_penalty, risk_penalty, final_score, metrics, params):
+        """Generate detailed scoring breakdown - micro enterprise focused."""
         breakdown = [
-            f"Base Tightened Score: {base_score:.1f}/100",
+            f"Base Score: {base_score:.1f}/100",
             f"Industry Adjustment: {industry_score - base_score:+.1f} points",
             f"Growth Momentum Bonus: +{growth_bonus:.1f} points",
             f"Stability Penalty: -{stability_penalty:.1f} points",
             f"Risk Factor Penalty: -{risk_penalty:.1f} points",
             f"Final Score: {final_score:.1f}/100",
             "",
-            "Key Metrics (Tightened Thresholds):",
-            f"• DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f} (Need 2.0+ for good score)",
-            f"• Revenue Growth: {metrics.get('Revenue Growth Rate', 0)*100:.1f}% (Need 15%+ for good score)",
-            f"• Directors Score: {params.get('directors_score', 0)}/100 (Need 70+ for good score)", 
-            f"• Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.20 for good score)",
-            f"• Operating Margin: {metrics.get('Operating Margin', 0)*100:.1f}% (Need 8%+ for good score)",
-            f"• Negative Balance Days: {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need 0-1 for good score)"
+            "Key Metrics (Micro Enterprise Thresholds):",
+            f"• DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f} (Need 1.2+ for good score)",
+            f"• Revenue Growth: {metrics.get('Revenue Growth Rate', 0) * 100:.1f}% (Need 5%+ for good score)",
+            f"• Directors Score: {params.get('directors_score', 0)}/100 (Need 55+ for good score)",
+            f"• Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.50 for good score)",
+            f"• Operating Margin: {metrics.get('Operating Margin', 0) * 100:.1f}% (Need 3%+ for good score)",
+            f"• Negative Balance Days:  {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need <5 for good score)"
         ]
         return breakdown
-    
+
     def _generate_tightened_recommendation(self, risk_tier, metrics, params):
-        """Generate lending recommendation with tightened criteria."""
+        """Generate lending recommendation - balanced for micro enterprises."""
         if risk_tier == "Tier 1":
-            return "APPROVE - Excellent subprime candidate meeting tightened criteria."
-        elif risk_tier == "Tier 2": 
-            return "APPROVE - Good subprime candidate with enhanced monitoring."
+            return "APPROVE - Strong micro enterprise candidate with solid fundamentals."
+        elif risk_tier == "Tier 2":
+            return "APPROVE - Good candidate with standard monitoring requirements."
         elif risk_tier == "Tier 3":
-            return "CONDITIONAL APPROVE - Marginal case requiring strict terms and close monitoring."
+            return "CONDITIONAL APPROVE - Viable candidate with enhanced terms and monitoring."
         elif risk_tier == "Tier 4":
-            return "SENIOR REVIEW - High risk requiring guarantees and daily monitoring."
+            return "SENIOR REVIEW - Higher risk profile, requires additional review and guarantees."
         else:
-            return "DECLINE - Does not meet tightened subprime lending criteria."
+            return "DECLINE - Consider reapplying after 3-6 months of improved trading performance."
 
 
 # UPDATED CALCULATION FUNCTION to use tightened scoring
