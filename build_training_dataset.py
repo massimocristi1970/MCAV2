@@ -118,22 +118,38 @@ def _flatten_transactions(obj):
     """
     Extract transactions list from many JSON shapes.
     Returns list[dict].
+
+    FIX: Handles top-level list JSON (array of transactions) which your
+    Harbour_galley_1,1.json and South Coast_categorized.json use.
     """
+    # ✅ NEW: top-level list of transactions
+    if isinstance(obj, list):
+        return [t for t in obj if isinstance(t, dict)]
+
     txns = []
 
     def walk(x):
         nonlocal txns
         if isinstance(x, dict):
             # common keys
-            for k in ["transactions", "transaction", "data", "items"]:
+            for k in ["transactions", "transaction", "data", "items", "results"]:
                 if k in x and isinstance(x[k], list):
                     cand = x[k]
                     if cand and isinstance(cand[0], dict) and any(
                         z in cand[0] for z in ["amount", "date", "name", "merchant_name", "original_description"]
                     ):
                         txns.extend(cand)
+
+                # nested dict case: data -> transactions
+                if k in x and isinstance(x[k], dict):
+                    vv = x[k].get("transactions")
+                    if isinstance(vv, list) and vv and isinstance(vv[0], dict):
+                        txns.extend(vv)
+
+            # recurse
             for v in x.values():
                 walk(v)
+
         elif isinstance(x, list):
             for v in x:
                 walk(v)
@@ -156,6 +172,7 @@ def _flatten_transactions(obj):
         seen.add(key)
         out.append(t)
     return out
+
 
 
 def build_mca_features(transactions):
