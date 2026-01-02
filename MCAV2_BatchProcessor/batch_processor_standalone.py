@@ -242,9 +242,9 @@ PENALTIES = {
     'uses_generic_email':  2
 }
 
-# TRANSACTION CATEGORIZATION FUNCTIONS
+
 def map_transaction_category(transaction):
-    """Enhanced transaction categorization matching original version"""
+    """Enhanced transaction categorization matching data_processor.py logic"""
     name = transaction.get("name", "")
     if isinstance(name, list):
         name = " ".join(map(str, name))
@@ -262,10 +262,10 @@ def map_transaction_category(transaction):
     # Handle nested personal_finance_category field
     pfc = transaction.get("personal_finance_category", {})
     if isinstance(pfc, dict):
-        category = pfc. get("detailed", "")
+        category = pfc.get("detailed", "")
     else:
-        category = transaction.get("personal_finance_category.detailed", "")  # Fallback for flattened data
-    
+        category = transaction.get("personal_finance_category. detailed", "")
+
     if isinstance(category, list):
         category = " ".join(map(str, category))
     else:
@@ -278,55 +278,68 @@ def map_transaction_category(transaction):
     is_credit = amount < 0
     is_debit = amount > 0
 
-    # Step 1: Custom keyword overrides
+    # =================================================================
+    # STEP 1: Payment processor income detection (HIGHEST PRIORITY)
+    # This MUST come before Plaid category mapping to catch DOJO, etc.
+    # =================================================================
+    if is_credit:
+        payment_processor_pattern = (
+            r"(? i)\b("
+            r"stripe|sumup|zettle|square|take\s*payments|shopify|card\s+settlement|daily\s+takings|payout"
+            r"|paypal|go\s*cardless|klarna|worldpay|izettle|ubereats|just\s*eat|deliveroo|uber|bolt"
+            r"|fresha|treatwell|taskrabbit|terminal|pos\s+deposit|revolut"
+            r"|capital\s+on\s+tap|capital\s+one|evo\s*payments? |tink|teya(\s+solutions)?|talech"
+            r"|barclaycard|elavon|adyen|payzone|verifone|ingenico"
+            r"|nmi|trust\s+payments? |global\s+payments?|checkout\. com|epdq|santander|handepay"
+            r"|dojo|paymentsense|valitor|paypoint|mypos|moneris"
+            r"|merchant\s+services|payment\s+sense"
+            r")\b"
+        )
+        if re.search(payment_processor_pattern, combined_text):
+            return "Income"
+
+    # =================================================================
+    # STEP 2: YouLend special handling
+    # =================================================================
     if is_credit and re.search(
-        r"(?i)\b("
-        r"stripe|sumup|zettle|square|take\s*payments|shopify|card\s+settlement|daily\s+takings|payout"
-        r"|paypal|go\s*cardless|klarna|worldpay|izettle|ubereats|just\s*eat|deliveroo|uber|bolt"
-        r"|fresha|treatwell|taskrabbit|terminal|pos\s+deposit|revolut"
-        r"|capital\s+on\s+tap|capital\s+one|evo\s*payments?|tink|teya(\s+solutions)?|talech"
-        r"|barclaycard|elavon|adyen|payzone|verifone|ingenico"
-        r"|nmi|trust\s+payments?|global\s+payments?|checkout\.com|epdq|santander|handepay"
-        r"|dojo|valitor|paypoint|mypos|moneris"
-        r"|merchant\s+services|payment\s+sense"
-        r")\b", 
-        combined_text
-    ):
+            r"(you\s? lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited)(? ! .*\b(fnd|fund|funding)\b)",
+            combined_text):
         return "Income"
-    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited)(?!.*\b(fnd|fund|funding)\b)", combined_text):
-        return "Income"
-    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited).*\b(fnd|fund|funding)\b", combined_text):
-        return "Loans"
-    if is_credit and re.search(
-        r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|"
-        r"\bfleximize\b|\bmarketfinance\b|\bliberis\b|\besme[\s\-]?loans\b|\bthincats\b|"
-        r"\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
-        r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|"
-        r"\bmerchant[\s\-]?money\b|\bcapital[\s\-]?on[\s\-]?tap\b|\bkriya\b|\buncapped\b|"
-        r"\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|\bstart[\s\-]?up[\s\-]?loans\b|"
-        r"\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
-        r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
-        r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|"
-        r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bloans?\b",
-        combined_text
-    ):
+    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited).*\b(fnd|fund|funding)\b",
+                               combined_text):
         return "Loans"
 
-    if is_debit and re.search(
-        r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|\bfleximize\b|\bmarketfinance\b|\bliberis\b|"
-        r"\besme[\s\-]?loans\b|\bthincats\b|\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
+    # =================================================================
+    # STEP 3: Loan provider detection (credits = loan received, debits = repayment)
+    # =================================================================
+    loan_provider_pattern = (
+        r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]? capital\b|\bfunding[\s\-]?circle\b|"
+        r"\bfleximize\b|\bmarketfinance\b|\bliberis\b|\besme[\s\-]?loans\b|\bthincats\b|"
+        r"\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
         r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|\bmerchant[\s\-]?money\b|"
         r"\bcapital[\s\-]?on[\s\-]?tap\b|\bkriya\b|\buncapped\b|\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|"
         r"\bstart[\s\-]?up[\s\-]?loans\b|\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
-        r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
+        r"\bswig[\s\-]?finance\b|\benterprise[\s\-]? answers\b|\blet's[\s\-]? do[\s\-]?business[\s\-]?finance\b|"
         r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|\bbizcap[\s\-]?uk\b|"
-        r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|"
-        r"\bloans?\b|\bdebt\b|\brepayment\b|\binstal?ments?\b|\bpay[\s\-]?back\b|\brepay(?:ing|ment|ed)?\b|\bcleared\b",
-        combined_text
+        r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b"
+    )
+
+    if is_credit and re.search(loan_provider_pattern, combined_text):
+        return "Loans"
+
+    if is_debit and re.search(loan_provider_pattern, combined_text):
+        return "Debt Repayments"
+
+    # Also check for generic loan/repayment keywords on debits
+    if is_debit and re.search(
+            r"\bloans?\b|\bdebt\b|\brepayment\b|\binstal? ments?\b|\bpay[\s\-]?back\b|\brepay(? : ing|ment|ed)?\b|\bcleared\b",
+            combined_text
     ):
         return "Debt Repayments"
 
-    # Step 2: Plaid category fallback
+    # =================================================================
+    # STEP 4: Plaid category mapping (LOWER PRIORITY than keyword detection)
+    # =================================================================
     plaid_map = {
         "income_wages": "Income",
         "income_other_income": "Income",
@@ -334,7 +347,9 @@ def map_transaction_category(transaction):
         "income_interest_earned": "Special Inflow",
         "income_retirement_pension": "Special Inflow",
         "income_unemployment": "Special Inflow",
-        "transfer_in_cash_advances_and_loans": "Loans",
+        # NOTE: transfer_in_cash_advances_and_loans is NOT mapped to Loans here
+        # because payment processors like DOJO get this category incorrectly
+        # We handle it below with additional logic
         "loan_payments_credit_card_payment": "Debt Repayments",
         "loan_payments_personal_loan_payment": "Debt Repayments",
         "loan_payments_other_payment": "Debt Repayments",
@@ -355,22 +370,40 @@ def map_transaction_category(transaction):
         "bank_fees_late_payment": "Failed Payment",
     }
 
-    # Match exact key
+    # Exact Plaid category match
     if category in plaid_map:
         return plaid_map[category]
 
-    # Step 3: Fallback for Plaid broad categories
-    broad_matchers = [
-        ("Expenses", [
-            "bank_fees_", "entertainment_", "food_and_drink_", "general_merchandise_",
-            "general_services_", "government_and_non_profit_", "home_improvement_",
-            "medical_", "personal_care_", "rent_and_utilities_", "transportation_", "travel_"
-        ])
+    # =================================================================
+    # STEP 5: Handle transfer_in_cash_advances_and_loans specially
+    # If we reach here, it wasn't caught by payment processor detection
+    # so it's likely actually a loan
+    # =================================================================
+    if category == "transfer_in_cash_advances_and_loans":
+        # Double-check it's not a payment processor we missed
+        if is_credit:
+            return "Loans"  # Default to loan if not caught above
+
+    # =================================================================
+    # STEP 6: Broad category matching
+    # =================================================================
+    expense_prefixes = [
+        "bank_fees_", "entertainment_", "food_and_drink_", "general_merchandise_",
+        "general_services_", "government_and_non_profit_", "home_improvement_",
+        "medical_", "personal_care_", "rent_and_utilities_", "transportation_", "travel_"
     ]
 
-    for label, patterns in broad_matchers:
-        if any(category.startswith(p) for p in patterns):
-            return label
+    for prefix in expense_prefixes:
+        if category.startswith(prefix):
+            return "Expenses"
+
+    # =================================================================
+    # STEP 7: Final fallback based on transaction direction
+    # =================================================================
+    if is_credit:
+        return "Income"  # Default credits to income
+    elif is_debit:
+        return "Expenses"  # Default debits to expenses
 
     return "Uncategorised"
 
