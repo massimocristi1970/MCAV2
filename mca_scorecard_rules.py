@@ -13,7 +13,7 @@ class Thresholds:
     """
     # Core MCA consistency signals
     inflow_days_30d_approve_min: int = 18
-    inflow_days_30d_decline_max: int = 10
+    inflow_days_30d_decline_max: int = 8
 
     max_inflow_gap_days_approve_max: int = 6
     max_inflow_gap_days_decline_min: int = 21

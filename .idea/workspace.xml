@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="31e1f392-70e3-430e-832b-137868850805" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/mca_scorecard_rules.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/score_all_apps.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mca_scorecard_rules.py" beforeDir="false" afterPath="$PROJECT_DIR$/mca_scorecard_rules.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,7 +63,7 @@
       <updated>1767353625508</updated>
       <workItem from="1767353626762" duration="18720000" />
       <workItem from="1767631511449" duration="103000" />
-      <workItem from="1767631625485" duration="2048000" />
+      <workItem from="1767631625485" duration="2545000" />
     </task>
     <servers />
   </component>
