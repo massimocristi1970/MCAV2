@@ -2559,9 +2559,11 @@ def create_results_dashboard(results_df):
         if "final_decision" in results_df.columns:
             st.write("**Final Decision counts**")
             final_counts = results_df["final_decision"].fillna("UNKNOWN").value_counts()
-            st.dataframe(
-                final_counts.reset_index().rename(columns={"index": "final_decision", "final_decision": "count"}),
-                use_container_width=True)
+
+            final_counts_df = final_counts.reset_index()
+            final_counts_df.columns = ["final_decision", "count"]
+
+            st.dataframe(final_counts_df, use_container_width=True)
         else:
             st.info("final_decision not found in results.")
 
@@ -2569,9 +2571,11 @@ def create_results_dashboard(results_df):
         if "mca_rule_decision" in results_df.columns:
             st.write("**MCA Rule Decision counts**")
             mca_counts = results_df["mca_rule_decision"].fillna("UNKNOWN").value_counts()
-            st.dataframe(
-                mca_counts.reset_index().rename(columns={"index": "mca_rule_decision", "mca_rule_decision": "count"}),
-                use_container_width=True)
+
+            mca_counts_df = mca_counts.reset_index()
+            mca_counts_df.columns = ["mca_rule_decision", "count"]
+
+            st.dataframe(mca_counts_df, use_container_width=True)
         else:
             st.info("mca_rule_decision not found in results.")
 
