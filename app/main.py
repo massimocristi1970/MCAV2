@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# Ensure repo root is on Python path (so imports from repo root work when running app/main.py)
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 import streamlit as st
 import pandas as pd
 import joblib
@@ -8,12 +16,13 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import sys
 import os
 import base64
 from io import BytesIO
+
 from mca_scorecard_rules import decide_application, Thresholds
 from build_training_dataset import _flatten_transactions, build_mca_features
+
 
 
 # Add debug info about file structure
