@@ -142,6 +142,7 @@ class SubprimeScoring:
 
         # DEBT SERVICE COVERAGE RATIO (25 points) - slightly tightened
         dscr = metrics.get('Debt Service Coverage Ratio', 0)
+        w = self.subprime_weights['Debt Service Coverage Ratio']
         if dscr >= 1.9:
             score += w
         elif dscr >= 1.6:
@@ -156,6 +157,7 @@ class SubprimeScoring:
 
         # REVENUE GROWTH RATE (10 points) - slightly tightened downside
         growth = metrics.get('Revenue Growth Rate', 0)
+        w = self.subprime_weights['Revenue Growth Rate']
         if growth >= 0.12:
             score += w
         elif growth >= 0.06:
@@ -170,6 +172,7 @@ class SubprimeScoring:
 
         # DIRECTORS SCORE (16 points) - slightly tightened
         d = params.get('directors_score', 50)
+        w = self.subprime_weights['Directors Score']
         if d >= 78:
             score += w
         elif d >= 60:
@@ -184,6 +187,7 @@ class SubprimeScoring:
 
         # AVERAGE MONTH-END BALANCE (18 points) - slightly tightened
         bal = metrics.get('Average Month-End Balance', 0)
+        w = self.subprime_weights['Average Month-End Balance']
         if bal >= 2500:
             score += w
         elif bal >= 1500:
@@ -198,6 +202,7 @@ class SubprimeScoring:
 
         # CASH FLOW VOLATILITY (14 points) - slightly tightened
         vol = metrics.get('Cash Flow Volatility', 1.0)
+        w = self.subprime_weights['Cash Flow Volatility']
         if vol <= 0.30:
             score += w
         elif vol <= 0.45:
@@ -212,6 +217,7 @@ class SubprimeScoring:
 
         # OPERATING MARGIN (6 points) - slightly tightened
         m = metrics.get('Operating Margin', 0)
+        w = self.subprime_weights['Operating Margin']
         if m >= 0.06:
             score += w
         elif m >= 0.04:
@@ -226,6 +232,7 @@ class SubprimeScoring:
 
         # NET INCOME (4 points) - slightly tightened
         ni = metrics.get('Net Income', 0)
+        w = self.subprime_weights['Net Income']
         if ni >= 3000:
             score += w
         elif ni >= 500:
@@ -240,6 +247,7 @@ class SubprimeScoring:
 
         # NEGATIVE BALANCE DAYS (5 points) - slightly tightened
         nd = metrics.get('Average Negative Balance Days per Month', 0)
+        w = self.subprime_weights['Average Negative Balance Days per Month']
         if nd <= 1:
             score += w
         elif nd <= 4:
@@ -251,6 +259,20 @@ class SubprimeScoring:
         elif nd <= 13:
             score += w * 0.10  # was 0.20 at 15
         # Above 13 gets 0 points
+
+        # COMPANY AGE (2 points) - Minimal weight
+        age_months = params.get('company_age_months', 0)
+        if age_months >= 18:
+            score += self.subprime_weights['Company Age (Months)']
+        elif age_months >= 12:
+            score += self.subprime_weights['Company Age (Months)'] * 0.80
+        elif age_months >= 9:
+            score += self.subprime_weights['Company Age (Months)'] * 0.60
+        elif age_months >= 6:
+            score += self.subprime_weights['Company Age (Months)'] * 0.40
+        elif age_months >= 3:
+            score += self.subprime_weights['Company Age (Months)'] * 0.20
+        # Below 3 months gets 0 points
 
         # COMPANY AGE (2 points) - Minimal weight
         age_months = params.get('company_age_months', 0)
@@ -1160,3 +1182,5 @@ def test_subprime_scoring_with_risk_factors():
 
 if __name__ == "__main__":
     test_subprime_scoring_with_risk_factors()
+# ADD THIS LINE AT THE VERY END OF THE FILE:
+SubprimeScoringSystem = SubprimeScoring

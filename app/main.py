@@ -3191,3 +3191,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+# ADD THIS LINE AT THE VERY END OF THE FILE:
+SubprimeScoringSystem = SubprimeScoring
