@@ -22,6 +22,81 @@ An advanced business finance analysis and risk assessment platform designed for 
 - **Revenue Insights**: Source diversification and transaction pattern analysis
 - **Tightened Risk Thresholds**: Calibrated for ~20% approval rate
 
+
+## 🧾 MCA Scorecard (Rule-Based Consistency Engine)
+
+This repo now includes an **MCA-specific, transparent rule engine** designed to assess whether a business demonstrates the **revenue consistency required to sustainably support a Merchant Cash Advance**.
+
+### Why we added this
+
+The MCA scorecard was introduced following a structured, evidence-led review of our historic MCA lending outcomes.
+
+As part of this process, we built a **training dataset using all previously funded MCA applications**, combining:
+- Full transaction-level cashflow data
+- Derived financial and behavioural metrics
+- **Observed loan outcomes** (paid as agreed, arrears, default)
+
+This analysis highlighted a clear pattern: while traditional financial metrics remain important, **short-term revenue consistency** (frequency, gaps, and stability of inflows) was one of the strongest differentiators between:
+- Businesses that repaid smoothly, and  
+- Businesses that entered early distress or defaulted.
+
+The existing scorecard is intentionally comprehensive, but MCA underwriting also benefits from a **fast, explainable “cashflow consistency gate”** that:
+- Reflects real observed outcomes  
+- Can be calibrated independently as more MCA data accumulates  
+- Provides immediate, defensible triage decisions  
+
+### How we arrived at this approach
+
+The MCA rule engine is the result of the following process:
+
+1. **Outcome-based training dataset**  
+   - We constructed a dataset using only **funded applications**, ensuring all observations had real repayment outcomes.  
+   - This anchored decisions in actual performance rather than theoretical assumptions.
+
+2. **Metric review and pattern analysis**  
+   - A wide range of transaction-derived metrics were reviewed.  
+   - Particular focus was placed on measures of **revenue regularity**, not just total revenue.
+
+3. **Identification of dominant consistency signals**  
+   - Three metrics consistently showed strong explanatory power across outcomes:
+     - Frequency of inflow days
+     - Length of gaps between inflows
+     - Volatility of inflow amounts  
+   - These signals align closely with the operational reality of MCA products, which rely on frequent trading activity.
+
+4. **Rule-based implementation**  
+   - Rather than embedding this logic in a black-box model, it was implemented as a **standalone, rule-based engine**.  
+   - This ensures decisions are explainable, auditable, and easy to refine as further outcome data becomes available.
+
+### What it does
+
+The MCA rule engine evaluates three core consistency signals derived from transaction data:
+
+- **Inflow days (last 30 days)** – number of days with positive inflows, indicating trading regularity  
+- **Maximum inflow gap (days)** – longest period without inflows, highlighting dependency or trading pauses  
+- **Inflow volatility (coefficient of variation)** – stability of inflow amounts; higher values indicate less predictable cashflow  
+
+These are assessed alongside **data sufficiency checks** (e.g. coverage period and activity levels).
+
+The engine returns:
+
+- **Decision**: `APPROVE`, `REFER`, or `DECLINE`  
+- **Score (0–100)**: simple points-based ranking for prioritisation  
+- **Reasons**: explicit rule triggers for traceability, QA, and governance review  
+
+### How it improves underwriting
+
+- **Evidence-led decisions** grounded in observed repayment behaviour  
+- **Faster, consistent triage** of strong vs weak cashflow profiles  
+- **Clear audit trail** with explicit decision reasons  
+- **Separation of concerns**, keeping MCA consistency policy distinct from broader affordability and risk models  
+- **Calibration-friendly design**, with thresholds managed in a single ruleset and reviewed as new outcomes emerge  
+
+### New files
+
+- `mca_scorecard_rules.py` – MCA rule engine containing thresholds, scoring logic, and decision outcomes  
+- `score_all_apps.py` – batch runner that applies the MCA rules across all JSON exports and outputs CSV/XLSX for analysis and MI
+
 ## 📊 Scoring Methodologies
 
 ### 1. 🎯 Subprime Score (Primary)
@@ -162,6 +237,8 @@ MCAV2/
 ├── requirements.txt                     # Python dependencies
 ├── Dockerfile                           # Container configuration
 ├── docker-compose.yml                   # Multi-service deployment
+├── mca_scorecard_rules.py               # MCA rule engine (transparent APPROVE/REFER/DECLINE)
+├── score_all_apps.py                   # Batch scorer for all MCA JSON exports (CSV/XLSX output)
 └── README.md                            # This file
 ```
 
@@ -250,6 +327,26 @@ run_app.bat
    - Batch scoring with tightened thresholds
    - Comprehensive debug information
    - Export results to CSV
+
+
+### MCA Batch Scoring (score_all_apps.py)
+
+This script runs the MCA consistency rules across **all** JSON files under your `JsonExport` folder and produces:
+
+- `mca_scorecard_decisions_all_apps.csv`
+- `mca_scorecard_decisions_all_apps.xlsx`
+
+**Run:**
+
+```bash
+python score_all_apps.py
+```
+
+**Notes:**
+
+- Update `JSON_ROOT` and `OUT_DIR` at the top of `score_all_apps.py` to match your machine paths.
+- The script imports feature building from `build_training_dataset.py` to keep calculations consistent.
+- Adjust thresholds in `mca_scorecard_rules.py` (the `Thresholds` dataclass) as you calibrate against outcomes.
 
 ### CSV Parameter File Format
 
