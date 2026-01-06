@@ -2591,36 +2591,47 @@ def create_results_dashboard(results_df):
 
     # Detailed Results Table
     st.subheader("📋 Detailed Results")
-    
-    # Create downloadable results
-    display_columns = [
-        'Company Name', 'Industry', 'Requested Loan', 'Final Score',
 
-        # Decision stack
-        'MCA Rule Decision', 'FINAL Decision', 'Decision',
-
-        'Subprime Score', 'Subprime Tier', 'V2 Weighted Score', 'ML Score', 'Loan Risk'
+    # Prefer a curated set, but ALWAYS fall back to something visible
+    preferred_columns = [
+        # identifiers
+        'original_filename', 'company_name', 'extracted_company_name', 'industry',
+        # new stack outputs
+        'mca_rule_decision', 'mca_rule_score', 'final_decision',
+        # scores
+        'subprime_score', 'subprime_tier', 'weighted_score',
+        # key metrics
+        'Total Revenue', 'Net Income', 'Operating Margin', 'Debt Service Coverage Ratio',
+        # params
+        'requested_loan'
     ]
 
-    # Filter to available columns
-    available_columns = [col for col in display_columns if col in results_df.columns]
-    display_df = results_df[available_columns].copy()
-    
-    # Format numeric columns
+    available_columns = [c for c in preferred_columns if c in results_df.columns]
+
+    if not available_columns:
+        # Nothing matched (column naming mismatch) — show *something* so the table isn't empty
+        st.warning("No preferred columns matched results; showing first 30 columns for debugging.")
+        display_df = results_df.copy()
+        display_df = display_df.iloc[:, :30]  # avoid a massive table
+    else:
+        display_df = results_df[available_columns].copy()
+
+    # Format numeric columns (only if they exist in the current display_df)
     numeric_format_cols = {
-        'Total Revenue': lambda x: f"£{x:,.0f}",
-        'Net Income': lambda x: f"£{x:,.0f}",
-        'requested_loan': lambda x: f"£{x:,.0f}",
-        'Operating Margin': lambda x: f"{x*100:.1f}%",
-        'subprime_score': lambda x: f"{x:.1f}",
-        'weighted_score': lambda x: f"{x:.0f}",
-        'Debt Service Coverage Ratio': lambda x: f"{x:.2f}"
+        'Total Revenue': lambda x: f"£{x:,.0f}" if pd.notna(x) else "",
+        'Net Income': lambda x: f"£{x:,.0f}" if pd.notna(x) else "",
+        'requested_loan': lambda x: f"£{x:,.0f}" if pd.notna(x) else "",
+        'Operating Margin': lambda x: f"{x * 100:.1f}%" if pd.notna(x) else "",
+        'subprime_score': lambda x: f"{x:.1f}" if pd.notna(x) else "",
+        'weighted_score': lambda x: f"{x:.0f}" if pd.notna(x) else "",
+        'Debt Service Coverage Ratio': lambda x: f"{x:.2f}" if pd.notna(x) else "",
+        'mca_rule_score': lambda x: f"{x:.0f}" if pd.notna(x) else "",
     }
-    
+
     for col, formatter in numeric_format_cols.items():
         if col in display_df.columns:
             display_df[col] = display_df[col].apply(formatter)
-    
+
     st.dataframe(display_df, use_container_width=True, hide_index=True)
 
     # Download button (export-friendly)
