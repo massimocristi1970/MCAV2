@@ -12,6 +12,9 @@ import sys
 import os
 import base64
 from io import BytesIO
+from mca_scorecard_rules import decide_application, Thresholds
+from build_training_dataset import _flatten_transactions, build_mca_features
+
 
 # Add debug info about file structure
 def debug_file_structure():
@@ -2121,11 +2124,58 @@ class DashboardExporter:
                         <div>£{export_data['business_parameters']['requested_loan']:,.0f}</div>
                         <p>{export_data['scoring_results']['loan_risk']}</p>
                     </div>
+                    <div class="metric-card">
+                        <h3>📌 MCA Rule</h3>
+                        <div>{export_data['scoring_results'].get('mca_rule_decision', 'N/A')}</div>
+                        <p>Score: {export_data['scoring_results'].get('mca_rule_score', 'N/A')}</p>
+                    </div>
                 </div>
                 
                 <h3>📋 Primary Recommendation</h3>
                 <p><strong>{export_data['scoring_results']['subprime_recommendation']}</strong></p>
-            </div>
+
+                <h3>📌 MCA Rule Decision (Transparent)</h3>
+                <p><strong>{export_data['scoring_results'].get('mca_rule_decision', 'N/A')}</strong>
+                &nbsp;&nbsp;|&nbsp;&nbsp; Score: <strong>{export_data['scoring_results'].get('mca_rule_score', 'N/A')}</strong></p>
+
+                <p><strong>Reasons:</strong></p>
+                <ul>
+                {''.join([f"<li>{r}</li>" for r in export_data['scoring_results'].get('mca_rule_reasons', [])])}
+                </ul>
+
+                <h3>📌 Decision Stack Summary</h3>
+                <table>
+                    <tr><th>Layer</th><th>Result</th></tr>
+                    <tr>
+                        <td><strong>FINAL Decision</strong></td>
+                        <td><strong>{export_data['scoring_results'].get('final_decision', 'N/A')}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>MCA Rule</td>
+                        <td><strong>{export_data['scoring_results'].get('mca_rule_decision', 'N/A')}</strong>
+                        &nbsp;&nbsp;|&nbsp;&nbsp; Score: {export_data['scoring_results'].get('mca_rule_score', 'N/A')}</td>
+                    </tr>
+                    <tr>
+                        <td>Subprime (Existing)</td>
+                        <td><strong>{export_data['scoring_results'].get('subprime_recommendation', 'N/A')}</strong>
+                        &nbsp;&nbsp;|&nbsp;&nbsp; Tier: {export_data['scoring_results'].get('subprime_tier', 'N/A')}</td>
+                    </tr>
+                    <tr>
+                        <td>V2 Weighted</td>
+                        <td>{export_data['scoring_results'].get('v2_weighted_score', 'N/A')}/100</td>
+                    </tr>
+                    <tr>
+                        <td>ML Score</td>
+                        <td>{export_data['scoring_results'].get('adjusted_ml_score', export_data['scoring_results'].get('ml_score', 'N/A'))}</td>
+                    </tr>
+                    <tr>
+                        <td>Requested Loan</td>
+                        <td>£{export_data['business_parameters'].get('requested_loan', 0):,.0f}</td>
+                    </tr>
+                </table>
+
+                </div>
+
             
             <!-- Financial Metrics -->
             <div class="section">
@@ -2348,13 +2398,31 @@ def main():
                 else:
                     st.error("❌ Unexpected JSON format - expected list or dictionary")
                     return
-                
+
                 if not transactions:
                     st.error("❌ No transactions found in JSON file")
                     return
-                
+
+                # --- MCA rule-based decision (new) ---
+                txns_for_scoring = _flatten_transactions(transactions)
+                mca_features = build_mca_features(txns_for_scoring)
+                mca_decision, mca_score, mca_reasons = decide_application(mca_features, t=Thresholds())
+
+                # Store for later display / export (no other logic changes)
+                params["mca_rule_decision"] = mca_decision
+                params["mca_rule_score"] = mca_score
+                params["mca_rule_reasons"] = mca_reasons
+                params["mca_rule_signals"] = {
+                    "inflow_days_30d": mca_features.get("inflow_days_30d"),
+                    "max_inflow_gap_days": mca_features.get("max_inflow_gap_days"),
+                    "inflow_cv": mca_features.get("inflow_cv"),
+                    "months_covered": mca_features.get("months_covered"),
+                    "txn_count_avg_month": mca_features.get("txn_count_avg_month"),
+                }
+
                 df = pd.json_normalize(transactions)
                 required_columns = ['date', 'amount', 'name']
+
                 missing_columns = [col for col in required_columns if col not in df.columns]
                 
                 if missing_columns:
@@ -2392,16 +2460,103 @@ def main():
                             type="primary",
                             key="csv_export_main"
                         )
-                
+
                 # Filter data and calculate metrics
                 filtered_df = filter_data_by_period(df, analysis_period)
                 metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
                 scores = calculate_all_scores_enhanced(metrics, params)
+
+                # ensure MCA rule outputs are part of scoring_results for export
+                scores["mca_rule_decision"] = params.get("mca_rule_decision")
+                scores["mca_rule_score"] = params.get("mca_rule_score")
+                scores["mca_rule_reasons"] = params.get("mca_rule_reasons", [])
+
+                # -------------------------------
+                # FINAL DECISION RULES (NEW)
+                # -------------------------------
+                def _base_decision_from_subprime(recommendation_text: str) -> str:
+                    s = (recommendation_text or "").upper()
+                    if "APPROVE" in s:
+                        return "APPROVE"
+                    # Treat conditional / senior review as REFER
+                    if "CONDITIONAL" in s or "SENIOR REVIEW" in s or "REVIEW" in s:
+                        return "REFER"
+                    return "DECLINE"
+
+                base_decision = _base_decision_from_subprime(scores.get("subprime_recommendation", ""))
+                mca_decision = (scores.get("mca_rule_decision") or "").upper().strip()
+
+                final_decision = base_decision
+                final_reasons = [f"Base decision from Subprime: {base_decision}"]
+
+                if mca_decision == "DECLINE":
+                    final_decision = "DECLINE"
+                    final_reasons.append("MCA Rule override: DECLINE (hard stop)")
+                elif mca_decision == "REFER" and base_decision != "DECLINE":
+                    final_decision = "REFER"
+                    final_reasons.append("MCA Rule override: REFER (manual review)")
+                elif mca_decision == "APPROVE":
+                    final_reasons.append("MCA Rule: APPROVE (no override)")
+
+                # Persist for UI + exports
+                scores["final_decision"] = final_decision
+                scores["final_decision_reasons"] = final_reasons
+                params["final_decision"] = final_decision
+                params["final_decision_reasons"] = final_reasons
+
                 revenue_insights = calculate_revenue_insights(filtered_df)
 
-                # ENHANCED DASHBOARD RENDERING 
+                # ENHANCED DASHBOARD RENDERING
                 period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
                 st.header(f"Financial Dashboard: {company_name} ({period_label})")
+
+                # ==================================================
+                # MCA Rule-Based Decision (NEW – transparent layer)
+                # ==================================================
+                if "mca_rule_decision" in params:
+                    st.markdown("---")
+                    st.subheader("📌 MCA Rule Decision (Cashflow Consistency)")
+
+                    mca_d = params.get("mca_rule_decision", "UNKNOWN")
+                    mca_s = params.get("mca_rule_score", None)
+                    mca_r = params.get("mca_rule_reasons", [])
+                    mca_sig = params.get("mca_rule_signals", {})
+
+                    if mca_d == "APPROVE":
+                        st.success(f"Decision: {mca_d}")
+                    elif mca_d == "REFER":
+                        st.warning(f"Decision: {mca_d}")
+                    elif mca_d == "DECLINE":
+                        st.error(f"Decision: {mca_d}")
+                    else:
+                        st.info(f"Decision: {mca_d}")
+
+                    if mca_s is not None:
+                        st.write(f"**Rule Score:** {mca_s}/100")
+
+                    st.write("**Reasons:**")
+                    for r in mca_r:
+                        st.write(f"- {r}")
+
+                    with st.expander("Signals used by MCA rules"):
+                        st.json(mca_sig)
+
+                # ==========================
+                # MI Summary (Decision Stack)
+                # ==========================
+                st.subheader("📌 Decision Stack Summary")
+
+                mi_row = {
+                    "FINAL Decision": scores.get("final_decision", "N/A"),
+                    "MCA Rule": params.get("mca_rule_decision", "N/A"),
+                    "Subprime Recommendation": scores.get("subprime_recommendation", "N/A"),
+                    "Subprime Tier": scores.get("subprime_tier", "N/A"),
+                    "V2 Weighted Score": scores.get("v2_weighted_score", "N/A"),
+                    "ML Score (%)": scores.get("adjusted_ml_score", scores.get("ml_score", "N/A")),
+                    "Requested Loan (£)": params.get("requested_loan", "N/A"),
+                }
+
+                st.dataframe(pd.DataFrame([mi_row]), use_container_width=True)
 
                 # Key Scoring Methods
                 col1, col2, col3 = st.columns(3)  # Change from 4 to 3 columns

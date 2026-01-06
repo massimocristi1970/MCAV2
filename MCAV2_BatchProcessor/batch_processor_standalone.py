@@ -242,6 +242,77 @@ PENALTIES = {
     'uses_generic_email':  2
 }
 
+# -----------------------------
+# MCA Transparent Rule Engine
+# -----------------------------
+MCA_RULES = {
+    # These are your 3 core signals — keep them easy to tune
+    "cash_flow_volatility_max": 0.35,                 # lower is better
+    "avg_negative_balance_days_max": 6,               # lower is better
+    "bounced_payments_max": 2,                        # lower is better
+
+    # Scoring model: start at 100 and subtract for breaches
+    "penalty_volatility": 40,
+    "penalty_negative_days": 30,
+    "penalty_bounced": 30,
+
+    # Decision bands (transparent + adjustable)
+    "approve_min_score": 75,
+    "refer_min_score": 50,
+}
+
+def evaluate_mca_rule(metrics: dict, params: dict) -> dict:
+    """
+    Returns:
+      {
+        "mca_rule_score": int,
+        "mca_rule_decision": "APPROVE"|"REFER"|"DECLINE",
+        "mca_rule_reasons": [str, ...]
+      }
+    """
+    score = 100
+    reasons = []
+
+    vol = float(metrics.get("Cash Flow Volatility", 0) or 0)
+    neg_days = float(metrics.get("Average Negative Balance Days per Month", 0) or 0)
+    bounced = float(metrics.get("Number of Bounced Payments", 0) or 0)
+
+    if vol > MCA_RULES["cash_flow_volatility_max"]:
+        score -= MCA_RULES["penalty_volatility"]
+        reasons.append(
+            f"Cash Flow Volatility {vol:.2f} > {MCA_RULES['cash_flow_volatility_max']:.2f}"
+        )
+
+    if neg_days > MCA_RULES["avg_negative_balance_days_max"]:
+        score -= MCA_RULES["penalty_negative_days"]
+        reasons.append(
+            f"Avg Negative Balance Days {neg_days:.0f} > {MCA_RULES['avg_negative_balance_days_max']}"
+        )
+
+    if bounced > MCA_RULES["bounced_payments_max"]:
+        score -= MCA_RULES["penalty_bounced"]
+        reasons.append(
+            f"Bounced Payments {bounced:.0f} > {MCA_RULES['bounced_payments_max']}"
+        )
+
+    score = max(0, min(100, int(round(score))))
+
+    if score >= MCA_RULES["approve_min_score"]:
+        decision = "APPROVE"
+    elif score >= MCA_RULES["refer_min_score"]:
+        decision = "REFER"
+    else:
+        decision = "DECLINE"
+
+    if not reasons:
+        reasons.append("All MCA core signals within threshold.")
+
+    return {
+        "mca_rule_score": score,
+        "mca_rule_decision": decision,
+        "mca_rule_reasons": reasons
+    }
+
 
 def map_transaction_category(transaction):
     """Enhanced transaction categorization matching original version"""
@@ -1657,18 +1728,59 @@ def calculate_all_scores_tightened(metrics, params):
     else:
         loan_risk = "High Risk"
     
+    # -----------------------------
+    # MCA transparent rule layer
+    # -----------------------------
+    mca_rule = evaluate_mca_rule(metrics, params)
+    mca_rule_decision = (mca_rule.get("mca_rule_decision") or "").upper().strip()
+
+    # -----------------------------
+    # FINAL decision rules (batch)
+    # -----------------------------
+    def _base_decision_from_subprime(recommendation_text: str) -> str:
+        s = (recommendation_text or "").upper()
+        if "APPROVE" in s:
+            return "APPROVE"
+        if "CONDITIONAL" in s or "SENIOR REVIEW" in s or "REVIEW" in s:
+            return "REFER"
+        return "DECLINE"
+
+    base_decision = _base_decision_from_subprime(subprime_result.get("recommendation", ""))
+    final_decision = base_decision
+    final_reasons = [f"Base decision from Subprime: {base_decision}"]
+
+    if mca_rule_decision == "DECLINE":
+        final_decision = "DECLINE"
+        final_reasons.append("MCA Rule override: DECLINE (hard stop)")
+    elif mca_rule_decision == "REFER" and base_decision != "DECLINE":
+        final_decision = "REFER"
+        final_reasons.append("MCA Rule override: REFER (manual review)")
+    elif mca_rule_decision == "APPROVE":
+        final_reasons.append("MCA Rule: APPROVE (no override)")
+
     return {
         'weighted_score': weighted_score,
         'industry_score': industry_score,
         'ml_score': ml_score,
         'loan_risk': loan_risk,
         'score_breakdown': score_breakdown,
+
         'subprime_score': subprime_result['subprime_score'],
         'subprime_tier': subprime_result['risk_tier'],
         'subprime_pricing': subprime_result['pricing_guidance'],
         'subprime_recommendation': subprime_result['recommendation'],
-        'subprime_breakdown': subprime_result['breakdown']
+        'subprime_breakdown': subprime_result['breakdown'],
+
+        # MCA rule outputs
+        'mca_rule_score': mca_rule.get('mca_rule_score'),
+        'mca_rule_decision': mca_rule.get('mca_rule_decision'),
+        'mca_rule_reasons': mca_rule.get('mca_rule_reasons'),
+
+        # Final operating decision
+        'final_decision': final_decision,
+        'final_decision_reasons': final_reasons,
     }
+
 
 # FIXED BATCH PROCESSOR CLASS
 class BatchProcessor:
@@ -2435,17 +2547,57 @@ def create_results_dashboard(results_df):
             approval_rate = (approved / len(results_df)) * 100
             
             st.metric("Potential Approval Rate", f"{approval_rate:.1f}%")
-    
+
+    # ==========================
+    # BP-5: MI Summary (On-screen)
+    # ==========================
+    st.subheader("📊 MI Summary")
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+        if "final_decision" in results_df.columns:
+            st.write("**Final Decision counts**")
+            final_counts = results_df["final_decision"].fillna("UNKNOWN").value_counts()
+            st.dataframe(
+                final_counts.reset_index().rename(columns={"index": "final_decision", "final_decision": "count"}),
+                use_container_width=True)
+        else:
+            st.info("final_decision not found in results.")
+
+    with c2:
+        if "mca_rule_decision" in results_df.columns:
+            st.write("**MCA Rule Decision counts**")
+            mca_counts = results_df["mca_rule_decision"].fillna("UNKNOWN").value_counts()
+            st.dataframe(
+                mca_counts.reset_index().rename(columns={"index": "mca_rule_decision", "mca_rule_decision": "count"}),
+                use_container_width=True)
+        else:
+            st.info("mca_rule_decision not found in results.")
+
+    # Cross-tab: MCA Rule vs Final Decision
+    if "mca_rule_decision" in results_df.columns and "final_decision" in results_df.columns:
+        st.write("**MCA Rule → Final Decision (cross-tab)**")
+        ctab = pd.crosstab(
+            results_df["mca_rule_decision"].fillna("UNKNOWN"),
+            results_df["final_decision"].fillna("UNKNOWN"),
+            margins=True
+        )
+        st.dataframe(ctab, use_container_width=True)
+
     # Detailed Results Table
     st.subheader("📋 Detailed Results")
     
     # Create downloadable results
     display_columns = [
-        'company_name', 'industry', 'subprime_score', 'subprime_tier', 
-        'weighted_score', 'Total Revenue', 'Net Income', 'Operating Margin',
-        'Debt Service Coverage Ratio', 'requested_loan'
+        'Company Name', 'Industry', 'Requested Loan', 'Final Score',
+
+        # Decision stack
+        'MCA Rule Decision', 'FINAL Decision', 'Decision',
+
+        'Subprime Score', 'Subprime Tier', 'V2 Weighted Score', 'ML Score', 'Loan Risk'
     ]
-    
+
     # Filter to available columns
     available_columns = [col for col in display_columns if col in results_df.columns]
     display_df = results_df[available_columns].copy()
@@ -2466,9 +2618,17 @@ def create_results_dashboard(results_df):
             display_df[col] = display_df[col].apply(formatter)
     
     st.dataframe(display_df, use_container_width=True, hide_index=True)
-    
-    # Download button
-    csv_data = results_df.to_csv(index=False)
+
+    # Download button (export-friendly)
+    export_df = results_df.copy()
+
+    for col in ["mca_rule_reasons", "final_decision_reasons"]:
+        if col in export_df.columns:
+            export_df[col] = export_df[col].apply(
+                lambda x: " | ".join(x) if isinstance(x, list) else ("" if x is None else str(x))
+            )
+
+    csv_data = export_df.to_csv(index=False)
     st.download_button(
         label="📥 Download Full Results (CSV)",
         data=csv_data,
@@ -2476,6 +2636,7 @@ def create_results_dashboard(results_df):
         mime="text/csv",
         type="primary"
     )
+
 
 def main():
     """Main application"""
