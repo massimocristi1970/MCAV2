@@ -773,105 +773,119 @@ class TightenedSubprimeScoring:
         score = 0
         max_possible = sum(self.subprime_weights.values())
 
-        # DEBT SERVICE COVERAGE RATIO (25 points) - micro enterprise friendly
+        # DEBT SERVICE COVERAGE RATIO (25 points) - slightly tightened
         dscr = metrics.get('Debt Service Coverage Ratio', 0)
-        if dscr >= 1.8:
-            score += self.subprime_weights['Debt Service Coverage Ratio']
-        elif dscr >= 1.5:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.85
-        elif dscr >= 1.2:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.70
-        elif dscr >= 1.0:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.55
-        elif dscr >= 0.8:
-            score += self.subprime_weights['Debt Service Coverage Ratio'] * 0.35
-        # Below 0.8 gets 0 points
+        if dscr >= 1.9:
+            score += w
+        elif dscr >= 1.6:
+            score += w * 0.85
+        elif dscr >= 1.3:
+            score += w * 0.65  # was 0.70
+        elif dscr >= 1.1:
+            score += w * 0.45  # was 0.55
+        elif dscr >= 0.9:
+            score += w * 0.25  # was 0.35
+        # Below 0.9 gets 0 points
 
-        # CASH FLOW VOLATILITY (14 points) - micro enterprise friendly
-        volatility = metrics.get('Cash Flow Volatility', 1.0)
-        if volatility <= 0.35:
-            score += self.subprime_weights['Cash Flow Volatility']
-        elif volatility <= 0.50:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.80
-        elif volatility <= 0.65:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.60
-        elif volatility <= 0.80:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.40
-        elif volatility <= 1.0:
-            score += self.subprime_weights['Cash Flow Volatility'] * 0.20
-        # Above 1.0 gets 0 points
-
-        # DIRECTORS SCORE (16 points) - balanced approach
-        directors_score = params.get('directors_score', 50)
-        if directors_score >= 70:
-            score += self.subprime_weights['Directors Score']
-        elif directors_score >= 55:
-            score += self.subprime_weights['Directors Score'] * 0.80
-        elif directors_score >= 45:
-            score += self.subprime_weights['Directors Score'] * 0.60
-        elif directors_score >= 35:
-            score += self.subprime_weights['Directors Score'] * 0.40
-        elif directors_score >= 25:
-            score += self.subprime_weights['Directors Score'] * 0.20
-        # Below 25 gets 0 points
-
-        # AVERAGE MONTH-END BALANCE (18 points) - micro enterprise friendly
-        balance = metrics.get('Average Month-End Balance', 0)
-        if balance >= 2000:
-            score += self.subprime_weights['Average Month-End Balance']
-        elif balance >= 1000:
-            score += self.subprime_weights['Average Month-End Balance'] * 0.80
-        elif balance >= 500:
-            score += self.subprime_weights['Average Month-End Balance'] * 0.60
-        elif balance >= 250:
-            score += self.subprime_weights['Average Month-End Balance'] * 0.40
-        elif balance >= 100:
-            score += self.subprime_weights['Average Month-End Balance'] * 0.20
-        # Below £100 gets 0 points
-
-        # REVENUE GROWTH RATE (10 points) - realistic for micro enterprises
+        # REVENUE GROWTH RATE (10 points) - slightly tightened downside
         growth = metrics.get('Revenue Growth Rate', 0)
-        if growth >= 0.05:
-            score += self.subprime_weights['Revenue Growth Rate']
-        elif growth >= 0.0:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.80
-        elif growth >= -0.05:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.60
-        elif growth >= -0.10:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.40
-        elif growth >= -0.15:
-            score += self.subprime_weights['Revenue Growth Rate'] * 0.20
-        # Below -15% gets 0 points
+        if growth >= 0.12:
+            score += w
+        elif growth >= 0.06:
+            score += w * 0.80
+        elif growth >= 0.01:
+            score += w * 0.55  # was 0.60 for >=0.0
+        elif growth >= -0.03:
+            score += w * 0.30  # was 0.40 for >=-0.05
+        elif growth >= -0.07:
+            score += w * 0.15  # was 0.20 for >=-0.10
+        # Below -7% gets 0 points
 
-        # OPERATING MARGIN (6 points) - micro enterprise friendly
-        margin = metrics.get('Operating Margin', 0)
-        if margin >= 0.05:
-            score += self.subprime_weights['Operating Margin']
-        elif margin >= 0.03:
-            score += self.subprime_weights['Operating Margin'] * 0.80
-        elif margin >= 0.01:
-            score += self.subprime_weights['Operating Margin'] * 0.60
-        elif margin >= 0:
-            score += self.subprime_weights['Operating Margin'] * 0.40
-        elif margin >= -0.03:
-            score += self.subprime_weights['Operating Margin'] * 0.20
-        # Below -3% margin gets 0 points
+        # DIRECTORS SCORE (16 points) - slightly tightened
+        d = params.get('directors_score', 50)
+        if d >= 78:
+            score += w
+        elif d >= 60:
+            score += w * 0.80
+        elif d >= 50:
+            score += w * 0.55  # was 0.60 at 45
+        elif d >= 40:
+            score += w * 0.35  # was 0.40 at 35
+        elif d >= 30:
+            score += w * 0.15  # was 0.20 at 25
+        # Below 30 gets 0 points
 
-        # NEGATIVE BALANCE DAYS (6 points) - micro enterprise friendly
-        neg_days = metrics.get('Average Negative Balance Days per Month', 0)
-        if neg_days <= 2:
-            score += self.subprime_weights['Average Negative Balance Days per Month']
-        elif neg_days <= 5:
-            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.80
-        elif neg_days <= 8:
-            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.60
-        elif neg_days <= 12:
-            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.40
-        elif neg_days <= 15:
-            score += self.subprime_weights['Average Negative Balance Days per Month'] * 0.20
-        # Above 15 days gets 0 points
+        # AVERAGE MONTH-END BALANCE (18 points) - slightly tightened
+        bal = metrics.get('Average Month-End Balance', 0)
+        if bal >= 2500:
+            score += w
+        elif bal >= 1500:
+            score += w * 0.80
+        elif bal >= 750:
+            score += w * 0.55  # was 0.60 at 500
+        elif bal >= 400:
+            score += w * 0.35  # was 0.40 at 250
+        elif bal >= 200:
+            score += w * 0.15  # was 0.20 at 100
+        # Below £200 gets 0 points
 
-        # COMPANY AGE (5 points) - balanced approach
+        # CASH FLOW VOLATILITY (14 points) - slightly tightened
+        vol = metrics.get('Cash Flow Volatility', 1.0)
+        if vol <= 0.30:
+            score += w
+        elif vol <= 0.45:
+            score += w * 0.80
+        elif vol <= 0.60:
+            score += w * 0.55  # was 0.60 at 0.65
+        elif vol <= 0.75:
+            score += w * 0.30  # was 0.40 at 0.80
+        elif vol <= 0.95:
+            score += w * 0.10  # was 0.20 at 1.0
+        # Above 0.95 gets 0 points
+
+        # OPERATING MARGIN (6 points) - slightly tightened
+        m = metrics.get('Operating Margin', 0)
+        if m >= 0.06:
+            score += w
+        elif m >= 0.04:
+            score += w * 0.80
+        elif m >= 0.02:
+            score += w * 0.60
+        elif m >= 0.005:
+            score += w * 0.35  # was 0.40 at 0
+        elif m >= -0.02:
+            score += w * 0.15  # was 0.20 at -0.03
+        # Below -2% gets 0 points
+
+        # NET INCOME (4 points) - slightly tightened
+        ni = metrics.get('Net Income', 0)
+        if ni >= 3000:
+            score += w
+        elif ni >= 500:
+            score += w * 0.80
+        elif ni >= -2500:
+            score += w * 0.45  # was 0.60 to -5000
+        elif ni >= -10000:
+            score += w * 0.25  # was 0.40 to -15000
+        elif ni >= -20000:
+            score += w * 0.10  # was 0.20 to -25000
+        # Below -£20k gets 0 points
+
+        # NEGATIVE BALANCE DAYS (5 points) - slightly tightened
+        nd = metrics.get('Average Negative Balance Days per Month', 0)
+        if nd <= 1:
+            score += w
+        elif nd <= 4:
+            score += w * 0.80
+        elif nd <= 7:
+            score += w * 0.55  # was 0.60 at 8
+        elif nd <= 10:
+            score += w * 0.30  # was 0.40 at 12
+        elif nd <= 13:
+            score += w * 0.10  # was 0.20 at 15
+        # Above 13 gets 0 points
+
+        # COMPANY AGE (2 points) - Minimal weight
         age_months = params.get('company_age_months', 0)
         if age_months >= 18:
             score += self.subprime_weights['Company Age (Months)']
