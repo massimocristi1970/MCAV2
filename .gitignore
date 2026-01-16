@@ -30,3 +30,7 @@ __pycache__/
 
 # Model duplicates (keep only root copy)
 MCAV2_BatchProcessor/model. pkl
+
+# Python venv
+.venv/
+
