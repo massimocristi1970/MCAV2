@@ -1098,15 +1098,27 @@ def calculate_all_scores_enhanced(metrics, params):
     print(f"  Loan Risk: {loan_risk}")
     
     # NEW: Ensemble scoring for unified recommendation
+    # Now properly integrating MCA Rule Decision which is based on 
+    # empirically-validated transaction consistency metrics
     ensemble_result = None
     if ENSEMBLE_SCORER_AVAILABLE and get_ensemble_recommendation:
         try:
+            # Get MCA rule decision from params (calculated earlier in the flow)
+            mca_rule_decision = params.get('mca_rule_decision', 'REFER')
+            mca_rule_score = params.get('mca_rule_score', 50)
+            
             # Prepare scores for ensemble
+            # REVISED WEIGHTS based on predictive power:
+            # - MCA Rule (transaction consistency): 35% - empirically validated
+            # - Subprime Score: 35% - comprehensive micro-enterprise assessment  
+            # - ML Score: 25% - data-driven probability
+            # - Weighted Score: 5% (reduced - less predictive than transaction consistency)
             ensemble_scores = {
                 'subprime_score': subprime_result['subprime_score'],
                 'ml_score': adjusted_ml_score or ml_score,
-                'adaptive_score': weighted_score,  # Use weighted as adaptive proxy
-                'mca_score': (industry_score / 12) * 100 if industry_score else 50,
+                'adaptive_score': weighted_score,  # Kept but with minimal weight
+                'mca_score': mca_rule_score,  # NOW using actual MCA rule score
+                'mca_decision': mca_rule_decision,  # Pass decision for hard stop logic
             }
             
             ensemble_result = get_ensemble_recommendation(
@@ -1121,9 +1133,12 @@ def calculate_all_scores_enhanced(metrics, params):
             print(f"  Confidence: {ensemble_result['confidence']}%")
             print(f"  Convergence: {ensemble_result['score_convergence']}")
             print(f"  Primary Reason: {ensemble_result['primary_reason']}")
+            print(f"  MCA Rule Input: {mca_rule_decision} (score: {mca_rule_score})")
             
         except Exception as e:
             print(f"  Ensemble scoring error: {e}")
+            import traceback
+            print(f"  {traceback.format_exc()}")
             ensemble_result = None
     
     print(f"="*50)
@@ -2904,22 +2919,37 @@ def main():
                         """)
                     
                     # Contributing scores breakdown
-                    st.markdown("#### Score Breakdown")
+                    # MCA Rule is most important - based on transaction consistency
+                    st.markdown("#### Score Breakdown (by Predictive Importance)")
                     score_cols = st.columns(4)
                     
                     contributing = ensemble.get('contributing_scores', {})
+                    
+                    # MCA Rule Score - 35% (Transaction Consistency)
                     with score_cols[0]:
-                        subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
-                        st.metric("Subprime Score", f"{subprime_s:.1f}", help="40% weight")
+                        mca_s = contributing.get('mca_score', params.get('mca_rule_score', 50))
+                        mca_d = params.get('mca_rule_decision', 'REFER')
+                        st.metric(
+                            "MCA Rule", 
+                            f"{mca_s:.0f}", 
+                            delta=mca_d,
+                            help="35% weight - Transaction consistency (inflow days, gaps, variability)"
+                        )
+                    
+                    # Subprime Score - 35%
                     with score_cols[1]:
-                        ml_s = contributing.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
-                        st.metric("ML Score", f"{ml_s:.1f}%" if ml_s else "N/A", help="30% weight")
+                        subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
+                        st.metric("Subprime Score", f"{subprime_s:.1f}", help="35% weight - Micro-enterprise assessment")
+                    
+                    # ML Score - 25%
                     with score_cols[2]:
-                        adaptive_s = contributing.get('adaptive_score', scores.get('weighted_score', 0))
-                        st.metric("Weighted Score", f"{adaptive_s:.0f}", help="20% weight")
+                        ml_s = contributing.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
+                        st.metric("ML Score", f"{ml_s:.1f}%" if ml_s else "N/A", help="25% weight - Data-driven probability")
+                    
+                    # Weighted Score - 5% (reduced importance)
                     with score_cols[3]:
-                        mca_s = contributing.get('mca_score', 50)
-                        st.metric("Industry Score", f"{mca_s:.0f}", help="10% weight")
+                        adaptive_s = contributing.get('adaptive_score', scores.get('weighted_score', 0))
+                        st.metric("Weighted", f"{adaptive_s:.0f}", help="5% weight - Traditional thresholds (less predictive)")
                     
                     # Score convergence
                     convergence = ensemble.get('score_convergence', 'Unknown')
