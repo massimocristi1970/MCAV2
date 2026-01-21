@@ -13,6 +13,14 @@ except ImportError:
     SUBPRIME_SCORING_AVAILABLE = False
     SubprimeScoring = None
 
+# Import centralized thresholds
+try:
+    from ..config.scoring_thresholds import get_thresholds
+    THRESHOLDS_AVAILABLE = True
+except ImportError:
+    THRESHOLDS_AVAILABLE = False
+    get_thresholds = None
+
 # Scoring weights for V2 weighted scoring
 WEIGHTS = {
     'Debt Service Coverage Ratio': 19, 'Net Income': 13, 'Operating Margin': 9,
@@ -27,11 +35,69 @@ PENALTIES = {
     'poor_or_no_online_presence': 3, 'uses_generic_email': 1
 }
 
+# Continuous scoring configuration
+# Maps how close to threshold earns partial credit
+CONTINUOUS_SCORING_TIERS = [
+    (1.0, 1.0),    # >= 100% of threshold = full points
+    (0.8, 0.7),    # >= 80% of threshold = 70% of points
+    (0.6, 0.4),    # >= 60% of threshold = 40% of points
+    (0.4, 0.15),   # >= 40% of threshold = 15% of points
+]
+
+
+def _score_continuous(
+    value: float,
+    threshold: float,
+    weight: int,
+    lower_is_better: bool = False
+) -> float:
+    """
+    Calculate continuous score with partial credit.
+    
+    Instead of binary pass/fail, gives partial credit for values
+    approaching the threshold.
+    
+    Args:
+        value: Actual metric value
+        threshold: Target threshold value
+        weight: Maximum points available
+        lower_is_better: True for metrics like volatility
+        
+    Returns:
+        Points earned (0 to weight)
+    """
+    if threshold == 0:
+        return weight if value == 0 else 0
+    
+    if lower_is_better:
+        # For metrics where lower is better (volatility, negative days)
+        # Being at or below threshold = full points
+        # Being higher = partial credit if within reasonable range
+        if value <= threshold:
+            return weight
+        
+        ratio = threshold / value  # How close are we (inverted)
+        for min_ratio, credit_pct in CONTINUOUS_SCORING_TIERS:
+            if ratio >= min_ratio:
+                return weight * credit_pct
+        return 0
+    else:
+        # For metrics where higher is better (DSCR, growth)
+        if value >= threshold:
+            return weight
+        
+        ratio = value / threshold  # How close are we
+        for min_ratio, credit_pct in CONTINUOUS_SCORING_TIERS:
+            if ratio >= min_ratio:
+                return weight * credit_pct
+        return 0
+
 
 def calculate_weighted_scores(
     metrics: Dict[str, Any], 
     params: Dict[str, Any], 
-    industry_thresholds: Dict[str, Any]
+    industry_thresholds: Dict[str, Any],
+    use_continuous: bool = True
 ) -> int:
     """
     Calculate weighted score based on industry thresholds.
@@ -40,32 +106,69 @@ def calculate_weighted_scores(
         metrics: Financial metrics dictionary
         params: Business parameters dictionary
         industry_thresholds: Industry-specific thresholds
+        use_continuous: If True, use continuous scoring with partial credit
         
     Returns:
         Weighted score (0-100)
     """
     weighted_score = 0
     
+    # Metrics where lower values are better
+    lower_is_better_metrics = {
+        'Cash Flow Volatility', 
+        'Average Negative Balance Days per Month', 
+        'Number of Bounced Payments',
+        'Gross Burn Rate'
+    }
+    
     for metric, weight in WEIGHTS.items():
         if metric == 'Company Age (Months)':
-            if params['company_age_months'] >= 6:
-                weighted_score += weight
-        elif metric == 'Directors Score':
-            if params['directors_score'] >= industry_thresholds['Directors Score']:
-                weighted_score += weight
-        elif metric == 'Sector Risk':
-            sector_risk = industry_thresholds['Sector Risk']
-            if sector_risk <= industry_thresholds['Sector Risk']:
-                weighted_score += weight
-        elif metric in metrics:
-            threshold = industry_thresholds.get(metric, 0)
-            # These metrics are "lower is better"
-            if metric in ['Cash Flow Volatility', 'Average Negative Balance Days per Month', 'Number of Bounced Payments']:
-                if metrics[metric] <= threshold:
+            age = params.get('company_age_months', 0)
+            if use_continuous:
+                # Continuous scoring for company age
+                age_threshold = 6  # 6 months minimum
+                if age >= 18:
                     weighted_score += weight
+                elif age >= 12:
+                    weighted_score += weight * 0.8
+                elif age >= age_threshold:
+                    weighted_score += weight * 0.5
+                elif age >= 3:
+                    weighted_score += weight * 0.2
             else:
-                if metrics[metric] >= threshold:
+                if age >= 6:
                     weighted_score += weight
+                    
+        elif metric == 'Directors Score':
+            directors = params.get('directors_score', 0)
+            threshold = industry_thresholds.get('Directors Score', 75)
+            if use_continuous:
+                weighted_score += _score_continuous(directors, threshold, weight, lower_is_better=False)
+            else:
+                if directors >= threshold:
+                    weighted_score += weight
+                    
+        elif metric == 'Sector Risk':
+            sector_risk = industry_thresholds.get('Sector Risk', 0)
+            # Sector risk is pre-determined, binary
+            if sector_risk <= industry_thresholds.get('Sector Risk', 0):
+                weighted_score += weight
+                
+        elif metric in metrics:
+            value = metrics.get(metric, 0)
+            threshold = industry_thresholds.get(metric, 0)
+            lower_is_better = metric in lower_is_better_metrics
+            
+            if use_continuous:
+                weighted_score += _score_continuous(value, threshold, weight, lower_is_better)
+            else:
+                # Original binary scoring
+                if lower_is_better:
+                    if value <= threshold:
+                        weighted_score += weight
+                else:
+                    if value >= threshold:
+                        weighted_score += weight
     
     # Apply penalties
     penalties = 0
@@ -74,7 +177,121 @@ def calculate_weighted_scores(
             penalties += penalty
     
     weighted_score = max(0, weighted_score - penalties)
-    return weighted_score
+    return int(round(weighted_score))
+
+
+def calculate_weighted_scores_detailed(
+    metrics: Dict[str, Any], 
+    params: Dict[str, Any], 
+    industry_thresholds: Dict[str, Any]
+) -> Dict[str, Any]:
+    """
+    Calculate weighted score with detailed breakdown.
+    
+    Args:
+        metrics: Financial metrics dictionary
+        params: Business parameters dictionary
+        industry_thresholds: Industry-specific thresholds
+        
+    Returns:
+        Dictionary with score and detailed breakdown
+    """
+    breakdown = []
+    total_score = 0
+    max_possible = sum(WEIGHTS.values())
+    
+    lower_is_better_metrics = {
+        'Cash Flow Volatility', 
+        'Average Negative Balance Days per Month', 
+        'Number of Bounced Payments',
+        'Gross Burn Rate'
+    }
+    
+    for metric, weight in WEIGHTS.items():
+        entry = {
+            'metric': metric,
+            'weight': weight,
+            'points_earned': 0,
+            'percentage': 0,
+            'status': 'FAIL'
+        }
+        
+        if metric == 'Company Age (Months)':
+            age = params.get('company_age_months', 0)
+            entry['value'] = age
+            entry['threshold'] = 6
+            
+            if age >= 18:
+                entry['points_earned'] = weight
+                entry['percentage'] = 100
+                entry['status'] = 'PASS'
+            elif age >= 12:
+                entry['points_earned'] = weight * 0.8
+                entry['percentage'] = 80
+                entry['status'] = 'PARTIAL'
+            elif age >= 6:
+                entry['points_earned'] = weight * 0.5
+                entry['percentage'] = 50
+                entry['status'] = 'PARTIAL'
+            elif age >= 3:
+                entry['points_earned'] = weight * 0.2
+                entry['percentage'] = 20
+                entry['status'] = 'PARTIAL'
+                
+        elif metric == 'Directors Score':
+            directors = params.get('directors_score', 0)
+            threshold = industry_thresholds.get('Directors Score', 75)
+            entry['value'] = directors
+            entry['threshold'] = threshold
+            
+            points = _score_continuous(directors, threshold, weight, lower_is_better=False)
+            entry['points_earned'] = points
+            entry['percentage'] = (points / weight * 100) if weight > 0 else 0
+            entry['status'] = 'PASS' if points == weight else ('PARTIAL' if points > 0 else 'FAIL')
+            
+        elif metric == 'Sector Risk':
+            sector_risk = industry_thresholds.get('Sector Risk', 0)
+            entry['value'] = sector_risk
+            entry['threshold'] = sector_risk
+            entry['points_earned'] = weight
+            entry['percentage'] = 100
+            entry['status'] = 'PASS'
+            
+        elif metric in metrics:
+            value = metrics.get(metric, 0)
+            threshold = industry_thresholds.get(metric, 0)
+            lower_is_better = metric in lower_is_better_metrics
+            
+            entry['value'] = value
+            entry['threshold'] = threshold
+            entry['lower_is_better'] = lower_is_better
+            
+            points = _score_continuous(value, threshold, weight, lower_is_better)
+            entry['points_earned'] = points
+            entry['percentage'] = (points / weight * 100) if weight > 0 else 0
+            entry['status'] = 'PASS' if points == weight else ('PARTIAL' if points > 0 else 'FAIL')
+        
+        total_score += entry['points_earned']
+        breakdown.append(entry)
+    
+    # Apply penalties
+    penalty_details = []
+    total_penalty = 0
+    for flag, penalty in PENALTIES.items():
+        if params.get(flag, False):
+            total_penalty += penalty
+            penalty_details.append({'flag': flag, 'penalty': penalty})
+    
+    final_score = max(0, total_score - total_penalty)
+    
+    return {
+        'score': int(round(final_score)),
+        'raw_score': round(total_score, 1),
+        'max_possible': max_possible,
+        'penalties_applied': total_penalty,
+        'penalty_details': penalty_details,
+        'breakdown': breakdown
+    }
 
 
 def load_models() -> Tuple[Optional[Any], Optional[Any]]:

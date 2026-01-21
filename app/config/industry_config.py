@@ -406,3 +406,31 @@ LOW_RISK_SECTORS = [
     'Education',
     'Engineering',
     'Estate Agent',
+    'Telecommunications',
+]
+
+HIGH_RISK_SECTORS = [
+    'Restaurants and Cafes',
+    'Bars and Pubs',
+    'Event Planning and Management Firms',
+    'Construction Firms',
+    'Beauty Salons and Spas',
+]
+
+MODERATE_RISK_SECTORS = [
+    'Manufacturing',
+    'Retail',
+    'Food Service',
+    'Tradesman',
+    'Import / Export',
+    'Marketing / Advertising / Design',
+    'Off-Licence Business',
+    'Wholesaler / Distributor',
+    'Auto Repair Shops',
+    'Printing / Publishing',
+    'Recruitment',
+    'Personal Services',
+    'E-Commerce Retailers',
+    'Fitness Centres and Gyms',
+    'Other',
+]
