@@ -2632,8 +2632,11 @@ def main():
                             for r in mca_r:
                                 st.write(f"• {r}")
                             
-                            with st.expander("View MCA Rule Signals"):
-                                st.json(params.get("mca_rule_signals", {}))
+                            # Show MCA signals in a compact format (no nested expander)
+                            mca_signals = params.get("mca_rule_signals", {})
+                            if mca_signals:
+                                st.markdown("**MCA Rule Signals:**")
+                                st.code(str(mca_signals), language="json")
                 else:
                     # Fallback if ensemble not available
                     st.info("Unified ensemble scoring not available. Showing individual scores below.")
