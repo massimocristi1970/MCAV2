@@ -10,8 +10,6 @@ import numpy as np
 from typing import Dict, Any, Tuple, List
 from datetime import datetime
 
-from sklearn import metrics
-
 
 class SubprimeScoring:
     """Scoring system specifically designed for micro enterprise subprime lending with balanced risk assessment."""
@@ -274,20 +272,6 @@ class SubprimeScoring:
             score += self.subprime_weights['Company Age (Months)'] * 0.20
         # Below 3 months gets 0 points
 
-        # COMPANY AGE (2 points) - Minimal weight
-        age_months = params.get('company_age_months', 0)
-        if age_months >= 18:
-            score += self.subprime_weights['Company Age (Months)']
-        elif age_months >= 12:
-            score += self.subprime_weights['Company Age (Months)'] * 0.80
-        elif age_months >= 9:
-            score += self.subprime_weights['Company Age (Months)'] * 0.60
-        elif age_months >= 6:
-            score += self.subprime_weights['Company Age (Months)'] * 0.40
-        elif age_months >= 3:
-            score += self.subprime_weights['Company Age (Months)'] * 0.20
-        # Below 3 months gets 0 points
-
         # Convert to percentage
         return (score / max_possible) * 100
 
@@ -334,8 +318,7 @@ class SubprimeScoring:
 
         # Only penalize excessive negative balance days (above 10)
         if neg_days > 10:
-            penalty += (neg_days - 10) * 1.
-            5
+            penalty += (neg_days - 10) * 1.5
 
         # Only penalize very low DSCR (below 0.8)
         if dscr < 0.8:
