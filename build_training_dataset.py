@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from pathlib import Path
 from datetime import datetime
@@ -6,14 +7,31 @@ import numpy as np
 import pandas as pd
 
 # ============================================================
-# CONFIG (Windows / OneDrive paths for MCA Scorecard)
+# CONFIG - Uses environment variables with fallback defaults
+# Set these environment variables or create a .env file:
+#   TRAINING_OUTCOMES_XLSX - Path to training outcomes Excel file
+#   TRAINING_JSON_ROOT - Directory containing JSON transaction files
+#   TRAINING_OUTPUT_DIR - Directory for output files (optional)
 # ============================================================
-OUTCOMES_XLSX = r"C:\Users\massi\OneDrive - Savvy Loan Products Ltd\Merchant Cash Advance (MCA)\Scorecard Development\training_dataset.xlsx"
 
-JSON_ROOT = r"C:\Users\massi\OneDrive - Savvy Loan Products Ltd\Merchant Cash Advance (MCA)\Scorecard Development\JsonExport"
+# Get base directory from environment or use current directory
+_BASE_DIR = os.environ.get('TRAINING_DATA_DIR', os.getcwd())
 
-OUTPUT_CSV = r"C:\Users\massi\OneDrive - Savvy Loan Products Ltd\Merchant Cash Advance (MCA)\Scorecard Development\mca_training_dataset.csv"
-OUTPUT_XLSX = r"C:\Users\massi\OneDrive - Savvy Loan Products Ltd\Merchant Cash Advance (MCA)\Scorecard Development\mca_training_dataset.xlsx"
+# Input paths - can be overridden with environment variables
+OUTCOMES_XLSX = os.environ.get(
+    'TRAINING_OUTCOMES_XLSX',
+    os.path.join(_BASE_DIR, 'data', 'training_dataset.xlsx')
+)
+
+JSON_ROOT = os.environ.get(
+    'TRAINING_JSON_ROOT',
+    os.path.join(_BASE_DIR, 'data', 'JsonExport')
+)
+
+# Output paths
+_OUTPUT_DIR = os.environ.get('TRAINING_OUTPUT_DIR', os.path.join(_BASE_DIR, 'data'))
+OUTPUT_CSV = os.path.join(_OUTPUT_DIR, 'mca_training_dataset.csv')
+OUTPUT_XLSX = os.path.join(_OUTPUT_DIR, 'mca_training_dataset.xlsx')
 
 
 # ============================================================

@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  business-finance-app:
+    build: .
+    container_name: business-finance-scorecard
+    ports:
+      - "8501:8501"
+    environment:
+      # Application settings
+      - APP_NAME=Business Finance Scorecard
+      - APP_VERSION=2.0.0
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      
+      # Plaid API (set your actual values)
+      - PLAID_CLIENT_ID=${PLAID_CLIENT_ID}
+      - PLAID_SECRET=${PLAID_SECRET}
+      - PLAID_ENV=production
+      
+      # Cache settings
+      - CACHE_TTL=3600
+      
+      # Security
+      - SECRET_KEY=${SECRET_KEY}
+      
+      # Database (SQLite for simplicity)
+      - DATABASE_URL=sqlite:///./data/business_finance.db
+      
+      # Model paths
+      - MODEL_PATH=app/models/model_artifacts/model.pkl
+      - SCALER_PATH=app/models/model_artifacts/scaler.pkl
+    
+    volumes:
+      # Persist data and logs
+      - ./data:/app/data
+      - ./logs:/app/logs
+      # Mount model files
+      - ./model.pkl:/app/app/models/model_artifacts/model.pkl
+      - ./scaler.pkl:/app/app/models/model_artifacts/scaler.pkl
+    
+    restart: unless-stopped
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Redis for advanced caching
+  redis:
+    image: redis:7-alpine
+    container_name: business-finance-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    profiles:
+      - full
+
+  # Optional: PostgreSQL for production database
+  postgres:
+    image: postgres:15-alpine
+    container_name: business-finance-db
+    environment:
+      - POSTGRES_DB=business_finance
+      - POSTGRES_USER=app_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    profiles:
+      - full
+
+volumes:
+  redis_data:
+  postgres_data:
+
+networks:
+  default:
+    name: business-finance-network
