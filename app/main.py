@@ -2505,165 +2505,138 @@ def main():
                 period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
                 st.header(f"Financial Dashboard: {company_name} ({period_label})")
 
-                # ==================================================
-                # MCA Rule-Based Decision (NEW – transparent layer)
-                # ==================================================
-                if "mca_rule_decision" in params:
-                    st.markdown("---")
-                    st.subheader("📌 MCA Rule Decision (Cashflow Consistency)")
-
-                    mca_d = params.get("mca_rule_decision", "UNKNOWN")
-                    mca_s = params.get("mca_rule_score", None)
-                    mca_r = params.get("mca_rule_reasons", [])
-                    mca_sig = params.get("mca_rule_signals", {})
-
-                    if mca_d == "APPROVE":
-                        st.success(f"Decision: {mca_d}")
-                    elif mca_d == "REFER":
-                        st.warning(f"Decision: {mca_d}")
-                    elif mca_d == "DECLINE":
-                        st.error(f"Decision: {mca_d}")
-                    else:
-                        st.info(f"Decision: {mca_d}")
-
-                    if mca_s is not None:
-                        st.write(f"**Rule Score:** {mca_s}/100")
-
-                    st.write("**Reasons:**")
-                    for r in mca_r:
-                        st.write(f"- {r}")
-
-                    with st.expander("Signals used by MCA rules"):
-                        st.json(mca_sig)
-
-                # ==========================
-                # MI Summary (Decision Stack)
-                # ==========================
-                st.subheader("📌 Decision Stack Summary")
-
-                mi_row = {
-                    "FINAL Decision": scores.get("final_decision", "N/A"),
-                    "MCA Rule": params.get("mca_rule_decision", "N/A"),
-                    "Subprime Recommendation": scores.get("subprime_recommendation", "N/A"),
-                    "Subprime Tier": scores.get("subprime_tier", "N/A"),
-                    "V2 Weighted Score": scores.get("v2_weighted_score", "N/A"),
-                    "ML Score (%)": scores.get("adjusted_ml_score", scores.get("ml_score", "N/A")),
-                    "Requested Loan (£)": params.get("requested_loan", "N/A"),
-                }
-
-                st.dataframe(pd.DataFrame([mi_row]), use_container_width=True)
-
-                # Key Scoring Methods
-                col1, col2, col3 = st.columns(3)  # Change from 4 to 3 columns
-
-                with col1:
-                    subprime_score = scores.get('subprime_score', 0)
-                    tier = scores.get('subprime_tier', 'N/A')
-                    tier_colors = {
-                        "Tier 1": "🟢", "Tier 2": "🟡", "Tier 3": "🟠", 
-                        "Tier 4": "🔴", "Decline": "⚫"
-                    }
-                    st.metric(
-                        f"Subprime Score",
-                        f"{subprime_score:.1f}/100",
-                        delta=f"{tier_colors.get(tier, '⚪')} {tier}",
-                        help="Primary score for subprime lending decisions"
-                    )
-
-                with col2:
-                    st.metric(
-                        "🏛️ V2 Weighted", 
-                        f"{scores['weighted_score']:.0f}/100",
-                        help="Binary threshold scoring system"
-                    )
-
-                with col3:
-                    if scores.get('adjusted_ml_score'):
-                        raw_ml = scores.get('ml_score', 0)
-                        adjusted_ml = scores['adjusted_ml_score']
-                        delta = adjusted_ml - raw_ml
-                        st.metric(
-                            "🤖 Adjusted ML", 
-                            f"{adjusted_ml:.1f}%", 
-                            delta=f"+{delta:.1f}",
-                            help="ML model (future use - not for decisions yet)"
-                        )
-                    else:
-                        st.metric("Adjusted ML", "N/A")
-                        
-                st.info("""
-                **Scoring Decision Hierarchy:**
-                1. **Subprime Score** - Primary lending decision
-                2. **V2 Weighted** - Secondary validation 
-                3. **ML Score** - Future use only (monitoring)
-                """)
-
-                # Score improvement analysis
-                st.markdown("### Primary Scoring Methods")
-
-                # Create three columns for the three scoring methods
-                method_col1, method_col2, method_col3 = st.columns(3)
-
-                with method_col1:
-                    st.markdown("""
-                    **Subprime Score (PRIMARY):**
-                    - ✅ Designed for growth businesses with temporary losses
-                    - ✅ Focuses on ability to pay (DSCR) and growth trajectory
-                    - ✅ Industry-specific risk adjustments
-                    - ✅ **Primary recommendation for lending decisions**
-                    - ✅ Best discrimination in your historical data
-                    """)
-
-                with method_col2:
-                    st.markdown("""
-                    ** V2 Weighted Score (SECONDARY):**
-                    - ✅ Simple and transparent binary thresholds
-                    - ✅ Easy to understand and explain
-                    - ✅ Good discrimination between good/bad loans
-                    - ✅ Validation tool for subprime decisions
-                    - ⚠️ Can be harsh on borderline cases
-                    """)
-
-                with method_col3:
-                    st.markdown("""
-                    **Adjusted ML Score (FUTURE):**
-                    - ⚠️ **Not ready for lending decisions**
-                    - ⚠️ Insufficient training data (need 100+ loans)
-                    - ✅ Growth business adjustments included
-                    - ✅ Future-proofing for when dataset grows
-                    - 📊 Currently for monitoring/comparison only
-                    """)
+                # ============================================
+                # 🎯 UNIFIED RECOMMENDATION (TOP OF DASHBOARD)
+                # ============================================
+                ensemble = scores.get('ensemble')
+                if ensemble:
+                    decision = ensemble.get('decision', 'REFER')
+                    combined_score = ensemble.get('combined_score', 0)
+                    confidence = ensemble.get('confidence', 0)
                     
-                # Detailed breakdown for V2 Weighted scoring
-                with st.expander("🔍 **Detailed V2 Weighted Scoring Breakdown**", expanded=False):
-                    st.markdown("**Component Analysis:**")
-        
-                    if scores.get('score_breakdown'):
-                        breakdown_data = []
-                        for metric, data in scores['score_breakdown'].items():
-                            status = '✅ Pass' if data['meets'] else '❌ Fail'
-                            breakdown_data.append({
-                                'Metric': metric,
-                                'Actual Value': f"{data['actual']:.3f}",
-                                'Meets Threshold': status
-                            })
-            
-                        if breakdown_data:
-                            breakdown_df = pd.DataFrame(breakdown_data)
-                            st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
-            
-                        # Summary statistics
-                        total_metrics = len(scores.get('score_breakdown', {}))
-                        passed_metrics = sum(1 for data in scores.get('score_breakdown', {}).values() if data.get('meets', False))
-            
-                        st.markdown(f"""
-                        **V2 Weighted Summary:**
-                        - **Metrics Passed**: {passed_metrics}/{total_metrics}
-                        - **Pass Rate**: {(passed_metrics/total_metrics)*100:.1f}% of thresholds met
-                        - **Final Score**: {scores['weighted_score']:.0f}/100
+                    # Main recommendation display with prominent styling
+                    if decision == 'APPROVE':
+                        st.success(f"""
+                        ## 🎯 Recommendation: ✅ APPROVE
+                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+                        
+                        *{ensemble.get('primary_reason', '')}*
                         """)
+                    elif decision == 'CONDITIONAL_APPROVE':
+                        st.info(f"""
+                        ## 🎯 Recommendation: ℹ️ CONDITIONAL APPROVE
+                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+                        
+                        *{ensemble.get('primary_reason', '')}*
+                        """)
+                    elif decision == 'REFER':
+                        st.warning(f"""
+                        ## 🎯 Recommendation: ⚠️ REFER FOR REVIEW
+                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+                        
+                        *{ensemble.get('primary_reason', '')}*
+                        """)
+                    elif decision == 'SENIOR_REVIEW':
+                        st.warning(f"""
+                        ## 🎯 Recommendation: 🔍 SENIOR REVIEW REQUIRED
+                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+                        
+                        *{ensemble.get('primary_reason', '')}*
+                        """)
+                    else:  # DECLINE
+                        st.error(f"""
+                        ## 🎯 Recommendation: ❌ DECLINE
+                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+                        
+                        *{ensemble.get('primary_reason', '')}*
+                        """)
+                    
+                    # Contributing scores in compact row
+                    contributing = ensemble.get('contributing_scores', {})
+                    score_cols = st.columns(4)
+                    
+                    with score_cols[0]:
+                        mca_s = contributing.get('mca_score', params.get('mca_rule_score', 50))
+                        mca_d = params.get('mca_rule_decision', 'REFER')
+                        st.metric("MCA Rule (35%)", f"{mca_s:.0f}", delta=mca_d)
+                    
+                    with score_cols[1]:
+                        subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
+                        st.metric("Subprime (35%)", f"{subprime_s:.1f}")
+                    
+                    with score_cols[2]:
+                        ml_s = contributing.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
+                        st.metric("ML Score (25%)", f"{ml_s:.1f}%" if ml_s else "N/A")
+                    
+                    with score_cols[3]:
+                        adaptive_s = contributing.get('adaptive_score', scores.get('weighted_score', 0))
+                        st.metric("Weighted (5%)", f"{adaptive_s:.0f}")
+                    
+                    # Score convergence indicator
+                    convergence = ensemble.get('score_convergence', 'Unknown')
+                    if 'High' in convergence:
+                        st.success(f"📊 **Score Convergence:** {convergence} - All scoring methods agree")
+                    elif 'Good' in convergence:
+                        st.info(f"📊 **Score Convergence:** {convergence}")
+                    elif 'Moderate' in convergence:
+                        st.warning(f"📊 **Score Convergence:** {convergence} - Some disagreement between methods")
                     else:
-                        st.info("No detailed breakdown available for V2 Weighted scoring")
+                        st.error(f"📊 **Score Convergence:** {convergence} - Significant disagreement")
+                    
+                    # Pricing and details in expander
+                    with st.expander("📋 Pricing Guidance & Risk Analysis", expanded=False):
+                        pricing = ensemble.get('pricing_guidance', {})
+                        if pricing and pricing.get('factor_rate') != 'N/A':
+                            pricing_cols = st.columns(4)
+                            with pricing_cols[0]:
+                                st.write(f"**Factor Rate:** {pricing.get('factor_rate', 'N/A')}")
+                            with pricing_cols[1]:
+                                st.write(f"**Max Term:** {pricing.get('max_term', 'N/A')}")
+                            with pricing_cols[2]:
+                                st.write(f"**Max Amount:** {pricing.get('max_multiple', 'N/A')}")
+                            with pricing_cols[3]:
+                                st.write(f"**Collection:** {pricing.get('collection_frequency', 'N/A')}")
+                        
+                        st.markdown("---")
+                        risk_col, positive_col = st.columns(2)
+                        
+                        with risk_col:
+                            st.markdown("**⚠️ Risk Factors:**")
+                            risk_factors = ensemble.get('risk_factors', [])
+                            if risk_factors:
+                                for rf in risk_factors:
+                                    st.write(f"• {rf}")
+                            else:
+                                st.write("• No significant risk factors identified")
+                        
+                        with positive_col:
+                            st.markdown("**✅ Positive Factors:**")
+                            positive_factors = ensemble.get('positive_factors', [])
+                            if positive_factors:
+                                for pf in positive_factors:
+                                    st.write(f"• {pf}")
+                            else:
+                                st.write("• No notable positive factors")
+                        
+                        st.markdown("---")
+                        st.markdown("**📝 Recommendations:**")
+                        recommendations = ensemble.get('recommendations', [])
+                        for rec in recommendations:
+                            st.write(f"• {rec}")
+                        
+                        # MCA Rule signals (moved from standalone section)
+                        if "mca_rule_decision" in params:
+                            st.markdown("---")
+                            st.markdown("**MCA Rule Analysis:**")
+                            mca_r = params.get("mca_rule_reasons", [])
+                            for r in mca_r:
+                                st.write(f"• {r}")
+                            
+                            with st.expander("View MCA Rule Signals"):
+                                st.json(params.get("mca_rule_signals", {}))
+                else:
+                    # Fallback if ensemble not available
+                    st.info("Unified ensemble scoring not available. Showing individual scores below.")
 
                 # Revenue Insights
                 st.markdown("---")
@@ -2869,206 +2842,82 @@ def main():
                                     delta=f"£{delta_revenue:+,.0f} difference")
                 
                 # ============================================
-                # ENSEMBLE RECOMMENDATION (UNIFIED DECISION)
+                # 📊 DETAILED SCORING ANALYSIS (Consolidated)
                 # ============================================
                 st.markdown("---")
-                st.header("🎯 Unified Recommendation")
-                
-                ensemble = scores.get('ensemble')
-                if ensemble:
-                    # Main recommendation display
-                    decision = ensemble.get('decision', 'REFER')
-                    combined_score = ensemble.get('combined_score', 0)
-                    confidence = ensemble.get('confidence', 0)
-                    
-                    # Decision color coding
-                    if decision == 'APPROVE':
-                        st.success(f"""
-                        ### ✅ APPROVE
-                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
-                        
-                        *{ensemble.get('primary_reason', '')}*
-                        """)
-                    elif decision == 'CONDITIONAL_APPROVE':
-                        st.info(f"""
-                        ### ℹ️ CONDITIONAL APPROVE
-                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
-                        
-                        *{ensemble.get('primary_reason', '')}*
-                        """)
-                    elif decision == 'REFER':
-                        st.warning(f"""
-                        ### ⚠️ REFER FOR REVIEW
-                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
-                        
-                        *{ensemble.get('primary_reason', '')}*
-                        """)
-                    elif decision == 'SENIOR_REVIEW':
-                        st.warning(f"""
-                        ### 🔍 SENIOR REVIEW REQUIRED
-                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
-                        
-                        *{ensemble.get('primary_reason', '')}*
-                        """)
-                    else:  # DECLINE
-                        st.error(f"""
-                        ### ❌ DECLINE
-                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
-                        
-                        *{ensemble.get('primary_reason', '')}*
-                        """)
-                    
-                    # Contributing scores breakdown
-                    # MCA Rule is most important - based on transaction consistency
-                    st.markdown("#### Score Breakdown (by Predictive Importance)")
-                    score_cols = st.columns(4)
-                    
-                    contributing = ensemble.get('contributing_scores', {})
-                    
-                    # MCA Rule Score - 35% (Transaction Consistency)
-                    with score_cols[0]:
-                        mca_s = contributing.get('mca_score', params.get('mca_rule_score', 50))
-                        mca_d = params.get('mca_rule_decision', 'REFER')
-                        st.metric(
-                            "MCA Rule", 
-                            f"{mca_s:.0f}", 
-                            delta=mca_d,
-                            help="35% weight - Transaction consistency (inflow days, gaps, variability)"
-                        )
-                    
-                    # Subprime Score - 35%
-                    with score_cols[1]:
-                        subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
-                        st.metric("Subprime Score", f"{subprime_s:.1f}", help="35% weight - Micro-enterprise assessment")
-                    
-                    # ML Score - 25%
-                    with score_cols[2]:
-                        ml_s = contributing.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
-                        st.metric("ML Score", f"{ml_s:.1f}%" if ml_s else "N/A", help="25% weight - Data-driven probability")
-                    
-                    # Weighted Score - 5% (reduced importance)
-                    with score_cols[3]:
-                        adaptive_s = contributing.get('adaptive_score', scores.get('weighted_score', 0))
-                        st.metric("Weighted", f"{adaptive_s:.0f}", help="5% weight - Traditional thresholds (less predictive)")
-                    
-                    # Score convergence
-                    convergence = ensemble.get('score_convergence', 'Unknown')
-                    if 'High' in convergence:
-                        st.success(f"📊 **Score Convergence:** {convergence} - All scoring methods agree")
-                    elif 'Good' in convergence:
-                        st.info(f"📊 **Score Convergence:** {convergence}")
-                    elif 'Moderate' in convergence:
-                        st.warning(f"📊 **Score Convergence:** {convergence} - Some disagreement between methods")
+                with st.expander("📊 Detailed Scoring Analysis", expanded=False):
+                    # Subprime scoring overview
+                    subprime_col1, subprime_col2, subprime_col3 = st.columns(3)
+
+                    with subprime_col1:
+                        score = scores['subprime_score']
+                        if score >= 75:
+                            st.success(f"✅ **Excellent Candidate**\nScore: {score:.1f}/100")
+                        elif score >= 60:
+                            st.info(f"ℹ️ **Good Candidate**\nScore: {score:.1f}/100") 
+                        elif score >= 45:
+                            st.warning(f"⚠️ **Conditional**\nScore: {score:.1f}/100")
+                        elif score >= 30:
+                            st.warning(f"⚠️ **High Monitoring**\nScore: {score:.1f}/100")    
+                        else:
+                            st.error(f"❌ **High Risk**\nScore: {score:.1f}/100")
+
+                    with subprime_col2:
+                        st.write("**Pricing Guidance:**")
+                        pricing = scores['subprime_pricing']
+                        for key, value in pricing.items():
+                            if key in ['suggested_rate', 'max_loan_multiple', 'term_range']:
+                                st.write(f"• **{key.replace('_', ' ').title()}**: {value}")
+
+                    with subprime_col3:
+                        st.write("**Monitoring:**")
+                        monitoring = pricing.get('monitoring', 'Standard reviews')
+                        approval_prob = pricing.get('approval_probability', 'Unknown')
+                        st.write(f"• {monitoring}")
+                        st.write(f"• Approval: {approval_prob}")
+
+                    # Subprime recommendation
+                    recommendation = scores['subprime_recommendation']
+                    if "APPROVE" in recommendation:
+                        st.success(f"**Subprime Recommendation**: {recommendation}")
+                    elif "CONDITIONAL" in recommendation:
+                        st.warning(f"**Subprime Recommendation**: {recommendation}")
+                    elif "SENIOR REVIEW" in recommendation:
+                        st.info(f"**Subprime Recommendation**: {recommendation}")
                     else:
-                        st.error(f"📊 **Score Convergence:** {convergence} - Significant disagreement")
+                        st.error(f"**Subprime Recommendation**: {recommendation}")
+
+                    # V2 Weighted Breakdown
+                    st.markdown("---")
+                    st.markdown("**V2 Weighted Scoring Breakdown:**")
+                    if scores.get('score_breakdown'):
+                        breakdown_data = []
+                        for metric, data in scores['score_breakdown'].items():
+                            status = '✅ Pass' if data['meets'] else '❌ Fail'
+                            breakdown_data.append({
+                                'Metric': metric,
+                                'Actual': f"{data['actual']:.3f}",
+                                'Status': status
+                            })
+                        if breakdown_data:
+                            breakdown_df = pd.DataFrame(breakdown_data)
+                            st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
                     
-                    # Pricing guidance
-                    pricing = ensemble.get('pricing_guidance', {})
-                    if pricing and pricing.get('factor_rate') != 'N/A':
-                        st.markdown("#### 💰 Pricing Guidance")
-                        pricing_cols = st.columns(4)
-                        with pricing_cols[0]:
-                            st.write(f"**Factor Rate:** {pricing.get('factor_rate', 'N/A')}")
-                        with pricing_cols[1]:
-                            st.write(f"**Max Term:** {pricing.get('max_term', 'N/A')}")
-                        with pricing_cols[2]:
-                            st.write(f"**Max Amount:** {pricing.get('max_multiple', 'N/A')}")
-                        with pricing_cols[3]:
-                            st.write(f"**Collection:** {pricing.get('collection_frequency', 'N/A')}")
-                    
-                    # Risk factors and recommendations in expander
-                    with st.expander("📋 Detailed Analysis", expanded=False):
-                        col1, col2 = st.columns(2)
-                        
-                        with col1:
-                            st.markdown("**⚠️ Risk Factors:**")
-                            risk_factors = ensemble.get('risk_factors', [])
-                            if risk_factors:
-                                for rf in risk_factors:
-                                    st.write(f"• {rf}")
-                            else:
-                                st.write("• No significant risk factors identified")
-                        
-                        with col2:
-                            st.markdown("**✅ Positive Factors:**")
-                            positive_factors = ensemble.get('positive_factors', [])
-                            if positive_factors:
-                                for pf in positive_factors:
-                                    st.write(f"• {pf}")
-                            else:
-                                st.write("• No notable positive factors")
-                        
-                        st.markdown("**📝 Recommendations:**")
-                        recommendations = ensemble.get('recommendations', [])
-                        for rec in recommendations:
-                            st.write(f"• {rec}")
-                else:
-                    st.info("Ensemble scoring not available. Using individual scoring systems below.")
-
-                # NEW: Subprime Lending Analysis Section (kept for detailed breakdown)
-                st.markdown("---")
-                st.subheader("📊 Detailed Scoring Analysis")
-
-                # Subprime scoring overview
-                subprime_col1, subprime_col2, subprime_col3 = st.columns(3)
-
-                with subprime_col1:
-                    score = scores['subprime_score']
-                    if score >= 75:
-                        st.success(f"✅ **Excellent Subprime Candidate**\nScore: {score:.1f}/100")
-                    elif score >= 60:
-                        st.info(f"ℹ️ **Good Subprime Candidate**\nScore: {score:.1f}/100") 
-                    elif score >= 45:
-                        st.warning(f"⚠️ **Conditional Approval**\nScore: {score:.1f}/100")
-                    elif score >= 30:
-                        st.warning(f"⚠️ **Enhanced Monitoring Required**\nScore: {score:.1f}/100")    
-                    else:
-                        st.error(f"❌ **High Risk - Review Required**\nScore: {score:.1f}/100")
-
-                with subprime_col2:
-                    st.write("**Pricing Guidance:**")
-                    pricing = scores['subprime_pricing']
-                    for key, value in pricing.items():
-                        if key in ['suggested_rate', 'max_loan_multiple', 'term_range']:
-                            st.write(f"• **{key.replace('_', ' ').title()}**: {value}")
-
-                with subprime_col3:
-                    st.write("**Monitoring Requirements:**")
-                    monitoring = pricing.get('monitoring', 'Standard reviews')
-                    approval_prob = pricing.get('approval_probability', 'Unknown')
-                    st.write(f"• **Monitoring**: {monitoring}")
-                    st.write(f"• **Approval Probability**: {approval_prob}")
-
-                # Subprime recommendation
-                st.markdown("### Subprime Lending Recommendation")
-                recommendation = scores['subprime_recommendation']
-                if "APPROVE" in recommendation:
-                    st.success(f"**Recommendation**: {recommendation}")
-                elif "CONDITIONAL" in recommendation:
-                    st.warning(f"**Recommendation**: {recommendation}")
-                elif "SENIOR REVIEW" in recommendation:
-                    st.info(f"**Recommendation**: {recommendation}")
-                else:
-                    st.error(f"**Recommendation**: {recommendation}")
-
-                # Detailed subprime breakdown
-                with st.expander("🔍 **Detailed Subprime Scoring Breakdown**", expanded=False):
-                    st.write("**Scoring Components:**")
+                    # Subprime breakdown
+                    st.markdown("---")
+                    st.markdown("**Subprime Scoring Components:**")
                     for line in scores['subprime_breakdown']:
                         st.write(f"• {line}")
-                
-                # NEW: Comprehensive Score Diagnostics
-                if scores.get('diagnostics'):
-                    with st.expander("**Score Diagnostics - Detailed Analysis**", expanded=False):
+                    
+                    # Score Diagnostics
+                    if scores.get('diagnostics'):
+                        st.markdown("---")
+                        st.markdown("**📈 Metric Performance:**")
                         diagnostics = scores['diagnostics']
                         
-                        st.markdown("### Metric Performance Summary")
-                        
-                        # Create metric breakdown table
                         if diagnostics.get('metric_breakdown'):
                             metric_data = []
                             for metric in diagnostics['metric_breakdown']:
-                                # Format actual value based on metric type
                                 actual = metric['actual_value']
                                 if 'Ratio' in metric['metric'] or 'DSCR' in metric['metric']:
                                     actual_str = f"{actual:.2f}"
@@ -3085,7 +2934,6 @@ def main():
                                 else:
                                     actual_str = f"{actual:.2f}"
                                 
-                                # Format threshold based on metric type
                                 threshold = metric['threshold_full_points']
                                 if 'Ratio' in metric['metric'] or 'DSCR' in metric['metric']:
                                     threshold_str = f"{threshold:.2f}"
@@ -3102,7 +2950,6 @@ def main():
                                 else:
                                     threshold_str = f"{threshold:.2f}"
                                 
-                                # Status emoji
                                 status_emoji = {'PASS': '✅', 'PARTIAL': '🟡', 'FAIL': '❌'}
                                 
                                 metric_data.append({
@@ -3110,171 +2957,53 @@ def main():
                                     'Actual': actual_str,
                                     'Target': threshold_str,
                                     'Points': f"{metric['points_earned']:.1f}/{metric['points_possible']}",
-                                    '%': f"{metric['percentage']:.0f}%",
-                                    'Status': f"{status_emoji.get(metric['status'], '⚪')} {metric['status']}"
+                                    'Status': f"{status_emoji.get(metric['status'], '⚪')}"
                                 })
                             
                             if metric_data:
                                 df_metrics = pd.DataFrame(metric_data)
                                 st.dataframe(df_metrics, use_container_width=True, hide_index=True)
                         
-                        # Top Negative Factors
-                        if diagnostics.get('top_negative_factors'):
-                            st.markdown("### 🔴 Top Factors Hurting Your Score")
-                            for i, factor in enumerate(diagnostics['top_negative_factors'], 1):
-                                st.write(f"**{i}. {factor['metric']}**: Lost {factor['points_lost']:.1f} points")
-                                st.write(f"   💡 {factor['suggestion']}")
-                                st.write("")
+                        # Key factors in columns
+                        if diagnostics.get('top_negative_factors') or diagnostics.get('top_positive_factors'):
+                            neg_col, pos_col = st.columns(2)
+                            
+                            with neg_col:
+                                if diagnostics.get('top_negative_factors'):
+                                    st.markdown("**🔴 Top Risk Factors:**")
+                                    for factor in diagnostics['top_negative_factors'][:3]:
+                                        st.write(f"• {factor['metric']}: -{factor['points_lost']:.1f} pts")
+                            
+                            with pos_col:
+                                if diagnostics.get('top_positive_factors'):
+                                    st.markdown("**🟢 Top Strengths:**")
+                                    for factor in diagnostics['top_positive_factors'][:3]:
+                                        st.write(f"• {factor['metric']}: +{factor['points_earned']:.1f} pts")
                         
-                        # Top Positive Factors
-                        if diagnostics.get('top_positive_factors'):
-                            st.markdown("### 🟢 Top Factors Helping Your Score")
-                            for i, factor in enumerate(diagnostics['top_positive_factors'], 1):
-                                st.write(f"**{i}. {factor['metric']}**: {factor['points_earned']:.1f} points")
-                                st.write(f"   ✨ {factor['status']}")
-                                st.write("")
-                        
-                        # Threshold Failures (if any)
-                        if diagnostics.get('threshold_failures'):
-                            st.markdown("### ⚠️ Critical Threshold Failures")
-                            for failure in diagnostics['threshold_failures']:
-                                st.error(f"**{failure['metric']}**: {failure['actual']} (needs {failure['required_minimum']}+) - {failure['impact']}")
-                        
-                        # Improvement Suggestions
+                        # Improvement suggestions
                         if diagnostics.get('improvement_suggestions'):
-                            st.markdown("### 💡 Improvement Suggestions")
-                            for suggestion in diagnostics['improvement_suggestions']:
+                            st.markdown("**💡 Improvements:**")
+                            for suggestion in diagnostics['improvement_suggestions'][:3]:
                                 st.info(f"• {suggestion}")
-                        
-                def display_ml_validation_section(scores):
-                    """Display ML validation results in dashboard"""
-    
+                    
+                    # ML Validation (if available)
                     ml_validation = scores.get('ml_validation', {})
-    
-                    if not ml_validation.get('available', False):
-                        return
-    
-                    st.markdown("---")
-                    st.subheader("ML Score Reliability Assessment")
-    
-                    col1, col2, col3 = st.columns(3)
-    
-                    with col1:
-                        quality = ml_validation.get('data_quality_score', 0)
-                        if quality >= 90:
-                            st.success(f"✅ Excellent Data Quality\n{quality}/100")
-                        elif quality >= 70:
-                            st.warning(f"⚠️ Good Data Quality\n{quality}/100")
-                        else:
-                            st.error(f"❌ Poor Data Quality\n{quality}/100")
-    
-                    with col2:
-                        confidence = ml_validation.get('ml_confidence', 'Unknown')
-                        confidence_icons = {'High': '🟢', 'Moderate': '🟡', 'Low': '🟠', 'Very Low': '🔴'}
-                        icon = confidence_icons.get(confidence, '⚪')
-                        st.metric("ML Confidence", f"{icon} {confidence}")
-    
-                    with col3:
-                        outliers = ml_validation.get('outlier_count', 0)
-                        if outliers <= 1:
-                            st.success(f"✅ Typical Profile\n{outliers} unusual metrics")
-                        elif outliers <= 3:
-                            st.warning(f"⚠️ Some Differences\n{outliers} unusual metrics")
-                        else:
-                            st.error(f"❌ Many Differences\n{outliers} unusual metrics")
-    
-                    # Interpretation
-                    if confidence == 'High':
-                        st.success("✅ **High Reliability**: ML score is highly trustworthy for this business profile")
-                    elif confidence == 'Moderate':
-                        st.info("ℹ️ **Moderate Reliability**: ML score is reasonably reliable")
-                    else:
-                        st.warning("⚠️ **Low Reliability**: Rely more on subprime and weighted scores")        
-
-                # Score comparison for subprime context
-                st.markdown("### All Scoring Methods Comparison (Subprime Context)")
-
-                comparison_col1, comparison_col2 = st.columns(2)
-
-                with comparison_col1:
-                    # Create comparison chart
-                    fig_subprime_comparison = go.Figure()
-        
-                    score_data = {
-                        'V2 Weighted': scores['weighted_score'],
-                        'ML Probability': scores['ml_score'] if scores['ml_score'] else 0,
-                        'Subprime Optimized': scores['subprime_score']
-                    }
-        
-                    colors = ['#1f77b4', '#d62728', '#2ca02c']
-        
-                    fig_subprime_comparison.add_trace(go.Bar(
-                        x=list(score_data.keys()),
-                        y=list(score_data.values()),
-                        marker_color=colors,
-                        text=[f"{v:.1f}%" if k == "ML Probability" else f"{v:.1f}" for k, v in score_data.items()],
-                        textposition='outside'
-                    ))
-        
-                    fig_subprime_comparison.update_layout(
-                        title="Score Comparison (Subprime Lending Context)",
-                        yaxis_title="Score",
-                        showlegend=False,
-                        height=400,
-                        yaxis=dict(range=[0, 100])
-                    )
-        
-                    st.plotly_chart(fig_subprime_comparison, use_container_width=True, key="subprime_comparison_chart")
-
-                with comparison_col2:
-                    st.write("**Interpretation for Subprime Lending:**")
-                    
-                    # ML Score interpretation for subprime
-                    ml_score = scores['ml_score'] if scores['ml_score'] else 0
-                    if ml_score >= 25:
-                        ml_interpretation = "🟢 Excellent for subprime"
-                    elif ml_score >= 15:
-                        ml_interpretation = "🟡 Good for subprime"
-                    elif ml_score >= 8:
-                        ml_interpretation = "🟠 Acceptable for subprime"
-                    elif ml_score >= 5:
-                        ml_interpretation = "🔴 High-risk subprime"
-                    else:
-                        ml_interpretation = "⚫ Too risky even for subprime"
-                    
-                    ml_score_display = f"{ml_score:.1f}%" if ml_score is not None else "N/A"
-                    st.write(f"• **ML Model ({ml_score_display})**: {ml_interpretation}")
-                    
-                    # Subprime score interpretation
-                    subprime_score = scores['subprime_score']
-                    if subprime_score >= 65:
-                        subprime_interpretation = "🟢 Premium subprime candidate"
-                    elif subprime_score >= 50:
-                        subprime_interpretation = "🟡 Standard subprime candidate"
-                    elif subprime_score >= 35:
-                        subprime_interpretation = "🟠 High-risk but acceptable"
-                    else:
-                        subprime_interpretation = "🔴 Decline recommended"
-                    
-                    subprime_score_display = f"{subprime_score:.1f}" if subprime_score is not None else "N/A"
-                    st.write(f"• **Subprime Score ({subprime_score_display})**: {subprime_interpretation}")
-                    
-                    # Score convergence analysis
-                    scores_list = [scores['weighted_score'], ml_score, subprime_score]
-                    score_range = max(scores_list) - min(scores_list)
-                    
-                    if score_range <= 15:
-                        convergence = "🟢 High convergence - all methods agree"
-                    elif score_range <= 30:
-                        convergence = "🟡 Moderate convergence - some disagreement"
-                    else:
-                        convergence = "🔴 Low convergence - significant disagreement"
-                    
-                    st.write(f"• **Score Convergence**: {convergence}")
-                    score_range_display = f"{score_range:.1f}" if score_range is not None else "N/A"
-                    st.write(f"• **Score Range**: {score_range_display} points")
-                    
-                display_ml_validation_section(scores)
+                    if ml_validation.get('available', False):
+                        st.markdown("---")
+                        st.markdown("**🤖 ML Score Reliability:**")
+                        ml_col1, ml_col2, ml_col3 = st.columns(3)
+                        
+                        with ml_col1:
+                            quality = ml_validation.get('data_quality_score', 0)
+                            st.metric("Data Quality", f"{quality}/100")
+                        
+                        with ml_col2:
+                            confidence = ml_validation.get('ml_confidence', 'Unknown')
+                            st.metric("ML Confidence", confidence)
+                        
+                        with ml_col3:
+                            outliers = ml_validation.get('outlier_count', 0)
+                            st.metric("Unusual Metrics", outliers)
                    
                 # Dashboard Export Section
                 try:
