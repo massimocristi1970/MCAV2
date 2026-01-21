@@ -50,21 +50,30 @@ class EnsembleScorer:
     """
     Combines multiple scoring systems into unified recommendations.
     
-    Scoring systems considered:
-    1. Subprime Score (40%) - Best for micro-enterprise assessment
-    2. ML Score (30%) - Data-driven probability prediction
-    3. Adaptive Score (20%) - Continuous threshold scoring
-    4. MCA Scorecard (10%) - Transaction consistency check
+    Scoring systems considered (revised weights based on predictive power):
+    1. MCA Rule Score (35%) - Transaction consistency, empirically validated
+    2. Subprime Score (35%) - Comprehensive micro-enterprise assessment
+    3. ML Score (25%) - Data-driven probability prediction
+    4. Weighted Score (5%) - Traditional thresholds (less predictive)
     
-    Hard stops can override the ensemble (e.g., severe data quality issues).
+    The MCA Rule Score is based on:
+    - inflow_days_30d: Days with deposits in last 30 days
+    - max_inflow_gap_days: Largest gap between deposits
+    - inflow_cv: Coefficient of variation of inflows
+    
+    These transaction consistency metrics have been shown to be
+    strong predictors of MCA repayment probability.
+    
+    Hard stops can override the ensemble (e.g., MCA DECLINE).
     """
     
-    # Default weights reflecting reliability for micro-enterprise lending
+    # Revised weights reflecting actual predictive power
+    # MCA rules (transaction consistency) are empirically important
     DEFAULT_WEIGHTS = {
-        'subprime_score': 0.40,
-        'ml_score': 0.30,
-        'adaptive_score': 0.20,
-        'mca_score': 0.10
+        'mca_score': 0.35,        # Transaction consistency - empirically validated
+        'subprime_score': 0.35,   # Micro-enterprise assessment
+        'ml_score': 0.25,         # Data-driven probability
+        'adaptive_score': 0.05,   # Traditional thresholds (reduced)
     }
     
     # Decision thresholds
@@ -76,8 +85,10 @@ class EnsembleScorer:
     }
     
     # Hard stop conditions that override ensemble
+    # MCA DECLINE is a strong signal because it's based on empirically-validated
+    # transaction consistency metrics
     HARD_STOP_CONDITIONS = {
-        'mca_decline': "Transaction consistency too poor for MCA lending",
+        'mca_decline': "Transaction consistency too poor for MCA lending (inflow pattern analysis)",
         'dscr_critical': "Debt service coverage ratio critically low (<0.5)",
         'directors_critical': "Directors score critically low (<20)",
         'multiple_ccjs': "Multiple CCJs present - high default risk"
@@ -187,8 +198,13 @@ class EnsembleScorer:
         
         hard_stop_reasons = []
         
-        # MCA scorecard decline
-        if scores.get('mca_decision') == 'DECLINE':
+        # MCA rule decline - THIS IS IMPORTANT
+        # Based on empirically-validated transaction consistency metrics:
+        # - inflow_days_30d <= 8: Very sparse deposits
+        # - max_inflow_gap_days >= 21: Very long gaps between deposits
+        # - inflow_cv >= 1.3: Very high variability
+        mca_decision = scores.get('mca_decision') or params.get('mca_rule_decision')
+        if mca_decision and str(mca_decision).upper() == 'DECLINE':
             hard_stop_reasons.append(self.HARD_STOP_CONDITIONS['mca_decline'])
         
         # Critical DSCR
@@ -231,6 +247,20 @@ class EnsembleScorer:
         
         results = {}
         
+        # MCA Rule Score (MOST IMPORTANT - transaction consistency)
+        # Score is 0-100 from decide_application()
+        mca_score = scores.get('mca_score', 0)
+        mca_decision = scores.get('mca_decision', 'REFER')
+        results['mca_score'] = ScoringResult(
+            score=float(mca_score) if mca_score else 50,
+            available=mca_score is not None and mca_score > 0,
+            weight=self.weights.get('mca_score', 0),
+            details={
+                'decision': mca_decision,
+                'description': 'Transaction consistency (inflow days, gaps, variability)'
+            }
+        )
+        
         # Subprime score (already 0-100)
         subprime = scores.get('subprime_score', 0)
         results['subprime_score'] = ScoringResult(
@@ -249,22 +279,13 @@ class EnsembleScorer:
             details=scores.get('ml_details', {})
         )
         
-        # Adaptive score (already 0-100)
+        # Adaptive/Weighted score (reduced weight - less predictive)
         adaptive = scores.get('adaptive_score', 0)
         results['adaptive_score'] = ScoringResult(
             score=float(adaptive) if adaptive else 0,
             available=adaptive is not None and adaptive > 0,
             weight=self.weights.get('adaptive_score', 0),
             details=scores.get('adaptive_details', {})
-        )
-        
-        # MCA scorecard (0-100 from rules)
-        mca_score = scores.get('mca_score', 0)
-        results['mca_score'] = ScoringResult(
-            score=float(mca_score) if mca_score else 50,  # Default to neutral if unavailable
-            available=mca_score is not None,
-            weight=self.weights.get('mca_score', 0),
-            details={'decision': scores.get('mca_decision', 'REFER')}
         )
         
         return results
@@ -331,13 +352,35 @@ class EnsembleScorer:
     ) -> Decision:
         """Determine final decision based on score and context."""
         
-        # Check for MCA REFER override
-        if scores.get('mca_decision') == 'REFER':
-            # MCA refer but good score = conditional approve
+        # Get MCA rule decision (important - based on transaction consistency)
+        mca_decision = scores.get('mca_decision') or params.get('mca_rule_decision')
+        mca_decision = str(mca_decision).upper() if mca_decision else None
+        
+        # MCA REFER means transaction consistency is borderline
+        # Even with a good score, we should be cautious
+        if mca_decision == 'REFER':
             if score >= self.THRESHOLDS['approve']:
                 return Decision.CONDITIONAL_APPROVE
+            elif score >= self.THRESHOLDS['conditional_approve']:
+                return Decision.REFER  # Downgrade to REFER
+            else:
+                return Decision.SENIOR_REVIEW
         
-        # Standard threshold-based decision
+        # MCA APPROVE gives confidence boost
+        if mca_decision == 'APPROVE':
+            # Transaction consistency is strong - trust the score
+            if score >= self.THRESHOLDS['approve']:
+                return Decision.APPROVE
+            elif score >= self.THRESHOLDS['conditional_approve']:
+                return Decision.CONDITIONAL_APPROVE
+            elif score >= self.THRESHOLDS['refer']:
+                return Decision.REFER
+            elif score >= self.THRESHOLDS['senior_review']:
+                return Decision.SENIOR_REVIEW
+            else:
+                return Decision.DECLINE
+        
+        # Standard threshold-based decision (no MCA decision or unknown)
         if score >= self.THRESHOLDS['approve']:
             return Decision.APPROVE
         elif score >= self.THRESHOLDS['conditional_approve']:
