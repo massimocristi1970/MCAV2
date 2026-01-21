@@ -945,8 +945,7 @@ class TightenedSubprimeScoring:
 
         # NEGATIVE BALANCE penalties - more forgiving
         if neg_days > 10:
-            penalty += (neg_days - 10) * 1.
-            5
+            penalty += (neg_days - 10) * 1.5
 
         # DSCR penalties - only for very low DSCR
         if dscr < 0.8:
