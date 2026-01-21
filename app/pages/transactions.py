@@ -9,7 +9,11 @@ from typing import Dict, Any, Optional, Tuple
 
 def map_transaction_category(transaction: Dict[str, Any]) -> str:
     """
-    Enhanced transaction categorization using pattern matching.
+    Enhanced transaction categorization matching original version.
+    
+    This is the canonical categorization function for the main app.
+    Includes comprehensive patterns for payment processors, loan providers,
+    and business expenses.
     
     Args:
         transaction: Dictionary containing transaction data
@@ -44,7 +48,7 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     is_credit = amount < 0
     is_debit = amount > 0
 
-    # Step 1: Payment processors and income sources (credits)
+    # Step 1: Custom keyword overrides - Payment processors and income sources
     if is_credit and re.search(
         r"(?i)\b("
         r"stripe|sumup|zettle|square|take\s*payments|shopify|card\s+settlement|daily\s+takings|payout"
@@ -53,86 +57,111 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         r"|capital\s+one|evo\s*payments?|tink|teya(\s+solutions)?|talech"
         r"|barclaycard|elavon|adyen|payzone|verifone|ingenico"
         r"|nmi|trust\s+payments?|global\s+payments?|checkout\.com|epdq|santander|handepay"
-        r"|dojo|paymentsense|first\s+data|fiserv|clover|lightspeed"
-        r"|revel\s+systems?|touchbistro|vend|orderin|tide"
-        r")\b", combined_text
+        r"|dojo|valitor|paypoint|mypos|moneris|paymentsense"
+        r"|merchant\s+services|payment\s+sense"
+        r"|bcard\d*\s*bcard|bcard\d+|bcard\s+\d+"
+        r")\b", 
+        combined_text
     ):
         return "Income"
-
-    # Step 2: Loan providers (credits = loans received)
-    if is_credit and re.search(
-        r"(?i)\b("
-        r"iwoca|capify|fundbox|got[\s\-]?capital|funding[\s\-]?circle"
-        r"|fleximize|marketfinance|liberis|esme[\s\-]?loans|thincats"
-        r"|white[\s\-]?oak|growth[\s\-]?street|nucleus[\s\-]?commercial[\s\-]?finance"
-        r"|ultimate[\s\-]?finance|just[\s\-]?cash[\s\-]?flow|boost[\s\-]?capital"
-        r"|merchant[\s\-]?money|capital[\s\-]?on[\s\-]?tap|kriya|uncapped"
-        r"|lendingcrowd|folk2folk|funding[\s\-]?tree|start[\s\-]?up[\s\-]?loans"
-        r")\b", combined_text
-    ):
-        return "Loans"
-
-    # Step 3: YouLend special handling
-    if is_credit and re.search(r"(?i)\b(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited)\b", combined_text):
-        if re.search(r"(?i)\b(fnd|fund|funding)\b", combined_text):
+    
+    # Step 1.5: YouLend special handling (before general loan patterns)
+    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited)", combined_text):
+        # Check if it contains funding indicators (including within reference numbers)
+        if re.search(r"(fnd|fund|funding)", combined_text):
             return "Loans"
         else:
             return "Income"
-
-    # Step 4: Loan repayments (debits to loan providers)
-    if is_debit and re.search(
-        r"(?i)\b("
-        r"iwoca|capify|fundbox|got[\s\-]?capital|funding[\s\-]?circle"
-        r"|fleximize|marketfinance|liberis|esme[\s\-]?loans|thincats"
-        r"|white[\s\-]?oak|growth[\s\-]?street|nucleus"
-        r"|ultimate[\s\-]?finance|just[\s\-]?cash[\s\-]?flow|boost[\s\-]?capital"
-        r"|merchant[\s\-]?money|capital[\s\-]?on[\s\-]?tap|kriya|uncapped"
-        r"|you\s?lend|yl\s?ii|yl\s?ltd"
-        r"|loan|repay|instalment|installment"
-        r")\b", combined_text
-    ):
-        return "Debt Repayments"
-
-    # Step 5: Failed/bounced payments
-    if re.search(
-        r"(?i)\b(unpaid|returned|bounced|insufficient|nsf|failed|declined|reversed|chargeback)\b",
+    
+    # Step 2: Loan providers (credits = loans received)
+    if is_credit and re.search(
+        r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|"
+        r"\bfleximize\b|\bmarketfinance\b|\bliberis\b|\besme[\s\-]?loans\b|\bthincats\b|"
+        r"\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
+        r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|"
+        r"\bmerchant[\s\-]?money\b|\bcapital[\s\-]?on[\s\-]?tap\b|\bkriya\b|\buncapped\b|"
+        r"\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|\bstart[\s\-]?up[\s\-]?loans\b|"
+        r"\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
+        r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
+        r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|"
+        r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|\bloans?\b",
         combined_text
     ):
-        return "Failed Payment"
+        return "Loans"
 
-    # Step 6: Plaid category mapping
-    plaid_income_categories = [
-        "income_wages", "income_other_income", "income_dividends",
-        "transfer_in_cash_advances_and_loans"
-    ]
-    plaid_expense_categories = [
-        "entertainment_", "food_and_drink_", "general_merchandise_",
-        "general_services_", "rent_and_utilities_", "transportation_"
-    ]
-    plaid_loan_categories = [
-        "loan_payments_credit_card_payment", "loan_payments_personal_loan_payment",
-        "loan_payments_other_payment"
-    ]
-    plaid_failed_categories = [
-        "bank_fees_insufficient_funds", "bank_fees_late_payment"
-    ]
-
-    if any(category.startswith(cat) for cat in plaid_income_categories):
-        return "Income" if is_credit else "Expenses"
-    
-    if any(category.startswith(cat) for cat in plaid_failed_categories):
-        return "Failed Payment"
-    
-    if any(category.startswith(cat) for cat in plaid_loan_categories):
+    # Step 3: Loan repayments (debits to loan providers)
+    if is_debit and re.search(
+        r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|\bfleximize\b|\bmarketfinance\b|\bliberis\b|"
+        r"\besme[\s\-]?loans\b|\bthincats\b|\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
+        r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|\bmerchant[\s\-]?money\b|"
+        r"\bcapital[\s\-]?on[\s\-]?tap\b|\bkriya\b|\buncapped\b|\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|"
+        r"\bstart[\s\-]?up[\s\-]?loans\b|\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
+        r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
+        r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|\bbizcap[\s\-]?uk\b|"
+        r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|"
+        r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b",
+        combined_text
+    ):
         return "Debt Repayments"
-    
-    if any(category.startswith(cat) for cat in plaid_expense_categories):
+
+    # Step 4: Failed payment patterns
+    if re.search(r"(unpaid|returned|bounced|insufficient\s+funds|nsf|declined|failed|reversed|chargeback|unp\b)", combined_text, re.IGNORECASE):
+        return "Failed Payment"
+        
+    # Step 4.5: Business expense override (before Plaid fallback)
+    if re.search(r"(facebook|facebk|fb\.me|outlook|office365|microsoft|google\s+ads|linkedin|twitter|adobe|zoom|slack|shopify|wix|squarespace|mailchimp|hubspot|hmrc\s*vat|hmrc|hm\s*revenue|hm\s*customs)", combined_text, re.IGNORECASE):
         return "Expenses"
 
-    # Step 7: Default classification based on amount direction
-    if is_credit:
-        return "Income"
-    elif is_debit:
+    # Step 5: Plaid category fallback with validation
+    plaid_map = {
+        "income_wages": "Income",
+        "income_other_income": "Income",
+        "income_dividends": "Special Inflow",
+        "income_interest_earned": "Special Inflow",
+        "income_retirement_pension": "Special Inflow",
+        "income_unemployment": "Special Inflow",
+        "transfer_in_cash_advances_and_loans": "Loans",
+        "transfer_in_investment_and_retirement_funds": "Special Inflow",
+        "transfer_in_savings": "Special Inflow",
+        "transfer_in_account_transfer": "Special Inflow",
+        "transfer_in_other_transfer_in": "Special Inflow",
+        "transfer_in_deposit": "Special Inflow",
+        "transfer_out_investment_and_retirement_funds": "Special Outflow",
+        "transfer_out_savings": "Special Outflow",
+        "transfer_out_other_transfer_out": "Special Outflow",
+        "transfer_out_withdrawal": "Special Outflow",
+        "transfer_out_account_transfer": "Special Outflow",
+        "bank_fees_insufficient_funds": "Failed Payment",
+        "bank_fees_late_payment": "Failed Payment",
+    }
+
+    # Handle loan payment categories with validation
+    if category.startswith("loan_payments_"):
+        # Only trust Plaid if transaction contains actual loan/debt keywords
+        if re.search(r"(loan|debt|repay|finance|lending|credit|iwoca|capify|fundbox)", combined_text, re.IGNORECASE):
+            return "Debt Repayments"
+        # Otherwise, don't trust Plaid and continue to other checks
+
+    # Match exact key
+    if category in plaid_map:
+        return plaid_map[category]
+
+    # Step 6: Fallback for Plaid broad categories
+    broad_matchers = [
+        ("Expenses", [
+            "bank_fees_", "entertainment_", "food_and_drink_", "general_merchandise_",
+            "general_services_", "government_and_non_profit_", "home_improvement_",
+            "medical_", "personal_care_", "rent_and_utilities_", "transportation_", "travel_"
+        ])
+    ]
+
+    for label, patterns in broad_matchers:
+        if any(category.startswith(p) for p in patterns):
+            return label
+
+    # Step 7: Default fallback based on amount direction
+    # Debit transactions become Expenses, credit transactions stay Uncategorised
+    if is_debit:
         return "Expenses"
     else:
         return "Uncategorised"
