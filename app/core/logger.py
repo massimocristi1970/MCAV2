@@ -3,10 +3,19 @@
 
 import logging
 import logging.config
+import logging.handlers
+import os
 import sys
 from pathlib import Path
 from typing import Dict, Any
-from .settings import settings
+from ..config.settings import settings
+
+# Check if python-json-logger is available
+try:
+    from pythonjsonlogger import jsonlogger
+    JSON_LOGGING_AVAILABLE = True
+except ImportError:
+    JSON_LOGGING_AVAILABLE = False
 
 def setup_logging() -> None:
     """Set up logging configuration."""
@@ -15,24 +24,30 @@ def setup_logging() -> None:
     log_dir = Path("logs")
     log_dir.mkdir(exist_ok=True)
     
+    # Build formatters dict
+    formatters: Dict[str, Any] = {
+        "standard": {
+            "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S"
+        },
+        "detailed": {
+            "format": "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d: %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S"
+        },
+    }
+    
+    # Add JSON formatter only if python-json-logger is available
+    if JSON_LOGGING_AVAILABLE:
+        formatters["json"] = {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "%(asctime)s %(name)s %(levelname)s %(message)s"
+        }
+    
     # Logging configuration
     logging_config: Dict[str, Any] = {
         "version": 1,
         "disable_existing_loggers": False,
-        "formatters": {
-            "standard": {
-                "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-                "datefmt": "%Y-%m-%d %H:%M:%S"
-            },
-            "detailed": {
-                "format": "%(asctime)s [%(levelname)s] %(name)s:%(lineno)d: %(message)s",
-                "datefmt": "%Y-%m-%d %H:%M:%S"
-            },
-            "json": {
-                "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
-                "format": "%(asctime)s %(name)s %(levelname)s %(message)s"
-            }
-        },
+        "formatters": formatters,
         "handlers": {
             "console": {
                 "class": "logging.StreamHandler",

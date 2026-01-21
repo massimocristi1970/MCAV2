@@ -1,6 +1,7 @@
 # app/config/settings.py
 import os
-from typing import Dict, Any
+import warnings
+from typing import Dict, Any, List, Optional
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -15,9 +16,9 @@ class Settings:
     APP_VERSION: str = os.getenv("APP_VERSION", "2.0.0")
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     
-    # Plaid Configuration
-    PLAID_CLIENT_ID: str = os.getenv("PLAID_CLIENT_ID")
-    PLAID_SECRET: str = os.getenv("PLAID_SECRET")
+    # Plaid Configuration (optional - only needed for Plaid API features)
+    PLAID_CLIENT_ID: Optional[str] = os.getenv("PLAID_CLIENT_ID")
+    PLAID_SECRET: Optional[str] = os.getenv("PLAID_SECRET")
     PLAID_ENV: str = os.getenv("PLAID_ENV", "production")
     
     # Paths
@@ -49,33 +50,42 @@ class Settings:
         """Get the appropriate Plaid host URL."""
         return self.PLAID_HOSTS.get(self.PLAID_ENV, self.PLAID_HOSTS["production"])
     
-    def validate_required_settings(self) -> None:
-        """Validate that all required settings are present."""
-        required_settings = [
+    @property
+    def plaid_configured(self) -> bool:
+        """Check if Plaid API credentials are configured."""
+        return bool(self.PLAID_CLIENT_ID and self.PLAID_SECRET)
+    
+    def validate_plaid_settings(self) -> None:
+        """
+        Validate Plaid settings - call this only when Plaid features are needed.
+        Raises ValueError if Plaid credentials are not configured.
+        """
+        if not self.plaid_configured:
+            raise ValueError(
+                "Plaid API credentials not configured. "
+                "Set PLAID_CLIENT_ID and PLAID_SECRET environment variables "
+                "to use Plaid API features."
+            )
+    
+    def get_missing_optional_settings(self) -> List[str]:
+        """Get list of missing optional settings for informational purposes."""
+        optional_settings = [
             ("PLAID_CLIENT_ID", self.PLAID_CLIENT_ID),
             ("PLAID_SECRET", self.PLAID_SECRET),
         ]
-        
-        missing_settings = [
-            setting_name for setting_name, setting_value in required_settings 
-            if not setting_value
-        ]
-        
-        if missing_settings:
-            raise ValueError(
-                f"Missing required environment variables: {', '.join(missing_settings)}"
-            )
+        return [name for name, value in optional_settings if not value]
 
 # Global settings instance
 settings = Settings()
 
-# Validate settings on import
-try:
-    settings.validate_required_settings()
-except ValueError as e:
-    if not settings.DEBUG:
-        raise e
-    print(f"Warning: {e}")
+# Log warnings about missing optional settings (don't raise errors)
+_missing = settings.get_missing_optional_settings()
+if _missing and settings.DEBUG:
+    warnings.warn(
+        f"Optional settings not configured: {', '.join(_missing)}. "
+        "Plaid API features will be disabled. File upload will still work.",
+        UserWarning
+    )
 
 # Company access tokens (should be encrypted in production)
 COMPANY_ACCESS_TOKENS = {

@@ -8,7 +8,7 @@ import pandas as pd
 from typing import Any, Callable, Optional
 from functools import wraps
 from .logger import get_logger
-from .settings import settings
+from ..config.settings import settings
 
 logger = get_logger("cache")
 
@@ -105,6 +105,13 @@ class SessionStateManager:
             SessionStateManager.set(key, factory())
         return SessionStateManager.get(key)
 
+# Check if psutil is available for memory monitoring
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+
 # Memory usage monitoring
 class MemoryMonitor:
     """Monitor memory usage for caching decisions."""
@@ -112,9 +119,15 @@ class MemoryMonitor:
     @staticmethod
     def get_memory_usage() -> dict:
         """Get current memory usage statistics."""
-        import psutil
-        import os
+        if not PSUTIL_AVAILABLE:
+            # Return safe defaults if psutil is not available
+            return {
+                'rss': 0,
+                'vms': 0,
+                'percent': 0
+            }
         
+        import os
         process = psutil.Process(os.getpid())
         memory_info = process.memory_info()
         
@@ -127,12 +140,15 @@ class MemoryMonitor:
     @staticmethod
     def should_cache(data_size_mb: float) -> bool:
         """Determine if data should be cached based on size and available memory."""
-        memory_stats = MemoryMonitor.get_memory_usage()
-        
-        # Don't cache if data is too large (>100MB) or memory usage is high
+        # Don't cache if data is too large (>100MB)
         if data_size_mb > 100:
             return False
         
+        # If psutil is not available, allow caching (safer than blocking)
+        if not PSUTIL_AVAILABLE:
+            return True
+            
+        memory_stats = MemoryMonitor.get_memory_usage()
         if memory_stats['percent'] > 80:  # Over 80% memory usage
             return False
         

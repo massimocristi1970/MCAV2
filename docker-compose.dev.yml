@@ -1,0 +1,25 @@
+# docker-compose.dev.yml - Development configuration
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+version: '3.8'
+
+services:
+  business-finance-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: business-finance-scorecard-dev
+    ports:
+      - "8501:8501"
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - STREAMLIT_SERVER_RELOAD_ON_CHANGE=true
+    volumes:
+      # Mount source code for development
+      - .:/app
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    
+    # Override command for development
+    command: ["streamlit", "run", "app/main.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.runOnSave=true"]

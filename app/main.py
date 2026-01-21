@@ -25,9 +25,14 @@ from build_training_dataset import _flatten_transactions, build_mca_features
 
 
 
-# Add debug info about file structure
+# Debug mode - only enabled when DEBUG environment variable is set to 'true'
+DEBUG_MODE = os.environ.get('DEBUG', 'false').lower() == 'true'
+
 def debug_file_structure():
-    """Debug helper to understand the file structure"""
+    """Debug helper to understand the file structure - only runs in DEBUG mode"""
+    if not DEBUG_MODE:
+        return
+        
     current_dir = os.path.dirname(os.path.abspath(__file__))
     print(f"🔍 DEBUG - File Structure:")
     print(f"  Current file location: {__file__}")
@@ -55,7 +60,7 @@ def debug_file_structure():
         app_services_files = os.listdir(app_services_dir)
         print(f"  Files in app/services/: {app_services_files}")
 
-# Run debug (remove this after fixing)
+# Only run debug output if DEBUG mode is enabled
 debug_file_structure()
     
 class MLScalerInsights:
