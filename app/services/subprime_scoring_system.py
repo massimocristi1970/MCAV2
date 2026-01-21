@@ -3,6 +3,8 @@
 Subprime Business Finance Scoring System - MICRO ENTERPRISE FRIENDLY VERSION
 Now includes risk factor penalties that match the V2 weighted system
 Balanced for micro enterprises (£1-10k short-term lending)
+
+Uses centralized thresholds from app/config/scoring_thresholds.py
 """
 
 import pandas as pd
@@ -10,79 +12,100 @@ import numpy as np
 from typing import Dict, Any, Tuple, List
 from datetime import datetime
 
+# Import centralized thresholds
+try:
+    from ..config.scoring_thresholds import get_thresholds, ScoringThresholds
+    THRESHOLDS_AVAILABLE = True
+except ImportError:
+    THRESHOLDS_AVAILABLE = False
+    get_thresholds = None
+
 
 class SubprimeScoring:
     """Scoring system specifically designed for micro enterprise subprime lending with balanced risk assessment."""
 
     def __init__(self):
+        # Load centralized thresholds if available
+        self._thresholds = get_thresholds() if THRESHOLDS_AVAILABLE else None
+        
         # Subprime weights for £1-10k short-term lending (6-9 months)
         # Balanced for micro enterprise realities
-        self.subprime_weights = {
-            'Debt Service Coverage Ratio': 25,  # PRIMARY - Current ability to service debt
-            'Average Month-End Balance': 18,  # Critical for short-term loans
-            'Directors Score': 16,  # Personal reliability crucial in subprime
-            'Cash Flow Volatility': 14,  # Stability important but realistic thresholds
-            'Revenue Growth Rate': 10,  # Growth potential matters
-            'Operating Margin': 6,  # Current losses acceptable for growth businesses
-            'Net Income': 4,  # Growth more important than current profit
-            'Average Negative Balance Days per Month': 5,  # Monitor but don't over-penalize
-            'Company Age (Months)': 2,  # MINIMAL - Less relevant for growth businesses
-        }
+        # These are derived from centralized config when available
+        if self._thresholds:
+            self.subprime_weights = {
+                'Debt Service Coverage Ratio': self._thresholds.DSCR.weight,
+                'Average Month-End Balance': self._thresholds.BALANCE.weight,
+                'Directors Score': self._thresholds.DIRECTORS.weight,
+                'Cash Flow Volatility': self._thresholds.VOLATILITY.weight,
+                'Revenue Growth Rate': self._thresholds.GROWTH.weight,
+                'Operating Margin': self._thresholds.MARGIN.weight,
+                'Net Income': self._thresholds.NET_INCOME.weight,
+                'Average Negative Balance Days per Month': self._thresholds.NEGATIVE_DAYS.weight,
+                'Company Age (Months)': self._thresholds.COMPANY_AGE.weight,
+            }
+            self.risk_factor_penalties = self._thresholds.RISK_PENALTIES
+            self.industry_multipliers = self._thresholds.INDUSTRY_MULTIPLIERS
+            self._max_penalty_cap = self._thresholds.MAX_PENALTY_CAP
+        else:
+            # Fallback to hardcoded values if config not available
+            self.subprime_weights = {
+                'Debt Service Coverage Ratio': 25,
+                'Average Month-End Balance': 18,
+                'Directors Score': 16,
+                'Cash Flow Volatility': 14,
+                'Revenue Growth Rate': 10,
+                'Operating Margin': 6,
+                'Net Income': 4,
+                'Average Negative Balance Days per Month': 5,
+                'Company Age (Months)': 2,
+            }
+            self.risk_factor_penalties = {
+                "business_ccj": 6,
+                "director_ccj": 4,
+                'poor_or_no_online_presence': 2,
+                'uses_generic_email': 1
+            }
+            self.industry_multipliers = {
+                'Medical Practices (GPs, Clinics, Dentists)': 1.05,
+                'IT Services and Support Companies': 1.05,
+                'Pharmacies (Independent or Small Chains)': 1.03,
+                'Business Consultants': 1.03,
+                'Education': 1.02,
+                'Engineering': 1.02,
+                'Telecommunications': 1.01,
+                'Manufacturing': 1.0,
+                'Retail': 1.0,
+                'Food Service': 0.98,
+                'Tradesman': 0.98,
+                'Courier Services (Independent and Regional Operators)': 1.0,
+                'Grocery Stores and Mini-Markets': 1.0,
+                'Estate Agent': 1.0,
+                'Import / Export': 1.0,
+                'Marketing / Advertising / Design': 1.0,
+                'Off-Licence Business': 1.0,
+                'Wholesaler / Distributor': 1.0,
+                'Auto Repair Shops': 1.0,
+                'Printing / Publishing': 1.0,
+                'Recruitment': 1.0,
+                'Personal Services': 1.0,
+                'E-Commerce Retailers': 1.0,
+                'Fitness Centres and Gyms': 0.98,
+                'Other': 0.97,
+                'Restaurants and Cafes': 0.95,
+                'Construction Firms': 0.95,
+                'Beauty Salons and Spas': 0.95,
+                'Bars and Pubs': 0.93,
+                'Event Planning and Management Firms': 0.92,
+            }
+            self._max_penalty_cap = 12
 
         # MICRO ENTERPRISE FRIENDLY risk tolerance thresholds
         self.subprime_thresholds = {
-            'minimum_dscr': 0.8,  # Lowered - micro enterprises have variable cash flow
-            'maximum_volatility': 1.0,  # Raised - micro enterprises have higher volatility
-            'minimum_growth': -0.15,  # More tolerance for temporary decline
-            'minimum_balance': 250,  # Lowered - realistic for micro enterprises
-            'maximum_negative_days': 8,  # Raised - more tolerance for cash gaps
-        }
-
-        # Risk factor penalties - REDUCED for micro enterprise market
-        self.risk_factor_penalties = {
-            "business_ccj": 6,  # Reduced from 12 - still significant but not crushing
-            "director_ccj": 4,  # Reduced from 8 - personal issues less penalized
-            'poor_or_no_online_presence': 2,  # Reduced from 4 - many micro businesses lack online presence
-            'uses_generic_email': 1  # Minimal penalty - very common for micro enterprises
-        }
-
-        # Industry risk adjustments - BALANCED for micro enterprise context
-        self.industry_multipliers = {
-            # Lower risk industries (modest bonus)
-            'Medical Practices (GPs, Clinics, Dentists)': 1.05,
-            'IT Services and Support Companies': 1.05,
-            'Pharmacies (Independent or Small Chains)': 1.03,
-            'Business Consultants': 1.03,
-            'Education': 1.02,
-            'Engineering': 1.02,
-            'Telecommunications': 1.01,
-
-            # Standard risk (no adjustment)
-            'Manufacturing': 1.0,
-            'Retail': 1.0,
-            'Food Service': 0.98,
-            'Tradesman': 0.98,
-            'Courier Services (Independent and Regional Operators)': 1.0,
-            'Grocery Stores and Mini-Markets': 1.0,
-            'Estate Agent': 1.0,
-            'Import / Export': 1.0,
-            'Marketing / Advertising / Design': 1.0,
-            'Off-Licence Business': 1.0,
-            'Wholesaler / Distributor': 1.0,
-            'Auto Repair Shops': 1.0,
-            'Printing / Publishing': 1.0,
-            'Recruitment': 1.0,
-            'Personal Services': 1.0,
-            'E-Commerce Retailers': 1.0,
-            'Fitness Centres and Gyms': 0.98,
-            'Other': 0.97,
-
-            # Higher risk but still acceptable - LESS HARSH penalties
-            'Restaurants and Cafes': 0.95,
-            'Construction Firms': 0.95,
-            'Beauty Salons and Spas': 0.95,
-            'Bars and Pubs': 0.93,
-            'Event Planning and Management Firms': 0.92,
+            'minimum_dscr': 0.8,
+            'maximum_volatility': 1.0,
+            'minimum_growth': -0.15,
+            'minimum_balance': 250,
+            'maximum_negative_days': 8,
         }
 
     def calculate_subprime_score(self, metrics: Dict[str, Any], params: Dict[str, Any]) -> Dict[str, Any]:
@@ -354,10 +377,9 @@ class SubprimeScoring:
             applied_penalties.append(f"Poor/No Online Presence: -{penalty}")
 
         # Cap maximum penalty to prevent "death by 1000 cuts"
-        max_penalty_cap = 12
-        if total_penalty > max_penalty_cap:
-            applied_penalties.append(f"Penalty capped:  -{total_penalty} reduced to -{max_penalty_cap}")
-            total_penalty = max_penalty_cap
+        if total_penalty > self._max_penalty_cap:
+            applied_penalties.append(f"Penalty capped:  -{total_penalty} reduced to -{self._max_penalty_cap}")
+            total_penalty = self._max_penalty_cap
 
         # Store applied penalties for breakdown
         params['_applied_risk_penalties'] = applied_penalties
@@ -1004,12 +1026,16 @@ class SubprimeScoring:
             return None
     
     def _get_tier_from_score(self, score: float) -> str:
-        """Get tier name from score"""
-        if score >= 75:
+        """Get tier name from score using centralized thresholds."""
+        if self._thresholds:
+            return self._thresholds.get_tier_from_score(score)
+        
+        # Fallback thresholds (aligned with _determine_risk_tier)
+        if score >= 65:
             return "Tier 1"
-        elif score >= 60:
+        elif score >= 50:
             return "Tier 2"
-        elif score >= 45:
+        elif score >= 40:
             return "Tier 3"
         elif score >= 30:
             return "Tier 4"
@@ -1017,15 +1043,20 @@ class SubprimeScoring:
             return "Decline"
     
     def _get_next_tier_threshold(self, score: float) -> float:
-        """Get score threshold for next tier"""
+        """Get score threshold for next tier using centralized thresholds."""
+        if self._thresholds:
+            tier, points_needed = self._thresholds.get_next_tier_threshold(score)
+            return score + points_needed if tier else None
+        
+        # Fallback thresholds (aligned with _determine_risk_tier)
         if score < 30:
             return 30  # Tier 4
-        elif score < 45:
-            return 45  # Tier 3
-        elif score < 60:
-            return 60  # Tier 2
-        elif score < 75:
-            return 75  # Tier 1
+        elif score < 40:
+            return 40  # Tier 3
+        elif score < 50:
+            return 50  # Tier 2
+        elif score < 65:
+            return 65  # Tier 1
         else:
             return None  # Already at top tier
 

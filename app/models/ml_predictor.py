@@ -171,27 +171,87 @@ class MLPredictor:
             return "Very High Risk"
     
     def _calculate_confidence(self, features_scaled: np.ndarray) -> float:
-        """Calculate model confidence based on prediction certainty."""
+        """
+        Calculate model confidence based on prediction certainty.
+        
+        Uses multiple factors:
+        - Probability margin (distance from decision boundary)
+        - Feature value extremity (unusual values = lower confidence)
+        """
         probabilities = self.model.predict_proba(features_scaled)[0]
         
-        # Confidence is the difference between the highest and second-highest probability
+        # Base confidence from probability margin
         sorted_probs = np.sort(probabilities)
-        confidence = (sorted_probs[-1] - sorted_probs[-2]) * 100
+        margin_confidence = (sorted_probs[-1] - sorted_probs[-2]) * 100
         
-        return round(confidence, 2)
+        # Adjust for extreme predictions (very high/low probs are less certain)
+        base_prob = probabilities[1] if len(probabilities) > 1 else probabilities[0]
+        extremity_penalty = abs(base_prob - 0.5) * 20  # Max 10% penalty at extremes
+        
+        # Final confidence (margin gives certainty, extremity reduces it slightly)
+        confidence = margin_confidence - extremity_penalty
+        
+        return round(max(10, min(95, confidence)), 2)
     
     def _calculate_confidence_interval(
         self, 
         features_scaled: np.ndarray, 
         n_bootstrap: int = 100
     ) -> Dict[str, float]:
-        """Calculate confidence intervals using bootstrap sampling."""
+        """
+        Calculate confidence intervals with improved uncertainty estimation.
+        
+        Uses adaptive uncertainty based on:
+        - Probability extremity (predictions near 0.5 have higher uncertainty)
+        - Model type (ensemble models have better-calibrated uncertainty)
+        - Feature scaling factors
+        """
         try:
-            # Simple confidence interval based on model uncertainty
             base_prob = self.model.predict_proba(features_scaled)[:, 1][0]
             
-            # Add some noise to simulate uncertainty (simplified approach)
-            std_dev = 0.05  # 5% standard deviation
+            # For ensemble models, use built-in variance if available
+            if hasattr(self.model, 'estimators_'):
+                # Ensemble method - calculate actual variance across trees
+                predictions = []
+                for estimator in self.model.estimators_[:min(50, len(self.model.estimators_))]:
+                    try:
+                        pred = estimator.predict_proba(features_scaled)[:, 1][0]
+                        predictions.append(pred)
+                    except:
+                        continue
+                
+                if len(predictions) > 1:
+                    std_dev = np.std(predictions)
+                    lower_bound = max(0, base_prob - 1.96 * std_dev) * 100
+                    upper_bound = min(1, base_prob + 1.96 * std_dev) * 100
+                    
+                    return {
+                        'lower': round(lower_bound, 2),
+                        'upper': round(upper_bound, 2),
+                        'width': round(upper_bound - lower_bound, 2),
+                        'method': 'ensemble_variance',
+                        'n_estimators_used': len(predictions)
+                    }
+            
+            # For non-ensemble models, use adaptive uncertainty
+            # Uncertainty is higher near decision boundary (0.5) and lower at extremes
+            # This reflects actual prediction reliability patterns
+            
+            # Base uncertainty varies with distance from boundary
+            distance_from_boundary = abs(base_prob - 0.5)
+            
+            # Sigmoid-shaped uncertainty: highest at 0.5, decreases toward 0 and 1
+            # But never goes to zero (there's always some uncertainty)
+            min_std = 0.02  # Minimum 2% std dev
+            max_std = 0.12  # Maximum 12% std dev at boundary
+            
+            # Uncertainty decreases as we move away from boundary
+            std_dev = max_std - (distance_from_boundary * (max_std - min_std) / 0.5)
+            std_dev = max(min_std, min(max_std, std_dev))
+            
+            # Additional uncertainty for feature extremity
+            feature_extremity = self._calculate_feature_extremity(features_scaled)
+            std_dev *= (1 + feature_extremity * 0.3)  # Up to 30% increase for extreme features
             
             lower_bound = max(0, base_prob - 1.96 * std_dev) * 100
             upper_bound = min(1, base_prob + 1.96 * std_dev) * 100
@@ -199,12 +259,38 @@ class MLPredictor:
             return {
                 'lower': round(lower_bound, 2),
                 'upper': round(upper_bound, 2),
-                'width': round(upper_bound - lower_bound, 2)
+                'width': round(upper_bound - lower_bound, 2),
+                'method': 'adaptive_uncertainty',
+                'estimated_std': round(std_dev * 100, 2)
             }
             
         except Exception as e:
             logger.warning(f"Could not calculate confidence interval: {str(e)}")
-            return {'lower': 0, 'upper': 100, 'width': 100}
+            return {'lower': 0, 'upper': 100, 'width': 100, 'method': 'fallback'}
+    
+    def _calculate_feature_extremity(self, features_scaled: np.ndarray) -> float:
+        """
+        Calculate how extreme the feature values are.
+        
+        Features more than 2 std devs from mean indicate unusual cases
+        where the model may be less reliable.
+        
+        Returns:
+            Extremity score from 0 (typical) to 1 (very unusual)
+        """
+        try:
+            # Scaled features should be roughly N(0,1) if StandardScaler was used
+            # Count features that are more than 2 std devs from 0
+            extreme_count = np.sum(np.abs(features_scaled) > 2)
+            total_features = features_scaled.size
+            
+            # Proportion of extreme features
+            extremity = extreme_count / total_features if total_features > 0 else 0
+            
+            return min(1.0, extremity)
+            
+        except:
+            return 0.0
     
     def _get_feature_importance(self, features: pd.Series) -> Dict[str, float]:
         """Get feature importance for this specific prediction."""
