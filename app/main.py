@@ -54,6 +54,16 @@ except ImportError as e:
     _map_transaction_category = None  # Will use local fallback
     print(f"Note: Modular imports not available ({e}). Using inline functions.")
 
+# Import ensemble scorer for unified recommendations
+try:
+    from app.services.ensemble_scorer import get_ensemble_recommendation, Decision
+    ENSEMBLE_SCORER_AVAILABLE = True
+except ImportError as e:
+    ENSEMBLE_SCORER_AVAILABLE = False
+    get_ensemble_recommendation = None
+    Decision = None
+    print(f"Note: Ensemble scorer not available ({e}).")
+
 
 # Debug mode - only enabled when DEBUG environment variable is set to 'true'
 DEBUG_MODE = os.environ.get('DEBUG', 'false').lower() == 'true'
@@ -1086,6 +1096,36 @@ def calculate_all_scores_enhanced(metrics, params):
         loan_risk = "High Risk"
     
     print(f"  Loan Risk: {loan_risk}")
+    
+    # NEW: Ensemble scoring for unified recommendation
+    ensemble_result = None
+    if ENSEMBLE_SCORER_AVAILABLE and get_ensemble_recommendation:
+        try:
+            # Prepare scores for ensemble
+            ensemble_scores = {
+                'subprime_score': subprime_result['subprime_score'],
+                'ml_score': adjusted_ml_score or ml_score,
+                'adaptive_score': weighted_score,  # Use weighted as adaptive proxy
+                'mca_score': (industry_score / 12) * 100 if industry_score else 50,
+            }
+            
+            ensemble_result = get_ensemble_recommendation(
+                scores=ensemble_scores,
+                metrics=metrics,
+                params=params
+            )
+            
+            print(f"\n🎯 ENSEMBLE RECOMMENDATION:")
+            print(f"  Combined Score: {ensemble_result['combined_score']:.1f}/100")
+            print(f"  Decision: {ensemble_result['decision']}")
+            print(f"  Confidence: {ensemble_result['confidence']}%")
+            print(f"  Convergence: {ensemble_result['score_convergence']}")
+            print(f"  Primary Reason: {ensemble_result['primary_reason']}")
+            
+        except Exception as e:
+            print(f"  Ensemble scoring error: {e}")
+            ensemble_result = None
+    
     print(f"="*50)
     
     return {
@@ -1101,7 +1141,9 @@ def calculate_all_scores_enhanced(metrics, params):
         'subprime_pricing': subprime_result['pricing_guidance'],
         'subprime_recommendation': subprime_result['recommendation'],
         'subprime_breakdown': subprime_result['breakdown'],
-        'ml_validation': ml_validation 
+        'ml_validation': ml_validation,
+        # NEW: Ensemble scoring results
+        'ensemble': ensemble_result
     }
 
 def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
@@ -2811,9 +2853,131 @@ def main():
                             st.metric("Full Period Monthly Revenue", f"£{full_metrics.get('Monthly Average Revenue', 0):,.0f}",
                                     delta=f"£{delta_revenue:+,.0f} difference")
                 
-                # NEW: Subprime Lending Analysis Section
+                # ============================================
+                # ENSEMBLE RECOMMENDATION (UNIFIED DECISION)
+                # ============================================
                 st.markdown("---")
-                st.subheader("Subprime Lending Analysis")
+                st.header("🎯 Unified Recommendation")
+                
+                ensemble = scores.get('ensemble')
+                if ensemble:
+                    # Main recommendation display
+                    decision = ensemble.get('decision', 'REFER')
+                    combined_score = ensemble.get('combined_score', 0)
+                    confidence = ensemble.get('confidence', 0)
+                    
+                    # Decision color coding
+                    if decision == 'APPROVE':
+                        st.success(f"""
+                        ### ✅ APPROVE
+                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+                        
+                        *{ensemble.get('primary_reason', '')}*
+                        """)
+                    elif decision == 'CONDITIONAL_APPROVE':
+                        st.info(f"""
+                        ### ℹ️ CONDITIONAL APPROVE
+                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+                        
+                        *{ensemble.get('primary_reason', '')}*
+                        """)
+                    elif decision == 'REFER':
+                        st.warning(f"""
+                        ### ⚠️ REFER FOR REVIEW
+                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+                        
+                        *{ensemble.get('primary_reason', '')}*
+                        """)
+                    elif decision == 'SENIOR_REVIEW':
+                        st.warning(f"""
+                        ### 🔍 SENIOR REVIEW REQUIRED
+                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+                        
+                        *{ensemble.get('primary_reason', '')}*
+                        """)
+                    else:  # DECLINE
+                        st.error(f"""
+                        ### ❌ DECLINE
+                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+                        
+                        *{ensemble.get('primary_reason', '')}*
+                        """)
+                    
+                    # Contributing scores breakdown
+                    st.markdown("#### Score Breakdown")
+                    score_cols = st.columns(4)
+                    
+                    contributing = ensemble.get('contributing_scores', {})
+                    with score_cols[0]:
+                        subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
+                        st.metric("Subprime Score", f"{subprime_s:.1f}", help="40% weight")
+                    with score_cols[1]:
+                        ml_s = contributing.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
+                        st.metric("ML Score", f"{ml_s:.1f}%" if ml_s else "N/A", help="30% weight")
+                    with score_cols[2]:
+                        adaptive_s = contributing.get('adaptive_score', scores.get('weighted_score', 0))
+                        st.metric("Weighted Score", f"{adaptive_s:.0f}", help="20% weight")
+                    with score_cols[3]:
+                        mca_s = contributing.get('mca_score', 50)
+                        st.metric("Industry Score", f"{mca_s:.0f}", help="10% weight")
+                    
+                    # Score convergence
+                    convergence = ensemble.get('score_convergence', 'Unknown')
+                    if 'High' in convergence:
+                        st.success(f"📊 **Score Convergence:** {convergence} - All scoring methods agree")
+                    elif 'Good' in convergence:
+                        st.info(f"📊 **Score Convergence:** {convergence}")
+                    elif 'Moderate' in convergence:
+                        st.warning(f"📊 **Score Convergence:** {convergence} - Some disagreement between methods")
+                    else:
+                        st.error(f"📊 **Score Convergence:** {convergence} - Significant disagreement")
+                    
+                    # Pricing guidance
+                    pricing = ensemble.get('pricing_guidance', {})
+                    if pricing and pricing.get('factor_rate') != 'N/A':
+                        st.markdown("#### 💰 Pricing Guidance")
+                        pricing_cols = st.columns(4)
+                        with pricing_cols[0]:
+                            st.write(f"**Factor Rate:** {pricing.get('factor_rate', 'N/A')}")
+                        with pricing_cols[1]:
+                            st.write(f"**Max Term:** {pricing.get('max_term', 'N/A')}")
+                        with pricing_cols[2]:
+                            st.write(f"**Max Amount:** {pricing.get('max_multiple', 'N/A')}")
+                        with pricing_cols[3]:
+                            st.write(f"**Collection:** {pricing.get('collection_frequency', 'N/A')}")
+                    
+                    # Risk factors and recommendations in expander
+                    with st.expander("📋 Detailed Analysis", expanded=False):
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.markdown("**⚠️ Risk Factors:**")
+                            risk_factors = ensemble.get('risk_factors', [])
+                            if risk_factors:
+                                for rf in risk_factors:
+                                    st.write(f"• {rf}")
+                            else:
+                                st.write("• No significant risk factors identified")
+                        
+                        with col2:
+                            st.markdown("**✅ Positive Factors:**")
+                            positive_factors = ensemble.get('positive_factors', [])
+                            if positive_factors:
+                                for pf in positive_factors:
+                                    st.write(f"• {pf}")
+                            else:
+                                st.write("• No notable positive factors")
+                        
+                        st.markdown("**📝 Recommendations:**")
+                        recommendations = ensemble.get('recommendations', [])
+                        for rec in recommendations:
+                            st.write(f"• {rec}")
+                else:
+                    st.info("Ensemble scoring not available. Using individual scoring systems below.")
+
+                # NEW: Subprime Lending Analysis Section (kept for detailed breakdown)
+                st.markdown("---")
+                st.subheader("📊 Detailed Scoring Analysis")
 
                 # Subprime scoring overview
                 subprime_col1, subprime_col2, subprime_col3 = st.columns(3)
