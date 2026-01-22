@@ -1,487 +1,495 @@
-# Business Finance Scorecard v2.1
+# Business Finance Scorecard v2.2
 
-An advanced business finance analysis and risk assessment platform designed for **short-term subprime business lending** (£1,000-£10,000 loans, 6-9 month terms). This application provides comprehensive financial analysis, multiple scoring methodologies, and risk-tiered lending recommendations.
+An advanced business finance analysis and risk assessment platform designed for **short-term subprime business lending** (£1,000-£10,000 loans, 6-9 month terms). This application provides comprehensive financial analysis, **unified ensemble scoring**, and risk-tiered lending recommendations.
 
-## 🚀 Features
+## 🚀 Key Features
 
 ### Core Capabilities
 
-- **Multiple Scoring Systems**: Subprime-optimized scoring, weighted threshold scoring, and ML-based predictions
-- **Advanced Transaction Categorization**: Intelligent classification of financial transactions with 95%+ accuracy
-- **Interactive Dashboard**: Real-time financial metrics visualization with Plotly charts
-- **Industry Benchmarking**: Compare against 25+ industry-specific thresholds
+- **Unified Ensemble Scoring**: Combines 4 scoring methodologies into a single, weighted recommendation
+- **Multiple Scoring Systems**: MCA Rules, Subprime-optimized, V2 Weighted, and ML-based predictions
+- **Advanced Transaction Categorization**: Intelligent classification with 95%+ accuracy
+- **Interactive Dashboard**: Real-time metrics visualization with Plotly charts
+- **Industry Benchmarking**: 25+ industry-specific thresholds
 - **Risk Assessment**: Comprehensive evaluation including CCJs, defaults, and operational factors
-- **Export Functionality**: Generate HTML reports, JSON data exports, and CSV downloads
+- **Export Functionality**: HTML reports, JSON exports, and CSV downloads
 - **Batch Processing**: Process multiple loan applications simultaneously
 
-### Specialized Features
+### Recent Enhancements (v2.2)
 
-- **Short-Term Subprime Focus**: Optimized for £1-10k loans with 6-9 month repayment terms
-- **Cash Flow Stability Emphasis**: Prioritizes liquidity and payment ability over growth
-- **Loans & Debt Analysis**: Detailed tracking of borrowing patterns and repayment behavior
-- **Revenue Insights**: Source diversification and transaction pattern analysis
-- **Tightened Risk Thresholds**: Calibrated for ~20% approval rate
+- **🎯 Unified Recommendation System**: Single decision combining all scoring methods
+- **📊 Streamlined Dashboard**: Clean hierarchy with decision at top
+- **⚙️ Centralized Thresholds**: All scoring parameters in one configuration
+- **🔄 Modular Architecture**: Refactored codebase for maintainability
+- **📈 Continuous Scoring**: Partial credit instead of binary pass/fail
+- **🤖 Improved ML Confidence**: Better uncertainty estimation
 
+---
 
-## 🧾 MCA Scorecard (Rule-Based Consistency Engine)
+## 📊 Scoring & Decisioning Process
 
-This repo now includes an **MCA-specific, transparent rule engine** designed to assess whether a business demonstrates the **revenue consistency required to sustainably support a Merchant Cash Advance**.
+### Overview
 
-### Why we added this
+The application uses an **Ensemble Scoring** approach that combines four different scoring methodologies, each with specific weights based on their predictive power for MCA lending outcomes:
 
-The MCA scorecard was introduced following a structured, evidence-led review of our historic MCA lending outcomes.
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    UNIFIED RECOMMENDATION                        │
+│                                                                  │
+│   Combined Score = (MCA × 35%) + (Subprime × 35%)               │
+│                  + (ML × 25%) + (Weighted × 5%)                  │
+│                                                                  │
+│   Decision: APPROVE | CONDITIONAL | REFER | SENIOR_REVIEW | DECLINE
+└─────────────────────────────────────────────────────────────────┘
+         ▲              ▲              ▲              ▲
+         │              │              │              │
+    ┌────┴────┐   ┌────┴────┐   ┌────┴────┐   ┌────┴────┐
+    │MCA Rule │   │Subprime │   │   ML    │   │Weighted │
+    │  (35%)  │   │  (35%)  │   │  (25%)  │   │  (5%)   │
+    │         │   │         │   │         │   │         │
+    │Cashflow │   │  Risk   │   │ Pattern │   │ Binary  │
+    │Consist. │   │  Tiers  │   │ Predict │   │Threshold│
+    └─────────┘   └─────────┘   └─────────┘   └─────────┘
+```
 
-As part of this process, we built a **training dataset using all previously funded MCA applications**, combining:
-- Full transaction-level cashflow data
-- Derived financial and behavioural metrics
-- **Observed loan outcomes** (paid as agreed, arrears, default)
+### 1. MCA Rule Score (35% Weight)
 
-This analysis highlighted a clear pattern: while traditional financial metrics remain important, **short-term revenue consistency** (frequency, gaps, and stability of inflows) was one of the strongest differentiators between:
-- Businesses that repaid smoothly, and  
-- Businesses that entered early distress or defaulted.
+**Purpose**: Assesses transaction consistency required to sustainably support a Merchant Cash Advance.
 
-The existing scorecard is intentionally comprehensive, but MCA underwriting also benefits from a **fast, explainable “cashflow consistency gate”** that:
-- Reflects real observed outcomes  
-- Can be calibrated independently as more MCA data accumulates  
-- Provides immediate, defensible triage decisions  
+**Why 35% Weight**: Analysis of historic MCA outcomes showed that **revenue consistency** (not just total revenue) is one of the strongest differentiators between businesses that repay smoothly vs. those that default.
 
-### How we arrived at this approach
+**Core Signals Evaluated**:
 
-The MCA rule engine is the result of the following process:
+| Signal | What It Measures | Why It Matters |
+|--------|------------------|----------------|
+| **Inflow Days (30d)** | Days with positive inflows | Trading regularity |
+| **Maximum Gap** | Longest period without inflows | Business continuity risk |
+| **Inflow Volatility** | Stability of inflow amounts (CV) | Predictability of cashflow |
 
-1. **Outcome-based training dataset**  
-   - We constructed a dataset using only **funded applications**, ensuring all observations had real repayment outcomes.  
-   - This anchored decisions in actual performance rather than theoretical assumptions.
+**Decision Logic**:
+```
+IF insufficient_data → DECLINE (data quality gate)
+IF inflow_days < 8 AND max_gap > 14 → DECLINE (severe consistency failure)
+IF volatility > 2.0 → DECLINE (extremely erratic)
+IF score >= 70 AND no_hard_stops → APPROVE
+IF score >= 50 → REFER
+ELSE → DECLINE
+```
 
-2. **Metric review and pattern analysis**  
-   - A wide range of transaction-derived metrics were reviewed.  
-   - Particular focus was placed on measures of **revenue regularity**, not just total revenue.
+### 2. Subprime Score (35% Weight)
 
-3. **Identification of dominant consistency signals**  
-   - Three metrics consistently showed strong explanatory power across outcomes:
-     - Frequency of inflow days
-     - Length of gaps between inflows
-     - Volatility of inflow amounts  
-   - These signals align closely with the operational reality of MCA products, which rely on frequent trading activity.
+**Purpose**: Primary lending decision tool optimized for short-term subprime market (£1-10k, 6-9 months).
 
-4. **Rule-based implementation**  
-   - Rather than embedding this logic in a black-box model, it was implemented as a **standalone, rule-based engine**.  
-   - This ensures decisions are explainable, auditable, and easy to refine as further outcome data becomes available.
+**Why 35% Weight**: Designed specifically for micro-enterprise assessment with industry-specific adjustments and risk penalties.
 
-### What it does
+**Component Weights**:
 
-The MCA rule engine evaluates three core consistency signals derived from transaction data:
+| Component | Weight | Rationale |
+|-----------|--------|-----------|
+| Debt Service Coverage Ratio | 28% | Primary ability to service payments |
+| Average Month-End Balance | 18% | Critical liquidity buffer |
+| Directors Score | 16% | Personal creditworthiness |
+| Cash Flow Volatility | 12% | Stability for repayment |
+| Revenue Growth Rate | 10% | Business trajectory |
+| Operating Margin | 6% | Current profitability |
+| Net Income | 4% | Overall profitability |
+| Negative Balance Days | 4% | Cash management |
+| Company Age | 2% | Business maturity |
 
-- **Inflow days (last 30 days)** – number of days with positive inflows, indicating trading regularity  
-- **Maximum inflow gap (days)** – longest period without inflows, highlighting dependency or trading pauses  
-- **Inflow volatility (coefficient of variation)** – stability of inflow amounts; higher values indicate less predictable cashflow  
+**Risk Tier Classification**:
 
-These are assessed alongside **data sufficiency checks** (e.g. coverage period and activity levels).
+| Tier | Score Range | Decision | Factor Rate |
+|------|-------------|----------|-------------|
+| Tier 1 (Premium) | 65+ | APPROVE | 1.5-1.6x |
+| Tier 2 (Standard) | 50-65 | APPROVE | 1.7-1.85x |
+| Tier 3 (Conditional) | 40-50 | CONDITIONAL | 1.85-2.0x |
+| Tier 4 (High Risk) | 30-40 | SENIOR_REVIEW | 2.0-2.2x |
+| Decline | <30 | DECLINE | N/A |
 
-The engine returns:
+**Risk Factor Penalties**:
 
-- **Decision**: `APPROVE`, `REFER`, or `DECLINE`  
-- **Score (0–100)**: simple points-based ranking for prioritisation  
-- **Reasons**: explicit rule triggers for traceability, QA, and governance review  
+| Risk Factor | Penalty | Impact |
+|-------------|---------|--------|
+| Business CCJ | -12 pts | Severe litigation risk |
+| Personal Default (12m) | -8 pts | Personal credit crucial |
+| Director CCJ | -8 pts | Director financial issues |
+| No Online Presence | -4 pts | Business viability concern |
+| Outdated Web Presence | -3 pts | Operational concerns |
+| Generic Email | -2 pts | Professionalism indicator |
 
-### How it improves underwriting
+### 3. ML Score (25% Weight)
 
-- **Evidence-led decisions** grounded in observed repayment behaviour  
-- **Faster, consistent triage** of strong vs weak cashflow profiles  
-- **Clear audit trail** with explicit decision reasons  
-- **Separation of concerns**, keeping MCA consistency policy distinct from broader affordability and risk models  
-- **Calibration-friendly design**, with thresholds managed in a single ruleset and reviewed as new outcomes emerge  
+**Purpose**: Machine learning probability prediction based on historical loan outcomes.
 
-### New files
+**Why 25% Weight**: Data-driven predictions, but requires larger dataset for full reliability. Currently supports decision-making but shouldn't override rule-based systems.
 
-- `mca_scorecard_rules.py` – MCA rule engine containing thresholds, scoring logic, and decision outcomes  
-- `score_all_apps.py` – batch runner that applies the MCA rules across all JSON exports and outputs CSV/XLSX for analysis and MI
+**Features Used**:
+- Directors Score
+- Total Revenue & Debt
+- Debt-to-Income Ratio
+- Operating Margin
+- DSCR
+- Cash Flow Volatility
+- Revenue Growth Rate
+- Average Month-End Balance
+- Negative Balance Days
+- Bounced Payments
+- Company Age
+- Sector Risk
 
-## 📊 Scoring Methodologies
+**Confidence Calculation**:
+- Uses probability margin (distance from 50%)
+- Adjusts for prediction extremity
+- Reports confidence intervals
 
-### 1. 🎯 Subprime Score (Primary)
+### 4. V2 Weighted Score (5% Weight)
 
-- **Purpose**: Primary lending decision tool for short-term subprime market
-- **Focus**: Debt service coverage (28%), cash balance (18%), and stability (12%)
-- **Target Approval Rate**: ~15-25% (tightened thresholds)
-- **Risk Factors**: Includes penalties for CCJs, defaults, and operational concerns
+**Purpose**: Simple binary threshold validation system.
 
-### 2. 🏛️ V2 Weighted Score (Secondary)
+**Why 5% Weight**: Analysis showed binary pass/fail approach is less predictive than continuous scoring, but provides useful validation.
 
-- **Purpose**: Binary threshold validation system
-- **Method**: Pass/fail evaluation against industry benchmarks
-- **Transparency**: Simple, explainable scoring methodology
-- **Use Case**: Secondary validation and regulatory compliance
+**Method**: Each metric evaluated against industry benchmark:
+- **Pass**: Full points if value exceeds threshold
+- **Partial Credit**: Proportional points based on how close to threshold
+- **Fail**: Zero points if significantly below threshold
 
-### 3. 🤖 ML Score (Future Use)
+---
 
-- **Purpose**: Machine learning predictions (currently for monitoring only)
-- **Status**: Requires larger dataset for production use
-- **Enhancement**: Includes growth business adjustments
-- **Recommendation**: Not for lending decisions until sufficient training data
+## 🎯 Unified Decision Process
 
-## 💰 Lending Parameters
+### Decision Hierarchy
 
-This scoring system is calibrated for:
+```
+1. HARD STOPS (immediate decline):
+   - MCA Rule = DECLINE
+   - Subprime Tier = "Decline"
+   - Combined Score < 25
+   - Business CCJ present
 
-| Parameter                | Value            |
-| ------------------------ | ---------------- |
-| **Loan Range**           | £1,000 - £10,000 |
-| **Typical Test Amount**  | £2,000           |
-| **Factor Rate**          | 1.8x             |
-| **Term Length**          | 6-9 months       |
-| **Target Approval Rate** | ~15-25%          |
+2. SCORE-BASED DECISION:
+   Combined Score 70+ → APPROVE
+   Combined Score 55-70 → CONDITIONAL_APPROVE
+   Combined Score 40-55 → REFER
+   Combined Score 30-40 → SENIOR_REVIEW
+   Combined Score <30 → DECLINE
 
-## 📈 Scoring Breakdown (v2.1 - Tightened)
+3. CONVERGENCE CHECK:
+   - High convergence (all methods agree): Increases confidence
+   - Low convergence (methods disagree): Triggers REFER/SENIOR_REVIEW
+```
 
-### Subprime Score Components
+### Score Convergence
 
-| Component                       | Weight | Rationale                                        |
-| ------------------------------- | ------ | ------------------------------------------------ |
-| **Debt Service Coverage Ratio** | 28%    | Primary ability to service debt payments         |
-| **Average Month-End Balance**   | 18%    | Critical liquidity buffer for short-term loans   |
-| **Directors Score**             | 16%    | Personal reliability and creditworthiness        |
-| **Cash Flow Volatility**        | 12%    | Stability crucial for 6-9 month repayment        |
-| **Revenue Growth Rate**         | 10%    | Reduced weight - less relevant for short terms   |
-| **Operating Margin**            | 6%     | Current profitability (tolerant of small losses) |
-| **Net Income**                  | 4%     | Overall profitability indicator                  |
-| **Negative Balance Days**       | 4%     | Cash flow management capability                  |
-| **Company Age**                 | 2%     | Business maturity (minimal weight)               |
+The system evaluates how well the four scoring methods agree:
 
-### Tightened Thresholds (v2.1)
+| Convergence | Std Dev | Meaning |
+|-------------|---------|---------|
+| High | ≤10 | All methods strongly agree |
+| Good | ≤15 | Methods mostly align |
+| Moderate | ≤20 | Some disagreement |
+| Low | >20 | Significant disagreement - review required |
 
-| Metric                         | Old Threshold | New Threshold | Impact                            |
-| ------------------------------ | ------------- | ------------- | --------------------------------- |
-| **Minimum Balance**            | £500          | £1,500        | Must cover ~3 months payments     |
-| **Maximum Volatility**         | 1.0 (100%)    | 0.6 (60%)     | Requires stable cash flow         |
-| **Minimum DSCR for points**    | 1.0           | 1.3           | Must have margin for loan payment |
-| **Tier 1 Score**               | 75+           | 82+           | Premium tier harder to reach      |
-| **Tier 2 Score (Approve)**     | 60+           | 70+           | Standard approval tightened       |
-| **Tier 3 Score (Conditional)** | 45+           | 55+           | Conditional approval tightened    |
-| **Tier 4 Score (Review)**      | 30+           | 40+           | More applications decline         |
+### Pricing Guidance
 
-### Risk Factor Penalties
+Based on combined score and tier:
 
-| Risk Factor                | Penalty    | Notes                                 |
-| -------------------------- | ---------- | ------------------------------------- |
-| **Business CCJ**           | -12 points | Severe - business litigation risk     |
-| **Personal Default (12m)** | -8 points  | High - personal credit crucial        |
-| **Director CCJ**           | -8 points  | High - director financial issues      |
-| **No Online Presence**     | -4 points  | Moderate - business viability concern |
-| **Outdated Web Presence**  | -3 points  | Minor - operational concerns          |
-| **Generic Email**          | -2 points  | Minor - professionalism indicator     |
+| Score Range | Factor Rate | Max Term | Max Multiple | Collection |
+|-------------|-------------|----------|--------------|------------|
+| 70+ | 1.35-1.45 | 12 months | 4x monthly rev | Weekly |
+| 55-70 | 1.45-1.55 | 9 months | 3x monthly rev | Weekly |
+| 40-55 | 1.55-1.65 | 6 months | 2x monthly rev | Daily |
+| 30-40 | Case-by-case | 3-6 months | 1.5x monthly rev | Daily |
 
-## 🎯 Risk Tiers & Pricing (v2.1)
+---
 
-### Tier 1: Premium Subprime (82+ score)
+## 📱 Dashboard Layout
 
-- **Requirements**: Score 82+, DSCR ≥2.5, Growth ≥15%, Directors ≥75, Volatility ≤0.3
-- **Rate**: 1.5-1.6 factor rate
-- **Loan Multiple**: 4x monthly revenue (max £10k)
-- **Term**: 6-12 months
-- **Monitoring**: Monthly reviews
+The dashboard presents information in a clear hierarchy:
 
-### Tier 2: Standard Subprime (70-82 score)
+### 1. Unified Recommendation (Top)
+- **Primary Decision**: APPROVE/DECLINE/REFER with confidence %
+- **Combined Score**: 0-100 with contributing breakdown
+- **4 Score Metrics**: MCA (35%), Subprime (35%), ML (25%), Weighted (5%)
+- **Convergence Indicator**: How well methods agree
+- **Expandable**: Pricing guidance, risk factors, recommendations
 
-- **Requirements**: Score 70+, DSCR ≥2.0, Volatility ≤0.45
-- **Rate**: 1.7-1.85 factor rate
-- **Loan Multiple**: 3x monthly revenue (max £8k)
-- **Term**: 6-9 months
-- **Monitoring**: Bi-weekly reviews
+### 2. Revenue Insights
+- Unique revenue sources
+- Average transactions per day
+- Daily revenue metrics
+- Revenue active days
 
-### Tier 3: High-Risk Subprime (55-70 score)
+### 3. Charts & Analysis
+- Score comparison charts
+- Financial metrics visualization
+- Monthly trend analysis
+- Threshold comparison charts
 
-- **Requirements**: Score 55+, DSCR ≥1.5, Directors ≥55, Volatility ≤0.55
-- **Rate**: 1. 85-2.0 factor rate
-- **Loan Multiple**: 2. 5x monthly revenue (max £5k)
-- **Term**: 4-6 months
-- **Monitoring**: Weekly reviews
+### 4. Monthly Breakdown
+- Transaction counts by category
+- Transaction amounts by category
+- Detailed monthly tables
 
-### Tier 4: Enhanced Monitoring (40-55 score)
+### 5. Transaction Analysis
+- Category distribution
+- Transaction type breakdown
+- Pattern identification
 
-- **Requirements**: Score 40+, DSCR ≥1. 3
-- **Rate**: 2.0-2.2+ factor rate
-- **Loan Multiple**: 2x monthly revenue (max £3k)
-- **Term**: 3-6 months
-- **Monitoring**: Weekly reviews + daily balance + **Personal Guarantees REQUIRED**
+### 6. Loans & Debt Repayments
+- Existing debt analysis
+- Repayment behavior tracking
+- Debt stacking risk assessment
 
-### Decline (<40 score)
+### 7. Detailed Financial Metrics
+- All calculated metrics vs thresholds
+- Pass/fail status for each
 
-- Applications below 40 score are declined
-- Risk profile exceeds acceptable parameters for short-term subprime lending
+### 8. Detailed Scoring Analysis (Expandable)
+- Subprime score breakdown
+- V2 Weighted component analysis
+- Metric performance table
+- Top risk/strength factors
+- Improvement suggestions
+- ML reliability assessment
+
+---
 
 ## 🏗️ Architecture
 
 ```
 MCAV2/
 ├── app/
-│   ├── main.py                          # Main Streamlit application (single app)
+│   ├── main.py                              # Main Streamlit application
 │   ├── services/
-│   │   ├── subprime_scoring_system.py   # Tightened subprime scoring (v2.1)
-│   │   ├── data_processor.py            # Transaction processing
-│   │   └── financial_analyzer.py        # Financial metrics calculation
-│   ├── core/
-│   │   ├── exceptions.py                # Custom exception handling
-│   │   ├── validators.py                # Input validation
-│   │   ├── logger.py                    # Logging configuration
-│   │   └── cache.py                     # Caching utilities
+│   │   ├── ensemble_scorer.py               # 🆕 Unified scoring system
+│   │   ├── subprime_scoring_system.py       # Subprime scoring (v2.2)
+│   │   ├── advanced_metrics.py              # 🆕 Advanced risk metrics
+│   │   ├── data_processor.py                # Transaction processing
+│   │   └── financial_analyzer.py            # Financial metrics
 │   ├── config/
-│   │   ├── settings.py                  # Application settings
-│   │   └── industry_config.py           # Industry thresholds
-│   └── utils/
-│       └── chart_utils.py               # Interactive chart generation
+│   │   ├── scoring_thresholds.py            # 🆕 Centralized thresholds
+│   │   ├── settings.py                      # Application settings
+│   │   └── industry_config.py               # Industry configurations
+│   ├── pages/
+│   │   ├── scoring.py                       # 🆕 Modular scoring functions
+│   │   ├── transactions.py                  # 🆕 Transaction processing
+│   │   ├── charts.py                        # 🆕 Chart generation
+│   │   └── reports.py                       # 🆕 Report generation
+│   ├── utils/
+│   │   ├── feature_alignment.py             # 🆕 Feature mapping
+│   │   ├── weight_calibration.py            # 🆕 ML weight extraction
+│   │   └── chart_utils.py                   # Chart utilities
+│   └── core/
+│       ├── exceptions.py                    # Custom exceptions
+│       ├── validators.py                    # Input validation
+│       ├── logger.py                        # Logging
+│       └── cache.py                         # Caching
 ├── MCAV2_BatchProcessor/
-│   └── batch_processor_standalone.py    # Batch processing application (v2.1)
-├── model. pkl                            # ML model (scikit-learn)
-├── scaler.pkl                           # Feature scaler
-├── requirements.txt                     # Python dependencies
-├── Dockerfile                           # Container configuration
-├── docker-compose.yml                   # Multi-service deployment
-├── mca_scorecard_rules.py               # MCA rule engine (transparent APPROVE/REFER/DECLINE)
-├── score_all_apps.py                   # Batch scorer for all MCA JSON exports (CSV/XLSX output)
-└── README.md                            # This file
+│   └── batch_processor_standalone.py        # Batch processing (standalone)
+├── mca_scorecard_rules.py                   # MCA rule engine
+├── build_training_dataset.py                # Training data builder
+├── score_all_apps.py                        # Batch MCA scorer
+├── model.pkl                                # ML model
+├── scaler.pkl                               # Feature scaler
+├── requirements.txt                         # Dependencies
+├── Dockerfile                               # Container config
+├── docker-compose.yml                       # Multi-service deployment
+└── README.md                                # This file
 ```
+
+### Key New Components
+
+#### `ensemble_scorer.py`
+Combines all scoring methods with configurable weights:
+```python
+SCORING_WEIGHTS = {
+    'mca_rule': 0.35,      # Transaction consistency
+    'subprime': 0.35,      # Risk-tier assessment
+    'ml': 0.25,            # Pattern prediction
+    'adaptive': 0.05       # Threshold validation
+}
+```
+
+#### `scoring_thresholds.py`
+Centralized threshold configuration:
+```python
+THRESHOLDS = ScoringThresholds(
+    dscr=MetricThreshold(full_points=1.5, tiers=[(1.3, 0.8), (1.0, 0.5)]),
+    operating_margin=MetricThreshold(full_points=0.15, tiers=[(0.05, 0.7), (0.0, 0.4)]),
+    # ... all metrics defined here
+)
+```
+
+#### `advanced_metrics.py`
+Calculates additional risk signals:
+- Deposit frequency score
+- Revenue concentration (HHI)
+- Seasonality coefficient
+- Days since last NSF
+- Balance trend
+- Debt stacking risk
+
+---
 
 ## 🔧 Installation
 
 ### Prerequisites
-
 - Python 3.9+
 - pip package manager
 - 4GB+ RAM recommended
 
 ### Quick Start
 
-1. **Clone the repository**
-
 ```bash
+# Clone repository
 git clone <repository-url>
 cd MCAV2
-```
 
-2.  **Install dependencies**
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-3. **Run the single application processor**
-
-```bash
+# Run application
 streamlit run app/main.py
 ```
 
-4. **Run the batch processor**
+### Docker Deployment
 
 ```bash
-streamlit run MCAV2_BatchProcessor/batch_processor_standalone. py --server.port 8502
+# Build and run
+docker-compose up -d
+
+# Or use make commands
+make build
+make run
 ```
 
-The applications will be available at:
-
-- Single app: `http://localhost:8501`
-- Batch processor: `http://localhost:8502`
-
-### Windows Quick Start
-
-```batch
-# Run the provided batch file
-run_app.bat
-```
+---
 
 ## 📋 Usage Guide
 
-### Single Application Processing (main.py)
+### Single Application Processing
 
-1. **Business Parameters Setup**
+1. **Configure Business Parameters**
+   - Company name, industry, age
+   - Directors credit score (0-100)
+   - Requested loan amount
+   - Risk factors (CCJs, defaults, web presence)
 
-   - Company Information: Name, industry, age, requested loan amount
-   - Director Details: Credit score (0-100)
-   - Risk Factors: CCJs, defaults, web presence, etc.
+2. **Upload Transaction Data**
+   - JSON format (Plaid export supported)
+   - Automatic categorization
+   - Period filtering available
 
-2. **Data Upload**
+3. **Review Analysis**
+   - Unified recommendation at top
+   - Drill into detailed scoring
+   - Export reports
 
-   - Upload JSON transaction data (Plaid format supported)
-   - Automatic transaction categorization
-   - Period filtering (3, 6, 9, 12 months or all data)
-
-3. **Analysis Results**
-   - Primary Scores: Subprime (primary), V2 Weighted, ML predictions
-   - Financial Metrics: 15+ key performance indicators
-   - Risk Assessment: Comprehensive risk evaluation
-   - Recommendations: Tier-based lending guidance
-
-### Batch Processing (batch_processor_standalone.py)
-
-1. **Upload CSV Parameter File**
-
-   - Contains company-specific parameters (industry, directors score, loan amount, etc.)
-   - Fuzzy matching links CSV rows to JSON transaction files
-
-2. **Upload Transaction Files**
-
-   - Multiple JSON files or ZIP archive
-   - Automatic company name extraction and matching
-
-3. **Process & Analyze**
-   - Batch scoring with tightened thresholds
-   - Comprehensive debug information
-   - Export results to CSV
-
-
-### MCA Batch Scoring (score_all_apps.py)
-
-This script runs the MCA consistency rules across **all** JSON files under your `JsonExport` folder and produces:
-
-- `mca_scorecard_decisions_all_apps.csv`
-- `mca_scorecard_decisions_all_apps.xlsx`
-
-**Run:**
+### Batch Processing
 
 ```bash
+# Run batch processor on separate port
+streamlit run MCAV2_BatchProcessor/batch_processor_standalone.py --server.port 8502
+```
+
+### MCA Batch Scoring
+
+```bash
+# Score all applications in JsonExport folder
 python score_all_apps.py
 ```
 
-**Notes:**
-
-- Update `JSON_ROOT` and `OUT_DIR` at the top of `score_all_apps.py` to match your machine paths.
-- The script imports feature building from `build_training_dataset.py` to keep calculations consistent.
-- Adjust thresholds in `mca_scorecard_rules.py` (the `Thresholds` dataclass) as you calibrate against outcomes.
-
-### CSV Parameter File Format
-
-```csv
-company_name,industry,directors_score,requested_loan,company_age_months,personal_default_12m,business_ccj,director_ccj
-ABC Manufacturing Ltd,Manufacturing,78,5000,24,FALSE,FALSE,FALSE
-Smith's Restaurant,Restaurants and Cafes,65,3000,18,FALSE,FALSE,FALSE
-Tech Solutions UK,IT Services and Support Companies,82,8000,36,FALSE,FALSE,FALSE
-```
-
-## 🎯 Industry Support
-
-The application supports 25+ industries with specific risk profiles:
-
-**Low Risk Sectors (multiplier: 1.05-1.1x):**
-
-- Medical Practices (GPs, Clinics, Dentists)
-- IT Services and Support Companies
-- Business Consultants
-- Education
-- Engineering
-
-**Standard Risk Sectors (multiplier: 1.0x):**
-
-- Manufacturing, Retail, Food Service
-- Professional Services
-- E-commerce and Technology
-
-**Higher Risk Sectors (multiplier: 0.8-0.9x):**
-
-- Restaurants and Cafes
-- Construction Firms
-- Bars and Pubs
-- Beauty Salons and Spas
-- Event Planning and Management Firms
-
-## 📊 Key Metrics Calculated
-
-### Financial Performance
-
-- **Revenue Metrics**: Total revenue, monthly average, growth rate
-- **Profitability**: Operating margin, net income, gross burn rate
-- **Debt Management**: DSCR, debt-to-income ratio, repayment tracking
-- **Cash Flow**: Volatility, negative balance days, average balances
-
-### Risk Indicators
-
-- **Payment Reliability**: Bounced payments, failed transactions
-- **Stability Metrics**: Cash flow consistency, seasonal patterns
-- **Growth Analysis**: Revenue trajectory (reduced weight in v2.1)
+---
 
 ## 🔍 Transaction Categorization
 
-The system automatically categorizes transactions into:
+Automatic classification into:
 
-- **Income**: Payment processors (Stripe, SumUp, Square, etc.), direct revenue, sales
-- **Expenses**: Operational costs, payroll, utilities
-- **Loans**: Business financing, advances, capital injections (YouLend, Iwoca, etc.)
-- **Debt Repayments**: Loan payments, debt service
-- **Special Inflows**: Grants, refunds, investments
-- **Special Outflows**: Withdrawals, transfers, investments
-- **Failed Payments**: Bounced transactions, insufficient funds
+| Category | Examples |
+|----------|----------|
+| **Income** | Stripe, SumUp, Square, PayPal, direct sales |
+| **Expenses** | Utilities, payroll, supplies, rent |
+| **Loans** | YouLend, Iwoca, Funding Circle, capital |
+| **Debt Repayments** | Loan payments, financing charges |
+| **Special Inflows** | Grants, refunds, investments |
+| **Special Outflows** | Owner withdrawals, transfers |
+| **Failed Payments** | Bounced, NSF, insufficient funds |
 
-## ⚠️ Known Issues
+---
 
-### scikit-learn Version Warning
+## 📊 Key Metrics
 
-You may see this warning when running the application:
+### Financial Performance
+- Total Revenue, Monthly Average, Growth Rate
+- Operating Margin, Net Income
+- DSCR, Debt-to-Income Ratio
+- Cash Flow Volatility, Negative Balance Days
 
-```
-Trying to unpickle estimator StandardScaler from version 1.6.1 when using version 1.7.0
-```
+### Consistency Signals (MCA-specific)
+- Inflow frequency (days with deposits)
+- Maximum gap between inflows
+- Inflow amount volatility (CV)
 
-**Resolution**: This is a warning, not an error. The ML score is secondary to the subprime score. To fix permanently:
+### Risk Indicators
+- Bounced payments count
+- Failed transaction rate
+- Seasonal patterns
+- Revenue concentration
 
-```python
-import joblib
-model = joblib.load('model. pkl')
-scaler = joblib.load('scaler.pkl')
-joblib.dump(model, 'model.pkl')
-joblib.dump(scaler, 'scaler.pkl')
-```
+---
 
-## 📦 Dependencies
+## 📈 Version History
 
-### Core Framework
+### v2.2.0 (Current - January 2026)
+- **🎯 Unified Ensemble Scoring**: Combined recommendation from 4 methods
+- **📊 Dashboard Reorganization**: Decision at top, consolidated details
+- **⚙️ Centralized Thresholds**: Single source of truth for all scoring
+- **🔄 Modular Refactoring**: Extracted pages/, services/, utils/ modules
+- **📈 Continuous Scoring**: Partial credit instead of binary pass/fail
+- **🤖 Improved ML Confidence**: Better uncertainty estimation
+- **🐛 Bug Fixes**: Subprime penalty calculation, tier alignment
 
-- **Streamlit**: Web application framework
-- **Pandas**: Data manipulation and analysis
-- **NumPy**: Numerical computing
-
-### Visualization
-
-- **Plotly**: Interactive charts and graphs
-
-### Machine Learning
-
-- **Scikit-learn**: ML algorithms and utilities (v1.6.1+ recommended)
-- **Joblib**: Model serialization
-
-### Additional Features
-
-- **RapidFuzz**: Fuzzy text matching for company name matching
-- **Python-dotenv**: Environment configuration
-
-## 📊 Version History
-
-### v2.1.0 (Current - December 2024)
-
-- **TIGHTENED scoring thresholds** for £1-10k short-term lending
+### v2.1.0 (December 2024)
+- Tightened scoring thresholds for £1-10k lending
 - Increased balance weight (12% → 18%)
 - Reduced growth weight (20% → 10%)
-- Increased volatility weight (8% → 12%)
-- Raised minimum balance threshold (£500 → £1,500)
-- Lowered maximum volatility tolerance (1.0 → 0.6)
-- Raised tier score thresholds (Tier 1: 75→82, Tier 2: 60→70, etc.)
-- Target approval rate reduced from ~80% to ~15-25%
-- Synchronized scoring between main app and batch processor
+- Target approval rate ~15-25%
 
 ### v2.0.0
-
 - Enhanced subprime scoring system
 - Risk factor penalty integration
-- Advanced transaction categorization
-- Interactive dashboard with export functionality
+- Interactive dashboard with exports
 - Docker deployment support
-- Batch processing capability
 
 ### v1.0.0
-
 - Basic financial analysis
 - Simple threshold scoring
-- Manual transaction categorization
+
+---
 
 ## 🛠️ Development
+
+### Modifying Scoring Weights
+
+Edit `app/services/ensemble_scorer.py`:
+```python
+SCORING_WEIGHTS = {
+    'mca_rule': 0.35,
+    'subprime': 0.35,
+    'ml': 0.25,
+    'adaptive': 0.05
+}
+```
+
+### Modifying Thresholds
+
+Edit `app/config/scoring_thresholds.py`:
+```python
+THRESHOLDS = ScoringThresholds(
+    dscr=MetricThreshold(full_points=1.5, ...),
+    # modify values here
+)
+```
 
 ### Running Tests
 
@@ -492,36 +500,21 @@ python -m pytest tests/ -v --cov=app
 ### Code Quality
 
 ```bash
-# Linting
 flake8 app/
-
-# Type checking
 mypy app/
-
-# Code formatting
 black app/
-isort app/
 ```
 
-### Modifying Scoring Thresholds
-
-To adjust scoring thresholds, edit both files to maintain consistency:
-
-1. `app/services/subprime_scoring_system.py` - Single application scoring
-2. `MCAV2_BatchProcessor/batch_processor_standalone.py` - Batch processing scoring
-
-Key sections to modify:
-
-- `__init__`: Weight allocations and threshold definitions
-- `_calculate_base_subprime_score` / `_calculate_tightened_base_score`: Score calculations
-- `_determine_risk_tier` / `_determine_tightened_risk_tier`: Tier boundaries
+---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ---
 
 **Built for short-term subprime business lending analysis**
 
-_Calibrated for £1-10k loans with 1.8x factor rate and 6-9 month terms_
+*Unified ensemble scoring for £1-10k loans with 6-9 month terms*
+
+*Combines MCA consistency rules, subprime risk tiers, ML predictions, and threshold validation*
