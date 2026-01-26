@@ -15,6 +15,9 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     Includes comprehensive patterns for payment processors, loan providers,
     and business expenses.
     
+    IMPORTANT: The order of checks matters! Reversal/failed payment detection
+    must happen BEFORE income/loan pattern matching to prevent misclassification.
+    
     Args:
         transaction: Dictionary containing transaction data
         
@@ -45,10 +48,33 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     amount = transaction.get("amount", 0)
     combined_text = f"{name} {description}"
 
-    is_credit = amount < 0
-    is_debit = amount > 0
+    is_credit = amount < 0  # Money coming in (negative in Plaid)
+    is_debit = amount > 0   # Money going out (positive in Plaid)
 
-    # Step 1: Custom keyword overrides - Payment processors and income sources
+    # STEP 1 (CRITICAL): Failed payment and reversal patterns - MUST CHECK FIRST!
+    # These patterns should take precedence over income/loan patterns to prevent
+    # misclassifying reversals like "STRIPE REVERSAL" as income
+    failed_payment_patterns = (
+        r"(unpaid|returned|bounced|insufficient\s+funds|nsf|declined|failed|"
+        r"reversed|reversal|chargeback|refund\s+fee|dispute|unp\b|"
+        r"rejected|cancelled\s+payment|payment\s+returned)"
+    )
+    if re.search(failed_payment_patterns, combined_text, re.IGNORECASE):
+        return "Failed Payment"
+    
+    # Also check Plaid categories for failed payments first
+    if category in ("bank_fees_insufficient_funds", "bank_fees_late_payment", 
+                    "bank_fees_overdraft", "bank_fees_returned_payment"):
+        return "Failed Payment"
+
+    # STEP 2: Handle refunds/credits that look like expenses
+    # If it's a credit with expense-like Plaid category, it's likely a refund
+    refund_indicators = r"(refund|rebate|credit\s+adj|adjustment|cashback|reimburs)"
+    if is_credit and re.search(refund_indicators, combined_text, re.IGNORECASE):
+        return "Special Inflow"
+
+    # STEP 3: Custom keyword overrides - Payment processors and income sources
+    # Only apply if this is a credit (money coming in) and NOT a reversal
     if is_credit and re.search(
         r"(?i)\b("
         r"stripe|sumup|zettle|square|take\s*payments|shopify|card\s+settlement|daily\s+takings|payout"
@@ -65,7 +91,7 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     ):
         return "Income"
     
-    # Step 1.5: YouLend special handling (before general loan patterns)
+    # STEP 3.5: YouLend special handling (before general loan patterns)
     if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited)", combined_text):
         # Check if it contains funding indicators (including within reference numbers)
         if re.search(r"(fnd|fund|funding)", combined_text):
@@ -73,7 +99,7 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         else:
             return "Income"
     
-    # Step 2: Loan providers (credits = loans received)
+    # STEP 4: Loan providers (credits = loans received)
     if is_credit and re.search(
         r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|"
         r"\bfleximize\b|\bmarketfinance\b|\bliberis\b|\besme[\s\-]?loans\b|\bthincats\b|"
@@ -89,7 +115,7 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     ):
         return "Loans"
 
-    # Step 3: Loan repayments (debits to loan providers)
+    # STEP 5: Loan repayments (debits to loan providers)
     if is_debit and re.search(
         r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|\bfleximize\b|\bmarketfinance\b|\bliberis\b|"
         r"\besme[\s\-]?loans\b|\bthincats\b|\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
@@ -103,16 +129,13 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         combined_text
     ):
         return "Debt Repayments"
-
-    # Step 4: Failed payment patterns
-    if re.search(r"(unpaid|returned|bounced|insufficient\s+funds|nsf|declined|failed|reversed|chargeback|unp\b)", combined_text, re.IGNORECASE):
-        return "Failed Payment"
         
-    # Step 4.5: Business expense override (before Plaid fallback)
-    if re.search(r"(facebook|facebk|fb\.me|outlook|office365|microsoft|google\s+ads|linkedin|twitter|adobe|zoom|slack|shopify|wix|squarespace|mailchimp|hubspot|hmrc\s*vat|hmrc|hm\s*revenue|hm\s*customs)", combined_text, re.IGNORECASE):
+    # STEP 6: Business expense override (before Plaid fallback)
+    # Only apply to debits to prevent expense refunds being marked as expenses
+    if is_debit and re.search(r"(facebook|facebk|fb\.me|outlook|office365|microsoft|google\s+ads|linkedin|twitter|adobe|zoom|slack|shopify|wix|squarespace|mailchimp|hubspot|hmrc\s*vat|hmrc|hm\s*revenue|hm\s*customs)", combined_text, re.IGNORECASE):
         return "Expenses"
 
-    # Step 5: Plaid category fallback with validation
+    # STEP 7: Plaid category fallback with validation
     plaid_map = {
         "income_wages": "Income",
         "income_other_income": "Income",
@@ -146,20 +169,23 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     if category in plaid_map:
         return plaid_map[category]
 
-    # Step 6: Fallback for Plaid broad categories
-    broad_matchers = [
-        ("Expenses", [
-            "bank_fees_", "entertainment_", "food_and_drink_", "general_merchandise_",
-            "general_services_", "government_and_non_profit_", "home_improvement_",
-            "medical_", "personal_care_", "rent_and_utilities_", "transportation_", "travel_"
-        ])
+    # STEP 8: Fallback for Plaid broad categories
+    # CRITICAL FIX: Only apply expense categories to DEBIT transactions
+    # Credits with expense-like categories are likely refunds
+    expense_category_prefixes = [
+        "bank_fees_", "entertainment_", "food_and_drink_", "general_merchandise_",
+        "general_services_", "government_and_non_profit_", "home_improvement_",
+        "medical_", "personal_care_", "rent_and_utilities_", "transportation_", "travel_"
     ]
+    
+    if any(category.startswith(p) for p in expense_category_prefixes):
+        if is_debit:
+            return "Expenses"
+        else:
+            # Credit with expense-like category = refund
+            return "Special Inflow"
 
-    for label, patterns in broad_matchers:
-        if any(category.startswith(p) for p in patterns):
-            return label
-
-    # Step 7: Default fallback based on amount direction
+    # STEP 9: Default fallback based on amount direction
     # Debit transactions become Expenses, credit transactions stay Uncategorised
     if is_debit:
         return "Expenses"

@@ -93,15 +93,19 @@ class TransactionCategorizer:
         """
         Categorize a single transaction with confidence score.
         
+        IMPORTANT: The order of checks matters! Reversal/failed payment detection
+        must happen BEFORE income/loan pattern matching to prevent misclassification
+        of transactions like "STRIPE REVERSAL" being categorized as income.
+        
         Returns:
             Tuple of (category, confidence_score)
         """
         
         # Extract transaction details
-        name = str(transaction.get("name_y", "")).lower()
+        name = str(transaction.get("name_y", transaction.get("name", ""))).lower()
         merchant_name = str(transaction.get("merchant_name", "")).lower()
         category = str(transaction.get("personal_finance_category.detailed", "")).lower()
-        amount = transaction.get("amount_1", 0)
+        amount = transaction.get("amount_1", transaction.get("amount", 0))
         
         combined_text = f"{name} {merchant_name}"
         
@@ -109,36 +113,44 @@ class TransactionCategorizer:
         is_credit = amount < 0  # Money coming in
         is_debit = amount > 0   # Money going out
         
-        # Step 1: Check for special income patterns
+        # STEP 1 (CRITICAL): Check for failed payment/reversal patterns FIRST!
+        # This must happen before income/loan checks to prevent "STRIPE REVERSAL" 
+        # being categorized as income
+        failed_category, confidence = self._check_failed_payment_patterns(combined_text, category)
+        if confidence > self.confidence_threshold:
+            return failed_category, confidence
+        
+        # STEP 2: Check for refund indicators on credits
+        if is_credit:
+            refund_category, confidence = self._check_refund_patterns(combined_text)
+            if confidence > self.confidence_threshold:
+                return refund_category, confidence
+        
+        # STEP 3: Check for special income patterns (only for credits)
         if is_credit:
             income_category, confidence = self._check_income_patterns(combined_text)
             if confidence > self.confidence_threshold:
                 return income_category, confidence
         
-        # Step 2: Check for loan patterns
+        # STEP 4: Check for loan patterns
         loan_category, confidence = self._check_loan_patterns(combined_text, is_credit)
         if confidence > self.confidence_threshold:
             return loan_category, confidence
         
-        # Step 3: Check for debt repayment patterns
+        # STEP 5: Check for debt repayment patterns (only for debits)
         if is_debit:
             debt_category, confidence = self._check_debt_patterns(combined_text)
             if confidence > self.confidence_threshold:
                 return debt_category, confidence
         
-        # Step 4: Check for failed payment patterns
-        failed_category, confidence = self._check_failed_payment_patterns(combined_text)
-        if confidence > self.confidence_threshold:
-            return failed_category, confidence
-        
-        # Step 5: Use Plaid category as fallback
-        plaid_category, confidence = self._map_plaid_category(category)
+        # STEP 6: Use Plaid category as fallback (with credit/debit awareness)
+        plaid_category, confidence = self._map_plaid_category(category, is_credit, is_debit)
         if confidence > 0.5:
             return plaid_category, confidence
         
-        # Step 6: Basic fallback based on amount direction
+        # STEP 7: Basic fallback based on amount direction
         if is_credit:
-            return "Income", 0.3
+            return "Uncategorised", 0.3
         else:
             return "Expenses", 0.3
     
@@ -184,17 +196,70 @@ class TransactionCategorizer:
         
         return "Unknown", 0.0
     
-    def _check_failed_payment_patterns(self, text: str) -> Tuple[str, float]:
-        """Check for failed payment patterns."""
+    def _check_failed_payment_patterns(self, text: str, category: str = "") -> Tuple[str, float]:
+        """
+        Check for failed payment patterns.
         
+        This should be called FIRST in the categorization pipeline to catch
+        reversals before they match income/loan provider patterns.
+        """
+        
+        # Extended patterns to catch more reversal/failed payment scenarios
+        extended_patterns = [
+            r'reversal', r'reversed', r'chargeback', r'dispute',
+            r'refund\s+fee', r'rejected', r'cancelled\s+payment',
+            r'payment\s+returned'
+        ]
+        
+        # Check base patterns
         for pattern in self.categorization_rules['failed_payment_patterns']:
             if re.search(pattern, text, re.IGNORECASE):
-                return "Failed Payment", 0.9
+                return "Failed Payment", 0.95
+        
+        # Check extended patterns
+        for pattern in extended_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return "Failed Payment", 0.95
+        
+        # Check Plaid category for failed payments
+        failed_plaid_categories = [
+            'bank_fees_insufficient_funds', 'bank_fees_late_payment',
+            'bank_fees_overdraft', 'bank_fees_returned_payment'
+        ]
+        if category.lower() in failed_plaid_categories:
+            return "Failed Payment", 0.95
         
         return "Unknown", 0.0
     
-    def _map_plaid_category(self, category: str) -> Tuple[str, float]:
-        """Map Plaid categories to our categories."""
+    def _check_refund_patterns(self, text: str) -> Tuple[str, float]:
+        """Check for refund/rebate patterns on credit transactions."""
+        
+        refund_patterns = [
+            r'refund', r'rebate', r'credit\s+adj', r'adjustment',
+            r'cashback', r'reimburs', r'money\s+back', r'return\s+credit'
+        ]
+        
+        for pattern in refund_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return "Special Inflow", 0.9
+        
+        return "Unknown", 0.0
+    
+    def _map_plaid_category(self, category: str, is_credit: bool = False, is_debit: bool = True) -> Tuple[str, float]:
+        """
+        Map Plaid categories to our categories.
+        
+        CRITICAL FIX: Takes into account whether transaction is credit or debit.
+        Credits with expense-like Plaid categories are likely refunds, not expenses.
+        
+        Args:
+            category: The Plaid category string
+            is_credit: Whether this is a credit (money coming in)
+            is_debit: Whether this is a debit (money going out)
+        
+        Returns:
+            Tuple of (category, confidence_score)
+        """
         
         plaid_mapping = {
             "income_wages": ("Income", 0.8),
@@ -207,6 +272,8 @@ class TransactionCategorizer:
             "loan_payments_other_payment": ("Debt Repayments", 0.8),
             "bank_fees_insufficient_funds": ("Failed Payment", 0.95),
             "bank_fees_late_payment": ("Failed Payment", 0.95),
+            "bank_fees_overdraft": ("Failed Payment", 0.95),
+            "bank_fees_returned_payment": ("Failed Payment", 0.95),
         }
         
         # Exact match
@@ -224,10 +291,21 @@ class TransactionCategorizer:
             return "Special Inflow", 0.6
         elif category.startswith("transfer_out_"):
             return "Special Outflow", 0.6
-        elif any(category.startswith(prefix) for prefix in 
-                ["entertainment_", "food_and_drink_", "general_merchandise_",
-                 "general_services_", "rent_and_utilities_", "transportation_"]):
-            return "Expenses", 0.7
+        
+        # CRITICAL FIX: Expense-like categories must respect credit/debit direction
+        expense_prefixes = [
+            "entertainment_", "food_and_drink_", "general_merchandise_",
+            "general_services_", "rent_and_utilities_", "transportation_",
+            "travel_", "home_improvement_", "medical_", "personal_care_",
+            "government_and_non_profit_"
+        ]
+        
+        if any(category.startswith(prefix) for prefix in expense_prefixes):
+            if is_debit:
+                return "Expenses", 0.7
+            else:
+                # Credit with expense-like category = likely a refund
+                return "Special Inflow", 0.6
         
         return "Uncategorised", 0.1
 
