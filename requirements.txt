@@ -1,5 +1,8 @@
+# This project requires Python >= 3.10 (Streamlit requirement)
+# If someone tries Python 3.9, pip will skip Streamlit and the install should fail fast elsewhere.
+
 # Core Framework
-streamlit==1.41.1
+streamlit==1.41.1; python_version >= "3.10"
 pandas==2.2.3
 numpy==1.26.4
 
@@ -31,8 +34,7 @@ pydantic>=2.8.0,<3.0.0
 arrow==1.3.0
 
 # System monitoring (for memory monitoring in cache)
-psutil>=5.9.0
+psutil>=5.9.0,<7.0.0
 
 # JSON logging support
-
-python-json-logger>=2.0.0
+python-json-logger>=2.0.0,<3.0.0
