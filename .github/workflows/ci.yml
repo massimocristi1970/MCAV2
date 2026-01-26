@@ -22,6 +22,17 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: "pip"
+
+    - name: Debug python + requirements
+      run: |
+        python --version
+        which python
+        echo "GITHUB_SHA=$GITHUB_SHA"
+        echo "---- ci.yml (first 80 lines) ----"
+        sed -n '1,80p' .github/workflows/ci.yml
+        echo "---- requirements.txt ----"
+        sed -n '1,120p' requirements.txt
+
     
     - name: Install dependencies
       run: |
