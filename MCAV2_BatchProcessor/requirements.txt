@@ -1,7 +1,7 @@
 # Core Framework
 streamlit==1.41.1
 pandas==2.2.3
-numpy==2.1.3
+numpy==1.26.4
 
 # Machine Learning (for ML scoring if models available)
 scikit-learn==1.5.2
