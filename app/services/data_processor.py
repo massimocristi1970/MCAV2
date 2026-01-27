@@ -110,13 +110,13 @@ class TransactionCategorizer:
         name = str(transaction.get("name_y", transaction.get("name", ""))).lower()
         merchant_name = str(transaction.get("merchant_name", "")).lower()
         category = str(transaction.get("personal_finance_category.detailed", "")).lower()
-        amount = transaction.get("amount_1", transaction.get("amount", 0))
+        signed_amount = transaction.get("amount_original", transaction.get("amount_1", transaction.get("amount", 0)))
 
         combined_text = f"{name} {merchant_name}"
 
         # Determine transaction direction
-        is_credit = amount < 0  # Money coming in
-        is_debit = amount > 0  # Money going out
+        is_credit = signed_amount < 0  # Money coming in
+        is_debit = signed_amount > 0  # Money going out
 
         # STEP 1 (CRITICAL): Check for failed payment/reversal patterns FIRST!
         # This must happen before income/loan checks to prevent "STRIPE REVERSAL" 
