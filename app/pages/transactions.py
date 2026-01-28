@@ -46,10 +46,25 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     category = category.lower().strip().replace(" ", "_")
 
     amount = transaction.get("amount", 0)
-    combined_text = f"{name} {description}"
+    amount_original = transaction.get("amount_original", amount)
+    transaction_type = str(transaction.get("transaction_type", "")).lower()
+    transaction_name = str(transaction.get("transaction_name", "")).lower()
+    combined_text = f"{name} {transaction_name} {description}"
+    normalized_text = combined_text.replace("_", " ")
 
-    is_credit = amount < 0  # Money coming in (negative in Plaid)
-    is_debit = amount > 0   # Money going out (positive in Plaid)
+    is_credit = amount_original < 0  # Money coming in (negative in Plaid)
+    is_debit = amount_original > 0  # Money going out (positive in Plaid)
+
+    if transaction_type in ("credit", "deposit", "refund"):
+        is_credit = True
+        is_debit = False
+    elif transaction_type in ("debit", "withdrawal", "payment"):
+        is_debit = True
+        is_credit = False
+
+    if not is_credit and category.startswith("transfer_in_"):
+        is_credit = True
+        is_debit = False
 
     # STEP 1 (CRITICAL): Failed payment and reversal patterns - MUST CHECK FIRST!
     # These patterns should take precedence over income/loan patterns to prevent
@@ -90,9 +105,14 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         combined_text
     ):
         return "Income"
-    
+
+    # STEP 3.25: Disbursement credits should be treated as loans
+    if re.search(r"disbursement", normalized_text, re.IGNORECASE):
+        if is_credit or category.startswith("transfer_in_") or transaction_type in ("credit", "deposit", "refund"):
+            return "Loans"
+
     # STEP 3.5: YouLend special handling (before general loan patterns)
-    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited)", combined_text):
+    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited|\byl\b)", combined_text):
         # Check if it contains funding indicators (including within reference numbers)
         if re.search(r"(fnd|fund|funding)", combined_text):
             return "Loans"
@@ -110,7 +130,8 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         r"\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
         r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
         r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|"
-        r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|\bloans?\b",
+        r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|\bloans?\b|"
+        r"\bdisbursement\b|\byou\s?lend\b|\byl\b",
         combined_text
     ):
         return "Loans"
@@ -125,7 +146,8 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
         r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|\bbizcap[\s\-]?uk\b|"
         r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|"
-        r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b",
+        r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b|"
+        r"\byou\s?lend\b|\byl\b",
         combined_text
     ):
         return "Debt Repayments"
@@ -161,7 +183,7 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     # Handle loan payment categories with validation
     if category.startswith("loan_payments_"):
         # Only trust Plaid if transaction contains actual loan/debt keywords
-        if re.search(r"(loan|debt|repay|finance|lending|credit|iwoca|capify|fundbox)", combined_text, re.IGNORECASE):
+        if re.search(r"(loan|debt|repay|finance|lending|credit|iwoca|capify|fundbox|you\s?lend|\byl\b)", combined_text, re.IGNORECASE):
             return "Debt Repayments"
         # Otherwise, don't trust Plaid and continue to other checks
 
