@@ -110,6 +110,7 @@ class TransactionCategorizer:
         amount = transaction.get("amount_original", transaction.get("amount_1", transaction.get("amount", 0)))
         
         combined_text = f"{name} {transaction_name} {merchant_name}"
+        normalized_text = combined_text.replace("_", " ")
         
         # Determine transaction direction
         is_credit = amount < 0  # Money coming in
@@ -133,6 +134,11 @@ class TransactionCategorizer:
             income_category, confidence = self._check_income_patterns(combined_text)
             if confidence > self.confidence_threshold:
                 return income_category, confidence
+
+        # STEP 3.25: Disbursement credits should be treated as loans
+        if re.search(r"disbursement", normalized_text, re.IGNORECASE):
+            if is_credit or category.startswith("transfer_in_"):
+                return "Loans", 0.9
         
         # STEP 4: Check for loan patterns
         loan_category, confidence = self._check_loan_patterns(combined_text, is_credit)

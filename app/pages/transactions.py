@@ -107,9 +107,10 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         return "Income"
 
     # STEP 3.25: Disbursement credits should be treated as loans
-    if is_credit and re.search(r"\bdisbursement\b", combined_text, re.IGNORECASE):
-        return "Loans"
-    
+    if re.search(r"disbursement", normalized_text, re.IGNORECASE):
+        if is_credit or category.startswith("transfer_in_") or transaction_type in ("credit", "deposit", "refund"):
+            return "Loans"
+
     # STEP 3.5: YouLend special handling (before general loan patterns)
     if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited|\byl\b)", combined_text):
         # Check if it contains funding indicators (including within reference numbers)
