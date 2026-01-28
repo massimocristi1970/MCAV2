@@ -447,7 +447,7 @@ class DataProcessor:
         self.security_validator = SecurityValidator()
 
     @log_performance(logger)
-    @CacheManager.cache_data(ttl=1800)
+    #@CacheManager.cache_data(ttl=1800)
     def process_json_data(
             self,
             json_data: Dict[str, Any],
