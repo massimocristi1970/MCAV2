@@ -46,11 +46,11 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     category = category.lower().strip().replace(" ", "_")
 
     amount = transaction.get("amount", 0)
-    transaction_name = str(transaction.get("transaction_name", "")).lower()
     amount_original = transaction.get("amount_original", amount)
     transaction_type = str(transaction.get("transaction_type", "")).lower()
     transaction_name = str(transaction.get("transaction_name", "")).lower()
     combined_text = f"{name} {transaction_name} {description}"
+    normalized_text = combined_text.replace("_", " ")
 
     is_credit = amount_original < 0  # Money coming in (negative in Plaid)
     is_debit = amount_original > 0  # Money going out (positive in Plaid)
