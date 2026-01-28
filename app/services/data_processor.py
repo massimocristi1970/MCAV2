@@ -44,7 +44,7 @@ class TransactionCategorizer:
                 ],
                 'special_cases': [
                     (
-                        r'you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited',
+                        r'you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|\byl\b',
                         lambda text: 'Loans' if re.search(r'(fnd|fund|funding)', text) else 'Income'
                     )
                 ]
@@ -107,12 +107,15 @@ class TransactionCategorizer:
         """
 
         # Extract transaction details
-        name = str(transaction.get("name_y", transaction.get("name", ""))).lower()
+        # FIX: Prioritize 'transaction_name' to capture standardized labels/descriptions
+        raw_name = transaction.get("transaction_name") or transaction.get("name_y") or transaction.get("name")
+        name = str(raw_name if raw_name is not None else "").strip().lower()
+
         merchant_name = str(transaction.get("merchant_name", "")).lower()
         category = str(transaction.get("personal_finance_category.detailed", "")).lower()
         signed_amount = transaction.get("amount_original", transaction.get("amount_1", transaction.get("amount", 0)))
 
-        combined_text = f"{name} {merchant_name}"
+        combined_text = f"{name} {merchant_name}".strip()
 
         # Determine transaction direction
         is_credit = signed_amount < 0  # Money coming in
