@@ -47,10 +47,24 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
 
     amount = transaction.get("amount", 0)
     transaction_name = str(transaction.get("transaction_name", "")).lower()
+    amount_original = transaction.get("amount_original", amount)
+    transaction_type = str(transaction.get("transaction_type", "")).lower()
+    transaction_name = str(transaction.get("transaction_name", "")).lower()
     combined_text = f"{name} {transaction_name} {description}"
 
-    is_credit = amount < 0  # Money coming in (negative in Plaid)
-    is_debit = amount > 0   # Money going out (positive in Plaid)
+    is_credit = amount_original < 0  # Money coming in (negative in Plaid)
+    is_debit = amount_original > 0  # Money going out (positive in Plaid)
+
+    if transaction_type in ("credit", "deposit", "refund"):
+        is_credit = True
+        is_debit = False
+    elif transaction_type in ("debit", "withdrawal", "payment"):
+        is_debit = True
+        is_credit = False
+
+    if not is_credit and category.startswith("transfer_in_"):
+        is_credit = True
+        is_debit = False
 
     # STEP 1 (CRITICAL): Failed payment and reversal patterns - MUST CHECK FIRST!
     # These patterns should take precedence over income/loan patterns to prevent
