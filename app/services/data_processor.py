@@ -42,7 +42,7 @@ class TransactionCategorizer:
                     r'customer\s+payment', r'invoice\s+payment', r'service\s+fee'
                 ],
                 'special_cases': [
-                    (r'you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited', 
+                    (r'you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited|\byl\b',
                      lambda text: 'Loans' if re.search(r'\b(fnd|fund|funding)\b', text) else 'Income')
                 ]
             },
@@ -53,7 +53,8 @@ class TransactionCategorizer:
                 r'ultimate[\s\-]?finance', r'just[\s\-]?cash[\s\-]?flow', r'boost[\s\-]?capital',
                 r'merchant[\s\-]?money', r'capital[\s\-]?on[\s\-]?tap', r'kriya', r'uncapped',
                 r'lendingcrowd', r'folk2folk', r'funding[\s\-]?tree', r'start[\s\-]?up[\s\-]?loans',
-                r'loan', r'advance', r'financing'
+                r'loan', r'advance', r'financing', r'disbursement',
+                r'you\s?lend', r'\byl\b'
             ],
             'debt_repayment_patterns': [
                 r'repayment', r'loan\s+payment', r'debt\s+service', r'installment',
@@ -103,11 +104,12 @@ class TransactionCategorizer:
         
         # Extract transaction details
         name = str(transaction.get("name_y", transaction.get("name", ""))).lower()
+        transaction_name = str(transaction.get("transaction_name", "")).lower()
         merchant_name = str(transaction.get("merchant_name", "")).lower()
         category = str(transaction.get("personal_finance_category.detailed", "")).lower()
-        amount = transaction.get("amount_1", transaction.get("amount", 0))
+        amount = transaction.get("amount_original", transaction.get("amount_1", transaction.get("amount", 0)))
         
-        combined_text = f"{name} {merchant_name}"
+        combined_text = f"{name} {transaction_name} {merchant_name}"
         
         # Determine transaction direction
         is_credit = amount < 0  # Money coming in
