@@ -26,7 +26,6 @@ class TransactionCategorizer:
 
     def _load_categorization_rules(self) -> Dict[str, Any]:
         """Load categorization rules and patterns."""
-
         return {
             'income_patterns': {
                 'payment_processors': [
@@ -42,7 +41,7 @@ class TransactionCategorizer:
                     r'sales', r'revenue', r'income', r'payment\s+received',
                     r'customer\s+payment', r'invoice\s+payment', r'service\s+fee'
                 ],
-                'special_cases': []  # Logic moved to main function for reliability
+                'special_cases': []
             },
             'loan_patterns': [
                 r'iwoca', r'capify', r'fundbox', r'got[\s\-]?capital', r'funding[\s\-]?circle',
@@ -91,27 +90,29 @@ class TransactionCategorizer:
     def categorize_transaction(self, transaction: Dict[str, Any]) -> Tuple[str, float]:
         """
         Categorize a single transaction with confidence score.
+        HIERARCHY: Failed > Overrides (Disburse/YouLend) > Plaid > Generic
         """
 
         # -------------------------------------------------------------------------
-        # 1. FIX: USE THE CORRECT FIELD ('transaction_name')
+        # 1. ROBUST DATA EXTRACTION
         # -------------------------------------------------------------------------
-        # Your DataProcessor calculates 'transaction_name' before this is called.
-        # We MUST use it. Fallback to 'name' only if necessary.
-        raw_name = transaction.get("transaction_name")
+        # Iterate through fields to find a valid name.
+        # This fixes the "nan" issue by trying multiple sources.
+        raw_name = ""
+        for field in ['transaction_name', 'name_y', 'name']:
+            val = transaction.get(field)
+            if val and str(val).lower() != 'nan' and str(val).strip() != '':
+                raw_name = str(val).strip()
+                break
 
-        # Handle cases where raw_name might be None or "nan" string
-        if not raw_name or str(raw_name).lower() == 'nan':
-            raw_name = transaction.get("name", "")
-
-        name = str(raw_name).strip()
         merchant_name = str(transaction.get("merchant_name", "")).strip()
+        if merchant_name.lower() == 'nan': merchant_name = ""
 
         # Combined text in UPPERCASE for robust matching
-        combined_text = f"{name} {merchant_name}".upper().strip()
+        combined_text = f"{raw_name} {merchant_name}".upper().strip()
 
-        # Extract Plaid details
-        category = str(transaction.get("personal_finance_category.detailed", "")).lower()
+        # Extract Plaid Details
+        plaid_cat = str(transaction.get("personal_finance_category.detailed", "")).upper()
 
         # Determine direction
         signed_amount = transaction.get("amount_original", transaction.get("amount_1", transaction.get("amount", 0)))
@@ -126,7 +127,7 @@ class TransactionCategorizer:
         # -------------------------------------------------------------------------
         # STEP 1: FAILED PAYMENTS (Must be first)
         # -------------------------------------------------------------------------
-        failed_category, confidence = self._check_failed_payment_patterns(combined_text, category)
+        failed_category, confidence = self._check_failed_payment_patterns(combined_text, plaid_cat)
         if confidence > self.confidence_threshold:
             return failed_category, confidence
 
@@ -154,48 +155,33 @@ class TransactionCategorizer:
                 return "Debt Repayments", 0.95
 
         # -------------------------------------------------------------------------
-        # STEP 3: REFUND CHECKS
+        # STEP 3: REST OF PIPELINE (Standard)
         # -------------------------------------------------------------------------
-        if is_credit:
-            refund_category, confidence = self._check_refund_patterns(combined_text)
-            if confidence > self.confidence_threshold:
-                return refund_category, confidence
-
-        # -------------------------------------------------------------------------
-        # STEP 4: PLAID CATEGORY MAPPING (Baseline)
-        # -------------------------------------------------------------------------
-        # Move Plaid UP to respect "LOAN_PAYMENTS"
-        plaid_category, confidence = self._map_plaid_category(category, is_credit, is_debit)
-        if confidence > 0.75:
-            return plaid_category, confidence
-
-        # -------------------------------------------------------------------------
-        # STEP 5: GENERIC PATTERNS
-        # -------------------------------------------------------------------------
-        if is_credit:
-            income_category, confidence = self._check_income_patterns(combined_text)
-            if confidence > self.confidence_threshold:
-                return income_category, confidence
-
-            loan_category, confidence = self._check_loan_patterns(combined_text, is_credit)
-            if confidence > self.confidence_threshold:
-                return loan_category, confidence
-
-        if is_debit:
-            debt_category, confidence = self._check_debt_patterns(combined_text)
-            if confidence > self.confidence_threshold:
-                return debt_category, confidence
-
-        # -------------------------------------------------------------------------
-        # STEP 6: FALLBACKS
-        # -------------------------------------------------------------------------
-        if confidence > 0.5:
-            return plaid_category, confidence
 
         if is_credit:
-            return "Uncategorised", 0.3
-        else:
-            return "Expenses", 0.3
+            # Check Refund
+            refund_cat, conf = self._check_refund_patterns(combined_text)
+            if conf > 0.8: return refund_cat, conf
+
+        # Plaid Mapping (Baseline)
+        plaid_cat_res, plaid_conf = self._map_plaid_category(plaid_cat.lower(), is_credit, is_debit)
+        if plaid_conf > 0.75:
+            return plaid_cat_res, plaid_conf
+
+        # Generic Patterns
+        if is_credit:
+            inc_cat, conf = self._check_income_patterns(combined_text)
+            if conf > 0.8: return inc_cat, conf
+            loan_cat, conf = self._check_loan_patterns(combined_text, is_credit)
+            if conf > 0.8: return loan_cat, conf
+        elif is_debit:
+            debt_cat, conf = self._check_debt_patterns(combined_text)
+            if conf > 0.8: return debt_cat, conf
+
+        # Fallback
+        if plaid_conf > 0.5: return plaid_cat_res, plaid_conf
+
+        return ("Uncategorised", 0.3) if is_credit else ("Expenses", 0.3)
 
     def _check_income_patterns(self, text: str) -> Tuple[str, float]:
         """Check for income-related patterns."""
@@ -237,7 +223,8 @@ class TransactionCategorizer:
         for pattern in extended_patterns:
             if re.search(pattern, text, re.IGNORECASE):
                 return "Failed Payment", 0.95
-        if 'bank_fees' in category and any(x in category for x in ['insufficient', 'returned', 'overdraft']):
+        if 'bank_fees' in category.lower() and any(
+                x in category.lower() for x in ['insufficient', 'returned', 'overdraft']):
             return "Failed Payment", 0.95
         return "Unknown", 0.0
 
@@ -258,6 +245,8 @@ class TransactionCategorizer:
         """
         if not category:
             return "Uncategorised", 0.0
+
+        category = category.lower()
 
         if "loan_payments" in category:
             return "Debt Repayments", 0.95
