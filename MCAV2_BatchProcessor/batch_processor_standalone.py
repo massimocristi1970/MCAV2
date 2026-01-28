@@ -314,17 +314,22 @@ def evaluate_mca_rule(metrics: dict, params: dict) -> dict:
     }
 
 
-def map_transaction_category(transaction):
+def map_transaction_category(transaction: Dict[str, Any]) -> str:
     """
     Enhanced transaction categorization matching original version.
-    
+
+    This is the canonical categorization function for the main app.
+    Includes comprehensive patterns for payment processors, loan providers,
+    and business expenses.
+
     IMPORTANT: The order of checks matters! Reversal/failed payment detection
     must happen BEFORE income/loan pattern matching to prevent misclassification.
-    
-    FIXES APPLIED:
-    1. Failed payment/reversal checks now happen FIRST to catch "STRIPE REVERSAL" etc.
-    2. Plaid expense categories now respect credit/debit direction (credits = refunds)
-    3. Added refund pattern detection for credits with expense-like categories
+
+    Args:
+        transaction: Dictionary containing transaction data
+
+    Returns:
+        Category string
     """
     name = transaction.get("name", "")
     if isinstance(name, list):
@@ -348,10 +353,25 @@ def map_transaction_category(transaction):
     category = category.lower().strip().replace(" ", "_")
 
     amount = transaction.get("amount", 0)
-    combined_text = f"{name} {description}"
+    amount_original = transaction.get("amount_original", amount)
+    transaction_type = str(transaction.get("transaction_type", "")).lower()
+    transaction_name = str(transaction.get("transaction_name", "")).lower()
+    combined_text = f"{name} {transaction_name} {description}"
+    normalized_text = combined_text.replace("_", " ")
 
-    is_credit = amount < 0  # Money coming in (negative in Plaid)
-    is_debit = amount > 0   # Money going out (positive in Plaid)
+    is_credit = amount_original < 0  # Money coming in (negative in Plaid)
+    is_debit = amount_original > 0  # Money going out (positive in Plaid)
+
+    if transaction_type in ("credit", "deposit", "refund"):
+        is_credit = True
+        is_debit = False
+    elif transaction_type in ("debit", "withdrawal", "payment"):
+        is_debit = True
+        is_credit = False
+
+    if not is_credit and category.startswith("transfer_in_"):
+        is_credit = True
+        is_debit = False
 
     # STEP 1 (CRITICAL): Failed payment and reversal patterns - MUST CHECK FIRST!
     # These patterns should take precedence over income/loan patterns to prevent
@@ -363,9 +383,9 @@ def map_transaction_category(transaction):
     )
     if re.search(failed_payment_patterns, combined_text, re.IGNORECASE):
         return "Failed Payment"
-    
+
     # Also check Plaid categories for failed payments first
-    if category in ("bank_fees_insufficient_funds", "bank_fees_late_payment", 
+    if category in ("bank_fees_insufficient_funds", "bank_fees_late_payment",
                     "bank_fees_overdraft", "bank_fees_returned_payment"):
         return "Failed Payment"
 
@@ -392,15 +412,20 @@ def map_transaction_category(transaction):
             combined_text
     ):
         return "Income"
-    
+
+    # STEP 3.25: Disbursement credits should be treated as loans
+    if re.search(r"disbursement", normalized_text, re.IGNORECASE):
+        if is_credit or category.startswith("transfer_in_") or transaction_type in ("credit", "deposit", "refund"):
+            return "Loans"
+
     # STEP 3.5: YouLend special handling (before general loan patterns)
-    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited)", combined_text):
+    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited|\byl\b)", combined_text):
         # Check if it contains funding indicators (including within reference numbers)
         if re.search(r"(fnd|fund|funding)", combined_text):
             return "Loans"
         else:
             return "Income"
-    
+
     # STEP 4: Loan providers (credits = loans received)
     if is_credit and re.search(
             r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|"
@@ -412,7 +437,8 @@ def map_transaction_category(transaction):
             r"\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
             r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
             r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|"
-            r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|\bloans?\b",
+            r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|\bloans?\b|"
+            r"\bdisbursement\b|\byou\s?lend\b|\byl\b",
             combined_text
     ):
         return "Loans"
@@ -427,7 +453,8 @@ def map_transaction_category(transaction):
             r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
             r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|\bbizcap[\s\-]?uk\b|"
             r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|"
-            r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b",
+            r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b|"
+            r"\byou\s?lend\b|\byl\b",
             combined_text
     ):
         return "Debt Repayments"
@@ -465,7 +492,8 @@ def map_transaction_category(transaction):
     # Handle loan payment categories with validation
     if category.startswith("loan_payments_"):
         # Only trust Plaid if transaction contains actual loan/debt keywords
-        if re.search(r"(loan|debt|repay|finance|lending|credit|iwoca|capify|fundbox)", combined_text, re.IGNORECASE):
+        if re.search(r"(loan|debt|repay|finance|lending|credit|iwoca|capify|fundbox|you\s?lend|\byl\b)", combined_text,
+                     re.IGNORECASE):
             return "Debt Repayments"
         # Otherwise, don't trust Plaid and continue to other checks
 
@@ -481,7 +509,7 @@ def map_transaction_category(transaction):
         "general_services_", "government_and_non_profit_", "home_improvement_",
         "medical_", "personal_care_", "rent_and_utilities_", "transportation_", "travel_"
     ]
-    
+
     if any(category.startswith(p) for p in expense_category_prefixes):
         if is_debit:
             return "Expenses"
