@@ -26,7 +26,6 @@ class TransactionCategorizer:
 
     def _load_categorization_rules(self) -> Dict[str, Any]:
         """Load categorization rules and patterns."""
-
         return {
             'income_patterns': {
                 'payment_processors': [
@@ -42,10 +41,14 @@ class TransactionCategorizer:
                     r'sales', r'revenue', r'income', r'payment\s+received',
                     r'customer\s+payment', r'invoice\s+payment', r'service\s+fee'
                 ],
+<<<<<<< HEAD
                 'special_cases': [
                     (r'you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited',
                      lambda text: 'Loans' if re.search(r'\b(fnd|fund|funding)\b', text) else 'Income')
                 ]
+=======
+                'special_cases': []
+>>>>>>> daeff0381ce740e0c6c4e25e72eef30f2b0d1ab4
             },
             'loan_patterns': [
                 r'iwoca', r'capify', r'fundbox', r'got[\s\-]?capital', r'funding[\s\-]?circle',
@@ -93,6 +96,7 @@ class TransactionCategorizer:
     def categorize_transaction(self, transaction: Dict[str, Any]) -> Tuple[str, float]:
         """
         Categorize a single transaction with confidence score.
+<<<<<<< HEAD
 
         IMPORTANT: The order of checks matters! Reversal/failed payment detection
         must happen BEFORE income/loan pattern matching to prevent misclassification
@@ -122,11 +126,82 @@ class TransactionCategorizer:
             return failed_category, confidence
 
         # STEP 2: Check for refund indicators on credits
-        if is_credit:
-            refund_category, confidence = self._check_refund_patterns(combined_text)
-            if confidence > self.confidence_threshold:
-                return refund_category, confidence
+=======
+        HIERARCHY: Failed > Overrides (Disburse/YouLend) > Plaid > Generic
+        """
 
+        # -------------------------------------------------------------------------
+        # 1. ROBUST DATA EXTRACTION
+        # -------------------------------------------------------------------------
+        # Iterate through fields to find a valid name.
+        # This fixes the "nan" issue by trying multiple sources.
+        raw_name = ""
+        for field in ['transaction_name', 'name_y', 'name']:
+            val = transaction.get(field)
+            if val and str(val).lower() != 'nan' and str(val).strip() != '':
+                raw_name = str(val).strip()
+                break
+
+        merchant_name = str(transaction.get("merchant_name", "")).strip()
+        if merchant_name.lower() == 'nan': merchant_name = ""
+
+        # Combined text in UPPERCASE for robust matching
+        combined_text = f"{raw_name} {merchant_name}".upper().strip()
+
+        # Extract Plaid Details
+        plaid_cat = str(transaction.get("personal_finance_category.detailed", "")).upper()
+
+        # Determine direction
+        signed_amount = transaction.get("amount_original", transaction.get("amount_1", transaction.get("amount", 0)))
+        try:
+            signed_amount = float(signed_amount)
+        except (ValueError, TypeError):
+            signed_amount = 0.0
+
+        is_credit = signed_amount < 0  # Money In
+        is_debit = signed_amount > 0  # Money Out
+
+        # -------------------------------------------------------------------------
+        # STEP 1: FAILED PAYMENTS (Must be first)
+        # -------------------------------------------------------------------------
+        failed_category, confidence = self._check_failed_payment_patterns(combined_text, plaid_cat)
+        if confidence > self.confidence_threshold:
+            return failed_category, confidence
+
+        # -------------------------------------------------------------------------
+        # STEP 2: CRITICAL OVERRIDES (Disbursement & YouLend)
+        # -------------------------------------------------------------------------
+
+        # A. DISBURSEMENT RULE
+        # Catches "CREDIT_FLEX_RESERVE_DISBURSEMENT"
+        if is_credit and "DISBURSE" in combined_text:
+            return "Loans", 0.99
+
+        # B. SPECIFIC LENDER RULES (YouLend / Credit Flex)
+        # We explicitly check for these keywords to override generic patterns
+        lender_keywords = ["YOULEND", "YL ", "YL I", "CREDIT FLEX", "CAPITAL ON TAP"]
+
+        if any(kw in combined_text for kw in lender_keywords):
+            if is_credit:
+                # If credit has FUND, FND, or ADVANCE -> Definitely a Loan
+                if re.search(r'(FND|FUND|ADVANCE)', combined_text):
+                    return "Loans", 0.99
+                return "Loans", 0.90
+            elif is_debit:
+                # Debit to YouLend is Debt Repayment (overrides "Expenses")
+                return "Debt Repayments", 0.95
+
+        # -------------------------------------------------------------------------
+        # STEP 3: REST OF PIPELINE (Standard)
+        # -------------------------------------------------------------------------
+
+>>>>>>> daeff0381ce740e0c6c4e25e72eef30f2b0d1ab4
+        if is_credit:
+            # Check Refund
+            refund_cat, conf = self._check_refund_patterns(combined_text)
+            if conf > 0.8: return refund_cat, conf
+
+<<<<<<< HEAD
         # STEP 3: Check for special income patterns (only for credits)
         if is_credit:
             income_category, confidence = self._check_income_patterns(combined_text)
@@ -154,19 +229,37 @@ class TransactionCategorizer:
             return "Uncategorised", 0.3
         else:
             return "Expenses", 0.3
+=======
+        # Plaid Mapping (Baseline)
+        plaid_cat_res, plaid_conf = self._map_plaid_category(plaid_cat.lower(), is_credit, is_debit)
+        if plaid_conf > 0.75:
+            return plaid_cat_res, plaid_conf
+
+        # Generic Patterns
+        if is_credit:
+            inc_cat, conf = self._check_income_patterns(combined_text)
+            if conf > 0.8: return inc_cat, conf
+            loan_cat, conf = self._check_loan_patterns(combined_text, is_credit)
+            if conf > 0.8: return loan_cat, conf
+        elif is_debit:
+            debt_cat, conf = self._check_debt_patterns(combined_text)
+            if conf > 0.8: return debt_cat, conf
+
+        # Fallback
+        if plaid_conf > 0.5: return plaid_cat_res, plaid_conf
+
+        return ("Uncategorised", 0.3) if is_credit else ("Expenses", 0.3)
+>>>>>>> daeff0381ce740e0c6c4e25e72eef30f2b0d1ab4
 
     def _check_income_patterns(self, text: str) -> Tuple[str, float]:
         """Check for income-related patterns."""
-
-        # Payment processors (high confidence)
         for pattern in self.categorization_rules['income_patterns']['payment_processors']:
             if re.search(pattern, text, re.IGNORECASE):
                 return "Income", 0.95
-
-        # Direct revenue indicators
         for pattern in self.categorization_rules['income_patterns']['direct_revenue']:
             if re.search(pattern, text, re.IGNORECASE):
                 return "Income", 0.85
+<<<<<<< HEAD
 
         # Special cases with conditional logic
         for pattern, condition_func in self.categorization_rules['income_patterns']['special_cases']:
@@ -176,6 +269,109 @@ class TransactionCategorizer:
 
         return "Unknown", 0.0
 
+=======
+        return "Unknown", 0.0
+
+    def _check_loan_patterns(self, text: str, is_credit: bool) -> Tuple[str, float]:
+        """Check for loan-related patterns."""
+        for pattern in self.categorization_rules['loan_patterns']:
+            if re.search(pattern, text, re.IGNORECASE):
+                if is_credit:
+                    return "Loans", 0.9
+                else:
+                    return "Debt Repayments", 0.9
+        return "Unknown", 0.0
+
+    def _check_debt_patterns(self, text: str) -> Tuple[str, float]:
+        """Check for debt repayment patterns."""
+        for pattern in self.categorization_rules['debt_repayment_patterns']:
+            if re.search(pattern, text, re.IGNORECASE):
+                return "Debt Repayments", 0.85
+        return "Unknown", 0.0
+
+    def _check_failed_payment_patterns(self, text: str, category: str = "") -> Tuple[str, float]:
+        """Check for failed payment patterns."""
+        extended_patterns = [
+            r'reversal', r'reversed', r'chargeback', r'dispute',
+            r'refund\s+fee', r'rejected', r'cancelled\s+payment',
+            r'payment\s+returned'
+        ]
+        for pattern in self.categorization_rules['failed_payment_patterns']:
+            if re.search(pattern, text, re.IGNORECASE):
+                return "Failed Payment", 0.95
+        for pattern in extended_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return "Failed Payment", 0.95
+        if 'bank_fees' in category.lower() and any(
+                x in category.lower() for x in ['insufficient', 'returned', 'overdraft']):
+            return "Failed Payment", 0.95
+        return "Unknown", 0.0
+
+    def _check_refund_patterns(self, text: str) -> Tuple[str, float]:
+        """Check for refund/rebate patterns."""
+        refund_patterns = [
+            r'refund', r'rebate', r'credit\s+adj', r'adjustment',
+            r'cashback', r'reimburs', r'money\s+back', r'return\s+credit'
+        ]
+        for pattern in refund_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return "Special Inflow", 0.9
+        return "Unknown", 0.0
+
+    def _map_plaid_category(self, category: str, is_credit: bool = False, is_debit: bool = True) -> Tuple[str, float]:
+        """
+        Map Plaid categories to our categories.
+        """
+        if not category:
+            return "Uncategorised", 0.0
+
+        category = category.lower()
+
+        if "loan_payments" in category:
+            return "Debt Repayments", 0.95
+
+        if "transfer_in_cash_advances_and_loans" in category:
+            return "Loans", 0.95
+
+        plaid_mapping = {
+            "income_wages": ("Income", 0.8),
+            "income_other_income": ("Income", 0.7),
+            "income_dividends": ("Special Inflow", 0.8),
+            "income_interest_earned": ("Special Inflow", 0.8),
+            "bank_fees_insufficient_funds": ("Failed Payment", 0.95),
+            "bank_fees_late_payment": ("Failed Payment", 0.95),
+            "bank_fees_overdraft": ("Failed Payment", 0.95),
+            "bank_fees_returned_payment": ("Failed Payment", 0.95),
+        }
+
+        if category in plaid_mapping:
+            return plaid_mapping[category]
+
+        if category.startswith("income_"):
+            return "Income", 0.6
+        elif category.startswith("bank_fees_"):
+            return "Failed Payment", 0.8
+        elif category.startswith("transfer_in_"):
+            return "Special Inflow", 0.6
+        elif category.startswith("transfer_out_"):
+            return "Special Outflow", 0.6
+
+        expense_prefixes = [
+            "entertainment_", "food_and_drink_", "general_merchandise_",
+            "general_services_", "rent_and_utilities_", "transportation_",
+            "travel_", "home_improvement_", "medical_", "personal_care_",
+            "government_and_non_profit_"
+        ]
+
+        if any(category.startswith(prefix) for prefix in expense_prefixes):
+            if is_debit:
+                return "Expenses", 0.7
+            else:
+                return "Special Inflow", 0.6
+
+        return "Uncategorised", 0.1
+
+>>>>>>> daeff0381ce740e0c6c4e25e72eef30f2b0d1ab4
     def _check_loan_patterns(self, text: str, is_credit: bool) -> Tuple[str, float]:
         """Check for loan-related patterns."""
 
@@ -320,7 +516,7 @@ class DataProcessor:
         self.security_validator = SecurityValidator()
 
     @log_performance(logger)
-    @CacheManager.cache_data(ttl=1800)
+    #@CacheManager.cache_data(ttl=1800)
     def process_json_data(
             self,
             json_data: Dict[str, Any],
