@@ -474,19 +474,40 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         "income_interest_earned": "Special Inflow",
         "income_retirement_pension": "Special Inflow",
         "income_unemployment": "Special Inflow",
+
         "transfer_in_cash_advances_and_loans": "Loans",
         "transfer_in_investment_and_retirement_funds": "Special Inflow",
         "transfer_in_savings": "Special Inflow",
         "transfer_in_account_transfer": "Special Inflow",
         "transfer_in_other_transfer_in": "Special Inflow",
         "transfer_in_deposit": "Special Inflow",
+
         "transfer_out_investment_and_retirement_funds": "Special Outflow",
         "transfer_out_savings": "Special Outflow",
         "transfer_out_other_transfer_out": "Special Outflow",
         "transfer_out_withdrawal": "Special Outflow",
         "transfer_out_account_transfer": "Special Outflow",
+
         "bank_fees_insufficient_funds": "Failed Payment",
         "bank_fees_late_payment": "Failed Payment",
+
+        "loan_disbursements_auto": "Loans",
+        "loan_disbursements_bnpl": "Loans",
+        "loan_disbursements_cash_advances": "Loans",
+        "loan_disbursements_ewa": "Loans",
+        "loan_disbursements_mortgage": "Loans",
+        "loan_disbursements_personal": "Loans",
+        "loan_disbursements_student": "Loans",
+        "loan_disbursements_other_disbursement": "Loans",
+
+        "loan_payments_car_payment": "Debt Repayments",
+        "loan_payments_cash_advances": "Debt Repayments",
+        "loan_payments_credit_card_payment": "Debt Repayments",
+        "loan_payments_ewa": "Debt Repayments",
+        "loan_payments_mortgage_payment": "Debt Repayments",
+        "loan_payments_personal_loan_payment": "Debt Repayments",
+        "loan_payments_student_loan_payment": "Debt Repayments",
+        "loan_payments_other_payment": "Debt Repayments",
     }
 
     # Handle loan payment categories with validation
