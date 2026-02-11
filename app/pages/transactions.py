@@ -72,7 +72,7 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     failed_payment_patterns = (
         r"(unpaid|returned|bounced|insufficient\s+funds|nsf|declined|failed|"
         r"reversed|reversal|chargeback|refund\s+fee|dispute|unp\b|"
-        r"rejected|cancelled\s+payment|payment\s+returned)"
+        r"rejected|cancelled\s+payment|payment\s+returned)\b"
     )
     if re.search(failed_payment_patterns, combined_text, re.IGNORECASE):
         return "Failed Payment"

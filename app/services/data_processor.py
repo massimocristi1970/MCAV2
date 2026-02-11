@@ -84,10 +84,17 @@ class TransactionCategorizer:
                 r'equipment\s+purchase', r'asset\s+acquisition'
             ],
             'failed_payment_patterns': [
-                r'unpaid', r'returned', r'bounced', r'insufficient\s+funds',
-                r'nsf', r'declined', r'failed', r'reversed', r'chargeback'
-            ]
-        }
+                r'\bunpaid\b',
+                r'\breturned\b',
+                r'\bbounced\b',
+                r'\binsufficient\s+funds\b',
+                r'\bnsf\b',       # <--- This fixes the 'transfer' issue
+                r'\bdeclined\b',
+                r'\bfailed\b',
+                r'\breversed\b',
+                r'\bchargeback\b'
+]
+            }
     
     @log_performance(logger)
     def categorize_transaction(self, transaction: Dict[str, Any]) -> Tuple[str, float]:
