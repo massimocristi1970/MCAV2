@@ -2780,10 +2780,9 @@ def main():
     """Main application"""
     
     st.title("🏦 MCA v2 Batch Processing Dashboard")
-    st.markdown("**COMPLETE FIXED VERSION** - Process multiple loan applications through the MCA v2 scoring system")
+    st.markdown("Process multiple loan applications through the MCA v2 scoring system")
     
-    st.success("✅ **FIXES APPLIED**: Fuzzy matching, company name extraction, debug tracking, CSV parameter mapping")
-    
+
     # Debug info about rapidfuzz
     if RAPIDFUZZ_AVAILABLE:
         st.info("🔧 **RapidFuzz Available**: Using advanced fuzzy matching algorithms")
@@ -3301,52 +3300,6 @@ def main():
     else:
         st.info("👆 Upload JSON files or ZIP archives to begin batch processing")
         
-        # Example section
-        st.markdown("---")
-        st.subheader("📖 Usage Instructions")
         
-        st.markdown("""
-        **🎯 FIXED VERSION - Key Improvements:**
-        - ✅ **Fixed fuzzy matching** - Now properly matches CSV companies to JSON files
-        - ✅ **Enhanced company name extraction** - Tries multiple methods to find company names
-        - ✅ **Comprehensive debug tracking** - Full visibility into processing steps
-        - ✅ **Better CSV parameter handling** - Properly applies parameters from CSV mapping
-        - ✅ **Detailed error reporting** - Know exactly why any file failed to process
-        
-        **Parameter Sources (in priority order):**
-        1. **Individual JSON files** - If your JSON files contain application metadata
-        2. **CSV parameter mapping** - Upload a CSV file with application-specific parameters  
-        3. **Fallback defaults** - Used only when other sources don't have the data
-        
-        **CSV Parameter Mapping Format:**
-        ```
-        company_name,industry,directors_score,requested_loan,director_ccj
-        ABC Manufacturing Ltd,Manufacturing,78,35000,FALSE,FALSE
-        Smith's Restaurant,Restaurants and Cafes,65,50000,TRUE,FALSE
-        Tech Solutions UK,IT Services and Support Companies,82,75000,FALSE,TRUE
-        ```
-        
-        **Processing Features:**
-        - **Fuzzy Matching**: Automatically matches company names between CSV and JSON files
-        - **Multiple Extraction Methods**: Tries accounts, metadata, and filename extraction
-        - **Comprehensive Debugging**: Full visibility into what happened with each file
-        - **Error Categorization**: Understand why files failed and how to fix them
-        - **Parameter Source Tracking**: Know where each parameter came from
-        
-        **Dashboard Insights:**
-        - Score distributions and risk tier analysis
-        - Industry performance comparison
-        - Fuzzy matching success rates and details
-        - Parameter source breakdown
-        - Detailed error analysis with suggestions
-        
-        **Debug Information:**
-        - Company name extraction methods
-        - Fuzzy matching scores and strategies
-        - CSV parameter application tracking
-        - Processing step-by-step status
-        - Full error logs with context
-        """)
-
 if __name__ == "__main__":
     main()
