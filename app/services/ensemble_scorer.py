@@ -304,24 +304,30 @@ class EnsembleScorer:
         
         return combined_score, contributing_scores
     
+    # Only these scoring systems are trusted enough to drive convergence checks.
+    # ML is excluded because its small training set makes its scores unreliable
+    # and a disagreement from ML alone shouldn't penalise the combined score.
+    CONVERGENCE_SYSTEMS = {'mca_score', 'subprime_score'}
+
     def _analyze_convergence(
         self,
         scoring_results: Dict[str, ScoringResult]
     ) -> Tuple[str, float]:
         """
-        Analyze how well scores converge.
-        High divergence suggests uncertainty and warrants penalty.
+        Analyze how well the primary scores (MCA Rule and Subprime) converge.
+        High divergence suggests uncertainty and warrants a penalty.
+        ML is excluded -- its small training set means disagreement from ML
+        alone should not drag down the combined score.
         """
-        available_scores = [
-            r.score for r in scoring_results.values() 
-            if r.available and r.score > 0
+        primary_scores = [
+            r.score for name, r in scoring_results.items()
+            if name in self.CONVERGENCE_SYSTEMS and r.available and r.score > 0
         ]
         
-        if len(available_scores) < 2:
+        if len(primary_scores) < 2:
             return "Insufficient Data", 5.0
         
-        score_range = max(available_scores) - min(available_scores)
-        score_std = np.std(available_scores)
+        score_range = max(primary_scores) - min(primary_scores)
         
         if score_range <= 10:
             return "High Convergence", 0.0
