@@ -2740,15 +2740,20 @@ def create_results_dashboard(results_df):
         display_df = results_df[available_columns].copy()
 
     # Format numeric columns (only if they exist in the current display_df)
+    def _safe_numeric_format(x, fmt=".0f"):
+        try:
+            return f"{float(x):{fmt}}"
+        except (TypeError, ValueError):
+            return ""
+
     numeric_format_cols = {
-        'Total Revenue': lambda x: f"£{x:,.0f}" if pd.notna(x) else "",
-        'Net Income': lambda x: f"£{x:,.0f}" if pd.notna(x) else "",
-        'requested_loan': lambda x: f"£{x:,.0f}" if pd.notna(x) else "",
-        'Operating Margin': lambda x: f"{x * 100:.1f}%" if pd.notna(x) else "",
-        'subprime_score': lambda x: f"{x:.1f}" if pd.notna(x) else "",
-        'mca_rule_score': lambda x: f"{x:.0f}" if pd.notna(x) else "",
-        'Debt Service Coverage Ratio': lambda x: f"{x:.2f}" if pd.notna(x) else "",
-        'mca_rule_score': lambda x: f"{x:.0f}" if pd.notna(x) else "",
+        'Total Revenue': lambda x: f"£{_safe_numeric_format(x, ',.0f')}" if _safe_numeric_format(x, ',.0f') else "",
+        'Net Income': lambda x: f"£{_safe_numeric_format(x, ',.0f')}" if _safe_numeric_format(x, ',.0f') else "",
+        'requested_loan': lambda x: f"£{_safe_numeric_format(x, ',.0f')}" if _safe_numeric_format(x, ',.0f') else "",
+        'Operating Margin': lambda x: _safe_numeric_format(float(x) * 100, '.1f') + "%" if _safe_numeric_format(x) else "",
+        'subprime_score': lambda x: _safe_numeric_format(x, '.1f'),
+        'mca_rule_score': lambda x: _safe_numeric_format(x, '.0f'),
+        'Debt Service Coverage Ratio': lambda x: _safe_numeric_format(x, '.2f'),
     }
 
     for col, formatter in numeric_format_cols.items():
