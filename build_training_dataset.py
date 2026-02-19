@@ -1,3 +1,30 @@
+"""
+Build ML Training Dataset
+
+Combines two data sources:
+  1. Transaction JSON files  (one per application, in data/JsonExport/)
+  2. Application spreadsheet (data/training_dataset.xlsx)
+
+The spreadsheet must have these columns:
+  application_id        - JSON filename (with or without .json)
+  requested_loan        - Loan amount requested
+  company_age_months    - Business age in months
+  directors_score       - Director credit score (0-100)
+  outcome               - 1 = repaid, 0 = defaulted (blank = unfunded)
+
+Outputs:
+  data/mca_training_dataset.csv   - MCA transaction features (for MCA Rule scoring)
+  data/ml_training_dataset.csv    - ML model features (ready for train_improved_model.py)
+
+Usage:
+  python build_training_dataset.py
+
+  Override paths with environment variables:
+    TRAINING_OUTCOMES_XLSX  - Path to application spreadsheet
+    TRAINING_JSON_ROOT      - Directory containing JSON transaction files
+    TRAINING_OUTPUT_DIR     - Directory for output files
+"""
+
 import json
 import os
 import re
@@ -6,18 +33,13 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+
 # ============================================================
-# CONFIG - Uses environment variables with fallback defaults
-# Set these environment variables or create a .env file:
-#   TRAINING_OUTCOMES_XLSX - Path to training outcomes Excel file
-#   TRAINING_JSON_ROOT - Directory containing JSON transaction files
-#   TRAINING_OUTPUT_DIR - Directory for output files (optional)
+# CONFIG
 # ============================================================
 
-# Get base directory from environment or use current directory
 _BASE_DIR = os.environ.get('TRAINING_DATA_DIR', os.getcwd())
 
-# Input paths - can be overridden with environment variables
 OUTCOMES_XLSX = os.environ.get(
     'TRAINING_OUTCOMES_XLSX',
     os.path.join(_BASE_DIR, 'data', 'training_dataset.xlsx')
@@ -28,10 +50,16 @@ JSON_ROOT = os.environ.get(
     os.path.join(_BASE_DIR, 'data', 'JsonExport')
 )
 
-# Output paths
 _OUTPUT_DIR = os.environ.get('TRAINING_OUTPUT_DIR', os.path.join(_BASE_DIR, 'data'))
-OUTPUT_CSV = os.path.join(_OUTPUT_DIR, 'mca_training_dataset.csv')
+OUTPUT_MCA_CSV = os.path.join(_OUTPUT_DIR, 'mca_training_dataset.csv')
+OUTPUT_ML_CSV = os.path.join(_OUTPUT_DIR, 'ml_training_dataset.csv')
+
+# Kept for backward compat (other modules import these names)
+OUTPUT_CSV = OUTPUT_MCA_CSV
 OUTPUT_XLSX = os.path.join(_OUTPUT_DIR, 'mca_training_dataset.xlsx')
+
+# High-risk industries that map to Sector_Risk = 1
+HIGH_RISK_INDUSTRIES = {'Restaurants and Cafes', 'Bars and Pubs', 'Construction Firms'}
 
 
 # ============================================================
@@ -136,31 +164,56 @@ def _flatten_transactions(obj):
 
 
 # ============================================================
-# Outcomes loader
+# Spreadsheet loader
 # ============================================================
-def load_outcomes(path_xlsx):
+def load_application_data(path_xlsx):
+    """
+    Load the application spreadsheet.
+
+    Expected columns:
+        application_id, requested_loan, company_age_months,
+        directors_score, outcome
+
+    Optional columns:
+        industry, total_debt
+
+    Returns:
+        dict mapping normalised filename -> row dict
+    """
     df = pd.read_excel(path_xlsx)
 
-    file_col = "application_id"
-    out_col = "outcome"
+    required = ["application_id", "outcome"]
+    missing = [c for c in required if c not in df.columns]
+    if missing:
+        raise ValueError(f"Spreadsheet missing required columns: {missing}")
 
-    df = df[[file_col, out_col]].copy()
-    df[file_col] = df[file_col].apply(_normalise_filename_cell)
-    df[out_col] = pd.to_numeric(df[out_col], errors="coerce").astype("Int64")
+    df["application_id"] = df["application_id"].apply(_normalise_filename_cell)
+    df["outcome"] = pd.to_numeric(df["outcome"], errors="coerce").astype("Int64")
+
+    # Optional columns with defaults
+    if "directors_score" not in df.columns:
+        df["directors_score"] = 50
+    if "company_age_months" not in df.columns:
+        df["company_age_months"] = 12
+    if "requested_loan" not in df.columns:
+        df["requested_loan"] = 0
+    if "total_debt" not in df.columns:
+        df["total_debt"] = 0
+    if "industry" not in df.columns:
+        df["industry"] = "Other"
 
     mapping = {}
     for _, r in df.iterrows():
-        if pd.isna(r[out_col]):
-            continue
-        k = r[file_col]
-        mapping[k] = int(r[out_col])
-        mapping[_strip_json_ext(k)] = int(r[out_col])
+        row_data = r.to_dict()
+        k = row_data["application_id"]
+        mapping[k] = row_data
+        mapping[_strip_json_ext(k)] = row_data
 
-    return mapping, file_col, out_col
+    return mapping
 
 
 # ============================================================
-# Feature builder
+# MCA Feature builder (unchanged — used by MCA Rule scoring)
 # ============================================================
 def build_mca_features(transactions):
     rows = []
@@ -234,7 +287,53 @@ def build_mca_features(transactions):
     inflow_dates = df[df["inflow"] > 0]["date"].dt.normalize().drop_duplicates().sort_values()
     max_gap = inflow_dates.diff().dt.days.max() if len(inflow_dates) > 1 else np.nan
 
+    # Running balance for Average Month-End Balance and Negative Balance Days
+    df_sorted = df.sort_values("date").copy()
+    df_sorted["signed"] = df_sorted["inflow"] - df_sorted["outflow"]
+    df_sorted["running_balance"] = df_sorted["signed"].cumsum()
+
+    # Month-end balances
+    df_sorted["month_key"] = df_sorted["date"].dt.to_period("M")
+    month_end_balances = df_sorted.groupby("month_key")["running_balance"].last()
+    avg_month_end_balance = month_end_balances.mean() if len(month_end_balances) > 0 else 0
+
+    # Negative balance days: estimate from daily resampled balance
+    daily = df_sorted.set_index("date")["running_balance"].resample("D").last().ffill()
+    if len(daily) > 0:
+        neg_days_total = (daily < 0).sum()
+        n_months = max(1, len(m))
+        avg_neg_days_per_month = neg_days_total / n_months
+    else:
+        avg_neg_days_per_month = 0
+
+    # Bounced payments: look for common bounced-payment indicators in names
+    bounced_patterns = re.compile(
+        r"(bounced|returned|unpaid|failed payment|dd return|rejected|refer to drawer)",
+        re.IGNORECASE,
+    )
+    bounced_count = sum(1 for t in transactions if bounced_patterns.search(
+        t.get("name") or t.get("merchant_name") or ""
+    ))
+
+    # Revenue growth rate from first half vs second half of monthly inflows
+    if len(m) >= 4:
+        mid = len(m) // 2
+        first_half_avg = m["inflow"].iloc[:mid].mean()
+        second_half_avg = m["inflow"].iloc[mid:].mean()
+        if first_half_avg > 0:
+            revenue_growth_rate = (second_half_avg - first_half_avg) / first_half_avg
+        else:
+            revenue_growth_rate = 0
+    elif len(m) >= 2:
+        if m["inflow"].iloc[0] > 0:
+            revenue_growth_rate = (m["inflow"].iloc[-1] - m["inflow"].iloc[0]) / m["inflow"].iloc[0]
+        else:
+            revenue_growth_rate = 0
+    else:
+        revenue_growth_rate = 0
+
     return {
+        # Original MCA features
         "months_covered": len(m),
         "txn_count_total": len(df),
         "txn_count_avg_month": m["txn_count"].mean(),
@@ -251,6 +350,71 @@ def build_mca_features(transactions):
         "first_txn_date": df["date"].min().date().isoformat(),
         "last_txn_date": df["date"].max().date().isoformat(),
         "sign_convention_used": sign_label,
+        # Additional features needed by the ML model
+        "avg_month_end_balance": avg_month_end_balance,
+        "avg_neg_days_per_month": avg_neg_days_per_month,
+        "bounced_count": bounced_count,
+        "revenue_growth_rate": revenue_growth_rate,
+    }
+
+
+# ============================================================
+# ML Feature derivation
+# ============================================================
+def derive_ml_features(mca_feats, app_data):
+    """
+    Convert MCA transaction features + spreadsheet data into the 13
+    features expected by train_improved_model.py.
+
+    Args:
+        mca_feats: dict from build_mca_features()
+        app_data:  dict from spreadsheet row (directors_score, etc.)
+
+    Returns:
+        dict with the 13 ML columns + outcome
+    """
+    months = mca_feats.get("months_covered", 1) or 1
+    avg_in = mca_feats.get("avg_monthly_inflow", 0) or 0
+    avg_out = mca_feats.get("avg_monthly_outflow", 0) or 0
+    avg_net = mca_feats.get("avg_monthly_net", 0) or 0
+
+    total_revenue = avg_in * months
+    total_debt = _safe_float(app_data.get("total_debt", 0)) or 0
+
+    # Operating Margin = net / inflow
+    operating_margin = avg_net / avg_in if avg_in > 0 else 0
+
+    # Debt-to-Income Ratio
+    debt_to_income = total_debt / total_revenue if total_revenue > 0 else 0
+
+    # DSCR: if we know debt, estimate monthly repayment over 12 months
+    if total_debt > 0:
+        monthly_debt_payment = total_debt / 12
+        dscr = avg_net / monthly_debt_payment if monthly_debt_payment > 0 else 10
+    else:
+        dscr = 10  # No debt = excellent coverage
+
+    # Cash Flow Volatility from inflow CV
+    cash_flow_volatility = mca_feats.get("inflow_cv", 0.5) or 0.5
+
+    # Industry → Sector_Risk
+    industry = str(app_data.get("industry", "Other"))
+    sector_risk = 1 if industry in HIGH_RISK_INDUSTRIES else 0
+
+    return {
+        "Directors Score": _safe_float(app_data.get("directors_score", 50)) or 50,
+        "Total Revenue": total_revenue,
+        "Total Debt": total_debt,
+        "Debt-to-Income Ratio": debt_to_income,
+        "Operating Margin": operating_margin,
+        "Debt Service Coverage Ratio": dscr,
+        "Cash Flow Volatility": cash_flow_volatility,
+        "Revenue Growth Rate": mca_feats.get("revenue_growth_rate", 0) or 0,
+        "Average Month-End Balance": mca_feats.get("avg_month_end_balance", 0) or 0,
+        "Average Negative Balance Days per Month": mca_feats.get("avg_neg_days_per_month", 0) or 0,
+        "Number of Bounced Payments": mca_feats.get("bounced_count", 0) or 0,
+        "Company Age (Months)": _safe_float(app_data.get("company_age_months", 12)) or 12,
+        "Sector_Risk": sector_risk,
     }
 
 
@@ -262,34 +426,77 @@ def iter_json_files(root):
 
 
 def main():
-    outcomes_map, _, _ = load_outcomes(OUTCOMES_XLSX)
+    print(f"Loading spreadsheet: {OUTCOMES_XLSX}")
+    app_data_map = load_application_data(OUTCOMES_XLSX)
+    print(f"  Found {len(app_data_map) // 2} applications in spreadsheet")
 
-    rows = []
+    print(f"Scanning JSON files: {JSON_ROOT}")
+    mca_rows = []
+    ml_rows = []
+    skipped = 0
+
     for fp in iter_json_files(JSON_ROOT):
         key = fp.stem
-        outcome = outcomes_map.get(fp.name) or outcomes_map.get(key)
-        if outcome is None:
+        app_data = app_data_map.get(fp.name) or app_data_map.get(key)
+        if app_data is None:
+            skipped += 1
+            continue
+
+        outcome = app_data.get("outcome")
+        if pd.isna(outcome):
+            skipped += 1
             continue
 
         with open(fp, "r", encoding="utf-8") as f:
             txns = _flatten_transactions(json.load(f))
 
-        feats = build_mca_features(txns)
-        feats.update(
-            {
-                "application_file": fp.name,
-                "application_key": key,
-                "outcome": outcome,
-                "txn_extracted_count": len(txns),
-            }
-        )
-        rows.append(feats)
+        mca_feats = build_mca_features(txns)
+        if not mca_feats:
+            print(f"  WARNING: No transactions extracted from {fp.name}")
+            skipped += 1
+            continue
 
-    df = pd.DataFrame(rows)
-    df.to_csv(OUTPUT_CSV, index=False)
-    df.to_excel(OUTPUT_XLSX, index=False)
+        # MCA dataset row (original format)
+        mca_row = dict(mca_feats)
+        mca_row.update({
+            "application_file": fp.name,
+            "application_key": key,
+            "outcome": int(outcome),
+            "txn_extracted_count": len(txns),
+        })
+        mca_rows.append(mca_row)
 
-    print(f"Saved {len(df)} rows → {OUTPUT_XLSX}")
+        # ML dataset row (13 features + outcome)
+        ml_row = derive_ml_features(mca_feats, app_data)
+        ml_row["outcome"] = int(outcome)
+        ml_row["application_id"] = fp.name
+        ml_rows.append(ml_row)
+
+    # Save MCA dataset
+    os.makedirs(_OUTPUT_DIR, exist_ok=True)
+    mca_df = pd.DataFrame(mca_rows)
+    mca_df.to_csv(OUTPUT_MCA_CSV, index=False)
+    mca_df.to_excel(OUTPUT_XLSX, index=False)
+    print(f"\nMCA dataset: {len(mca_df)} rows -> {OUTPUT_MCA_CSV}")
+
+    # Save ML dataset
+    ml_df = pd.DataFrame(ml_rows)
+    ml_df.to_csv(OUTPUT_ML_CSV, index=False)
+    print(f"ML dataset:  {len(ml_df)} rows -> {OUTPUT_ML_CSV}")
+
+    if skipped:
+        print(f"\nSkipped {skipped} files (no matching spreadsheet row or no outcome)")
+
+    # Summary
+    if len(ml_df) > 0:
+        print(f"\nML Dataset Summary:")
+        print(f"  Total rows:  {len(ml_df)}")
+        outcome_counts = ml_df["outcome"].value_counts()
+        for val, count in outcome_counts.items():
+            label = "repaid" if val == 1 else "defaulted"
+            print(f"  Outcome {val} ({label}): {count}")
+        print(f"\nTo train the model, run:")
+        print(f'  python train_improved_model.py --data "{OUTPUT_ML_CSV}"')
 
 
 if __name__ == "__main__":
