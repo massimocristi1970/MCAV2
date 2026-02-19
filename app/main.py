@@ -1349,7 +1349,7 @@ def create_score_charts(scores, metrics):
     
     score_data = {
         'Subprime Score': scores.get('subprime_score', 0),
-        'MCA Rule': scores.get('mca_rule_score', params.get('mca_rule_score', 0)) if isinstance(scores, dict) else 0,
+        'MCA Rule': scores.get('mca_rule_score', 0),
         'Adjusted ML': scores.get('adjusted_ml_score', scores.get('ml_score', 0))
     }
     
