@@ -184,7 +184,7 @@ class DashboardExporter:
                         <p>{export_data['scoring_results'].get('subprime_tier', 'N/A')}</p>
                     </div>
                     <div class="metric-card">
-                        <h3>🏛️ MCA Rule (40%)</h3>
+                        <h3>🏛️ MCA Rule (45%)</h3>
                         <div class="score-{get_score_class(mca_rule_score)}">{mca_rule_score:.0f}/100</div>
                     </div>
                     <div class="metric-card">
@@ -332,7 +332,7 @@ def get_score_summary_text(scores: Dict[str, Any]) -> str:
     
     summary_lines = [
         f"**Subprime Score:** {subprime:.1f}/100",
-        f"**MCA Rule (40%):** {mca_rule:.0f}/100",
+        f"**MCA Rule (45%):** {mca_rule:.0f}/100",
         f"**ML Probability:** {ml:.1f}%",
     ]
     

@@ -51,9 +51,10 @@ class EnsembleScorer:
     Combines multiple scoring systems into unified recommendations.
     
     Scoring systems considered (weights based on predictive power):
-    1. MCA Rule Score (40%) - Transaction consistency, empirically validated
-    2. Subprime Score (35%) - Comprehensive micro-enterprise assessment
-    3. ML Score (25%) - Data-driven probability prediction
+    1. MCA Rule Score (45%) - Transaction consistency, empirically validated
+    2. Subprime Score (40%) - Comprehensive micro-enterprise assessment
+    3. ML Score (15%) - Data-driven probability prediction (reduced until
+       the model is retrained on a larger dataset)
     
     The MCA Rule Score is based on:
     - inflow_days_30d: Days with deposits in last 30 days
@@ -67,9 +68,9 @@ class EnsembleScorer:
     """
     
     DEFAULT_WEIGHTS = {
-        'mca_score': 0.40,        # Transaction consistency - most important, empirically validated
-        'subprime_score': 0.35,   # Micro-enterprise assessment
-        'ml_score': 0.25,         # Data-driven probability
+        'mca_score': 0.45,        # Transaction consistency - most important, empirically validated
+        'subprime_score': 0.40,   # Micro-enterprise assessment
+        'ml_score': 0.15,         # Data-driven probability (reduced - small training set)
     }
     
     # Decision thresholds
