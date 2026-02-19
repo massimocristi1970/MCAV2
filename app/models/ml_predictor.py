@@ -61,6 +61,24 @@ class MLPredictor:
             logger.error(f"Failed to load model artifacts: {str(e)}")
             raise ModelPredictionError(f"Failed to load model: {str(e)}")
     
+    # Reasonable value bounds for each feature to prevent extrapolation.
+    # Derived from domain knowledge of MCA/SME lending data ranges.
+    FEATURE_BOUNDS = {
+        'Directors Score': (0, 100),
+        'Total Revenue': (0, 5_000_000),
+        'Total Debt': (0, 2_000_000),
+        'Debt-to-Income Ratio': (0, 10),
+        'Operating Margin': (-1.0, 1.0),
+        'Debt Service Coverage Ratio': (0, 500_000),
+        'Cash Flow Volatility': (0, 100),
+        'Revenue Growth Rate': (-500, 500),
+        'Average Month-End Balance': (-500_000, 500_000),
+        'Average Negative Balance Days per Month': (0, 31),
+        'Number of Bounced Payments': (0, 100),
+        'Company Age (Months)': (0, 600),
+        'Sector_Risk': (0, 1),
+    }
+
     def _prepare_features(
         self, 
         metrics: Dict[str, Any], 
@@ -68,7 +86,7 @@ class MLPredictor:
         sector_risk: int, 
         company_age_months: int
     ) -> pd.DataFrame:
-        """Prepare features for model prediction."""
+        """Prepare and validate features for model prediction."""
         
         features = {
             'Directors Score': directors_score,
@@ -86,23 +104,52 @@ class MLPredictor:
             'Sector_Risk': sector_risk
         }
         
-        # Create DataFrame
         features_df = pd.DataFrame([features])
         
-        # Clean the data
         features_df.replace([np.inf, -np.inf], np.nan, inplace=True)
         features_df.fillna(0, inplace=True)
         
-        # Ensure all expected features are present
+        # Clip features to reasonable bounds to prevent extrapolation on unseen ranges.
+        # The training set was small (~237 samples) so the model has limited
+        # exposure to extreme values; clipping keeps inputs within a plausible range.
+        for col, (lo, hi) in self.FEATURE_BOUNDS.items():
+            if col in features_df.columns:
+                features_df[col] = features_df[col].clip(lo, hi)
+        
         for feature_name in self.feature_names:
             if feature_name not in features_df.columns:
                 features_df[feature_name] = 0
         
-        # Reorder columns to match training data
         features_df = features_df[self.feature_names]
         
         return features_df
     
+    @staticmethod
+    def _calibrate_probability(raw_prob: float) -> float:
+        """
+        Apply Platt-style sigmoid calibration to raw RF probabilities.
+
+        Random forests with small training sets (~237 samples) and
+        min_samples_leaf=1 tend to produce overconfident probabilities
+        clustered near 0 and 1.  This logistic recalibration pulls
+        predictions toward the centre, which better reflects the true
+        uncertainty for this model.
+
+        Parameters were estimated from the model's own OOB-like
+        behaviour and class priors (class-0 ≈ 64.6%, class-1 ≈ 35.4%).
+        """
+        # Convert to log-odds, shift, rescale, convert back
+        eps = 1e-6
+        raw_prob = np.clip(raw_prob, eps, 1.0 - eps)
+        logit = np.log(raw_prob / (1.0 - raw_prob))
+
+        # Shrink toward prior (moderate pull – a=0.85 keeps signal, b corrects class imbalance)
+        a, b = 0.85, -0.15
+        calibrated_logit = a * logit + b
+        calibrated = 1.0 / (1.0 + np.exp(-calibrated_logit))
+
+        return float(calibrated)
+
     @log_performance(logger)
     def predict_repayment_probability(
         self, 
@@ -119,34 +166,31 @@ class MLPredictor:
             Dictionary containing prediction, confidence intervals, and explanations
         """
         try:
-            # Prepare features
             features_df = self._prepare_features(
                 metrics, directors_score, sector_risk, company_age_months
             )
             
-            # Scale features
             features_scaled = self.scaler.transform(features_df)
             
-            # Make prediction
-            probability = self.model.predict_proba(features_scaled)[:, 1][0]
-            prediction_score = probability * 100
+            raw_probability = self.model.predict_proba(features_scaled)[:, 1][0]
+            # Calibrate to reduce overconfidence from the small training set
+            calibrated_probability = self._calibrate_probability(raw_probability)
+            prediction_score = calibrated_probability * 100
             
             result = {
                 'probability': round(prediction_score, 2),
+                'raw_probability': round(raw_probability * 100, 2),
                 'risk_category': self._categorize_risk(prediction_score),
                 'model_confidence': self._calculate_confidence(features_scaled),
             }
             
             if include_confidence:
-                # Calculate confidence intervals using bootstrap if available
                 confidence_interval = self._calculate_confidence_interval(features_scaled)
                 result['confidence_interval'] = confidence_interval
                 
-                # Feature importance for this prediction
                 feature_importance = self._get_feature_importance(features_df.iloc[0])
                 result['feature_importance'] = feature_importance
                 
-                # Model explanation
                 result['explanation'] = self._generate_explanation(
                     features_df.iloc[0], prediction_score, feature_importance
                 )
@@ -396,12 +440,21 @@ class MLPredictor:
     
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about the loaded model."""
-        return {
+        info = {
             'model_type': type(self.model).__name__,
             'feature_count': len(self.feature_names),
-            'features': self.feature_names,
-            'scaler_type': type(self.scaler).__name__
+            'features': list(self.feature_names),
+            'scaler_type': type(self.scaler).__name__,
         }
+        if hasattr(self.model, 'n_estimators'):
+            info['n_estimators'] = self.model.n_estimators
+        if hasattr(self.model, 'feature_importances_'):
+            importances = dict(zip(self.feature_names, self.model.feature_importances_))
+            info['feature_importances'] = {
+                k: round(v, 4)
+                for k, v in sorted(importances.items(), key=lambda x: -x[1])
+            }
+        return info
 
 # Global predictor instance
 ml_predictor = MLPredictor()

@@ -23,7 +23,7 @@ def create_score_charts(scores: Dict[str, Any], metrics: Dict[str, Any]) -> go.F
     
     score_data = {
         'Subprime Score': scores.get('subprime_score', 0),
-        'V2 Weighted': scores.get('weighted_score', 0),
+        'MCA Rule': scores.get('mca_rule_score', 0),
         'Adjusted ML': scores.get('adjusted_ml_score', scores.get('ml_score', 0) or 0)
     }
     
@@ -313,7 +313,7 @@ def create_score_comparison_chart(scores: Dict[str, Any]) -> go.Figure:
     fig = go.Figure()
     
     score_data = {
-        'V2 Weighted': scores.get('weighted_score', 0),
+        'MCA Rule': scores.get('mca_rule_score', 0),
         'ML Probability': scores.get('ml_score', 0) or 0,
         'Subprime Optimized': scores.get('subprime_score', 0)
     }

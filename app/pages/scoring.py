@@ -309,6 +309,32 @@ def load_models() -> Tuple[Optional[Any], Optional[Any]]:
         return None, None
 
 
+_ML_FEATURE_BOUNDS = {
+    'Directors Score': (0, 100),
+    'Total Revenue': (0, 5_000_000),
+    'Total Debt': (0, 2_000_000),
+    'Debt-to-Income Ratio': (0, 10),
+    'Operating Margin': (-1.0, 1.0),
+    'Debt Service Coverage Ratio': (0, 500_000),
+    'Cash Flow Volatility': (0, 100),
+    'Revenue Growth Rate': (-500, 500),
+    'Average Month-End Balance': (-500_000, 500_000),
+    'Average Negative Balance Days per Month': (0, 31),
+    'Number of Bounced Payments': (0, 100),
+    'Company Age (Months)': (0, 600),
+    'Sector_Risk': (0, 1),
+}
+
+
+def _calibrate_ml_probability(raw_prob: float) -> float:
+    """Platt-style calibration for the current RF model's overconfident probabilities."""
+    eps = 1e-6
+    raw_prob = np.clip(raw_prob, eps, 1.0 - eps)
+    logit = np.log(raw_prob / (1.0 - raw_prob))
+    calibrated_logit = 0.85 * logit - 0.15
+    return float(1.0 / (1.0 + np.exp(-calibrated_logit)))
+
+
 def calculate_ml_score(
     metrics: Dict[str, Any], 
     params: Dict[str, Any],
@@ -333,7 +359,6 @@ def calculate_ml_score(
     try:
         import pandas as pd
         
-        # Prepare features in the exact order expected by the model
         features = {
             'Directors Score': params.get('directors_score', 0),
             'Total Revenue': metrics.get("Total Revenue", 0),
@@ -354,11 +379,16 @@ def calculate_ml_score(
         features_df.replace([np.inf, -np.inf], np.nan, inplace=True)
         features_df.fillna(0, inplace=True)
         
-        # Scale and predict
-        features_scaled = scaler.transform(features_df)
-        probability = model.predict_proba(features_scaled)[:, 1][0]
+        # Clip features to prevent extrapolation on unseen ranges
+        for col, (lo, hi) in _ML_FEATURE_BOUNDS.items():
+            if col in features_df.columns:
+                features_df[col] = features_df[col].clip(lo, hi)
         
-        return round(probability * 100, 2)
+        features_scaled = scaler.transform(features_df)
+        raw_probability = model.predict_proba(features_scaled)[:, 1][0]
+        calibrated = _calibrate_ml_probability(raw_probability)
+        
+        return round(calibrated * 100, 2)
         
     except Exception as e:
         print(f"ML scoring error: {e}")
@@ -523,11 +553,11 @@ def determine_loan_risk_level(
     loan_to_revenue = requested_loan / monthly_revenue if monthly_revenue > 0 else float('inf')
     
     subprime_score = scores.get('subprime_score', 0)
-    weighted_score = scores.get('weighted_score', 0)
+    mca_rule_score = scores.get('mca_rule_score', 0)
     ml_score = scores.get('adjusted_ml_score', scores.get('ml_score', 0)) or 0
     
     # Average of available scores
-    available_scores = [s for s in [subprime_score, weighted_score, ml_score] if s > 0]
+    available_scores = [s for s in [subprime_score, mca_rule_score, ml_score] if s > 0]
     avg_score = sum(available_scores) / len(available_scores) if available_scores else 0
     
     if avg_score >= 70 and loan_to_revenue <= 3:
