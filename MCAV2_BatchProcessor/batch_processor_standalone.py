@@ -1697,13 +1697,13 @@ class TightenedSubprimeScoring:
         else:
             return None  # Already at top tier
 
-    def compare_scoring_methods(self, traditional_score: float, adaptive_score: float,
+    def compare_scoring_methods(self, mca_rule_score: float,
                                 ml_score: float, subprime_score: float) -> Dict[str, Any]:
         """Compare all scoring methods and provide unified guidance."""
 
-        # Calculate score convergence
-        scores = [traditional_score, adaptive_score, ml_score, subprime_score]
-        score_range = max(scores) - min(scores)
+        # Convergence based on the two trusted systems only (MCA Rule + Subprime)
+        primary_scores = [s for s in [mca_rule_score, subprime_score] if s and s > 0]
+        score_range = max(primary_scores) - min(primary_scores) if len(primary_scores) >= 2 else 0
 
         if score_range <= 15:
             convergence = "High"
@@ -1728,9 +1728,6 @@ def calculate_all_scores_tightened(metrics, params):
     """Enhanced scoring calculation with TIGHTENED subprime scoring"""
     industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
     sector_risk = industry_thresholds['Sector Risk']
-    
-    # Calculate weighted scores (unchanged)
-    weighted_score = calculate_weighted_scores(metrics, params, industry_thresholds)
     
     # TIGHTENED subprime scoring
     try:
@@ -1779,9 +1776,25 @@ def calculate_all_scores_tightened(metrics, params):
     if sector_risk <= industry_thresholds['Sector Risk']:
         industry_score += 1
     
-    # ML Score (unchanged - load models if available)
+    # ML Score - load models if available
     model, scaler = load_models()
     ml_score = None
+
+    _ML_FEATURE_BOUNDS = {
+        'Directors Score': (0, 100),
+        'Total Revenue': (0, 5_000_000),
+        'Total Debt': (0, 2_000_000),
+        'Debt-to-Income Ratio': (0, 10),
+        'Operating Margin': (-1.0, 1.0),
+        'Debt Service Coverage Ratio': (0, 500_000),
+        'Cash Flow Volatility': (0, 100),
+        'Revenue Growth Rate': (-500, 500),
+        'Average Month-End Balance': (-500_000, 500_000),
+        'Average Negative Balance Days per Month': (0, 31),
+        'Number of Bounced Payments': (0, 100),
+        'Company Age (Months)': (0, 600),
+        'Sector_Risk': (0, 1),
+    }
 
     if model and scaler:
         try:
@@ -1805,9 +1818,19 @@ def calculate_all_scores_tightened(metrics, params):
             features_df.replace([np.inf, -np.inf], np.nan, inplace=True)
             features_df.fillna(0, inplace=True)
             
+            for col, (lo, hi) in _ML_FEATURE_BOUNDS.items():
+                if col in features_df.columns:
+                    features_df[col] = features_df[col].clip(lo, hi)
+            
             features_scaled = scaler.transform(features_df)
-            probability = model.predict_proba(features_scaled)[:, 1] * 100
-            ml_score = round(probability[0], 2)
+            raw_prob = model.predict_proba(features_scaled)[:, 1][0]
+            
+            # Platt-style calibration (matches main app ml_predictor)
+            eps = 1e-6
+            raw_prob = np.clip(raw_prob, eps, 1.0 - eps)
+            logit = np.log(raw_prob / (1.0 - raw_prob))
+            calibrated = 1.0 / (1.0 + np.exp(-(0.85 * logit - 0.15)))
+            ml_score = round(calibrated * 100, 2)
             
         except Exception as e:
             ml_score = None
@@ -1860,7 +1883,6 @@ def calculate_all_scores_tightened(metrics, params):
         final_reasons.append("MCA Rule: APPROVE (no override)")
 
     return {
-        'weighted_score': weighted_score,
         'industry_score': industry_score,
         'ml_score': ml_score,
         'loan_risk': loan_risk,
@@ -2412,7 +2434,7 @@ class BatchProcessor:
             debug_info['scoring_calculation_successful'] = True
             debug_info['calculated_scores'] = {
                 'subprime_score': scores.get('subprime_score', 0),
-                'weighted_score': scores.get('weighted_score', 0),
+                'mca_rule_score': scores.get('mca_rule_score', 0),
                 'ml_score': scores.get('ml_score', None),
                 'subprime_tier': scores.get('subprime_tier', 'Unknown')
             }
@@ -2570,8 +2592,8 @@ def create_results_dashboard(results_df):
         st.metric("Avg Subprime Score", f"{avg_subprime:.1f}")
     
     with col3:
-        avg_weighted = results_df['weighted_score'].mean() if 'weighted_score' in results_df.columns else 0
-        st.metric("Avg Weighted Score", f"{avg_weighted:.1f}")
+        avg_mca = results_df['mca_rule_score'].mean() if 'mca_rule_score' in results_df.columns else 0
+        st.metric("Avg MCA Rule Score", f"{avg_mca:.1f}")
     
     with col4:
         if 'ml_score' in results_df.columns and results_df['ml_score'].notna().any():
@@ -2602,16 +2624,16 @@ def create_results_dashboard(results_df):
             st.plotly_chart(fig_subprime, use_container_width=True)
     
     with col2:
-        if 'weighted_score' in results_df.columns:
-            fig_weighted = px.histogram(
+        if 'mca_rule_score' in results_df.columns:
+            fig_mca = px.histogram(
                 results_df, 
-                x='weighted_score', 
-                title="Weighted Score Distribution",
-                labels={'weighted_score': 'Weighted Score', 'count': 'Number of Applications'}
+                x='mca_rule_score', 
+                title="MCA Rule Score Distribution",
+                labels={'mca_rule_score': 'MCA Rule Score', 'count': 'Number of Applications'}
             )
-            fig_weighted.add_vline(x=70, line_dash="dash", line_color="red", 
-                                  annotation_text="Typical Threshold (70)")
-            st.plotly_chart(fig_weighted, use_container_width=True)
+            fig_mca.add_vline(x=70, line_dash="dash", line_color="red", 
+                              annotation_text="Typical Threshold (70)")
+            st.plotly_chart(fig_mca, use_container_width=True)
     
     # Risk Tier Analysis
     if 'subprime_tier' in results_df.columns:
@@ -2700,7 +2722,7 @@ def create_results_dashboard(results_df):
         # new stack outputs
         'mca_rule_decision', 'mca_rule_score', 'final_decision',
         # scores
-        'subprime_score', 'subprime_tier', 'weighted_score',
+        'subprime_score', 'subprime_tier', 'mca_rule_score',
         # key metrics
         'Total Revenue', 'Net Income', 'Operating Margin', 'Debt Service Coverage Ratio',
         # params
@@ -2724,7 +2746,7 @@ def create_results_dashboard(results_df):
         'requested_loan': lambda x: f"£{x:,.0f}" if pd.notna(x) else "",
         'Operating Margin': lambda x: f"{x * 100:.1f}%" if pd.notna(x) else "",
         'subprime_score': lambda x: f"{x:.1f}" if pd.notna(x) else "",
-        'weighted_score': lambda x: f"{x:.0f}" if pd.notna(x) else "",
+        'mca_rule_score': lambda x: f"{x:.0f}" if pd.notna(x) else "",
         'Debt Service Coverage Ratio': lambda x: f"{x:.2f}" if pd.notna(x) else "",
         'mca_rule_score': lambda x: f"{x:.0f}" if pd.notna(x) else "",
     }
