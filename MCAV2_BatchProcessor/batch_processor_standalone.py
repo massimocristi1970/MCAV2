@@ -2722,7 +2722,7 @@ def create_results_dashboard(results_df):
         # new stack outputs
         'mca_rule_decision', 'mca_rule_score', 'final_decision',
         # scores
-        'subprime_score', 'subprime_tier', 'mca_rule_score',
+        'subprime_score', 'subprime_tier',
         # key metrics
         'Total Revenue', 'Net Income', 'Operating Margin', 'Debt Service Coverage Ratio',
         # params
