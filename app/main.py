@@ -1108,17 +1108,15 @@ def calculate_all_scores_enhanced(metrics, params):
             mca_rule_score = params.get('mca_rule_score', 50)
             
             # Prepare scores for ensemble
-            # REVISED WEIGHTS based on predictive power:
-            # - MCA Rule (transaction consistency): 35% - empirically validated
+            # Weights based on predictive power:
+            # - MCA Rule (transaction consistency): 40% - most important, empirically validated
             # - Subprime Score: 35% - comprehensive micro-enterprise assessment  
             # - ML Score: 25% - data-driven probability
-            # - Weighted Score: 5% (reduced - less predictive than transaction consistency)
             ensemble_scores = {
                 'subprime_score': subprime_result['subprime_score'],
                 'ml_score': adjusted_ml_score or ml_score,
-                'adaptive_score': weighted_score,  # Kept but with minimal weight
-                'mca_score': mca_rule_score,  # NOW using actual MCA rule score
-                'mca_decision': mca_rule_decision,  # Pass decision for hard stop logic
+                'mca_score': mca_rule_score,
+                'mca_decision': mca_rule_decision,
             }
             
             ensemble_result = get_ensemble_recommendation(
@@ -1150,14 +1148,16 @@ def calculate_all_scores_enhanced(metrics, params):
         'adjusted_ml_score': adjusted_ml_score,
         'loan_risk': loan_risk,
         'score_breakdown': score_breakdown,
-        # NEW: Subprime scoring results
+        'mca_rule_score': params.get('mca_rule_score', 0),
+        'mca_rule_decision': params.get('mca_rule_decision', 'REFER'),
+        # Subprime scoring results
         'subprime_score': subprime_result['subprime_score'],
         'subprime_tier': subprime_result['risk_tier'],
         'subprime_pricing': subprime_result['pricing_guidance'],
         'subprime_recommendation': subprime_result['recommendation'],
         'subprime_breakdown': subprime_result['breakdown'],
         'ml_validation': ml_validation,
-        # NEW: Ensemble scoring results
+        # Ensemble scoring results
         'ensemble': ensemble_result
     }
 
@@ -1349,7 +1349,7 @@ def create_score_charts(scores, metrics):
     
     score_data = {
         'Subprime Score': scores.get('subprime_score', 0),
-        'V2 Weighted': scores['weighted_score'],
+        'MCA Rule': scores.get('mca_rule_score', params.get('mca_rule_score', 0)) if isinstance(scores, dict) else 0,
         'Adjusted ML': scores.get('adjusted_ml_score', scores.get('ml_score', 0))
     }
     
@@ -2013,7 +2013,7 @@ class DashboardExporter:
                 'subprime_score': scores.get('subprime_score'),
                 'subprime_tier': scores.get('subprime_tier'),
                 'subprime_recommendation': scores.get('subprime_recommendation'),
-                'v2_weighted_score': scores.get('weighted_score'),
+                'mca_rule_score': scores.get('mca_rule_score', params.get('mca_rule_score', 0)),
                 'ml_score': scores.get('ml_score'),
                 'adjusted_ml_score': scores.get('adjusted_ml_score'),
                 'industry_score': scores.get('industry_score'),
@@ -2107,8 +2107,8 @@ class DashboardExporter:
                         <p>{export_data['scoring_results']['subprime_tier']}</p>
                     </div>
                     <div class="metric-card">
-                        <h3>🏛️ V2 Weighted</h3>
-                        <div class="score-{get_score_class(export_data['scoring_results']['v2_weighted_score'])}">{export_data['scoring_results']['v2_weighted_score']:.0f}/100</div>
+                        <h3>🏛️ MCA Rule (40%)</h3>
+                        <div class="score-{get_score_class(export_data['scoring_results'].get('mca_rule_score', 0))}">{export_data['scoring_results'].get('mca_rule_score', 0):.0f}/100</div>
                     </div>
                     <div class="metric-card">
                         <h3>🤖 ML Score</h3>
@@ -2156,8 +2156,8 @@ class DashboardExporter:
                         &nbsp;&nbsp;|&nbsp;&nbsp; Tier: {export_data['scoring_results'].get('subprime_tier', 'N/A')}</td>
                     </tr>
                     <tr>
-                        <td>V2 Weighted</td>
-                        <td>{export_data['scoring_results'].get('v2_weighted_score', 'N/A')}/100</td>
+                        <td>MCA Rule (40%)</td>
+                        <td>{export_data['scoring_results'].get('mca_rule_score', 'N/A')}/100</td>
                     </tr>
                     <tr>
                         <td>ML Score</td>
@@ -2553,12 +2553,12 @@ def main():
                     
                     # Contributing scores in compact row
                     contributing = ensemble.get('contributing_scores', {})
-                    score_cols = st.columns(4)
+                    score_cols = st.columns(3)
                     
                     with score_cols[0]:
                         mca_s = contributing.get('mca_score', params.get('mca_rule_score', 50))
                         mca_d = params.get('mca_rule_decision', 'REFER')
-                        st.metric("MCA Rule (35%)", f"{mca_s:.0f}", delta=mca_d)
+                        st.metric("MCA Rule (40%)", f"{mca_s:.0f}", delta=mca_d)
                     
                     with score_cols[1]:
                         subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
@@ -2567,10 +2567,6 @@ def main():
                     with score_cols[2]:
                         ml_s = contributing.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
                         st.metric("ML Score (25%)", f"{ml_s:.1f}%" if ml_s else "N/A")
-                    
-                    with score_cols[3]:
-                        adaptive_s = contributing.get('adaptive_score', scores.get('weighted_score', 0))
-                        st.metric("Weighted (5%)", f"{adaptive_s:.0f}")
                     
                     # Score convergence indicator
                     convergence = ensemble.get('score_convergence', 'Unknown')
@@ -2827,9 +2823,9 @@ def main():
                         comp_col1, comp_col2, comp_col3, = st.columns(3)
                         
                         with comp_col1:
-                            delta_weighted = scores['weighted_score'] - full_scores['weighted_score']
-                            st.metric("Full Period Weighted Score", f"{full_scores['weighted_score']:.0f}/100", 
-                                    delta=f"{delta_weighted:+.0f} difference")
+                            delta_subprime = scores.get('subprime_score', 0) - full_scores.get('subprime_score', 0)
+                            st.metric("Full Period Subprime Score", f"{full_scores.get('subprime_score', 0):.1f}/100", 
+                                    delta=f"{delta_subprime:+.1f} difference")
                         
                         with comp_col2:
                             if full_scores['ml_score'] and scores['ml_score']:
@@ -2890,9 +2886,9 @@ def main():
                     else:
                         st.error(f"**Subprime Recommendation**: {recommendation}")
 
-                    # V2 Weighted Breakdown
+                    # Metric Scoring Breakdown
                     st.markdown("---")
-                    st.markdown("**V2 Weighted Scoring Breakdown:**")
+                    st.markdown("**Metric Scoring Breakdown:**")
                     if scores.get('score_breakdown'):
                         breakdown_data = []
                         for metric, data in scores['score_breakdown'].items():

@@ -523,11 +523,11 @@ def determine_loan_risk_level(
     loan_to_revenue = requested_loan / monthly_revenue if monthly_revenue > 0 else float('inf')
     
     subprime_score = scores.get('subprime_score', 0)
-    weighted_score = scores.get('weighted_score', 0)
+    mca_rule_score = scores.get('mca_rule_score', 0)
     ml_score = scores.get('adjusted_ml_score', scores.get('ml_score', 0)) or 0
     
     # Average of available scores
-    available_scores = [s for s in [subprime_score, weighted_score, ml_score] if s > 0]
+    available_scores = [s for s in [subprime_score, mca_rule_score, ml_score] if s > 0]
     avg_score = sum(available_scores) / len(available_scores) if available_scores else 0
     
     if avg_score >= 70 and loan_to_revenue <= 3:

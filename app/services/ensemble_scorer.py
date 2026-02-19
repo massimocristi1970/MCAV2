@@ -50,11 +50,10 @@ class EnsembleScorer:
     """
     Combines multiple scoring systems into unified recommendations.
     
-    Scoring systems considered (revised weights based on predictive power):
-    1. MCA Rule Score (35%) - Transaction consistency, empirically validated
+    Scoring systems considered (weights based on predictive power):
+    1. MCA Rule Score (40%) - Transaction consistency, empirically validated
     2. Subprime Score (35%) - Comprehensive micro-enterprise assessment
     3. ML Score (25%) - Data-driven probability prediction
-    4. Weighted Score (5%) - Traditional thresholds (less predictive)
     
     The MCA Rule Score is based on:
     - inflow_days_30d: Days with deposits in last 30 days
@@ -67,13 +66,10 @@ class EnsembleScorer:
     Hard stops can override the ensemble (e.g., MCA DECLINE).
     """
     
-    # Revised weights reflecting actual predictive power
-    # MCA rules (transaction consistency) are empirically important
     DEFAULT_WEIGHTS = {
-        'mca_score': 0.35,        # Transaction consistency - empirically validated
+        'mca_score': 0.40,        # Transaction consistency - most important, empirically validated
         'subprime_score': 0.35,   # Micro-enterprise assessment
         'ml_score': 0.25,         # Data-driven probability
-        'adaptive_score': 0.05,   # Traditional thresholds (reduced)
     }
     
     # Decision thresholds
@@ -277,15 +273,6 @@ class EnsembleScorer:
             available=ml_score is not None and ml_score > 0,
             weight=self.weights.get('ml_score', 0),
             details=scores.get('ml_details', {})
-        )
-        
-        # Adaptive/Weighted score (reduced weight - less predictive)
-        adaptive = scores.get('adaptive_score', 0)
-        results['adaptive_score'] = ScoringResult(
-            score=float(adaptive) if adaptive else 0,
-            available=adaptive is not None and adaptive > 0,
-            weight=self.weights.get('adaptive_score', 0),
-            details=scores.get('adaptive_details', {})
         )
         
         return results

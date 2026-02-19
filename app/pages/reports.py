@@ -65,7 +65,7 @@ class DashboardExporter:
                 'subprime_score': scores.get('subprime_score'),
                 'subprime_tier': scores.get('subprime_tier'),
                 'subprime_recommendation': scores.get('subprime_recommendation'),
-                'v2_weighted_score': scores.get('weighted_score'),
+                'mca_rule_score': scores.get('mca_rule_score', params.get('mca_rule_score', 0)),
                 'ml_score': scores.get('ml_score'),
                 'adjusted_ml_score': scores.get('adjusted_ml_score'),
                 'industry_score': scores.get('industry_score'),
@@ -140,7 +140,7 @@ class DashboardExporter:
         
         # Safe get for scores with defaults
         subprime_score = export_data['scoring_results'].get('subprime_score') or 0
-        weighted_score = export_data['scoring_results'].get('v2_weighted_score') or 0
+        mca_rule_score = export_data['scoring_results'].get('mca_rule_score') or 0
         adjusted_ml_score = export_data['scoring_results'].get('adjusted_ml_score') or 0
         
         html_template = f"""
@@ -184,8 +184,8 @@ class DashboardExporter:
                         <p>{export_data['scoring_results'].get('subprime_tier', 'N/A')}</p>
                     </div>
                     <div class="metric-card">
-                        <h3>🏛️ V2 Weighted</h3>
-                        <div class="score-{get_score_class(weighted_score)}">{weighted_score:.0f}/100</div>
+                        <h3>🏛️ MCA Rule (40%)</h3>
+                        <div class="score-{get_score_class(mca_rule_score)}">{mca_rule_score:.0f}/100</div>
                     </div>
                     <div class="metric-card">
                         <h3>🤖 ML Score</h3>
@@ -327,12 +327,12 @@ def get_score_summary_text(scores: Dict[str, Any]) -> str:
         Summary text string
     """
     subprime = scores.get('subprime_score', 0)
-    weighted = scores.get('weighted_score', 0)
+    mca_rule = scores.get('mca_rule_score', 0)
     ml = scores.get('adjusted_ml_score', scores.get('ml_score', 0)) or 0
     
     summary_lines = [
         f"**Subprime Score:** {subprime:.1f}/100",
-        f"**V2 Weighted:** {weighted:.0f}/100",
+        f"**MCA Rule (40%):** {mca_rule:.0f}/100",
         f"**ML Probability:** {ml:.1f}%",
     ]
     
