@@ -326,15 +326,6 @@ _ML_FEATURE_BOUNDS = {
 }
 
 
-def _calibrate_ml_probability(raw_prob: float) -> float:
-    """Platt-style calibration for the current RF model's overconfident probabilities."""
-    eps = 1e-6
-    raw_prob = np.clip(raw_prob, eps, 1.0 - eps)
-    logit = np.log(raw_prob / (1.0 - raw_prob))
-    calibrated_logit = 0.85 * logit - 0.15
-    return float(1.0 / (1.0 + np.exp(-calibrated_logit)))
-
-
 def calculate_ml_score(
     metrics: Dict[str, Any], 
     params: Dict[str, Any],
@@ -385,10 +376,10 @@ def calculate_ml_score(
                 features_df[col] = features_df[col].clip(lo, hi)
         
         features_scaled = scaler.transform(features_df)
-        raw_probability = model.predict_proba(features_scaled)[:, 1][0]
-        calibrated = _calibrate_ml_probability(raw_probability)
+        # The retrained model is already wrapped in CalibratedClassifierCV
+        probability = model.predict_proba(features_scaled)[:, 1][0]
         
-        return round(calibrated * 100, 2)
+        return round(probability * 100, 2)
         
     except Exception as e:
         print(f"ML scoring error: {e}")

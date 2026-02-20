@@ -1109,9 +1109,9 @@ def calculate_all_scores_enhanced(metrics, params):
             
             # Prepare scores for ensemble
             # Weights based on predictive power:
-            # - MCA Rule (transaction consistency): 45% - most important, empirically validated
+            # - MCA Rule (transaction consistency): 40% - empirically validated
             # - Subprime Score: 40% - comprehensive micro-enterprise assessment  
-            # - ML Score: 15% - data-driven probability (reduced - small training set)
+            # - ML Score: 20% - data-driven probability (retrained, 0.922 ROC-AUC)
             ensemble_scores = {
                 'subprime_score': subprime_result['subprime_score'],
                 'ml_score': adjusted_ml_score or ml_score,
@@ -2107,7 +2107,7 @@ class DashboardExporter:
                         <p>{export_data['scoring_results']['subprime_tier']}</p>
                     </div>
                     <div class="metric-card">
-                        <h3>🏛️ MCA Rule (45%)</h3>
+                        <h3>🏛️ MCA Rule (40%)</h3>
                         <div class="score-{get_score_class(export_data['scoring_results'].get('mca_rule_score', 0))}">{export_data['scoring_results'].get('mca_rule_score', 0):.0f}/100</div>
                     </div>
                     <div class="metric-card">
@@ -2156,7 +2156,7 @@ class DashboardExporter:
                         &nbsp;&nbsp;|&nbsp;&nbsp; Tier: {export_data['scoring_results'].get('subprime_tier', 'N/A')}</td>
                     </tr>
                     <tr>
-                        <td>MCA Rule (45%)</td>
+                        <td>MCA Rule (40%)</td>
                         <td>{export_data['scoring_results'].get('mca_rule_score', 'N/A')}/100</td>
                     </tr>
                     <tr>
@@ -2558,7 +2558,7 @@ def main():
                     with score_cols[0]:
                         mca_s = contributing.get('mca_score', params.get('mca_rule_score', 50))
                         mca_d = params.get('mca_rule_decision', 'REFER')
-                        st.metric("MCA Rule (45%)", f"{mca_s:.0f}")
+                        st.metric("MCA Rule (40%)", f"{mca_s:.0f}", delta=mca_d)
                     
                     with score_cols[1]:
                         subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
@@ -2566,7 +2566,7 @@ def main():
                     
                     with score_cols[2]:
                         ml_s = contributing.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
-                        st.metric("ML Score (15%)", f"{ml_s:.1f}%" if ml_s else "N/A")
+                        st.metric("ML Score (20%)", f"{ml_s:.1f}%" if ml_s else "N/A")
                     
                     # Score convergence indicator
                     convergence = ensemble.get('score_convergence', 'Unknown')
