@@ -207,10 +207,10 @@ class ScoringThresholds:
     # ===========================================
     
     TIER_THRESHOLDS: Dict[str, int] = field(default_factory=lambda: {
-        "tier_1": 65,  # Premium
-        "tier_2": 50,  # Standard
-        "tier_3": 40,  # Higher Risk
-        "tier_4": 30,  # Senior Review
+        "tier_1": 75,  # Premium
+        "tier_2": 70,  # Standard
+        "tier_3": 65,  # Higher Risk
+        "tier_4": 60,  # Senior Review
         "decline": 0   # Below tier_4
     })
     

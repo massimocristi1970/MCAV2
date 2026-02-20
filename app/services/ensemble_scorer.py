@@ -74,10 +74,10 @@ class EnsembleScorer:
     
     # Decision thresholds
     THRESHOLDS = {
-        'approve': 65,
-        'conditional_approve': 50,
-        'refer': 40,
-        'senior_review': 30
+        'approve': 75,
+        'conditional_approve': 70,
+        'refer': 65,
+        'senior_review': 65
     }
     
     # Hard stop conditions that override ensemble
