@@ -1,12 +1,22 @@
 import pandas as pd
+import os
 from fuzzywuzzy import fuzz
 
 # Read the CSV file
-df = pd.read_csv(r"C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\applicationsdata.csv")
+df = pd.read_csv(r"D:\Dev\Github\MCAV2\data\training_dataset.csv")
 
-# Get company names and file names (assuming columns A and B)
-companies = df.iloc[:, 0].dropna().tolist()  # Column A
-files = df.iloc[:, 1].dropna().tolist()      # Column B
+# UPDATE: Point this to your actual JSON folder
+json_folder = r"D:\Dev\Github\MCAV2\data\JsonExport"
+
+# Get IDs from the first column (application_id)
+companies = df['application_id'].dropna().tolist()
+
+# Get actual filenames from your folder instead of Column B
+if os.path.exists(json_folder):
+    files = [f for f in os.listdir(json_folder) if f.endswith('.json')]
+else:
+    print(f"Error: Folder not found at {json_folder}")
+    files = []
 
 def normalize_name(name):
     name = str(name).lower().strip()
@@ -15,10 +25,13 @@ def normalize_name(name):
 
 missing_companies = []
 
+if not files:
+    print("No files found to compare against!")
+    exit()
+
 for company in companies:
     norm_company = normalize_name(company)
     
-    # Check if any file matches well enough
     best_score = 0
     for file in files:
         norm_file = normalize_name(file)
@@ -28,18 +41,18 @@ for company in companies:
         )
         best_score = max(best_score, score)
     
-    if best_score < 90:  # 90% similarity threshold
+    if best_score < 90:
         missing_companies.append(company)
         print(f"MISSING: {company} (best match score: {best_score}%)")
 
 print(f"\nSUMMARY:")
-print(f"Total companies: {len(companies)}")
-print(f"Missing files: {len(missing_companies)}")
-print(f"Files found: {len(companies) - len(missing_companies)}")
+print(f"Total entries in CSV: {len(companies)}")
+print(f"Files found in folder: {len(files)}")
+print(f"Missing (no match): {len(missing_companies)}")
 
 # Save missing companies to file
 with open('missing_companies.txt', 'w') as f:
     for company in missing_companies:
-        f.write(company + '\n')
+        f.write(str(company) + '\n')
 
-print(f"\nMissing companies saved to 'missing_companies.txt'")
+print(f"\nMissing IDs saved to 'missing_companies.txt'")
