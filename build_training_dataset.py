@@ -6,11 +6,23 @@ Combines two data sources:
   2. Application spreadsheet (data/training_dataset.xlsx)
 
 The spreadsheet must have these columns:
-  application_id        - JSON filename (with or without .json)
-  requested_loan        - Loan amount requested
-  company_age_months    - Business age in months
-  directors_score       - Director credit score (0-100)
-  outcome               - 1 = repaid, 0 = defaulted (blank = unfunded)
+  company_name                - Matches to JSON filename in data/JsonExport/
+  Outcome                     - 1 = repaid, 0 = defaulted (blank = unfunded)
+  Total Revenue               - Total revenue from bank statements
+  Net Income                  - Net income
+  Operating Margin            - Operating margin ratio
+  Debt Service Coverage Ratio - DSCR
+  requested_loan              - Loan amount requested
+
+Optional columns (defaults applied if missing):
+  directors_score       - Director credit score (default: 50)
+  company_age_months    - Business age in months (default: 12)
+  industry              - Industry name (default: Other)
+  total_debt            - Known debt amount (default: 0)
+
+The company_name column is matched to JSON filenames. For example,
+if company_name is "ABC Ltd", the script looks for "ABC Ltd.json"
+in data/JsonExport/.
 
 Outputs:
   data/mca_training_dataset.csv   - MCA transaction features (for MCA Rule scoring)
@@ -171,24 +183,29 @@ def load_application_data(path_xlsx):
     Load the application spreadsheet.
 
     Expected columns:
-        application_id, requested_loan, company_age_months,
-        directors_score, outcome
+        company_name              - Matches to JSON filename
+        Outcome                   - 1 = repaid, 0 = defaulted (blank = unfunded)
+        Total Revenue             - Total revenue from bank statements
+        Net Income                - Net income
+        Operating Margin          - Operating margin ratio
+        Debt Service Coverage Ratio - DSCR
+        requested_loan            - Loan amount requested
 
     Optional columns:
-        industry, total_debt
+        directors_score, company_age_months, industry, total_debt
 
     Returns:
         dict mapping normalised filename -> row dict
     """
     df = pd.read_excel(path_xlsx)
 
-    required = ["application_id", "outcome"]
+    required = ["company_name", "Outcome"]
     missing = [c for c in required if c not in df.columns]
     if missing:
         raise ValueError(f"Spreadsheet missing required columns: {missing}")
 
-    df["application_id"] = df["application_id"].apply(_normalise_filename_cell)
-    df["outcome"] = pd.to_numeric(df["outcome"], errors="coerce").astype("Int64")
+    df["company_name_key"] = df["company_name"].apply(_normalise_filename_cell)
+    df["Outcome"] = pd.to_numeric(df["Outcome"], errors="coerce").astype("Int64")
 
     # Optional columns with defaults
     if "directors_score" not in df.columns:
@@ -201,13 +218,26 @@ def load_application_data(path_xlsx):
         df["total_debt"] = 0
     if "industry" not in df.columns:
         df["industry"] = "Other"
+    if "Total Revenue" not in df.columns:
+        df["Total Revenue"] = np.nan
+    if "Net Income" not in df.columns:
+        df["Net Income"] = np.nan
+    if "Operating Margin" not in df.columns:
+        df["Operating Margin"] = np.nan
+    if "Debt Service Coverage Ratio" not in df.columns:
+        df["Debt Service Coverage Ratio"] = np.nan
 
     mapping = {}
     for _, r in df.iterrows():
         row_data = r.to_dict()
-        k = row_data["application_id"]
+        k = row_data["company_name_key"]
         mapping[k] = row_data
         mapping[_strip_json_ext(k)] = row_data
+        # Also map by the raw company_name (lowercase, stripped) for fuzzy matching
+        raw_name = str(row_data.get("company_name", "")).strip()
+        if raw_name:
+            mapping[raw_name] = row_data
+            mapping[raw_name.lower()] = row_data
 
     return mapping
 
@@ -361,38 +391,66 @@ def build_mca_features(transactions):
 # ============================================================
 # ML Feature derivation
 # ============================================================
+def _use_spreadsheet_or_derive(app_data, col_name, derived_value, default=0):
+    """Use the spreadsheet value if present and valid, otherwise use derived."""
+    raw = app_data.get(col_name)
+    val = _safe_float(raw)
+    if not np.isnan(val) and val != 0:
+        return val
+    return derived_value if derived_value is not None else default
+
+
 def derive_ml_features(mca_feats, app_data):
     """
     Convert MCA transaction features + spreadsheet data into the 13
     features expected by train_improved_model.py.
 
+    Uses spreadsheet values for Total Revenue, Net Income, Operating
+    Margin and DSCR when available. Falls back to deriving from
+    transaction data when the spreadsheet value is blank or zero.
+
     Args:
         mca_feats: dict from build_mca_features()
-        app_data:  dict from spreadsheet row (directors_score, etc.)
+        app_data:  dict from spreadsheet row
 
     Returns:
-        dict with the 13 ML columns + outcome
+        dict with the 13 ML columns
     """
     months = mca_feats.get("months_covered", 1) or 1
     avg_in = mca_feats.get("avg_monthly_inflow", 0) or 0
-    avg_out = mca_feats.get("avg_monthly_outflow", 0) or 0
     avg_net = mca_feats.get("avg_monthly_net", 0) or 0
 
-    total_revenue = avg_in * months
-    total_debt = _safe_float(app_data.get("total_debt", 0)) or 0
+    # Total Revenue: prefer spreadsheet, fall back to transaction-derived
+    derived_revenue = avg_in * months
+    total_revenue = _use_spreadsheet_or_derive(
+        app_data, "Total Revenue", derived_revenue
+    )
 
-    # Operating Margin = net / inflow
-    operating_margin = avg_net / avg_in if avg_in > 0 else 0
+    # Operating Margin: prefer spreadsheet, fall back to net/inflow
+    derived_margin = avg_net / avg_in if avg_in > 0 else 0
+    operating_margin = _use_spreadsheet_or_derive(
+        app_data, "Operating Margin", derived_margin
+    )
+
+    # DSCR: prefer spreadsheet, fall back to estimate
+    total_debt = _safe_float(app_data.get("total_debt", 0)) or 0
+    if total_debt > 0:
+        monthly_debt_payment = total_debt / 12
+        derived_dscr = avg_net / monthly_debt_payment if monthly_debt_payment > 0 else 10
+    else:
+        derived_dscr = 10
+    dscr = _use_spreadsheet_or_derive(
+        app_data, "Debt Service Coverage Ratio", derived_dscr
+    )
+
+    # Net Income: prefer spreadsheet, fall back to net * months
+    derived_net_income = avg_net * months
+    net_income = _use_spreadsheet_or_derive(
+        app_data, "Net Income", derived_net_income
+    )
 
     # Debt-to-Income Ratio
     debt_to_income = total_debt / total_revenue if total_revenue > 0 else 0
-
-    # DSCR: if we know debt, estimate monthly repayment over 12 months
-    if total_debt > 0:
-        monthly_debt_payment = total_debt / 12
-        dscr = avg_net / monthly_debt_payment if monthly_debt_payment > 0 else 10
-    else:
-        dscr = 10  # No debt = excellent coverage
 
     # Cash Flow Volatility from inflow CV
     cash_flow_volatility = mca_feats.get("inflow_cv", 0.5) or 0.5
@@ -428,23 +486,34 @@ def iter_json_files(root):
 def main():
     print(f"Loading spreadsheet: {OUTCOMES_XLSX}")
     app_data_map = load_application_data(OUTCOMES_XLSX)
-    print(f"  Found {len(app_data_map) // 2} applications in spreadsheet")
+    # Each app gets ~4 keys (filename, stem, raw name, lowercase name)
+    unique_apps = len({id(v) for v in app_data_map.values()})
+    print(f"  Found {unique_apps} applications in spreadsheet")
 
     print(f"Scanning JSON files: {JSON_ROOT}")
     mca_rows = []
     ml_rows = []
-    skipped = 0
+    matched = 0
+    skipped_no_match = 0
+    skipped_no_outcome = 0
+    skipped_no_txns = 0
 
     for fp in iter_json_files(JSON_ROOT):
         key = fp.stem
-        app_data = app_data_map.get(fp.name) or app_data_map.get(key)
+
+        # Try matching by filename, stem, or stem (lowercase)
+        app_data = (
+            app_data_map.get(fp.name)
+            or app_data_map.get(key)
+            or app_data_map.get(key.lower())
+        )
         if app_data is None:
-            skipped += 1
+            skipped_no_match += 1
             continue
 
-        outcome = app_data.get("outcome")
+        outcome = app_data.get("Outcome")
         if pd.isna(outcome):
-            skipped += 1
+            skipped_no_outcome += 1
             continue
 
         with open(fp, "r", encoding="utf-8") as f:
@@ -453,14 +522,16 @@ def main():
         mca_feats = build_mca_features(txns)
         if not mca_feats:
             print(f"  WARNING: No transactions extracted from {fp.name}")
-            skipped += 1
+            skipped_no_txns += 1
             continue
+
+        matched += 1
 
         # MCA dataset row (original format)
         mca_row = dict(mca_feats)
         mca_row.update({
             "application_file": fp.name,
-            "application_key": key,
+            "company_name": app_data.get("company_name", key),
             "outcome": int(outcome),
             "txn_extracted_count": len(txns),
         })
@@ -469,7 +540,7 @@ def main():
         # ML dataset row (13 features + outcome)
         ml_row = derive_ml_features(mca_feats, app_data)
         ml_row["outcome"] = int(outcome)
-        ml_row["application_id"] = fp.name
+        ml_row["company_name"] = app_data.get("company_name", key)
         ml_rows.append(ml_row)
 
     # Save MCA dataset
@@ -484,8 +555,11 @@ def main():
     ml_df.to_csv(OUTPUT_ML_CSV, index=False)
     print(f"ML dataset:  {len(ml_df)} rows -> {OUTPUT_ML_CSV}")
 
-    if skipped:
-        print(f"\nSkipped {skipped} files (no matching spreadsheet row or no outcome)")
+    print(f"\nMatching summary:")
+    print(f"  Matched:              {matched}")
+    print(f"  Skipped (no match):   {skipped_no_match}")
+    print(f"  Skipped (no outcome): {skipped_no_outcome}")
+    print(f"  Skipped (no txns):    {skipped_no_txns}")
 
     # Summary
     if len(ml_df) > 0:
