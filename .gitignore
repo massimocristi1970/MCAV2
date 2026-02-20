@@ -1,16 +1,6 @@
 # Virtual environment
 venv/
 
-# Data files
-*. json
-*.csv
-*.xlsx
-*.zip
-
-# Batch processor data
-MCAV2_BatchProcessor/data/json_files/filenames.txt
-MCAV2_BatchProcessor/data/json_files/filenames_with_paths.txt
-
 # Documentation
 README.md
 
@@ -28,8 +18,6 @@ __pycache__/
 *$py.class
 *.pyc
 
-# Model duplicates (keep only root copy)
-MCAV2_BatchProcessor/model. pkl
 
 # Python venv
 .venv/
