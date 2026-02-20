@@ -1,93 +1,47 @@
-# Business Finance Scorecard v2.2
+# MCA v2 - Business Finance Scorecard
 
-An advanced business finance analysis and risk assessment platform designed for **short-term subprime business lending** (£1,000-£10,000 loans, 6-9 month terms). This application provides comprehensive financial analysis, **unified ensemble scoring**, and risk-tiered lending recommendations.
-
-## 🚀 Key Features
-
-### Core Capabilities
-
-- **Unified Ensemble Scoring**: Combines 4 scoring methodologies into a single, weighted recommendation
-- **Multiple Scoring Systems**: MCA Rules, Subprime-optimized, V2 Weighted, and ML-based predictions
-- **Advanced Transaction Categorization**: Intelligent classification with 95%+ accuracy
-- **Interactive Dashboard**: Real-time metrics visualization with Plotly charts
-- **Industry Benchmarking**: 25+ industry-specific thresholds
-- **Risk Assessment**: Comprehensive evaluation including CCJs, defaults, and operational factors
-- **Export Functionality**: HTML reports, JSON exports, and CSV downloads
-- **Batch Processing**: Process multiple loan applications simultaneously
-
-### Recent Enhancements (v2.2)
-
-- **🎯 Unified Recommendation System**: Single decision combining all scoring methods
-- **📊 Streamlined Dashboard**: Clean hierarchy with decision at top
-- **⚙️ Centralized Thresholds**: All scoring parameters in one configuration
-- **🔄 Modular Architecture**: Refactored codebase for maintainability
-- **📈 Continuous Scoring**: Partial credit instead of binary pass/fail
-- **🤖 Improved ML Confidence**: Better uncertainty estimation
+A risk assessment platform for **short-term subprime business lending** (typically £1,000-£10,000 loans, 6-9 month terms). The application analyses bank transaction data, calculates financial metrics, and produces a unified lending recommendation using an ensemble of three scoring systems.
 
 ---
 
-## 📊 Scoring & Decisioning Process
+## Scoring System
 
-### Overview
-
-The application uses an **Ensemble Scoring** approach that combines four different scoring methodologies, each with specific weights based on their predictive power for MCA lending outcomes:
+The application combines three scoring methodologies into a single weighted recommendation:
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    UNIFIED RECOMMENDATION                        │
-│                                                                  │
-│   Combined Score = (MCA × 35%) + (Subprime × 35%)               │
-│                  + (ML × 25%) + (Weighted × 5%)                  │
-│                                                                  │
-│   Decision: APPROVE | CONDITIONAL | REFER | SENIOR_REVIEW | DECLINE
-└─────────────────────────────────────────────────────────────────┘
-         ▲              ▲              ▲              ▲
-         │              │              │              │
-    ┌────┴────┐   ┌────┴────┐   ┌────┴────┐   ┌────┴────┐
-    │MCA Rule │   │Subprime │   │   ML    │   │Weighted │
-    │  (35%)  │   │  (35%)  │   │  (25%)  │   │  (5%)   │
-    │         │   │         │   │         │   │         │
-    │Cashflow │   │  Risk   │   │ Pattern │   │ Binary  │
-    │Consist. │   │  Tiers  │   │ Predict │   │Threshold│
-    └─────────┘   └─────────┘   └─────────┘   └─────────┘
+Combined Score = (MCA Rule x 40%) + (Subprime x 40%) + (ML Score x 20%)
+
+Decision: APPROVE | CONDITIONAL | REFER | SENIOR_REVIEW | DECLINE
 ```
 
-### 1. MCA Rule Score (35% Weight)
+### MCA Rule Score (40%)
 
-**Purpose**: Assesses transaction consistency required to sustainably support a Merchant Cash Advance.
+Assesses transaction consistency -- the most important predictor of MCA repayment.
 
-**Why 35% Weight**: Analysis of historic MCA outcomes showed that **revenue consistency** (not just total revenue) is one of the strongest differentiators between businesses that repay smoothly vs. those that default.
+| Signal | What It Measures |
+|--------|------------------|
+| Inflow Days (30d) | Days with positive inflows in the last 30 days |
+| Maximum Gap | Longest period without any inflows |
+| Inflow Volatility | Stability of inflow amounts (coefficient of variation) |
 
-**Core Signals Evaluated**:
+Decision logic:
+- Insufficient data -> DECLINE
+- Very sparse deposits AND long gaps -> DECLINE
+- Extremely erratic cash flow -> DECLINE
+- Score >= 70 with no hard stops -> APPROVE
+- Score >= 50 -> REFER
+- Below 50 -> DECLINE
 
-| Signal | What It Measures | Why It Matters |
-|--------|------------------|----------------|
-| **Inflow Days (30d)** | Days with positive inflows | Trading regularity |
-| **Maximum Gap** | Longest period without inflows | Business continuity risk |
-| **Inflow Volatility** | Stability of inflow amounts (CV) | Predictability of cashflow |
+The MCA Rule engine is implemented in `mca_scorecard_rules.py`.
 
-**Decision Logic**:
-```
-IF insufficient_data → DECLINE (data quality gate)
-IF inflow_days < 8 AND max_gap > 14 → DECLINE (severe consistency failure)
-IF volatility > 2.0 → DECLINE (extremely erratic)
-IF score >= 70 AND no_hard_stops → APPROVE
-IF score >= 50 → REFER
-ELSE → DECLINE
-```
+### Subprime Score (40%)
 
-### 2. Subprime Score (35% Weight)
+A comprehensive risk-tier assessment designed specifically for micro-enterprise lending.
 
-**Purpose**: Primary lending decision tool optimized for short-term subprime market (£1-10k, 6-9 months).
-
-**Why 35% Weight**: Designed specifically for micro-enterprise assessment with industry-specific adjustments and risk penalties.
-
-**Component Weights**:
-
-| Component | Weight | Rationale |
-|-----------|--------|-----------|
-| Debt Service Coverage Ratio | 28% | Primary ability to service payments |
-| Average Month-End Balance | 18% | Critical liquidity buffer |
+| Component | Weight | What It Measures |
+|-----------|--------|------------------|
+| Debt Service Coverage Ratio | 28% | Ability to service payments |
+| Average Month-End Balance | 18% | Liquidity buffer |
 | Directors Score | 16% | Personal creditworthiness |
 | Cash Flow Volatility | 12% | Stability for repayment |
 | Revenue Growth Rate | 10% | Business trajectory |
@@ -96,370 +50,424 @@ ELSE → DECLINE
 | Negative Balance Days | 4% | Cash management |
 | Company Age | 2% | Business maturity |
 
-**Risk Tier Classification**:
+Risk tier classification:
 
-| Tier | Score Range | Decision | Factor Rate |
-|------|-------------|----------|-------------|
+| Tier | Score | Decision | Factor Rate |
+|------|-------|----------|-------------|
 | Tier 1 (Premium) | 65+ | APPROVE | 1.5-1.6x |
 | Tier 2 (Standard) | 50-65 | APPROVE | 1.7-1.85x |
 | Tier 3 (Conditional) | 40-50 | CONDITIONAL | 1.85-2.0x |
 | Tier 4 (High Risk) | 30-40 | SENIOR_REVIEW | 2.0-2.2x |
 | Decline | <30 | DECLINE | N/A |
 
-**Risk Factor Penalties**:
+Penalties are applied for business CCJs (-12), personal defaults (-8), director CCJs (-8), no online presence (-4), outdated web presence (-3), and generic email (-2).
 
-| Risk Factor | Penalty | Impact |
-|-------------|---------|--------|
-| Business CCJ | -12 pts | Severe litigation risk |
-| Personal Default (12m) | -8 pts | Personal credit crucial |
-| Director CCJ | -8 pts | Director financial issues |
-| No Online Presence | -4 pts | Business viability concern |
-| Outdated Web Presence | -3 pts | Operational concerns |
-| Generic Email | -2 pts | Professionalism indicator |
+### ML Score (20%)
 
-### 3. ML Score (25% Weight)
+A Random Forest classifier trained on 272 historical loan applications, wrapped in probability calibration (CalibratedClassifierCV). Achieves 0.922 ROC-AUC on 5-fold cross-validation.
 
-**Purpose**: Machine learning probability prediction based on historical loan outcomes.
+Top features by importance:
 
-**Why 25% Weight**: Data-driven predictions, but requires larger dataset for full reliability. Currently supports decision-making but shouldn't override rule-based systems.
+| Feature | Importance |
+|---------|-----------|
+| Cash Flow Volatility | 45% |
+| Revenue Growth Rate | 19% |
+| Total Revenue | 7% |
+| Company Age | 6% |
+| Operating Margin | 5% |
+| DSCR | 5% |
+| Directors Score | 4% |
 
-**Features Used**:
-- Directors Score
-- Total Revenue & Debt
-- Debt-to-Income Ratio
-- Operating Margin
-- DSCR
-- Cash Flow Volatility
-- Revenue Growth Rate
-- Average Month-End Balance
-- Negative Balance Days
-- Bounced Payments
-- Company Age
-- Sector Risk
+The model uses 13 features in total. It is regularised with `max_depth=8`, `min_samples_leaf=5`, and `class_weight='balanced'` to handle the 3.5:1 class imbalance and prevent overfitting on the small dataset.
 
-**Confidence Calculation**:
-- Uses probability margin (distance from 50%)
-- Adjusts for prediction extremity
-- Reports confidence intervals
-
-### 4. V2 Weighted Score (5% Weight)
-
-**Purpose**: Simple binary threshold validation system.
-
-**Why 5% Weight**: Analysis showed binary pass/fail approach is less predictive than continuous scoring, but provides useful validation.
-
-**Method**: Each metric evaluated against industry benchmark:
-- **Pass**: Full points if value exceeds threshold
-- **Partial Credit**: Proportional points based on how close to threshold
-- **Fail**: Zero points if significantly below threshold
-
----
-
-## 🎯 Unified Decision Process
-
-### Decision Hierarchy
+### Decision Process
 
 ```
 1. HARD STOPS (immediate decline):
    - MCA Rule = DECLINE
-   - Subprime Tier = "Decline"
-   - Combined Score < 25
-   - Business CCJ present
+   - DSCR < 0.5
+   - Directors Score < 20
+   - Both business and director CCJs present
 
 2. SCORE-BASED DECISION:
-   Combined Score 70+ → APPROVE
-   Combined Score 55-70 → CONDITIONAL_APPROVE
-   Combined Score 40-55 → REFER
-   Combined Score 30-40 → SENIOR_REVIEW
-   Combined Score <30 → DECLINE
+   Combined Score >= 65  ->  APPROVE
+   Combined Score >= 50  ->  CONDITIONAL_APPROVE
+   Combined Score >= 40  ->  REFER
+   Combined Score >= 30  ->  SENIOR_REVIEW
+   Combined Score <  30  ->  DECLINE
 
 3. CONVERGENCE CHECK:
-   - High convergence (all methods agree): Increases confidence
-   - Low convergence (methods disagree): Triggers REFER/SENIOR_REVIEW
+   All three scores compared. If they disagree significantly
+   (range > 30 points), confidence is reduced and the combined
+   score is penalised by up to 8 points.
 ```
 
 ### Score Convergence
 
-The system evaluates how well the four scoring methods agree:
-
-| Convergence | Std Dev | Meaning |
-|-------------|---------|---------|
-| High | ≤10 | All methods strongly agree |
-| Good | ≤15 | Methods mostly align |
-| Moderate | ≤20 | Some disagreement |
-| Low | >20 | Significant disagreement - review required |
-
-### Pricing Guidance
-
-Based on combined score and tier:
-
-| Score Range | Factor Rate | Max Term | Max Multiple | Collection |
-|-------------|-------------|----------|--------------|------------|
-| 70+ | 1.35-1.45 | 12 months | 4x monthly rev | Weekly |
-| 55-70 | 1.45-1.55 | 9 months | 3x monthly rev | Weekly |
-| 40-55 | 1.55-1.65 | 6 months | 2x monthly rev | Daily |
-| 30-40 | Case-by-case | 3-6 months | 1.5x monthly rev | Daily |
+| Gap Between Scores | Label | Penalty |
+|--------------------|-------|---------|
+| 0-10 | High Convergence | 0 |
+| 11-20 | Good Convergence | -2 |
+| 21-30 | Moderate Convergence | -5 |
+| 31+ | Low Convergence | -8 |
 
 ---
 
-## 📱 Dashboard Layout
+## Installation
 
-The dashboard presents information in a clear hierarchy:
+### Prerequisites
 
-### 1. Unified Recommendation (Top)
-- **Primary Decision**: APPROVE/DECLINE/REFER with confidence %
-- **Combined Score**: 0-100 with contributing breakdown
-- **4 Score Metrics**: MCA (35%), Subprime (35%), ML (25%), Weighted (5%)
-- **Convergence Indicator**: How well methods agree
-- **Expandable**: Pricing guidance, risk factors, recommendations
+- Python 3.10+
+- pip
 
-### 2. Revenue Insights
-- Unique revenue sources
-- Average transactions per day
-- Daily revenue metrics
-- Revenue active days
+### Setup
 
-### 3. Charts & Analysis
-- Score comparison charts
-- Financial metrics visualization
-- Monthly trend analysis
-- Threshold comparison charts
+```bash
+git clone <repository-url>
+cd MCAV2
+pip install -r requirements.txt
+```
 
-### 4. Monthly Breakdown
-- Transaction counts by category
-- Transaction amounts by category
-- Detailed monthly tables
+### Running the Main Application
 
-### 5. Transaction Analysis
-- Category distribution
-- Transaction type breakdown
-- Pattern identification
+```bash
+streamlit run app/main.py
+```
 
-### 6. Loans & Debt Repayments
-- Existing debt analysis
-- Repayment behavior tracking
-- Debt stacking risk assessment
+Opens a browser at `http://localhost:8501`.
 
-### 7. Detailed Financial Metrics
-- All calculated metrics vs thresholds
-- Pass/fail status for each
+### Docker
 
-### 8. Detailed Scoring Analysis (Expandable)
-- Subprime score breakdown
-- V2 Weighted component analysis
-- Metric performance table
-- Top risk/strength factors
-- Improvement suggestions
-- ML reliability assessment
+```bash
+docker-compose up -d
+```
+
+Or use the Makefile:
+
+```bash
+make install    # Install dependencies
+make build      # Build Docker image
+make run        # Run in production mode
+make dev        # Run in development mode
+make stop       # Stop all services
+```
 
 ---
 
-## 🏗️ Architecture
+## Usage
+
+### Single Application Processing
+
+1. Configure business parameters in the sidebar:
+   - Company name, industry, company age
+   - Directors credit score (0-100)
+   - Requested loan amount
+   - Risk factors (CCJs, defaults, web presence)
+
+2. Upload transaction data (JSON format, Plaid export supported)
+
+3. Review the unified recommendation at the top of the dashboard, then drill into detailed scoring, charts, and metrics below.
+
+4. Export reports as HTML or CSV.
+
+### Dashboard Layout
+
+The dashboard is organised top-down by importance:
+
+1. **Unified Recommendation** -- Decision (APPROVE/DECLINE/REFER), combined score, confidence percentage, contributing scores for MCA Rule (40%), Subprime (40%), ML Score (20%), convergence indicator, and expandable pricing guidance / risk factors / recommendations.
+2. **Revenue Insights** -- Unique revenue sources, daily metrics, revenue active days.
+3. **Charts and Analysis** -- Score comparison, financial metrics, monthly trends, threshold comparisons.
+4. **Monthly Breakdown** -- Transaction counts and amounts by category, monthly tables.
+5. **Transaction Analysis** -- Category distribution, transaction type breakdown, pattern identification.
+6. **Loans and Debt Repayments** -- Existing debt analysis, repayment behaviour, debt stacking risk.
+7. **Detailed Financial Metrics** -- All calculated metrics vs thresholds with pass/fail status.
+8. **Detailed Scoring Analysis** -- Expandable section with subprime breakdown, metric performance, improvement suggestions, ML reliability assessment.
+
+---
+
+## Batch Processor
+
+The batch processor (`MCAV2_BatchProcessor/`) is a standalone Streamlit application that processes multiple loan applications in one go.
+
+### Running the Batch Processor
+
+```bash
+streamlit run MCAV2_BatchProcessor/batch_processor_standalone.py --server.port 8502
+```
+
+Opens at `http://localhost:8502` (separate from the main app on 8501).
+
+### How It Works
+
+1. **Upload a CSV** with application parameters. Required columns: `company_name`, `industry`, `directors_score`, `company_age_months`, `requested_loan`. Optional risk flag columns: `business_ccj`, `director_ccj`, `personal_default_12m`, etc.
+
+2. **Upload a ZIP** containing one JSON transaction file per application. Filenames must match the `company_name` column in the CSV (fuzzy matching is used via `rapidfuzz`).
+
+3. The batch processor then, for each application:
+   - Extracts and categorises transactions from the JSON file
+   - Calculates all financial metrics
+   - Runs the Subprime scoring system
+   - Runs the ML model (with feature clipping)
+   - Evaluates MCA Rule (transparent transaction consistency checks)
+   - Determines a final decision using MCA Rule overrides on top of the Subprime recommendation
+
+4. **Results dashboard** shows:
+   - Summary statistics (total processed, average scores, average revenue)
+   - Score distributions (Subprime histogram, MCA Rule Score histogram)
+   - Risk tier analysis (pie chart and cross-tabulation)
+   - Detailed results table with all scores and key metrics
+   - CSV export of all results
+
+### Batch Processor Scoring
+
+The batch processor uses the same scoring systems as the main app:
+- Subprime scoring (tightened thresholds for batch use)
+- ML scoring (same calibrated model, with feature clipping)
+- MCA Rule evaluation (same `mca_scorecard_rules.py` engine)
+
+The final decision follows this override logic:
+- Base decision from Subprime recommendation
+- MCA Rule DECLINE overrides everything (hard stop)
+- MCA Rule REFER downgrades non-DECLINE decisions to REFER
+- MCA Rule APPROVE does not override (no uplift)
+
+### Batch Processor Files
+
+| File | Purpose |
+|------|---------|
+| `batch_processor_standalone.py` | Main application (self-contained) |
+| `company_matcher.py` | Company name fuzzy matching utility |
+| `compare_with_files.py` | Debugging tool to compare CSV rows with JSON files |
+| `debug_csv.py` | CSV inspection utility |
+| `requirements.txt` | Dependencies (same as main app) |
+
+---
+
+## ML Model Training
+
+### Overview
+
+The ML model can be retrained when new outcome data becomes available. The process has two steps: building the training dataset, then training the model.
+
+### Step 1: Build the Training Dataset
+
+Prepare an Excel spreadsheet (`data/training_dataset.xlsx`) with these columns:
+
+| Column | Required | Description |
+|--------|----------|-------------|
+| `company_name` | Yes | Must match the JSON filename in `data/JsonExport/` |
+| `Outcome` | Yes | 1 = repaid, 0 = defaulted (leave blank for unfunded) |
+| `Total Revenue` | Yes | Total revenue from bank statements |
+| `Net Income` | Yes | Net income |
+| `Operating Margin` | Yes | Operating margin ratio |
+| `Debt Service Coverage Ratio` | Yes | DSCR |
+| `requested_loan` | Yes | Loan amount requested |
+| `directors_score` | No | Director credit score, defaults to 50 |
+| `company_age_months` | No | Business age in months, defaults to 12 |
+| `industry` | No | Industry name, defaults to Other |
+| `total_debt` | No | Known debt amount, defaults to 0 |
+
+Place the JSON transaction files in `data/JsonExport/`. Then run:
+
+```bash
+python build_training_dataset.py
+```
+
+This produces two output files:
+- `data/mca_training_dataset.csv` -- MCA transaction features
+- `data/ml_training_dataset.csv` -- 13 ML model features + outcome, ready for training
+
+The script derives additional features from the transaction data: Cash Flow Volatility, Revenue Growth Rate, Average Month-End Balance, Negative Balance Days, and Bounced Payments. Where the spreadsheet provides a value (e.g., Total Revenue, DSCR), it uses that; where the value is blank or zero, it falls back to the transaction-derived estimate.
+
+### Step 2: Train the Model
+
+```bash
+python train_improved_model.py --data "data/ml_training_dataset.csv"
+```
+
+This will:
+1. Load and validate the training data
+2. Train a Random Forest with regularised hyperparameters
+3. Also train a Gradient Boosting model and compare them
+4. Select the better model
+5. Wrap it in `CalibratedClassifierCV` for well-calibrated probabilities
+6. Report 5-fold stratified cross-validation metrics (ROC-AUC, accuracy)
+7. Save `model.pkl` and `scaler.pkl` to `app/models/model_artifacts/`
+
+The new model replaces the old one. Commit and push the updated `.pkl` files so all machines get the retrained model.
+
+### Model Improvements Over Default
+
+The training script addresses issues with naive Random Forest defaults:
+
+| Parameter | Default RF | This Script | Why |
+|-----------|-----------|-------------|-----|
+| max_depth | 20 | 8 | Caps tree complexity for small datasets |
+| min_samples_leaf | 1 | 5 | Prevents memorising single examples |
+| min_samples_split | 2 | 10 | Requires meaningful support for splits |
+| class_weight | None | balanced | Handles class imbalance |
+| oob_score | False | True | Free validation metric |
+| Calibration | None | CalibratedClassifierCV | Well-calibrated probabilities |
+
+---
+
+## Project Structure
 
 ```
 MCAV2/
 ├── app/
 │   ├── main.py                              # Main Streamlit application
+│   ├── adaptive_score_calculation.py        # Adaptive scoring functions
 │   ├── services/
-│   │   ├── ensemble_scorer.py               # 🆕 Unified scoring system
-│   │   ├── subprime_scoring_system.py       # Subprime scoring (v2.2)
-│   │   ├── advanced_metrics.py              # 🆕 Advanced risk metrics
+│   │   ├── ensemble_scorer.py               # Unified ensemble scoring (40/40/20 weights)
+│   │   ├── subprime_scoring_system.py       # Subprime scoring system
+│   │   ├── advanced_metrics.py              # Advanced risk metrics
 │   │   ├── data_processor.py                # Transaction processing
-│   │   └── financial_analyzer.py            # Financial metrics
+│   │   └── financial_analyzer.py            # Financial metrics calculation
 │   ├── config/
-│   │   ├── scoring_thresholds.py            # 🆕 Centralized thresholds
+│   │   ├── scoring_thresholds.py            # Centralized scoring thresholds
 │   │   ├── settings.py                      # Application settings
-│   │   └── industry_config.py               # Industry configurations
+│   │   └── industry_config.py               # Industry-specific configurations
 │   ├── pages/
-│   │   ├── scoring.py                       # 🆕 Modular scoring functions
-│   │   ├── transactions.py                  # 🆕 Transaction processing
-│   │   ├── charts.py                        # 🆕 Chart generation
-│   │   └── reports.py                       # 🆕 Report generation
+│   │   ├── scoring.py                       # Scoring calculation functions
+│   │   ├── transactions.py                  # Transaction processing
+│   │   ├── charts.py                        # Chart generation
+│   │   └── reports.py                       # Report generation and export
+│   ├── models/
+│   │   ├── ml_predictor.py                  # ML prediction service
+│   │   └── model_artifacts/
+│   │       ├── model.pkl                    # Trained ML model (CalibratedClassifierCV)
+│   │       └── scaler.pkl                   # Feature scaler (StandardScaler)
 │   ├── utils/
-│   │   ├── feature_alignment.py             # 🆕 Feature mapping
-│   │   ├── weight_calibration.py            # 🆕 ML weight extraction
+│   │   ├── feature_alignment.py             # Feature mapping between systems
+│   │   ├── weight_calibration.py            # ML weight extraction
 │   │   └── chart_utils.py                   # Chart utilities
-│   └── core/
-│       ├── exceptions.py                    # Custom exceptions
-│       ├── validators.py                    # Input validation
-│       ├── logger.py                        # Logging
-│       └── cache.py                         # Caching
+│   ├── core/
+│   │   ├── exceptions.py                    # Custom exceptions
+│   │   ├── validators.py                    # Input validation
+│   │   ├── logger.py                        # Logging configuration
+│   │   └── cache.py                         # Caching layer
+│   └── components/
+│       └── alerts.py                        # Alert components
 ├── MCAV2_BatchProcessor/
-│   └── batch_processor_standalone.py        # Batch processing (standalone)
-├── mca_scorecard_rules.py                   # MCA rule engine
+│   ├── batch_processor_standalone.py        # Batch processing application
+│   ├── company_matcher.py                   # Fuzzy company name matching
+│   ├── compare_with_files.py                # CSV/JSON comparison utility
+│   ├── debug_csv.py                         # CSV debugging tool
+│   └── requirements.txt                     # Batch processor dependencies
+├── mca_scorecard_rules.py                   # MCA Rule engine
 ├── build_training_dataset.py                # Training data builder
-├── score_all_apps.py                        # Batch MCA scorer
-├── model.pkl                                # ML model
-├── scaler.pkl                               # Feature scaler
-├── requirements.txt                         # Dependencies
-├── Dockerfile                               # Container config
-├── docker-compose.yml                       # Multi-service deployment
-└── README.md                                # This file
+├── train_improved_model.py                  # ML model training script
+├── score_all_apps.py                        # Batch MCA rule scorer
+├── requirements.txt                         # Python dependencies
+├── docker-compose.yml                       # Docker production config
+├── docker-compose.dev.yml                   # Docker development config
+├── Makefile                                 # Build and run commands
+└── README.md
 ```
 
-### Key New Components
+### Key Files
 
-#### `ensemble_scorer.py`
-Combines all scoring methods with configurable weights:
+| File | Purpose |
+|------|---------|
+| `app/main.py` | Main Streamlit application -- all dashboard UI, scoring orchestration, and export logic |
+| `app/services/ensemble_scorer.py` | Combines MCA Rule (40%), Subprime (40%), and ML (20%) into a unified recommendation |
+| `app/services/subprime_scoring_system.py` | Subprime risk-tier scoring with industry adjustments and penalties |
+| `app/models/ml_predictor.py` | ML prediction service with feature clipping, confidence intervals, and explainability |
+| `mca_scorecard_rules.py` | Transaction consistency rule engine (inflow days, gaps, volatility) |
+| `app/config/scoring_thresholds.py` | Centralised threshold definitions for all scoring systems |
+| `build_training_dataset.py` | Builds ML training data from transaction JSONs + application spreadsheet |
+| `train_improved_model.py` | Trains and calibrates the ML model with regularised hyperparameters |
+
+---
+
+## Configuration
+
+### Scoring Weights
+
+Edit `app/services/ensemble_scorer.py`:
+
 ```python
-SCORING_WEIGHTS = {
-    'mca_rule': 0.35,      # Transaction consistency
-    'subprime': 0.35,      # Risk-tier assessment
-    'ml': 0.25,            # Pattern prediction
-    'adaptive': 0.05       # Threshold validation
+DEFAULT_WEIGHTS = {
+    'mca_score': 0.40,
+    'subprime_score': 0.40,
+    'ml_score': 0.20,
 }
 ```
 
-#### `scoring_thresholds.py`
-Centralized threshold configuration:
-```python
-THRESHOLDS = ScoringThresholds(
-    dscr=MetricThreshold(full_points=1.5, tiers=[(1.3, 0.8), (1.0, 0.5)]),
-    operating_margin=MetricThreshold(full_points=0.15, tiers=[(0.05, 0.7), (0.0, 0.4)]),
-    # ... all metrics defined here
-)
-```
+### Scoring Thresholds
 
-#### `advanced_metrics.py`
-Calculates additional risk signals:
-- Deposit frequency score
-- Revenue concentration (HHI)
-- Seasonality coefficient
-- Days since last NSF
-- Balance trend
-- Debt stacking risk
+Edit `app/config/scoring_thresholds.py` for metric thresholds, risk penalties, tier boundaries, and industry multipliers.
 
----
+### Industry Thresholds
 
-## 🔧 Installation
+Industry-specific benchmarks for 25+ industries are defined in `app/config/industry_config.py` and in the batch processor's `INDUSTRY_THRESHOLDS` dictionary.
 
-### Prerequisites
-- Python 3.9+
-- pip package manager
-- 4GB+ RAM recommended
+### Environment Variables
 
-### Quick Start
-
-```bash
-# Clone repository
-git clone <repository-url>
-cd MCAV2
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run application
-streamlit run app/main.py
-```
-
-### Docker Deployment
-
-```bash
-# Build and run
-docker-compose up -d
-
-# Or use make commands
-make build
-make run
-```
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `APP_NAME` | Business Finance Scorecard | Application title |
+| `DEBUG` | false | Enable debug logging |
+| `MODEL_PATH` | app/models/model_artifacts/model.pkl | ML model location |
+| `SCALER_PATH` | app/models/model_artifacts/scaler.pkl | Scaler location |
+| `LOG_LEVEL` | INFO | Logging level |
+| `CACHE_TTL` | 3600 | Cache time-to-live in seconds |
+| `PLAID_CLIENT_ID` | None | Plaid API client ID (optional) |
+| `PLAID_SECRET` | None | Plaid API secret (optional) |
+| `TRAINING_OUTCOMES_XLSX` | data/training_dataset.xlsx | Training spreadsheet path |
+| `TRAINING_JSON_ROOT` | data/JsonExport | Training JSON directory |
 
 ---
 
-## 📋 Usage Guide
+## Transaction Categorisation
 
-### Single Application Processing
-
-1. **Configure Business Parameters**
-   - Company name, industry, age
-   - Directors credit score (0-100)
-   - Requested loan amount
-   - Risk factors (CCJs, defaults, web presence)
-
-2. **Upload Transaction Data**
-   - JSON format (Plaid export supported)
-   - Automatic categorization
-   - Period filtering available
-
-3. **Review Analysis**
-   - Unified recommendation at top
-   - Drill into detailed scoring
-   - Export reports
-
-### Batch Processing
-
-```bash
-# Run batch processor on separate port
-streamlit run MCAV2_BatchProcessor/batch_processor_standalone.py --server.port 8502
-```
-
-### MCA Batch Scoring
-
-```bash
-# Score all applications in JsonExport folder
-python score_all_apps.py
-```
-
----
-
-## 🔍 Transaction Categorization
-
-Automatic classification into:
+Transactions are automatically classified into:
 
 | Category | Examples |
 |----------|----------|
-| **Income** | Stripe, SumUp, Square, PayPal, direct sales |
-| **Expenses** | Utilities, payroll, supplies, rent |
-| **Loans** | YouLend, Iwoca, Funding Circle, capital |
-| **Debt Repayments** | Loan payments, financing charges |
-| **Special Inflows** | Grants, refunds, investments |
-| **Special Outflows** | Owner withdrawals, transfers |
-| **Failed Payments** | Bounced, NSF, insufficient funds |
+| Income | Stripe, SumUp, Square, PayPal, direct sales |
+| Expenses | Utilities, payroll, supplies, rent |
+| Loans | YouLend, Iwoca, Funding Circle, capital advances |
+| Debt Repayments | Loan payments, financing charges |
+| Special Inflows | Grants, refunds, investments |
+| Special Outflows | Owner withdrawals, transfers |
+| Failed Payments | Bounced, NSF, insufficient funds |
 
 ---
 
-## 📊 Key Metrics
+## Version History
 
-### Financial Performance
-- Total Revenue, Monthly Average, Growth Rate
-- Operating Margin, Net Income
-- DSCR, Debt-to-Income Ratio
-- Cash Flow Volatility, Negative Balance Days
+### v2.3.0 (February 2026)
+- Removed Weighted (5%) scoring system from ensemble
+- New scoring weights: MCA Rule 40%, Subprime 40%, ML Score 20%
+- Retrained ML model on 272 applications (0.922 ROC-AUC, up from no validation)
+- Added probability calibration (CalibratedClassifierCV) to ML model
+- Added feature clipping to prevent extrapolation on extreme values
+- Updated convergence check to include all three scoring systems
+- Updated build_training_dataset.py to produce ML-ready training data
+- Added train_improved_model.py for reproducible model retraining
+- Aligned batch processor with all scoring changes
+- Comprehensive README update
 
-### Consistency Signals (MCA-specific)
-- Inflow frequency (days with deposits)
-- Maximum gap between inflows
-- Inflow amount volatility (CV)
-
-### Risk Indicators
-- Bounced payments count
-- Failed transaction rate
-- Seasonal patterns
-- Revenue concentration
-
----
-
-## 📈 Version History
-
-### v2.2.0 (Current - January 2026)
-- **🎯 Unified Ensemble Scoring**: Combined recommendation from 4 methods
-- **📊 Dashboard Reorganization**: Decision at top, consolidated details
-- **⚙️ Centralized Thresholds**: Single source of truth for all scoring
-- **🔄 Modular Refactoring**: Extracted pages/, services/, utils/ modules
-- **📈 Continuous Scoring**: Partial credit instead of binary pass/fail
-- **🤖 Improved ML Confidence**: Better uncertainty estimation
-- **🐛 Bug Fixes**: Subprime penalty calculation, tier alignment
+### v2.2.0 (January 2026)
+- Unified Ensemble Scoring combining 4 methods
+- Dashboard reorganisation with decision at top
+- Centralized thresholds configuration
+- Modular refactoring (pages/, services/, utils/)
+- Continuous scoring (partial credit instead of binary pass/fail)
+- Improved ML confidence estimation
 
 ### v2.1.0 (December 2024)
 - Tightened scoring thresholds for £1-10k lending
-- Increased balance weight (12% → 18%)
-- Reduced growth weight (20% → 10%)
-- Target approval rate ~15-25%
+- Increased balance weight, reduced growth weight
+- Target approval rate 15-25%
 
 ### v2.0.0
 - Enhanced subprime scoring system
 - Risk factor penalty integration
 - Interactive dashboard with exports
-- Docker deployment support
+- Docker deployment
 
 ### v1.0.0
 - Basic financial analysis
@@ -467,54 +475,6 @@ Automatic classification into:
 
 ---
 
-## 🛠️ Development
-
-### Modifying Scoring Weights
-
-Edit `app/services/ensemble_scorer.py`:
-```python
-SCORING_WEIGHTS = {
-    'mca_rule': 0.35,
-    'subprime': 0.35,
-    'ml': 0.25,
-    'adaptive': 0.05
-}
-```
-
-### Modifying Thresholds
-
-Edit `app/config/scoring_thresholds.py`:
-```python
-THRESHOLDS = ScoringThresholds(
-    dscr=MetricThreshold(full_points=1.5, ...),
-    # modify values here
-)
-```
-
-### Running Tests
-
-```bash
-python -m pytest tests/ -v --cov=app
-```
-
-### Code Quality
-
-```bash
-flake8 app/
-mypy app/
-black app/
-```
-
----
-
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
-
----
-
-**Built for short-term subprime business lending analysis**
-
-*Unified ensemble scoring for £1-10k loans with 6-9 month terms*
-
-*Combines MCA consistency rules, subprime risk tiers, ML predictions, and threshold validation*
