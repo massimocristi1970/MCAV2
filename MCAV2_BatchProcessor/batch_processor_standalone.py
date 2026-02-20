@@ -1823,14 +1823,9 @@ def calculate_all_scores_tightened(metrics, params):
                     features_df[col] = features_df[col].clip(lo, hi)
             
             features_scaled = scaler.transform(features_df)
-            raw_prob = model.predict_proba(features_scaled)[:, 1][0]
-            
-            # Platt-style calibration (matches main app ml_predictor)
-            eps = 1e-6
-            raw_prob = np.clip(raw_prob, eps, 1.0 - eps)
-            logit = np.log(raw_prob / (1.0 - raw_prob))
-            calibrated = 1.0 / (1.0 + np.exp(-(0.85 * logit - 0.15)))
-            ml_score = round(calibrated * 100, 2)
+            # The retrained model is already wrapped in CalibratedClassifierCV
+            probability = model.predict_proba(features_scaled)[:, 1][0]
+            ml_score = round(probability * 100, 2)
             
         except Exception as e:
             ml_score = None

@@ -124,32 +124,6 @@ class MLPredictor:
         
         return features_df
     
-    @staticmethod
-    def _calibrate_probability(raw_prob: float) -> float:
-        """
-        Apply Platt-style sigmoid calibration to raw RF probabilities.
-
-        Random forests with small training sets (~237 samples) and
-        min_samples_leaf=1 tend to produce overconfident probabilities
-        clustered near 0 and 1.  This logistic recalibration pulls
-        predictions toward the centre, which better reflects the true
-        uncertainty for this model.
-
-        Parameters were estimated from the model's own OOB-like
-        behaviour and class priors (class-0 ≈ 64.6%, class-1 ≈ 35.4%).
-        """
-        # Convert to log-odds, shift, rescale, convert back
-        eps = 1e-6
-        raw_prob = np.clip(raw_prob, eps, 1.0 - eps)
-        logit = np.log(raw_prob / (1.0 - raw_prob))
-
-        # Shrink toward prior (moderate pull – a=0.85 keeps signal, b corrects class imbalance)
-        a, b = 0.85, -0.15
-        calibrated_logit = a * logit + b
-        calibrated = 1.0 / (1.0 + np.exp(-calibrated_logit))
-
-        return float(calibrated)
-
     @log_performance(logger)
     def predict_repayment_probability(
         self, 
@@ -172,14 +146,13 @@ class MLPredictor:
             
             features_scaled = self.scaler.transform(features_df)
             
-            raw_probability = self.model.predict_proba(features_scaled)[:, 1][0]
-            # Calibrate to reduce overconfidence from the small training set
-            calibrated_probability = self._calibrate_probability(raw_probability)
-            prediction_score = calibrated_probability * 100
+            # The retrained model is already wrapped in CalibratedClassifierCV
+            # so no additional calibration is needed
+            probability = self.model.predict_proba(features_scaled)[:, 1][0]
+            prediction_score = probability * 100
             
             result = {
                 'probability': round(prediction_score, 2),
-                'raw_probability': round(raw_probability * 100, 2),
                 'risk_category': self._categorize_risk(prediction_score),
                 'model_confidence': self._calculate_confidence(features_scaled),
             }
