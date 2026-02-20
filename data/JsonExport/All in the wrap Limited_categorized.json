@@ -1,0 +1,295 @@
+[
+    {
+        "account_id": "aVbXQADy6jcrBL9Vr7yBFpDKQQ3EPxUKVobq6",
+        "account_owner": null,
+        "amount": 0.2,
+        "authorized_date": "2024-05-17",
+        "authorized_datetime": "2024-05-17T02:07:43Z",
+        "category": [
+            "Bank Fees",
+            "Overdraft"
+        ],
+        "category_id": "10001000",
+        "check_number": null,
+        "counterparties": [],
+        "date": "2024-05-17",
+        "datetime": "2024-05-17T02:07:43Z",
+        "iso_currency_code": "GBP",
+        "location": {
+            "address": null,
+            "city": null,
+            "country": null,
+            "lat": null,
+            "lon": null,
+            "postal_code": null,
+            "region": null,
+            "store_number": null
+        },
+        "logo_url": null,
+        "merchant_entity_id": null,
+        "merchant_name": null,
+        "name": "ref: Charge of 0.20 for Bank Transfers usage from 2024-04-01 to 2024-04-30",
+        "payment_channel": "other",
+        "payment_meta": {
+            "by_order_of": null,
+            "payee": null,
+            "payer": null,
+            "payment_method": null,
+            "payment_processor": null,
+            "ppd_id": null,
+            "reason": null,
+            "reference_number": null
+        },
+        "pending": false,
+        "pending_transaction_id": null,
+        "personal_finance_category": {
+            "confidence_level": "HIGH",
+            "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+            "primary": "TRANSFER_OUT"
+        },
+        "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+        "transaction_code": null,
+        "transaction_id": "Y8rxA6MbgRTAO7VaARBOHJ1QELwykNtJ36jYv",
+        "transaction_type": "special",
+        "unofficial_currency_code": null,
+        "website": null
+    },
+    {
+        "account_id": "aVbXQADy6jcrBL9Vr7yBFpDKQQ3EPxUKVobq6",
+        "account_owner": null,
+        "amount": 43.5,
+        "authorized_date": "2024-04-23",
+        "authorized_datetime": "2024-04-23T08:33:46Z",
+        "category": [
+            "Transfer",
+            "Debit"
+        ],
+        "category_id": "21006000",
+        "check_number": null,
+        "counterparties": [
+            {
+                "confidence_level": "LOW",
+                "entity_id": null,
+                "logo_url": null,
+                "name": "All In The",
+                "phone_number": null,
+                "type": "merchant",
+                "website": null
+            }
+        ],
+        "date": "2024-04-23",
+        "datetime": "2024-04-23T08:33:46Z",
+        "iso_currency_code": "GBP",
+        "location": {
+            "address": null,
+            "city": null,
+            "country": null,
+            "lat": null,
+            "lon": null,
+            "postal_code": null,
+            "region": null,
+            "store_number": null
+        },
+        "logo_url": null,
+        "merchant_entity_id": null,
+        "merchant_name": "All In The",
+        "name": "ALL IN THE WRAP LTD / ref: Transferred To New",
+        "payment_channel": "in store",
+        "payment_meta": {
+            "by_order_of": null,
+            "payee": null,
+            "payer": null,
+            "payment_method": null,
+            "payment_processor": null,
+            "ppd_id": null,
+            "reason": null,
+            "reference_number": null
+        },
+        "pending": false,
+        "pending_transaction_id": null,
+        "personal_finance_category": {
+            "confidence_level": "LOW",
+            "detailed": "FOOD_AND_DRINK_RESTAURANT",
+            "primary": "FOOD_AND_DRINK"
+        },
+        "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+        "transaction_code": null,
+        "transaction_id": "z4ojgmRZPpu6MEg56ReMTx8b0Mnq3YIv3wYRQ",
+        "transaction_type": "special",
+        "unofficial_currency_code": null,
+        "website": null
+    },
+    {
+        "account_id": "aVbXQADy6jcrBL9Vr7yBFpDKQQ3EPxUKVobq6",
+        "account_owner": null,
+        "amount": 55.98,
+        "authorized_date": "2024-04-23",
+        "authorized_datetime": "2024-04-23T02:34:05Z",
+        "category": [
+            "Shops",
+            "Digital Purchase"
+        ],
+        "category_id": "19019000",
+        "check_number": null,
+        "counterparties": [
+            {
+                "confidence_level": "VERY_HIGH",
+                "entity_id": "2gOwmq9qK56K60oDm3eLrREV2B2mVadkRn8MW",
+                "logo_url": "https://plaid-merchant-logos.plaid.com/amazon_44.png",
+                "name": "Amazon",
+                "phone_number": null,
+                "type": "merchant",
+                "website": "amazon.com"
+            }
+        ],
+        "date": "2024-04-23",
+        "datetime": "2024-04-23T02:34:05Z",
+        "iso_currency_code": "GBP",
+        "location": {
+            "address": null,
+            "city": null,
+            "country": null,
+            "lat": null,
+            "lon": null,
+            "postal_code": null,
+            "region": null,
+            "store_number": null
+        },
+        "logo_url": "https://plaid-merchant-logos.plaid.com/amazon_44.png",
+        "merchant_entity_id": "2gOwmq9qK56K60oDm3eLrREV2B2mVadkRn8MW",
+        "merchant_name": "Amazon",
+        "name": "AMZNMKTPLACE - 1 PRINCIPAL PLC, WORSHIP, LONDON",
+        "payment_channel": "other",
+        "payment_meta": {
+            "by_order_of": null,
+            "payee": null,
+            "payer": null,
+            "payment_method": null,
+            "payment_processor": null,
+            "ppd_id": null,
+            "reason": null,
+            "reference_number": null
+        },
+        "pending": false,
+        "pending_transaction_id": null,
+        "personal_finance_category": {
+            "confidence_level": "VERY_HIGH",
+            "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+            "primary": "GENERAL_MERCHANDISE"
+        },
+        "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+        "transaction_code": null,
+        "transaction_id": "w0j95gqxLOcQMZ0eQjYMC1MvERLzq6HKo4XgB",
+        "transaction_type": "digital",
+        "unofficial_currency_code": null,
+        "website": "amazon.com"
+    },
+    {
+        "account_id": "aVbXQADy6jcrBL9Vr7yBFpDKQQ3EPxUKVobq6",
+        "account_owner": null,
+        "amount": 6,
+        "authorized_date": "2024-04-23",
+        "authorized_datetime": "2024-04-23T08:21:21Z",
+        "category": [
+            "Service"
+        ],
+        "category_id": "18000000",
+        "check_number": null,
+        "counterparties": [],
+        "date": "2024-04-23",
+        "datetime": "2024-04-23T08:21:21Z",
+        "iso_currency_code": "GBP",
+        "location": {
+            "address": null,
+            "city": null,
+            "country": null,
+            "lat": null,
+            "lon": null,
+            "postal_code": null,
+            "region": null,
+            "store_number": null
+        },
+        "logo_url": null,
+        "merchant_entity_id": null,
+        "merchant_name": null,
+        "name": "TPL Ltd / ref: Charge of 6.00 for Expense Cards Billing usage from 2024-03-01 to 2024-03-31",
+        "payment_channel": "online",
+        "payment_meta": {
+            "by_order_of": null,
+            "payee": null,
+            "payer": null,
+            "payment_method": null,
+            "payment_processor": null,
+            "ppd_id": null,
+            "reason": null,
+            "reference_number": null
+        },
+        "pending": false,
+        "pending_transaction_id": null,
+        "personal_finance_category": {
+            "confidence_level": "LOW",
+            "detailed": "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT",
+            "primary": "LOAN_PAYMENTS"
+        },
+        "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_LOAN_PAYMENTS.png",
+        "transaction_code": null,
+        "transaction_id": "dEg4o3yq1VTVKrn6VOXKsK4d6kympAFKjnpL6",
+        "transaction_type": "place",
+        "unofficial_currency_code": null,
+        "website": null
+    },
+    {
+        "account_id": "aVbXQADy6jcrBL9Vr7yBFpDKQQ3EPxUKVobq6",
+        "account_owner": null,
+        "amount": 6,
+        "authorized_date": "2024-04-23",
+        "authorized_datetime": "2024-04-23T08:29:11Z",
+        "category": [
+            "Service"
+        ],
+        "category_id": "18000000",
+        "check_number": null,
+        "counterparties": [],
+        "date": "2024-04-23",
+        "datetime": "2024-04-23T08:29:11Z",
+        "iso_currency_code": "GBP",
+        "location": {
+            "address": null,
+            "city": null,
+            "country": null,
+            "lat": null,
+            "lon": null,
+            "postal_code": null,
+            "region": null,
+            "store_number": null
+        },
+        "logo_url": null,
+        "merchant_entity_id": null,
+        "merchant_name": null,
+        "name": "TPL Ltd / ref: Charge of 6.00 for Expense Cards Billing usage from 2024-04-01 to 2024-04-30",
+        "payment_channel": "online",
+        "payment_meta": {
+            "by_order_of": null,
+            "payee": null,
+            "payer": null,
+            "payment_method": null,
+            "payment_processor": null,
+            "ppd_id": null,
+            "reason": null,
+            "reference_number": null
+        },
+        "pending": false,
+        "pending_transaction_id": null,
+        "personal_finance_category": {
+            "confidence_level": "LOW",
+            "detailed": "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT",
+            "primary": "LOAN_PAYMENTS"
+        },
+        "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_LOAN_PAYMENTS.png",
+        "transaction_code": null,
+        "transaction_id": "m1grm9jXvnToOq1KoxXOCopyD83eRmHBy5YQj",
+        "transaction_type": "place",
+        "unofficial_currency_code": null,
+        "website": null
+    }
+]

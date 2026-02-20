@@ -4,7 +4,7 @@ from fuzzywuzzy import fuzz
 import re
 
 def normalize_name(name):
-    """Normalize company names for better matching"""
+    """Normalize names for better matching"""
     if pd.isna(name) or name == "":
         return ""
     
@@ -13,7 +13,7 @@ def normalize_name(name):
     # Remove file extensions
     name = re.sub(r'\.(json|txt|pdf)$', '', name)
     
-    # Standardize company suffixes
+    # Standardize common business terms
     replacements = {
         ' limited': ' ltd',
         ' incorporated': ' inc',
@@ -33,13 +33,23 @@ def normalize_name(name):
     return name
 
 # File paths
-csv_path = r"C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\applicationsdata.csv"
-json_folder = r"C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data\json_files"
+csv_path = r"D:\Dev\Github\MCAV2\data\training_dataset.csv"
+json_folder = r"D:\Dev\Github\MCAV2\data\JsonExport"
 
-print("Loading company names from CSV...")
+print("Loading data from CSV...")
 df = pd.read_csv(csv_path)
-companies = df['company_name'].dropna().tolist()
-print(f"Found {len(companies)} companies in CSV")
+
+# UPDATED: Using 'application_id' as the identifier to match against filenames
+# If you actually wanted to match by a different column, change 'application_id' below
+target_column = 'application_id' 
+
+if target_column not in df.columns:
+    print(f"Error: Column '{target_column}' not found in CSV.")
+    print(f"Available columns: {list(df.columns)}")
+    exit()
+
+companies = df[target_column].dropna().astype(str).tolist()
+print(f"Found {len(companies)} entries in CSV under '{target_column}'")
 
 print(f"\nLooking for JSON files in: {json_folder}")
 if os.path.exists(json_folder):
@@ -47,27 +57,13 @@ if os.path.exists(json_folder):
     print(f"Found {len(json_files)} JSON files")
 else:
     print("JSON folder not found! Please check the path.")
-    print("Available folders:")
-    data_folder = r"C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2_BatchProcessor\data"
-    if os.path.exists(data_folder):
-        for item in os.listdir(data_folder):
-            if os.path.isdir(os.path.join(data_folder, item)):
-                print(f"  - {item}")
     exit()
-
-print(f"\nFirst 10 JSON files:")
-for i, file in enumerate(json_files[:10]):
-    print(f"  {i+1}. {file}")
-
-print(f"\nFirst 10 companies:")
-for i, company in enumerate(companies[:10]):
-    print(f"  {i+1}. {company}")
 
 # Normalize names for comparison
 normalized_companies = [normalize_name(comp) for comp in companies]
 normalized_files = [normalize_name(file) for file in json_files]
 
-print(f"\nMatching companies with files (threshold: 90%)...")
+print(f"\nMatching '{target_column}' with files (threshold: 90%)...")
 missing_companies = []
 found_matches = []
 
@@ -95,36 +91,27 @@ for i, company in enumerate(companies):
     
     if best_score >= 90:
         found_matches.append({
-            'company': company,
+            'identifier': company,
             'file': best_file,
             'score': best_score
         })
         print(f"✓ MATCH: {company} → {best_file} ({best_score}%)")
     else:
         missing_companies.append(company)
-        print(f"✗ MISSING: {company} (best: {best_file} - {best_score}%)")
+        # Showing the best attempt even if it failed the threshold
+        print(f"✗ MISSING: {company} (Best guess: {best_file} - {best_score}%)")
 
 print(f"\n" + "="*60)
 print("SUMMARY:")
 print("="*60)
-print(f"Total companies: {len(companies)}")
-print(f"Files found: {len(found_matches)}")
+print(f"Total entries: {len(companies)}")
+print(f"Matches found: {len(found_matches)}")
 print(f"Missing files: {len(missing_companies)}")
-print(f"Match rate: {len(found_matches)/len(companies)*100:.1f}%")
 
-if missing_companies:
-    print(f"\nMISSING COMPANIES:")
-    print("-" * 30)
-    for company in missing_companies:
-        print(f"  - {company}")
-    
-    # Save missing companies to file
-    with open('missing_companies.txt', 'w') as f:
-        for company in missing_companies:
-            f.write(company + '\n')
-    print(f"\nMissing companies saved to 'missing_companies.txt'")
+if len(companies) > 0:
+    print(f"Match rate: {len(found_matches)/len(companies)*100:.1f}%")
 
-# Save detailed results
-results_df = pd.DataFrame(found_matches + [{'company': comp, 'file': 'MISSING', 'score': 0} for comp in missing_companies])
+# Save results
+results_df = pd.DataFrame(found_matches + [{'identifier': comp, 'file': 'MISSING', 'score': 0} for comp in missing_companies])
 results_df.to_csv('matching_results.csv', index=False)
-print(f"Detailed results saved to 'matching_results.csv'")
+print(f"\nDetailed results saved to 'matching_results.csv'")
