@@ -51,10 +51,9 @@ class EnsembleScorer:
     Combines multiple scoring systems into unified recommendations.
     
     Scoring systems considered (weights based on predictive power):
-    1. MCA Rule Score (45%) - Transaction consistency, empirically validated
+    1. MCA Rule Score (40%) - Transaction consistency, empirically validated
     2. Subprime Score (40%) - Comprehensive micro-enterprise assessment
-    3. ML Score (15%) - Data-driven probability prediction (reduced until
-       the model is retrained on a larger dataset)
+    3. ML Score (20%) - Data-driven probability (retrained model, 0.922 ROC-AUC)
     
     The MCA Rule Score is based on:
     - inflow_days_30d: Days with deposits in last 30 days
@@ -68,9 +67,9 @@ class EnsembleScorer:
     """
     
     DEFAULT_WEIGHTS = {
-        'mca_score': 0.45,        # Transaction consistency - most important, empirically validated
+        'mca_score': 0.40,        # Transaction consistency - empirically validated
         'subprime_score': 0.40,   # Micro-enterprise assessment
-        'ml_score': 0.15,         # Data-driven probability (reduced - small training set)
+        'ml_score': 0.20,         # Data-driven probability (retrained, 0.922 ROC-AUC)
     }
     
     # Decision thresholds
@@ -304,24 +303,17 @@ class EnsembleScorer:
         
         return combined_score, contributing_scores
     
-    # Only these scoring systems are trusted enough to drive convergence checks.
-    # ML is excluded because its small training set makes its scores unreliable
-    # and a disagreement from ML alone shouldn't penalise the combined score.
-    CONVERGENCE_SYSTEMS = {'mca_score', 'subprime_score'}
-
     def _analyze_convergence(
         self,
         scoring_results: Dict[str, ScoringResult]
     ) -> Tuple[str, float]:
         """
-        Analyze how well the primary scores (MCA Rule and Subprime) converge.
+        Analyze how well all scoring systems converge.
         High divergence suggests uncertainty and warrants a penalty.
-        ML is excluded -- its small training set means disagreement from ML
-        alone should not drag down the combined score.
         """
         primary_scores = [
-            r.score for name, r in scoring_results.items()
-            if name in self.CONVERGENCE_SYSTEMS and r.available and r.score > 0
+            r.score for r in scoring_results.values()
+            if r.available and r.score > 0
         ]
         
         if len(primary_scores) < 2:
