@@ -2554,11 +2554,10 @@ def main():
                     # Contributing scores in compact row
                     contributing = ensemble.get('contributing_scores', {})
                     score_cols = st.columns(3)
-                    
+
                     with score_cols[0]:
                         mca_s = contributing.get('mca_score', params.get('mca_rule_score', 50))
-                        mca_d = params.get('mca_rule_decision', 'REFER')
-                        st.metric("MCA Rule (40%)", f"{mca_s:.0f}", delta=mca_d)
+                        st.metric("MCA Rule (40%)", f"{mca_s:.0f}")
                     
                     with score_cols[1]:
                         subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
