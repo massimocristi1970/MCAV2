@@ -343,18 +343,20 @@ class EnsembleScorer:
         mca_decision = str(mca_decision).upper() if mca_decision else None
         
         # MCA REFER means transaction consistency is borderline
-        # Even with a good score, we should be cautious
+        # Even with a good score, we should be cautious -- but never
+        # override a DECLINE that the score thresholds demand
         if mca_decision == 'REFER':
             if score >= self.THRESHOLDS['approve']:
                 return Decision.CONDITIONAL_APPROVE
             elif score >= self.THRESHOLDS['conditional_approve']:
-                return Decision.REFER  # Downgrade to REFER
-            else:
+                return Decision.REFER
+            elif score >= self.THRESHOLDS['refer']:
                 return Decision.SENIOR_REVIEW
+            else:
+                return Decision.DECLINE
         
-        # MCA APPROVE gives confidence boost
+        # MCA APPROVE gives confidence boost -- but still respects thresholds
         if mca_decision == 'APPROVE':
-            # Transaction consistency is strong - trust the score
             if score >= self.THRESHOLDS['approve']:
                 return Decision.APPROVE
             elif score >= self.THRESHOLDS['conditional_approve']:
