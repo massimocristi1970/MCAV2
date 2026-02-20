@@ -54,11 +54,11 @@ Risk tier classification:
 
 | Tier | Score | Decision | Factor Rate |
 |------|-------|----------|-------------|
-| Tier 1 (Premium) | 65+ | APPROVE | 1.5-1.6x |
-| Tier 2 (Standard) | 50-65 | APPROVE | 1.7-1.85x |
-| Tier 3 (Conditional) | 40-50 | CONDITIONAL | 1.85-2.0x |
-| Tier 4 (High Risk) | 30-40 | SENIOR_REVIEW | 2.0-2.2x |
-| Decline | <30 | DECLINE | N/A |
+| Tier 1 (Premium) | 75+ | APPROVE | 1.5-1.6x |
+| Tier 2 (Standard) | >70 | APPROVE | 1.7-1.85x |
+| Tier 3 (Conditional) | >65 | CONDITIONAL | 1.85-2.0x |
+| Tier 4 (High Risk) | >60 | SENIOR_REVIEW | 2.0-2.2x |
+| Decline | <60 | DECLINE | N/A |
 
 Penalties are applied for business CCJs (-12), personal defaults (-8), director CCJs (-8), no online presence (-4), outdated web presence (-3), and generic email (-2).
 
@@ -90,11 +90,11 @@ The model uses 13 features in total. It is regularised with `max_depth=8`, `min_
    - Both business and director CCJs present
 
 2. SCORE-BASED DECISION:
-   Combined Score >= 65  ->  APPROVE
-   Combined Score >= 50  ->  CONDITIONAL_APPROVE
-   Combined Score >= 40  ->  REFER
-   Combined Score >= 30  ->  SENIOR_REVIEW
-   Combined Score <  30  ->  DECLINE
+   Combined Score >= 75  ->  APPROVE
+   Combined Score >= 70  ->  CONDITIONAL_APPROVE
+   Combined Score >= 65  ->  REFER
+   Combined Score >= 65  ->  SENIOR_REVIEW
+   Combined Score <  65  ->  DECLINE
 
 3. CONVERGENCE CHECK:
    All three scores compared. If they disagree significantly
