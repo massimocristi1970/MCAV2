@@ -1,24 +1,16 @@
-# Virtual environment
-venv/
-
-# Documentation
-README.md
-
 # Old version
 MCAV2/
 
-# Environment variables (SECURITY)
-.env
-. env.local
-.env. *.local
+# ---- IDEs ----
+.idea/
+.vscode/
 
-# Python cache
+# ---- Python cache/bytecode ----
 __pycache__/
 *.py[cod]
 *$py.class
-*.pyc
 
-
-# Python venv
+# ---- Virtual environments (if applicable) ----
 .venv/
-
+venv/
+env/
