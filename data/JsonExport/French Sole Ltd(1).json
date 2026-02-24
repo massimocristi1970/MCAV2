@@ -1,0 +1,2345 @@
+{
+  "accounts": [
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "balances": {
+        "available": 154.19,
+        "current": 154.19,
+        "iso_currency_code": "GBP",
+        "limit": null,
+        "unofficial_currency_code": null
+      },
+      "mask": "9287",
+      "name": "Tide Current Account",
+      "official_name": null,
+      "subtype": "checking",
+      "type": "depository"
+    }
+  ],
+  "item": {
+    "available_products": [
+      "assets"
+    ],
+    "billed_products": [
+      "transactions"
+    ],
+    "consent_expiration_time": "2024-06-10T16:36:55Z",
+    "error": null,
+    "institution_id": "ins_118505",
+    "item_id": "rvq5Y8vM1RILA3a0rL5BCvRe9jKydDfBBKQxb",
+    "products": [
+      "assets",
+      "transactions"
+    ],
+    "update_type": "background",
+    "webhook": "https://app.herondata.io/api/integrations/itg_KoCXD6P3bLDeaDQ7fqMQTm/webhooks"
+  },
+  "request_id": "Sph4LgBgpXQgUlR",
+  "total_transactions": 39,
+  "transactions": [
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 400,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T09:13:18Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-11",
+      "datetime": "2024-03-11T09:13:18Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUNYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "yJv5Q8JMkEFyPRAq1yQot18a67RxwqhO6qmVw",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -176.84,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T01:03:56Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-03-11",
+      "datetime": "2024-03-11T01:03:56Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PAYPAL INC ref: FRENCH SOLE LTD",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "KzyM10zjo4F3DwKYy3aEFzRDqK4deACQk4rj6",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 0.01,
+      "authorized_date": "2024-03-09",
+      "authorized_datetime": "2024-03-09T08:55:01Z",
+      "category": [
+        "Payment"
+      ],
+      "category_id": "16000000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Gocardless",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-09",
+      "datetime": "2024-03-09T08:55:01Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Gocardless",
+      "name": "GOCARDLESS / ref: Ve0003dpmc49qc",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "kqdRQAqEXju8DKXw08aYH0vnzmbxVPHRgNQmr",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": "2024-03-08",
+      "authorized_datetime": "2024-03-08T07:01:01Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-08",
+      "datetime": "2024-03-08T07:01:01Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUBYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "Azdno1zPVRFD4aR1dDjgimbrDa9X1qs6o3Kak",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 500,
+      "authorized_date": "2024-03-08",
+      "authorized_datetime": "2024-03-08T01:24:54Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-08",
+      "datetime": "2024-03-08T01:24:54Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUNYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "v4KkX84M3Efq8omypq3PH4gnjevDyPFmRKELM",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -235.79,
+      "authorized_date": "2024-03-08",
+      "authorized_datetime": "2024-03-08T01:02:57Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-03-08",
+      "datetime": "2024-03-08T01:02:57Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PAYPAL INC ref: FRENCH SOLE LTD",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "0po6B1p0ekUDwRrN4D3viEjv8wOVNqurLO31r",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -255.45,
+      "authorized_date": "2024-03-06",
+      "authorized_datetime": "2024-03-06T01:03:14Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-03-06",
+      "datetime": "2024-03-06T01:03:14Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PAYPAL INC ref: FRENCH SOLE LTD",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "jPYRQkPE5jCJAVE8LJw9SLdQeYvrnzfR459qe",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -141.72,
+      "authorized_date": "2024-03-04",
+      "authorized_datetime": "2024-03-04T13:35:14Z",
+      "category": [
+        "Service",
+        "Financial"
+      ],
+      "category_id": "18020000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "0dWp5ypk7648r2Kb2AdMMwXywzqoEm7BgNm2B",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/klarna_29.png",
+          "name": "Klarna",
+          "phone_number": null,
+          "type": "financial_institution",
+          "website": "klarna.com"
+        }
+      ],
+      "date": "2024-03-04",
+      "datetime": "2024-03-04T13:35:14Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Klarna",
+      "name": "KLARNA BANK AB BANK / ref: RTE-50006340",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT",
+        "primary": "LOAN_PAYMENTS"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_LOAN_PAYMENTS.png",
+      "transaction_code": null,
+      "transaction_id": "azMrgLzE5oFk5b6pMkzmH5eEpxYoyNsZdxoq9",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 500,
+      "authorized_date": "2024-03-04",
+      "authorized_datetime": "2024-03-04T14:24:15Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-04",
+      "datetime": "2024-03-04T14:24:15Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUNYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "4p9Pk3paVZUD1r3w8DMRiad3xBXPD6TkYxwjn",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 11.99,
+      "authorized_date": "2024-03-04",
+      "authorized_datetime": "2024-03-04T17:09:44Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-04",
+      "datetime": "2024-03-04T17:09:44Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "TPL Ltd / ref: Tide fees: Plus plan payment",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_ACCOUNTING_AND_FINANCIAL_PLANNING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "rvq5Y8vM1RILA3a0rL5BCvR06z8eAmtByNPOr",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 1100,
+      "authorized_date": "2024-03-02",
+      "authorized_datetime": "2024-03-02T07:12:08Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-02",
+      "datetime": "2024-03-02T07:12:08Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUNYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "qAPON8AMDgi6Xp4O16z7HAy31RoONvIJX9QYn",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 180,
+      "authorized_date": "2024-03-02",
+      "authorized_datetime": "2024-03-02T07:33:28Z",
+      "category": [
+        "Shops",
+        "Bookstores"
+      ],
+      "category_id": "19009000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "People \u0026 Space",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-02",
+      "datetime": "2024-03-02T07:33:28Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "People \u0026 Space",
+      "name": "PEOPLE \u0026 SPACE / ref: FRENCH SOLE",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_MERCHANDISE_CLOTHING_AND_ACCESSORIES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "Pz0EynzJoaFgMP3O0gDKtmBMozb37EsmkRVx7",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 60,
+      "authorized_date": "2024-03-02",
+      "authorized_datetime": "2024-03-02T13:36:46Z",
+      "category": [
+        "Shops",
+        "Bookstores"
+      ],
+      "category_id": "19009000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-02",
+      "datetime": "2024-03-02T13:36:46Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PEOPLE \u0026 SPACE / ref: Reference - Email",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_CONSULTING_AND_LEGAL",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "xxA5Q7xMKEH30gmw13KVF1jaD0mXdphMDqZ1A",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 10,
+      "authorized_date": "2024-03-01",
+      "authorized_datetime": "2024-03-01T13:51:46Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-01",
+      "datetime": "2024-03-01T13:51:46Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUBYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "3p71KBp4VNUwELjxJw74UXexp7aEJ1IK8na5x",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": "2024-03-01",
+      "authorized_datetime": "2024-03-01T13:52:41Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-01",
+      "datetime": "2024-03-01T13:52:41Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUBYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "BzwYbPzqpOFEMy8jwEV0CE0OMr6gP4u9on1pQ",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -257.41,
+      "authorized_date": "2024-03-01",
+      "authorized_datetime": "2024-03-01T01:10:18Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-03-01",
+      "datetime": "2024-03-01T01:10:18Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PAYPAL INC ref: FRENCH SOLE LTD",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "KzyM10zjo4F3DwKYy3aEFzRDqK4deACQk4rj5",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -450.44,
+      "authorized_date": "2024-03-01",
+      "authorized_datetime": "2024-03-01T08:39:21Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-01",
+      "datetime": "2024-03-01T08:39:21Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "Stripe Payments UK Ltd / ref: STRIPE",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "yJv5Q8JMkEFyPRAq1yQot18a67RxwqhO6qmVJ",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 3000,
+      "authorized_date": "2024-02-29",
+      "authorized_datetime": "2024-02-29T11:18:33Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-29",
+      "datetime": "2024-02-29T11:18:33Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUNYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "kqdRQAqEXju8DKXw08aYH0vnzmbxVPHRgNQm1",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -70.74,
+      "authorized_date": "2024-02-29",
+      "authorized_datetime": "2024-02-29T01:06:03Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-02-29",
+      "datetime": "2024-02-29T01:06:03Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PAYPAL INC ref: FRENCH SOLE LTD",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "v4KkX84M3Efq8omypq3PH4gnjevDyPFmRKELX",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -580.93,
+      "authorized_date": "2024-02-29",
+      "authorized_datetime": "2024-02-29T08:37:34Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-29",
+      "datetime": "2024-02-29T08:37:34Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "Stripe Payments UK Ltd / ref: STRIPE",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "Azdno1zPVRFD4aR1dDjgimbrDa9X1qs6o3Ka0",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -7615,
+      "authorized_date": "2024-02-28",
+      "authorized_datetime": "2024-02-28T17:30:10Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-28",
+      "datetime": "2024-02-28T17:30:10Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "DISBURSEMENTS / ref: Myles Bunyard",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "jPYRQkPE5jCJAVE8LJw9SLdQeYvrnzfR459pO",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 5000,
+      "authorized_date": "2024-02-28",
+      "authorized_datetime": "2024-02-28T17:33:08Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Myles Bunyard",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-02-28",
+      "datetime": "2024-02-28T17:33:08Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Myles Bunyard",
+      "name": "MYLES BUNYARD / ref: Valuations",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "0po6B1p0ekUDwRrN4D3viEjv8wOVNqurLO31d",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -998.22,
+      "authorized_date": "2024-02-28",
+      "authorized_datetime": "2024-02-28T01:10:59Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-02-28",
+      "datetime": "2024-02-28T01:10:59Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PAYPAL INC ref: FRENCH SOLE LTD",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "4p9Pk3paVZUD1r3w8DMRiad3xBXPD6TkYxwVM",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -79.62,
+      "authorized_date": "2024-02-28",
+      "authorized_datetime": "2024-02-28T08:48:58Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-28",
+      "datetime": "2024-02-28T08:48:58Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "Stripe Payments UK Ltd / ref: STRIPE",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "rvq5Y8vM1RILA3a0rL5BCvR06z8eAmtByNPQj",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 400,
+      "authorized_date": "2024-02-27",
+      "authorized_datetime": "2024-02-27T21:22:10Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-27",
+      "datetime": "2024-02-27T21:22:10Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUNYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "azMrgLzE5oFk5b6pMkzmH5eEpxYoyNsZdxoQn",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 500,
+      "authorized_date": "2024-02-27",
+      "authorized_datetime": "2024-02-27T05:36:43Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-27",
+      "datetime": "2024-02-27T05:36:43Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUNYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "Jz37Dvz0X4FJZgan3JX7Sbwd305zeNfbOPj1P",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -147.37,
+      "authorized_date": "2024-02-27",
+      "authorized_datetime": "2024-02-27T01:06:23Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-02-27",
+      "datetime": "2024-02-27T01:06:23Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PAYPAL INC ref: FRENCH SOLE LTD",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "8pEgjApZVnUV3RygmVEoho98dmb0gXCyL8Mw7",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -278.59,
+      "authorized_date": "2024-02-27",
+      "authorized_datetime": "2024-02-27T08:54:51Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-27",
+      "datetime": "2024-02-27T08:54:51Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "Stripe Payments UK Ltd / ref: STRIPE",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "xxA5Q7xMKEH30gmw13KVF1jaD0mXdphMDqZEw",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -300.64,
+      "authorized_date": "2024-02-26",
+      "authorized_datetime": "2024-02-26T01:02:26Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-02-26",
+      "datetime": "2024-02-26T01:02:26Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PAYPAL INC ref: FRENCH SOLE LTD",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "oKD5QOKY6ksMkXjovMP7fvq7YprDjytBxgXvx",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -429.46,
+      "authorized_date": "2024-02-26",
+      "authorized_datetime": "2024-02-26T08:57:08Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-26",
+      "datetime": "2024-02-26T08:57:08Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "Stripe Payments UK Ltd / ref: STRIPE",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "Zzo4xnzE5QF1mjRZo1nBHRZmbM6kEwCRAo1nn",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 433.75,
+      "authorized_date": "2024-02-26",
+      "authorized_datetime": "2024-02-26T08:54:55Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-26",
+      "datetime": "2024-02-26T08:54:55Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "T ST JOHN / ref: Reference - FS",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "5pVqAypmzNUxPgLJZxMbHyoMkwzb1JfBXMJZp",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 360.8,
+      "authorized_date": "2024-02-23",
+      "authorized_datetime": "2024-02-23T11:01:45Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Eleanor Somner",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-02-23",
+      "datetime": "2024-02-23T11:01:45Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Eleanor Somner",
+      "name": "ELEANOR SOMNER / ref: FRENCH SOLE",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "gLXmQ3LEMjC4AmBMg4VeSgMR876bNnCq7No0g",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 750,
+      "authorized_date": "2024-02-23",
+      "authorized_datetime": "2024-02-23T11:04:02Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-23",
+      "datetime": "2024-02-23T11:04:02Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "MYLES BUNYARD / ref: Reference - Stock",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "bzEr7DzQgjFz51JgEzqVudaoJzAYXeUqbR0M7",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -436.7,
+      "authorized_date": "2024-02-23",
+      "authorized_datetime": "2024-02-23T08:46:40Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-23",
+      "datetime": "2024-02-23T08:46:40Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "Stripe Payments UK Ltd / ref: STRIPE",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "7eM30ke8VOIXMgEnpXL1hbJz1ZoPngfQPgvdv",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": 810,
+      "authorized_date": "2024-02-22",
+      "authorized_datetime": "2024-02-22T10:57:55Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Clerksroom",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-02-22",
+      "datetime": "2024-02-22T10:57:55Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Clerksroom",
+      "name": "CLERKSROOM DIRECT / ref: CRDC-00027939",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GOVERNMENT_AND_NON_PROFIT_GOVERNMENT_DEPARTMENTS_AND_AGENCIES",
+        "primary": "GOVERNMENT_AND_NON_PROFIT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GOVERNMENT_AND_NON_PROFIT.png",
+      "transaction_code": null,
+      "transaction_id": "9pRQrvp5O8UoyP9Lgo1NCxRnzjM1oVId7nYO1",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -196.5,
+      "authorized_date": "2024-02-22",
+      "authorized_datetime": "2024-02-22T01:03:28Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-02-22",
+      "datetime": "2024-02-22T01:03:28Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PAYPAL INC ref: FRENCH SOLE LTD",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "OzvZ3nzxo4FDBgPpvDVQi8K1xYyD59C8kjrnE",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -489.19,
+      "authorized_date": "2024-02-22",
+      "authorized_datetime": "2024-02-22T08:42:52Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-22",
+      "datetime": "2024-02-22T08:42:52Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "Stripe Payments UK Ltd / ref: STRIPE",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "VzJRjnzE5xFw6k9ZJwbrUra643gzOpCrqveyx",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -546.27,
+      "authorized_date": "2024-02-21",
+      "authorized_datetime": "2024-02-21T01:10:16Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-02-21",
+      "datetime": "2024-02-21T01:10:16Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PAYPAL INC ref: FRENCH SOLE LTD",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "EzDX9mzyo4F48Ld7D4z1SvB1xrk5mXtpY439o",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "LzK7PjzroYFjm91NKjQYs07bVEMx48HJL5kVp",
+      "account_owner": null,
+      "amount": -883.86,
+      "authorized_date": "2024-02-21",
+      "authorized_datetime": "2024-02-21T08:53:51Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-21",
+      "datetime": "2024-02-21T08:53:51Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "Stripe Payments UK Ltd / ref: STRIPE",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "Mzk9qnz4EbFRrLApkRKOt5QrVA1JDzsM16xJa",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    }
+  ]
+}

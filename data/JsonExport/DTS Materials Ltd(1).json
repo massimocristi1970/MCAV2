@@ -1,0 +1,6369 @@
+{
+  "accounts": [
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "balances": {
+        "available": 58.41,
+        "current": 322.04,
+        "iso_currency_code": "GBP",
+        "limit": 0,
+        "unofficial_currency_code": null
+      },
+      "mask": "2379",
+      "name": "CurrentAccount 2379",
+      "official_name": null,
+      "subtype": "checking",
+      "type": "depository"
+    }
+  ],
+  "item": {
+    "available_products": [
+      "assets"
+    ],
+    "billed_products": [
+      "transactions"
+    ],
+    "consent_expiration_time": "2024-05-02T09:31:32Z",
+    "error": null,
+    "institution_id": "ins_55",
+    "item_id": "KdxOv0a5AdFoy8YroMy0FA6x7NnZV8SQXa6Ar",
+    "products": [
+      "assets",
+      "transactions"
+    ],
+    "update_type": "background",
+    "webhook": ""
+  },
+  "request_id": "HohJqEsHWHGFu5d",
+  "total_transactions": 1503,
+  "transactions": [
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -368.74,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Community",
+        "Government Departments and Agencies"
+      ],
+      "category_id": "12009000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "205941Q5C DWP UC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GOVERNMENT_AND_NON_PROFIT_GOVERNMENT_DEPARTMENTS_AND_AGENCIES",
+        "primary": "GOVERNMENT_AND_NON_PROFIT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GOVERNMENT_AND_NON_PROFIT.png",
+      "transaction_code": "transfer",
+      "transaction_id": "KdxOv0a5AdFoy8YroMy0FA98wPQR0eIyEZ56v",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": "2453",
+      "amount": 3.55,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Supermarkets and Groceries"
+      ],
+      "category_id": "19047000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "CO-OP",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "CO-OP",
+      "name": "CO-OP GROUP FOOD MARKET HARBOR GB",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": true,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "dR3AxPV4vRI9ozZV90ogCJxD6AqZzwCoK9VxA",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 8.95,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Delight Turkish Memarket Harbor",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Delight Turkish Memarket Harbor",
+      "name": "DELIGHT TURKISH MEMarket Harbor",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "BKkQyP8EDKsxwXjBxowYc48bz9y0YPHv3xar7",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 62.34,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Gyms and Fitness Centers"
+      ],
+      "category_id": "17018000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "EVERYONE ACTIVE FIRST PAYMENT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT",
+        "primary": "LOAN_PAYMENTS"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_LOAN_PAYMENTS.png",
+      "transaction_code": "direct debit",
+      "transaction_id": "yP03X89oKPI31zqw381kFqrJPzQ8mwHRpL7vD",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": "2453",
+      "amount": 11.1,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Free Masons Market Harbor",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Free Masons Market Harbor",
+      "name": "Free Masons Market Harbor GB",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": true,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "Yv69jnRxLvI65JQA6e5dF0PqENbajYUzJrgKP",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": "2453",
+      "amount": 28.98,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Supermarkets and Groceries"
+      ],
+      "category_id": "19047000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "a1wEv51o8g7QQEbN2o9NRa3np6AXn0qZ2ZdL9",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/hellofresh_479.png",
+          "name": "HelloFresh",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "hellofresh.com"
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/hellofresh_479.png",
+      "merchant_entity_id": "a1wEv51o8g7QQEbN2o9NRa3np6AXn0qZ2ZdL9",
+      "merchant_name": "HelloFresh",
+      "name": "HelloFresh London GB",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": true,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "wDgoK8O93DF7vVRQ7dvLFb8NE6xdaOtRKZqjj",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": "hellofresh.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 26.5,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Service",
+        "Subscription"
+      ],
+      "category_id": "18061000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "TV LICENSING",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "TV LICENSING",
+      "name": "TV LICENCE MBP",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_OTHER_ENTERTAINMENT",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "direct debit",
+      "transaction_id": "3mdxRB8vomTDJXxoDaJMc1N34A6eYJsPoeJR7",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 11.7,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "The Oats Market Harbor",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "The Oats Market Harbor",
+      "name": "The Oats Market Harbor",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "qJqj18vYLJFe1rOLey1xUvbPrEQyjNU1Dao71",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 18.95,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "The Oats Market Harbor",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "The Oats Market Harbor",
+      "name": "The Oats Market Harbor",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "P1Xdjn9D41CV0NO8Vj0phENX8k0Bp7hOoMrBo",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -60,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "betmgm.co.uk Newcastle Upo",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "6aLzrKmNoafB589MBo5ACPA53jQzqaHAw6k4D",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 80,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "Lwx0EjadvwCvK8N4vkKRhVnzAd47RwUJZYDnY",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 105,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "1vgZ4PeNovI3aOAX3wa8F7LnpKMPDatYn1Qem",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "DAmnkBNvPAF6L9py6EL4FmkqxN1D45tXwop9Y",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": "2453",
+      "amount": 80,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk GB",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": true,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "mo9aw0nrZouZyM9oZjynF0waDm5jJPU8BdJLo",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": "2453",
+      "amount": 140,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-02-01",
+      "datetime": "2024-02-01T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk GB",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": true,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "zqmvXVpjkqCmb4V6mdbkFjVP0YeJo6HMv4q6X",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -1,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Payroll"
+      ],
+      "category_id": "21009000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "ALLSTAR CREDIT BUISWINDON",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "JmLbrvxAkmTp3mnjpA3BUN49nOKwBeC0mg5ao",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 1,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Payment",
+        "Credit Card"
+      ],
+      "category_id": "16001000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "ALLSTAR CREDIT BUISWINDON",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT",
+        "primary": "LOAN_PAYMENTS"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_LOAN_PAYMENTS.png",
+      "transaction_code": "purchase",
+      "transaction_id": "x1gJk7vBy1C91rwd9P1bCpevq6PjZdtmOLg9B",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 100,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": null,
+      "category_id": null,
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Bresbet",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Bresbet",
+      "name": "BRESBET BRESBET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "jbMvXkV0xbCKLQ8kKdLRCz08RExdynFveVBJB",
+      "transaction_type": "unresolved",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 100,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": null,
+      "category_id": null,
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Bresbet",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Bresbet",
+      "name": "BRESBET BRESBET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "rJExP8VKDJFzrY0NzRrdfmbDZ9NRnAtrVJ7z5",
+      "transaction_type": "unresolved",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": null,
+      "category_id": null,
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Bresbet",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Bresbet",
+      "name": "BRESBET BRESBET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "aJA1nLjXKJFwM0prwgMaCNzMB0QeLyCK7PVmR",
+      "transaction_type": "unresolved",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 290,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": null,
+      "category_id": null,
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Bresbet",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Bresbet",
+      "name": "BRESBET BRESBET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "4rwjJ3Q7OrUg8pwYgX8mF6Q1EYydvDtDR0rvQ",
+      "transaction_type": "unresolved",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 2.8,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Supermarkets and Groceries"
+      ],
+      "category_id": "19047000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "CO-OP",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "CO-OP",
+      "name": "CO-OP GROUP FOOD MARKET HARBOR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "AyJp31EBLyf3dA1q3zdBFqxY8QRbB1HwMkJzQ",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 63,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0072687203 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "kZNvxAn0JZCO0VwpOv0BCPM6oKkvLVHbo4dnE",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 6.5,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Gyms and Fitness Centers"
+      ],
+      "category_id": "17018000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Kiwi Leisure",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Kiwi Leisure",
+      "name": "KIWI LEISURE ADMISTOCKTON ON T",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "ENTERTAINMENT_SPORTING_EVENTS_AMUSEMENT_PARKS_AND_MUSEUMS",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "0Agbr185zAF74XNj7O4BFq5KaY0jRNH9AMXmD",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 7.99,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Gyms and Fitness Centers"
+      ],
+      "category_id": "17018000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Kiwi Leisure",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Kiwi Leisure",
+      "name": "KIWI LEISURE ADMISTOCKTON ON T",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "ENTERTAINMENT_SPORTING_EVENTS_AMUSEMENT_PARKS_AND_MUSEUMS",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "vLPmy805BLtZpVyzZgpLFP8YoapgKyHpVBDA8",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -300,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-31",
+      "datetime": "2024-01-31T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "bresbet.com Visa DLondon",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "8wQRdAN7owCQmrgqQbmKfXyDV4r97gfYx5zOk",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 3.5,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Supermarkets and Groceries"
+      ],
+      "category_id": "19047000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "CO-OP",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-30",
+      "datetime": "2024-01-30T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "CO-OP",
+      "name": "CO-OP GROUP FOOD MARKET HARBOR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "M6xrZnOw06Iokepaobk8Fz7OBgqQ8DF0XQq78",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 34.28,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "3Qz0vwr8VwQgk3nZMzw5N4nBryeKzLRyEwVaB",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/deliveroo_247.png",
+          "name": "Deliveroo",
+          "phone_number": null,
+          "type": "marketplace",
+          "website": "deliveroo.co.uk"
+        }
+      ],
+      "date": "2024-01-30",
+      "datetime": "2024-01-30T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Deliveroo",
+      "name": "DELIVEROO LONDON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "ODP5QnmLrDF1v9pJ1qvEU9X3w6mKE5CpxMDzK",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 80,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-30",
+      "datetime": "2024-01-30T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0066008086 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "gJygz3V9rJFagQMPabgkFnKQpDBMdNt68ZOvQ",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 100,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-30",
+      "datetime": "2024-01-30T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0066008087 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "bnb19DXvknI9E0gB93EPCeMv6KparXsPJALVR",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 35,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-30",
+      "datetime": "2024-01-30T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0066008088 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "oJ0BLOvVwJFYvroNYqvLHy8oQzAqEjHr4aMnm",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 120,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-30",
+      "datetime": "2024-01-30T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0066008089 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "5465ry8eo4FjZXJmjzZpSJRPL0eox1CNwLR70",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 123,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-30",
+      "datetime": "2024-01-30T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0066008090 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "Z0LeJn73D0tyoVZ9y5oYtw3AaedZNEu8bQEq3",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 75,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-01-30",
+      "datetime": "2024-01-30T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "96PKwvmzo6IJg7LrJMg4UV9JAa5RvoU6gaRLM",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 100,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-01-30",
+      "datetime": "2024-01-30T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "VKryOn9vmKs0JNZ70oJVhpyEbPxaVOtn4Q8dq",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-01-30",
+      "datetime": "2024-01-30T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "7d9NmkbnQdFNp8nANYpofgENep7Jmnt80ORad",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 56,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "BETWAY MALTA",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "Z0LeJn73D0tyoVZ9y5oYtw3AaedZNEu8bQEQ3",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "BETWAY MALTA",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "VKryOn9vmKs0JNZ70oJVhpyEbPxaVOtn4Q8Qq",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "BETWAY MALTA",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "bnb19DXvknI9E0gB93EPCeMv6KparXsPJALAR",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "BETWAY MALTA",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "x1gJk7vBy1C91rwd9P1bCpevq6PjZdtmOLg5B",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 225,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "BETWAY MALTA",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "oJ0BLOvVwJFYvroNYqvLHy8oQzAqEjHr4aMam",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 280,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "BETWAY MALTA",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "5465ry8eo4FjZXJmjzZpSJRPL0eox1CNwLRL0",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 280,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "BETWAY MALTA",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "96PKwvmzo6IJg7LrJMg4UV9JAa5RvoU6gaRaM",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 300,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "BETWAY MALTA",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "7d9NmkbnQdFNp8nANYpofgENep7Jmnt80OROd",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 300,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "BETWAY MALTA",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "8wQRdAN7owCQmrgqQbmKfXyDV4r97gfYx5z5k",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 300,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "BETWAY MALTA",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "JmLbrvxAkmTp3mnjpA3BUN49nOKwBeC0mg5go",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 23.8,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Supermarkets and Groceries"
+      ],
+      "category_id": "19047000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "CO-OP",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "CO-OP",
+      "name": "CO-OP GROUP FOOD MARKET HARBOR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "1vgZ4PeNovI3aOAX3wa8F7LnpKMPDatYn1QOm",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 22.24,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "3Qz0vwr8VwQgk3nZMzw5N4nBryeKzLRyEwVaB",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/deliveroo_247.png",
+          "name": "Deliveroo",
+          "phone_number": null,
+          "type": "marketplace",
+          "website": "deliveroo.co.uk"
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Deliveroo",
+      "name": "DELIVEROO LONDON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "Lwx0EjadvwCvK8N4vkKRhVnzAd47RwUJZYDvY",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 32.4,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "3Qz0vwr8VwQgk3nZMzw5N4nBryeKzLRyEwVaB",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/deliveroo_247.png",
+          "name": "Deliveroo",
+          "phone_number": null,
+          "type": "marketplace",
+          "website": "deliveroo.co.uk"
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Deliveroo",
+      "name": "DELIVEROO LONDON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "DAmnkBNvPAF6L9py6EL4FmkqxN1D45tXwopyY",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 5.99,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zbzNyw83zkVDdrdpRo5y1yE67V7vbMWY4LNne",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/apple_63.png",
+          "name": "Apple",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "apple.com"
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/apple_63.png",
+      "merchant_entity_id": "zbzNyw83zkVDdrdpRo5y1yE67V7vbMWY4LNne",
+      "merchant_name": "Apple",
+      "name": "INT'L 0044690384 APPLE.COM/BILL 08001076285",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ELECTRONICS",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": "purchase",
+      "transaction_id": "NLMrvn96jLtaANpea9ALFEj0MPaXx7hyoK0gE",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "apple.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 186,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0052708973 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "XAwBjn906AFBZNzVBgZ4CjrDRYnz4wHzd7kDN",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 50,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0052708974 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "pJa0D8jY6JFKA7YLKoAxCnrzRX1o0atA3OnXx",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 100,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0059374837 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "nb9R6jVxdbC8rQ108ZrvidDbgxKZ46fjB8JYZ",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 100,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0059374838 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "QPxw5Xm1aPINjE8ZNkjofadnN8x5orI9Oke5r",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "INT'L 0059374839 BETWAY WWW.BAYTON.CO",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "mo9aw0nrZouZyM9oZjynF0waDm5jJPU8BdJAo",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 160,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "INT'L 0059374840 BETWAY WWW.BAYTON.CO",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "zqmvXVpjkqCmb4V6mdbkFjVP0YeJo6HMv4q1X",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 400,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "INT'L 0059374841 BETWAY WWW.BAYTON.CO",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "Yv69jnRxLvI65JQA6e5dF0PqENbajYUzJrg4P",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 100,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Betway",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Betway",
+      "name": "INT'L 0059374842 BETWAY WWW.BAYTON.CO",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "eJ3gxqmv0JF7XVN17EXgF76xwY9Nybt4nj5Pz",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 99.4,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "LBG",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "LBG",
+      "name": "LBG L2450 MARKET HMARKET HARBOR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "P1Xdjn9D41CV0NO8Vj0phENX8k0Bp7hOoMrdo",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -0.3,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Payroll"
+      ],
+      "category_id": "21009000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "LBG L2450 MARKET Visa Direct",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "ODP5QnmLrDF1v9pJ1qvEU9X3w6mKE5CpxMDMK",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 6.76,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Travel",
+        "Lodging",
+        "Hotels and Motels"
+      ],
+      "category_id": "22012003",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Manor House",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Manor House",
+      "name": "MANOR HOUSE ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRAVEL_LODGING",
+        "primary": "TRAVEL"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRAVEL.png",
+      "transaction_code": "purchase",
+      "transaction_id": "AyJp31EBLyf3dA1q3zdBFqxY8QRbB1HwMkJvQ",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 6.76,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Travel",
+        "Lodging",
+        "Hotels and Motels"
+      ],
+      "category_id": "22012003",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Manor House",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Manor House",
+      "name": "MANOR HOUSE ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRAVEL_LODGING",
+        "primary": "TRAVEL"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRAVEL.png",
+      "transaction_code": "purchase",
+      "transaction_id": "jbMvXkV0xbCKLQ8kKdLRCz08RExdynFveVBdB",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 8.15,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Travel",
+        "Lodging",
+        "Hotels and Motels"
+      ],
+      "category_id": "22012003",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Manor House",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Manor House",
+      "name": "MANOR HOUSE ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRAVEL_LODGING",
+        "primary": "TRAVEL"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRAVEL.png",
+      "transaction_code": "purchase",
+      "transaction_id": "0Agbr185zAF74XNj7O4BFq5KaY0jRNH9AMXkD",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 8.15,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Travel",
+        "Lodging",
+        "Hotels and Motels"
+      ],
+      "category_id": "22012003",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Manor House",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Manor House",
+      "name": "MANOR HOUSE ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRAVEL_LODGING",
+        "primary": "TRAVEL"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRAVEL.png",
+      "transaction_code": "purchase",
+      "transaction_id": "vLPmy805BLtZpVyzZgpLFP8YoapgKyHpVBD98",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 11.29,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants",
+        "Fast Food"
+      ],
+      "category_id": "13005032",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "vzWXDWBjB06j5BJoD3Jo84OJZg7JJzmqOZA22",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/mcdonalds_619.png",
+          "name": "McDonald's",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "mcdonalds.com"
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/mcdonalds_619.png",
+      "merchant_entity_id": "vzWXDWBjB06j5BJoD3Jo84OJZg7JJzmqOZA22",
+      "merchant_name": "McDonald's",
+      "name": "McDonald's",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_FAST_FOOD",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "aJA1nLjXKJFwM0prwgMaCNzMB0QeLyCK7PVvR",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": "mcdonalds.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 13.79,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Supermarkets and Groceries"
+      ],
+      "category_id": "19047000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Spar Bassingbourn",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Spar Bassingbourn",
+      "name": "SPAR BASSINGBOURN ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "rJExP8VKDJFzrY0NzRrdfmbDZ9NRnAtrVJ765",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 12.15,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Travel",
+        "Lodging",
+        "Hotels and Motels"
+      ],
+      "category_id": "22012003",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "The Banyers Hotel",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "The Banyers Hotel",
+      "name": "THE BANYERS HOTEL ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRAVEL_LODGING",
+        "primary": "TRAVEL"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRAVEL.png",
+      "transaction_code": "purchase",
+      "transaction_id": "4rwjJ3Q7OrUg8pwYgX8mF6Q1EYydvDtDR0rKQ",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 11.55,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "The Green Man",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "The Green Man",
+      "name": "THE GREEN MAN ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": "purchase",
+      "transaction_id": "3mdxRB8vomTDJXxoDaJMc1N34A6eYJsPoeJr7",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 11.55,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "The Green Man",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "The Green Man",
+      "name": "THE GREEN MAN ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": "purchase",
+      "transaction_id": "yP03X89oKPI31zqw381kFqrJPzQ8mwHRpL7KD",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 13.5,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "The Green Man",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "The Green Man",
+      "name": "THE GREEN MAN ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": "purchase",
+      "transaction_id": "BKkQyP8EDKsxwXjBxowYc48bz9y0YPHv3xaz7",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 21.5,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "The Green Man",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "The Green Man",
+      "name": "THE GREEN MAN ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": "purchase",
+      "transaction_id": "qJqj18vYLJFe1rOLey1xUvbPrEQyjNU1Daoz1",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 35.05,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "The Green Man",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "The Green Man",
+      "name": "THE GREEN MAN ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": "purchase",
+      "transaction_id": "kZNvxAn0JZCO0VwpOv0BCPM6oKkvLVHbo4drE",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 37.25,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "The Green Man",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "The Green Man",
+      "name": "THE GREEN MAN ROYSTON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": "purchase",
+      "transaction_id": "KdxOv0a5AdFoy8YroMy0FA98wPQR0eIyEZ5ev",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 25,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "SkyBet",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "SkyBet",
+      "name": "WWW.SKYBET.COM 03300244777",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "gJygz3V9rJFagQMPabgkFnKQpDBMdNt68ZOZQ",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -500,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "betmgm.co.uk Newcastle Upo",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "wDgoK8O93DF7vVRQ7dvLFb8NE6xdaOtRKZqxj",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -300,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "betmgm.co.uk Newcastle Upo",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "RqO6jn9PxqCkrNX5kJrxUjdmrPJAx9H9e858w",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -250,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "betmgm.co.uk Newcastle Upo",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "RqO6jn9PxqCkrNX5kJrxUjdmrPJAx9H9e85pw",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -140,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "betmgm.co.uk Newcastle Upo",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "dR3AxPV4vRI9ozZV90ogCJxD6AqZzwCoK9VwA",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -100,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "betmgm.co.uk Newcastle Upo",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "Evk1NmaAqvImDn7KmJDaFXzDoNABamfdQwvw3",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -80,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "betmgm.co.uk Newcastle Upo",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "QPxw5Xm1aPINjE8ZNkjofadnN8x5orI9Okekr",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -79,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "betmgm.co.uk Newcastle Upo",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "Evk1NmaAqvImDn7KmJDaFXzDoNABamfdQwve3",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -50,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "betmgm.co.uk Newcastle Upo",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "M6xrZnOw06Iokepaobk8Fz7OBgqQ8DF0XQqQ8",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-01-29",
+      "datetime": "2024-01-29T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "6aLzrKmNoafB589MBo5ACPA53jQzqaHAw6kDD",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -100,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-27",
+      "datetime": "2024-01-27T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "888 UK Ltd GIbraltar",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "nb9R6jVxdbC8rQ108ZrvidDbgxKZ46fjB8J8Z",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -50,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-27",
+      "datetime": "2024-01-27T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "888 UK Ltd GIbraltar",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "purchase",
+      "transaction_id": "pJa0D8jY6JFKA7YLKoAxCnrzRX1o0atA3OnOx",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 52.94,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Department Stores"
+      ],
+      "category_id": "19018000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "B\u0026M",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-26",
+      "datetime": "2024-01-26T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "B\u0026M",
+      "name": "B\u0026M 597 - ROCKINGHROCKINGHAM",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "GENERAL_MERCHANDISE_DISCOUNT_STORES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": "purchase",
+      "transaction_id": "eJ3gxqmv0JF7XVN17EXgF76xwY9Nybt4nj5jz",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 14.35,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Supermarkets and Groceries"
+      ],
+      "category_id": "19047000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "CO-OP",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-26",
+      "datetime": "2024-01-26T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "CO-OP",
+      "name": "CO-OP GROUP FOOD MARKET HARBOR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "NLMrvn96jLtaANpea9ALFEj0MPaXx7hyoK0KE",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 13.3,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Delight Turkish Memarket Harbor",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-26",
+      "datetime": "2024-01-26T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Delight Turkish Memarket Harbor",
+      "name": "DELIGHT TURKISH MEMarket Harbor",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "Yv69jnRxLvI65JQA6e5dF0PqENbajYUzJrgrP",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 43.89,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "3Qz0vwr8VwQgk3nZMzw5N4nBryeKzLRyEwVaB",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/deliveroo_247.png",
+          "name": "Deliveroo",
+          "phone_number": null,
+          "type": "marketplace",
+          "website": "deliveroo.co.uk"
+        }
+      ],
+      "date": "2024-01-26",
+      "datetime": "2024-01-26T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Deliveroo",
+      "name": "DELIVEROO LONDON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "XAwBjn906AFBZNzVBgZ4CjrDRYnz4wHzd7k7N",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 28.98,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Shops",
+        "Supermarkets and Groceries"
+      ],
+      "category_id": "19047000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "a1wEv51o8g7QQEbN2o9NRa3np6AXn0qZ2ZdL9",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/hellofresh_479.png",
+          "name": "HelloFresh",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "hellofresh.com"
+        }
+      ],
+      "date": "2024-01-26",
+      "datetime": "2024-01-26T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/hellofresh_479.png",
+      "merchant_entity_id": "a1wEv51o8g7QQEbN2o9NRa3np6AXn0qZ2ZdL9",
+      "merchant_name": "HelloFresh",
+      "name": "HELLOFRESH LONDON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "zqmvXVpjkqCmb4V6mdbkFjVP0YeJo6HMv4q4X",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": "hellofresh.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -2000,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "BetWay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-25",
+      "datetime": "2024-01-25T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "BetWay",
+      "name": "BETWAY TA XBIEX",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "mo9aw0nrZouZyM9oZjynF0waDm5jJPU8BdJdo",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 13.3,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Delight Turkish Memarket Harbor",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-25",
+      "datetime": "2024-01-25T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Delight Turkish Memarket Harbor",
+      "name": "DELIGHT TURKISH MEMarket Harbor",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_GROCERIES",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "6aLzrKmNoafB589MBo5ACPA53jQzqaHAw6k6D",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 20.84,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "3Qz0vwr8VwQgk3nZMzw5N4nBryeKzLRyEwVaB",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/deliveroo_247.png",
+          "name": "Deliveroo",
+          "phone_number": null,
+          "type": "marketplace",
+          "website": "deliveroo.co.uk"
+        }
+      ],
+      "date": "2024-01-25",
+      "datetime": "2024-01-25T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Deliveroo",
+      "name": "DELIVEROO LONDON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "wDgoK8O93DF7vVRQ7dvLFb8NE6xdaOtRKZqZj",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 400,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": null,
+      "category_id": null,
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Fafabet",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-25",
+      "datetime": "2024-01-25T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Fafabet",
+      "name": "FAFABET READING",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "Lwx0EjadvwCvK8N4vkKRhVnzAd47RwUJZYDYY",
+      "transaction_type": "unresolved",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 18,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Recreation",
+        "Arts and Entertainment",
+        "Casinos and Gaming"
+      ],
+      "category_id": "17001014",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "888.com",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-01-25",
+      "datetime": "2024-01-25T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "888.com",
+      "name": "INT'L 0029674685 UK REGULATED LIM INTERNET",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "dR3AxPV4vRI9ozZV90ogCJxD6AqZzwCoK9V9A",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": -200,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-25",
+      "datetime": "2024-01-25T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "SAMUEL MOLYNEUX Money",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": "transfer",
+      "transaction_id": "DAmnkBNvPAF6L9py6EL4FmkqxN1D45tXwopoY",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 26.64,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "3Qz0vwr8VwQgk3nZMzw5N4nBryeKzLRyEwVaB",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/deliveroo_247.png",
+          "name": "Deliveroo",
+          "phone_number": null,
+          "type": "marketplace",
+          "website": "deliveroo.co.uk"
+        }
+      ],
+      "date": "2024-01-24",
+      "datetime": "2024-01-24T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Deliveroo",
+      "name": "DELIVEROO LONDON",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": "purchase",
+      "transaction_id": "QPxw5Xm1aPINjE8ZNkjofadnN8x5orI9OkekO",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 16.85,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-01-24",
+      "datetime": "2024-01-24T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "INT'L 0023033619 Livecareer.co.uk 8081890354",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT",
+        "primary": "LOAN_PAYMENTS"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_LOAN_PAYMENTS.png",
+      "transaction_code": "purchase",
+      "transaction_id": "RqO6jn9PxqCkrNX5kJrxUjdmrPJAx9H9e858y",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 400,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-01-24",
+      "datetime": "2024-01-24T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "nb9R6jVxdbC8rQ108ZrvidDbgxKZ46fjB8J8j",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    },
+    {
+      "account_id": "3mdxRB8vomTDJXxoDaJMc1BZMdvJ4VI7OdJO6",
+      "account_owner": null,
+      "amount": 600,
+      "authorized_date": null,
+      "authorized_datetime": null,
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+          "name": "BetMGM",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "sports.betmgm.com"
+        }
+      ],
+      "date": "2024-01-24",
+      "datetime": "2024-01-24T00:00:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/betmgm_106.png",
+      "merchant_entity_id": "aqRmnQrMBJ6J3XRo4OoVNW2JDVdKA02797bnj",
+      "merchant_name": "BetMGM",
+      "name": "betmgm.co.uk betmgm.co.uk",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": "purchase",
+      "transaction_id": "pJa0D8jY6JFKA7YLKoAxCnrzRX1o0atA3OnO4",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": "sports.betmgm.com"
+    }
+  ]
+}

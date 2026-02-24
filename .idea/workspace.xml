@@ -4,7 +4,195 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="31e1f392-70e3-430e-832b-137868850805" name="Changes" comment="" />
+    <list default="true" id="31e1f392-70e3-430e-832b-137868850805" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/MCAv2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MCAv2.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/22Lush Limited Transaction Report_categorized.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/22Lush Limited Transaction Report_categorized.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/22Lush Limited Transaction Report_categorized_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/22Lush Limited.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/AS Cladding and Roofing Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/AS Cladding and Roofing Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Advanced Automotive Performance Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Alex Sounthhampton_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/All in the wrap Limited_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Anthony Healthcare Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Apprintable Limited Transaction Report_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Apprintable Limited Transaction Report_cleaned_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Bedew Skin Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Befirst Constructions Ltd - Transaction Report_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Beforethefall_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Besachkarma Limited_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Boiler Solutions.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Boiler solution cover uk.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Bunker Publishing_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/CS Sport_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/CS Sports(1).json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/CS Sports.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Ceiling Suppliers Transaction Report_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Crunch Group Ltd Transaction Report_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/D&amp;C Couriers Limited_1,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/D&amp;C Couriers Limited_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/DTS Materials Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/DTS Materials Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Data4est Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Data4est Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Data4est Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Drillskillz Consults Limited_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Ellevate Ltd.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Elm Pub Group Ltd TA As The Bull Inn_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Elpromotions Limited.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Elpromotions Limited.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Elpromotions Limited_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Els Management Ltd_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Els Management Ltd_categorized_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Elsco Private Limited.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Elsco Private Limited.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Elsco Private Limited_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Four Paws Walking and Training Ltd App2_1,1.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Four Paws Walking and Training Ltd_1,1.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Four the Willows Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Four the Willows Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/French Sole Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Furfamilyfair Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Future Analytics Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/GIT Support LTD_categorized.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/GIT Support LTD_categorized.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/GIT Support LTD_categorized_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Gas Records_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Go Commercial Finance Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Good Geezers Welling Ltd Transaction Limited_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Gozone Care Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Gozone Care Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Gozone Care Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Green Future Search Lab_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/GreenSec Limited.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/GreenSec Limited.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/GreenSec Limited_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Gwynne and HHyde Plumbing and Heating Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Gwynne and HHyde Plumbing and Heating Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Hans Lec Design_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Hans Lec Design_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Harbour_galley.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Harbour_galley.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Harley Street Hair Transplants.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Harley Street Hair Transplants.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Hashmis and Bukharis Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Hemming Logistics Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Hemming Logistics Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Hewitt and Hyland Leisure Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Hewitt and Hyland Leisure Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Hewitt and Hyland Leisure Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/HumbleEgg Ltd(1).json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/HumbleEgg Ltd(1).json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Hursley Childcare Ltd_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Hussains Leicester Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Ivy Aesthetic Clinic Academy Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Ivy Aesthetic Clinic Academy Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/JB Bars Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/JB Bars Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/JB Bars Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Jay Heath Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Jay Heath Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Jemark Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Jemark Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Kam marketing Group Limited.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Kam marketing Group Limited.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Ketco Direct Limited.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Ketco Direct Limited.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Ketco Direct Limited_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Kids Tech Company Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Kids Tech Company Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/King of Steel Media Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/King of Steel Media Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/King of Steel Media Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Krafty Designs 4 You Limited.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Krafty Designs 4 You Limited.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Kurkland Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Kurkland Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Lopez Plant Hire Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Lumi SKN Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Lumi SKN Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Lumi SKN Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/MSFMart UK Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/MSFMart UK Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/MSFMart UK Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Made this for you Ltd Transaction Report_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Madinska &amp; Co Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Maj Trade Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Maj Trade Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Manzil Property Management.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Manzil Property Management.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Marvel Heating &amp; REnewable Energy Ltd_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Marvellous Glow Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Marvellous Glow Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Master Brewer Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Master Brewer Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Matches Talent Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Mecn Marketing Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Mecn Marketing Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Mecn Marketing Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Mh Home Renovations Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Mh Home Renovations Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Mh Home Renovations Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Mikaiel Limited_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Mikaiel Limited_categorized_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Moonlight SMC Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Moonlight SMC Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Moving Ewe Ltd - Copy.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Moving Ewe Ltd(1).json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Mr Eats Group Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Mr Eats Group Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Mr Eats Group Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Muscle Makers Gym Limited -app2(1).json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Muscle Makers Gym Limited -app2.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Muscle Makers Gym Limited_1,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Neu Hair_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Nikolov 92 Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Nikolov 92 Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Noble Executive Limited P1_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/PLH Services Ltd_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/PLH Services Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Palmcoco Ltd Transaction Report_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Pemienterprize Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Pemienterprize Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Pemienterprize Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Phoenix Group Services Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Phoenix Group Services Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Phone Expert Services_categorized.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Phone Expert Services_categorized.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Phone Expert Services_categorized_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Platform 10 Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Platform 10 Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Platform 10 Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Porkies Ltd_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Post Production Sorted Ltd_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Post Production Sorted Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Prudent Healthcare Services Ltd_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Prudent Healthcare Services Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Punchard Group Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Punchard Group Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Punchard Group Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/R W Waste Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/R W Waste Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/R W Waste Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Regulatory Consultantcy Services Ltd _categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Retail 24 Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Retail 24 Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Richer Education.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Richer Education.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Richer Education_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Rosethorn Studio Ltd_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/SAINT_GIOVANNI_DE_LA_MODE_LTD.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/SAINT_GIOVANNI_DE_LA_MODE_LTD.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/SAINT_GIOVANNI_DE_LA_MODE_LTD_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/SCS Facilities Services Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/SIMPLY_LOCAL_RICHMOND_LTD.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/SIMPLY_LOCAL_RICHMOND_LTD.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/STRIKECLUB_LTD-_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Sady cs Ltd _categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Sanitaire limited.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Scrandiggity LTD.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Scrandiggity LTD.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Sercasa Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Sercasa Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Sercasa Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Serenix Ltd Transaction Report_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Shakespeares Shepherd Huts Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Smithstrade Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Smithstrade Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Smithstrade Ltd_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Smithstrade Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/South Coast Auto Ltd.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/South Coast.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/South Coast.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/South Coast_1,1.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/South Coast_categorized_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Staplehurst Coffee Ltd .json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Staplehurst Coffee Ltd .json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Staplehurst Coffee Ltd _categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Stevnson Property Services Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Stevnson Property Services Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/T44J Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/T44J Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/THE_HOP_HOUSE_LTD.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/THE_HOP_HOUSE_LTD.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/THE_THIRSTY_TURTLE_LIMITED.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/THE_THIRSTY_TURTLE_LIMITED.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/THE_THIRSTY_TURTLE_LIMITED_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/TTND Ltd Transaction Report_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/The Body Fix Coach Limited_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/The Body Fix Coach Limited_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/The Coven Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/The Fuel Agency (UK) Ltd_categorized_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/The Gangway Sheringham Limited_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/TradeDesk Team Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Uteachmi Ltd Transaction Report_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Verve GB.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Verve GB.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Verve GB_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Victory and Joel Ltd .json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Victory and Joel Ltd .json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Voltanic Ltd_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/We Design it Ltd_categorized_0,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Weird Inc Ltd _categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/White Canvas Bridal Ltd Transactions_1,0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/White Canvas Bridal Ltd.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/White_canvas.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/White_canvas.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Wild Bru and Lavers Ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/Wild Bru and Lavers Ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/Wye Valley Catering_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/XTC Clothing_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/YLK GROUP LTD.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/YLK GROUP LTD.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/YLK GROUP LTD_categorized.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/ps &amp; sons ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/ps &amp; sons ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/JsonExport/rothwell local store ltd.json" beforeDir="false" afterPath="$PROJECT_DIR$/data/JsonExport/rothwell local store ltd.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/mca_training_dataset.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/mca_training_dataset.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/mca_training_dataset.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/data/mca_training_dataset.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/ml_training_dataset.csv" beforeDir="false" afterPath="$PROJECT_DIR$/data/ml_training_dataset.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/training_dataset.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/data/training_dataset.xlsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -59,7 +247,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-ca5e2b39c7df-6e1f45a539f7-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.29346.308" />
+        <option value="bundled-python-sdk-4762d8aabb82-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.30387.173" />
       </set>
     </attachedChunks>
   </component>
