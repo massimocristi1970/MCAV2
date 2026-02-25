@@ -112,7 +112,7 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
             return "Loans"
 
     # STEP 3.5: YouLend special handling (before general loan patterns)
-    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited|\byl\b)", combined_text):
+    if is_credit and re.search(r"(you\s?lend|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited|\byl\b)", combined_text, flags=re.IGNORECASE):
         # Check if it contains funding indicators (including within reference numbers)
         if re.search(r"(fnd|fund|funding)", combined_text):
             return "Loans"
@@ -143,9 +143,10 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         r'\bsecure[\s\-]?trust[\s\-]?bank\b|\bsme[\s\-]?capital\b|\bswishfund\b|'
         r'\bgrowth[\s\-]?guarantee[\s\-]?scheme\b|\bbritish[\s\-]?business[\s\-]?bank\b|'
         r'\bcommunity[\s\-]?development[\s\-]?finance\b|\bcdfi\b|'
-        r'\beveryday[\s\-]?people[\s\-]?finance\b|'
+        r'\beveryday[\s\-]?people[\s\-]?financ(?:e)?\b|'
         r'\bloans?\b|\bdisbursement\b|\byou\s?lend\b|\byl\b',
-        combined_text
+        combined_text,
+        flags=re.IGNORECASE
     ):
         return "Loans"
 
@@ -171,10 +172,11 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         r"\bsecure[\s\-]?trust[\s\-]?bank\b|\bsme[\s\-]?capital\b|\bswishfund\b|"
         r"\bgrowth[\s\-]?guarantee[\s\-]?scheme\b|\bbritish[\s\-]?business[\s\-]?bank\b|"
         r"\bcommunity[\s\-]?development[\s\-]?finance\b|\bcdfi\b|"
-        r"\beveryday[\s\-]?people[\s\-]?finance\b|"
+        r'\beveryday[\s\-]?people[\s\-]?financ(?:e)?\b|'
         r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b|"
         r"\byou\s?lend\b|\byl\b",
-        combined_text
+        combined_text,
+        flags=re.IGNORECASE
     ):
         return "Debt Repayments"
         
