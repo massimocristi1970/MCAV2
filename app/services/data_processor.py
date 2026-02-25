@@ -54,11 +54,70 @@ class TransactionCategorizer:
                 r'merchant[\s\-]?money', r'capital[\s\-]?on[\s\-]?tap', r'kriya', r'uncapped',
                 r'lendingcrowd', r'folk2folk', r'funding[\s\-]?tree', r'start[\s\-]?up[\s\-]?loans',
                 r'loan', r'advance', r'financing', r'disbursement',
-                r'you\s?lend', r'\byl\b'
+                r'you\s?lend', r'\byl\b', r'everyday[\s\-]?people[\s\-]?finance',
+
+                # High street / banks
+                r'barclays', r'natwest', r'hsbc', r'lloyds', r'santander',
+                r'metro[\s\-]?bank', r'royal[\s\-]?bank[\s\-]?of[\s\-]?scotland', r'\brbs\b',
+
+                # Challenger banks
+                r'starling', r'zempler', r'oak[\s\-]?north', r'allica',
+                r'monzo', r'revolut',
+
+                # Alternative lenders
+                r'funding[\s\-]?agent', r'nationwide[\s\-]?finance', r'cubefunder',
+                r'spotcap', r'time[\s\-]?finance', r'together',
+                r'corporate[\s\-]?asset[\s\-]?solutions', r'creative[\s\-]?capital',
+                r'credit4', r'crowd2fund', r'fgi[\s\-]?finance',
+                r'hampshire[\s\-]?trust[\s\-]?bank', r'hodge[\s\-]?bank',
+                r'igf[\s\-]?invoice[\s\-]?finance', r'investec',
+                r'lendinvest', r'maslow[\s\-]?capital', r'mycashline',
+                r'octane[\s\-]?capital', r'secure[\s\-]?trust[\s\-]?bank',
+                r'sme[\s\-]?capital', r'swishfund',
+
+                # Government / schemes
+                r'growth[\s\-]?guarantee[\s\-]?scheme',
+                r'british[\s\-]?business[\s\-]?bank',
+                r'community[\s\-]?development[\s\-]?finance',
+                r'cdfi'
             ],
             'debt_repayment_patterns': [
                 r'repayment', r'loan\s+payment', r'debt\s+service', r'installment',
-                r'instalment', r'payback', r'repay', r'amortization'
+                r'instalment', r'payback', r'repay', r'amortization',
+
+                # Existing lenders
+                r'iwoca', r'capify', r'fundbox', r'got[\s\-]?capital', r'funding[\s\-]?circle',
+                r'fleximize', r'market[\s\-]?finance', r'liberis', r'esme[\s\-]?loans', r'thincats',
+                r'white[\s\-]?oak', r'growth[\s\-]?street', r'nucleus[\s\-]?commercial[\s\-]?finance',
+                r'ultimate[\s\-]?finance', r'just[\s\-]?cash[\s\-]?flow', r'boost[\s\-]?capital',
+                r'merchant[\s\-]?money', r'capital[\s\-]?on[\s\-]?tap', r'kriya', r'uncapped',
+                r'lendingcrowd', r'folk2folk', r'funding[\s\-]?tree', r'start[\s\-]?up[\s\-]?loans',
+                r'you\s?lend', r'\byl\b', r'everyday[\s\-]?people[\s\-]?finance',
+
+                # High street / banks
+                r'barclays', r'natwest', r'hsbc', r'lloyds', r'santander',
+                r'metro[\s\-]?bank', r'royal[\s\-]?bank[\s\-]?of[\s\-]?scotland', r'\brbs\b',
+
+                # Challenger banks
+                r'starling', r'zempler', r'oak[\s\-]?north', r'allica',
+                r'monzo', r'revolut',
+
+                # Alternative lenders
+                r'funding[\s\-]?agent', r'nationwide[\s\-]?finance', r'cubefunder',
+                r'spotcap', r'time[\s\-]?finance', r'together',
+                r'corporate[\s\-]?asset[\s\-]?solutions', r'creative[\s\-]?capital',
+                r'credit4', r'crowd2fund', r'fgi[\s\-]?finance',
+                r'hampshire[\s\-]?trust[\s\-]?bank', r'hodge[\s\-]?bank',
+                r'igf[\s\-]?invoice[\s\-]?finance', r'investec',
+                r'lendinvest', r'maslow[\s\-]?capital', r'mycashline',
+                r'octane[\s\-]?capital', r'secure[\s\-]?trust[\s\-]?bank',
+                r'sme[\s\-]?capital', r'swishfund',
+
+                # Government / schemes
+                r'growth[\s\-]?guarantee[\s\-]?scheme',
+                r'british[\s\-]?business[\s\-]?bank',
+                r'community[\s\-]?development[\s\-]?finance',
+                r'cdfi'
             ],
             'expense_patterns': {
                 'operational': [
