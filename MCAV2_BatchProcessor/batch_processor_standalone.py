@@ -398,18 +398,18 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     # STEP 3: Custom keyword overrides - Payment processors and income sources
     # Only apply if this is a credit (money coming in) and NOT a reversal
     if is_credit and re.search(
-            r"(?i)\b("
-            r"stripe|sumup|zettle|square|take\s*payments|shopify|card\s+settlement|daily\s+takings|payout"
-            r"|paypal|go\s*cardless|klarna|worldpay|izettle|ubereats|just\s*eat|deliveroo|uber|bolt"
-            r"|fresha|treatwell|taskrabbit|terminal|pos\s+deposit|revolut"
-            r"|capital\s+one|evo\s*payments?|tink|teya(\s+solutions)?|talech"
-            r"|barclaycard|elavon|adyen|payzone|verifone|ingenico"
-            r"|nmi|trust\s+payments?|global\s+payments?|checkout\.com|epdq|santander|handepay"
-            r"|dojo|valitor|paypoint|mypos|moneris|paymentsense"
-            r"|merchant\s+services|payment\s+sense"
-            r"|bcard\d*\s*bcard|bcard\d+|bcard\s+\d+"
-            r")\b",
-            combined_text
+        r"(?i)\b("
+        r"stripe|sumup|zettle|square|take\s*payments|shopify|card\s+settlement|daily\s+takings|payout"
+        r"|paypal|go\s*cardless|klarna|worldpay|izettle|ubereats|just\s*eat|deliveroo|uber|bolt"
+        r"|fresha|treatwell|taskrabbit|terminal|pos\s+deposit|revolut"
+        r"|capital\s+one|evo\s*payments?|tink|teya(\s+solutions)?|talech"
+        r"|barclaycard|elavon|adyen|payzone|verifone|ingenico"
+        r"|nmi|trust\s+payments?|global\s+payments?|checkout\.com|epdq|santander|handepay"
+        r"|dojo|valitor|paypoint|mypos|moneris|paymentsense"
+        r"|merchant\s+services|payment\s+sense"
+        r"|bcard\d*\s*bcard|bcard\d+|bcard\s+\d+"
+        r")\b",
+        combined_text
     ):
         return "Income"
 
@@ -428,34 +428,60 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
 
     # STEP 4: Loan providers (credits = loans received)
     if is_credit and re.search(
-            r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|"
-            r"\bfleximize\b|\bmarketfinance\b|\bliberis\b|\besme[\s\-]?loans\b|\bthincats\b|"
-            r"\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
-            r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|"
-            r"\bmerchant[\s\-]?money\b|\bcapital[\s\-]?on[\s\-]?tap\b|\bkriya\b|\buncapped\b|"
-            r"\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|\bstart[\s\-]?up[\s\-]?loans\b|"
-            r"\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
-            r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
-            r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|"
-            r"\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|\bloans?\b|"
-            r"\bdisbursement\b|\byou\s?lend\b|\byl\b",
-            combined_text
+            r'\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|'
+        r'\bfleximize\b|\bmarketfinance\b|\bliberis\b|\besme[\s\-]?loans\b|\bthincats\b|'
+        r'\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|'
+        r'\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|'
+        r'\bmerchant[\s\-]?money\b|\bcapital[\s\-]?on[\s\-]?tap\b|\bkriya\b|\buncapped\b|'
+        r'\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|\bstart[\s\-]?up[\s\-]?loans\b|'
+        r'\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|'
+        r'\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet\'s[\s\-]?do[\s\-]?business[\s\-]?finance\b|'
+        r'\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|'
+        r'\bbizcap[\s\-]?uk\b|\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|'
+        r'\bbarclays\b|\bnatwest\b|\bhsbc\b|\blloyds\b|\bsantander\b|'
+        r'\bmetro[\s\-]?bank\b|\broyal[\s\-]?bank[\s\-]?of[\s\-]?scotland\b|\brbs\b|'
+        r'\bstarling\b|\bzempler\b|\boak[\s\-]?north\b|\ballica\b|\bmonzo\b|\brevolut\b|'
+        r'\bfunding[\s\-]?agent\b|\bnationwide[\s\-]?finance\b|\bspotcap\b|'
+        r'\btime[\s\-]?finance\b|\btogether\b|\bcorporate[\s\-]?asset[\s\-]?solutions\b|'
+        r'\bcreative[\s\-]?capital\b|\bcredit4\b|\bcrowd2fund\b|\bfgi[\s\-]?finance\b|'
+        r'\bhampshire[\s\-]?trust[\s\-]?bank\b|\bhodge[\s\-]?bank\b|'
+        r'\bigf[\s\-]?invoice[\s\-]?finance\b|\binvestec\b|\blendinvest\b|'
+        r'\bmaslow[\s\-]?capital\b|\bmycashline\b|\boctane[\s\-]?capital\b|'
+        r'\bsecure[\s\-]?trust[\s\-]?bank\b|\bsme[\s\-]?capital\b|\bswishfund\b|'
+        r'\bgrowth[\s\-]?guarantee[\s\-]?scheme\b|\bbritish[\s\-]?business[\s\-]?bank\b|'
+        r'\bcommunity[\s\-]?development[\s\-]?finance\b|\bcdfi\b|'
+        r'\beveryday[\s\-]?people[\s\-]?finance\b|'
+        r'\bloans?\b|\bdisbursement\b|\byou\s?lend\b|\byl\b',
+        combined_text
     ):
         return "Loans"
 
     # STEP 5: Loan repayments (debits to loan providers)
     if is_debit and re.search(
             r"\biwoca\b|\bcapify\b|\bfundbox\b|\bgot[\s\-]?capital\b|\bfunding[\s\-]?circle\b|\bfleximize\b|\bmarketfinance\b|\bliberis\b|"
-            r"\besme[\s\-]?loans\b|\bthincats\b|\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
-            r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|\bmerchant[\s\-]?money\b|"
-            r"\bcapital[\s\-]?on[\s\-]?tap\b|\bkriya\b|\buncapped\b|\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|"
-            r"\bstart[\s\-]?up[\s\-]?loans\b|\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
-            r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
-            r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|\bbizcap[\s\-]?uk\b|"
-            r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|"
-            r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b|"
-            r"\byou\s?lend\b|\byl\b",
-            combined_text
+        r"\besme[\s\-]?loans\b|\bthincats\b|\bwhite[\s\-]?oak\b|\bgrowth[\s\-]?street\b|\bnucleus[\s\-]?commercial[\s\-]?finance\b|"
+        r"\bultimate[\s\-]?finance\b|\bjust[\s\-]?cash[\s\-]?flow\b|\bboost[\s\-]?capital\b|\bmerchant[\s\-]?money\b|"
+        r"\bcapital[\s\-]?on[\s\-]?tap\b|\bkriya\b|\buncapped\b|\blendingcrowd\b|\bfolk2folk\b|\bfunding[\s\-]?tree\b|"
+        r"\bstart[\s\-]?up[\s\-]?loans\b|\bbcrs[\s\-]?business[\s\-]?loans\b|\bbusiness[\s\-]?enterprise[\s\-]?fund\b|"
+        r"\bswig[\s\-]?finance\b|\benterprise[\s\-]?answers\b|\blet's[\s\-]?do[\s\-]?business[\s\-]?finance\b|"
+        r"\bfinance[\s\-]?for[\s\-]?enterprise\b|\bdsl[\s\-]?business[\s\-]?finance\b|\bbizcap[\s\-]?uk\b|"
+        r"\bsigma[\s\-]?lending\b|\bbizlend[\s\-]?ltd\b|\bcubefunder\b|"
+        r"\bbarclays\b|\bnatwest\b|\bhsbc\b|\blloyds\b|\bsantander\b|"
+        r"\bmetro[\s\-]?bank\b|\broyal[\s\-]?bank[\s\-]?of[\s\-]?scotland\b|\brbs\b|"
+        r"\bstarling\b|\bzempler\b|\boak[\s\-]?north\b|\ballica\b|\bmonzo\b|\brevolut\b|"
+        r"\bfunding[\s\-]?agent\b|\bnationwide[\s\-]?finance\b|\bspotcap\b|"
+        r"\btime[\s\-]?finance\b|\btogether\b|\bcorporate[\s\-]?asset[\s\-]?solutions\b|"
+        r"\bcreative[\s\-]?capital\b|\bcredit4\b|\bcrowd2fund\b|\bfgi[\s\-]?finance\b|"
+        r"\bhampshire[\s\-]?trust[\s\-]?bank\b|\bhodge[\s\-]?bank\b|"
+        r"\bigf[\s\-]?invoice[\s\-]?finance\b|\binvestec\b|\blendinvest\b|"
+        r"\bmaslow[\s\-]?capital\b|\bmycashline\b|\boctane[\s\-]?capital\b|"
+        r"\bsecure[\s\-]?trust[\s\-]?bank\b|\bsme[\s\-]?capital\b|\bswishfund\b|"
+        r"\bgrowth[\s\-]?guarantee[\s\-]?scheme\b|\bbritish[\s\-]?business[\s\-]?bank\b|"
+        r"\bcommunity[\s\-]?development[\s\-]?finance\b|\bcdfi\b|"
+        r"\beveryday[\s\-]?people[\s\-]?finance\b|"
+        r"\bloan[\s\-]?repayment\b|\bdebt[\s\-]?repayment\b|\binstal?ments?\b|\bpay[\s\-]+back\b|\brepay(?:ing|ment|ed)?\b|"
+        r"\byou\s?lend\b|\byl\b",
+        combined_text
     ):
         return "Debt Repayments"
 
