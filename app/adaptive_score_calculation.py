@@ -14,7 +14,7 @@ def safe_get_metric(metrics, key, default=0):
     return metrics.get(key, default)
 
 def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thresholds, company_age_months, 
-                                    personal_default_12m=False, business_ccj=False, director_ccj=False, 
+                                    personal_default_12m=False, business_ccj=False,
                                     website_or_social_outdated=False, uses_generic_email=False, 
                                     no_online_presence=False, penalties=None):
     """
@@ -59,7 +59,7 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"DSCR: {dscr:.2f} vs {threshold:.2f} → {score:.1f} pts")
     
     # 2. DIRECTORS SCORE (18 points) - Continuous scoring
-    dir_threshold = thresholds.get("Directors Score", 75)
+    dir_threshold = thresholds.get("Directors Score", 60)
     if directors_score >= dir_threshold:
         score = continuous_weights['Directors Score']
     elif directors_score >= dir_threshold * 0.9:
@@ -255,10 +255,6 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
             penalty = penalties.get("business_ccj", 0)
             penalty_total += penalty
             scoring_details.append(f"Business CCJ Penalty: -{penalty} pts")
-        if director_ccj:
-            penalty = penalties.get("director_ccj", 0)
-            penalty_total += penalty
-            scoring_details.append(f"Director CCJ Penalty: -{penalty} pts")
         if website_or_social_outdated:
             penalty = penalties.get("website_or_social_outdated", 0)
             penalty_total += penalty
@@ -297,7 +293,7 @@ def calculate_ml_aligned_score_percentage(adaptive_score, max_possible_score=105
 
 def get_improved_weighted_score(metrics, directors_score, sector_risk, industry_thresholds, weights,
                                company_age_months, personal_default_12m=False, business_ccj=False, 
-                               director_ccj=False, website_or_social_outdated=False, 
+                               website_or_social_outdated=False,
                                uses_generic_email=False, no_online_presence=False, penalties=None):
     """
     Drop-in replacement for your existing calculate_weighted_score function
@@ -306,7 +302,7 @@ def get_improved_weighted_score(metrics, directors_score, sector_risk, industry_
     
     adaptive_score, details = calculate_adaptive_weighted_score(
         metrics, directors_score, sector_risk, industry_thresholds, company_age_months,
-        personal_default_12m, business_ccj, director_ccj, website_or_social_outdated,
+        personal_default_12m, business_ccj, website_or_social_outdated,
         uses_generic_email, no_online_presence, penalties
     )
     
@@ -317,7 +313,7 @@ def get_improved_weighted_score(metrics, directors_score, sector_risk, industry_
 
 def get_detailed_scoring_breakdown(metrics, directors_score, sector_risk, industry_thresholds, 
                                   company_age_months, personal_default_12m=False, business_ccj=False, 
-                                  director_ccj=False, website_or_social_outdated=False, 
+                                   website_or_social_outdated=False,
                                   uses_generic_email=False, no_online_presence=False, penalties=None):
     """
     Get both the score and detailed breakdown for display purposes
@@ -325,7 +321,7 @@ def get_detailed_scoring_breakdown(metrics, directors_score, sector_risk, indust
     
     adaptive_score, details = calculate_adaptive_weighted_score(
         metrics, directors_score, sector_risk, industry_thresholds, company_age_months,
-        personal_default_12m, business_ccj, director_ccj, website_or_social_outdated,
+        personal_default_12m, business_ccj, website_or_social_outdated,
         uses_generic_email, no_online_presence, penalties
     )
     
@@ -374,7 +370,6 @@ def test_module():
     test_penalties = {
         "personal_default_12m": 3,
         "business_ccj": 5,
-        "director_ccj": 3,
         'website_or_social_outdated': 3,
         'uses_generic_email': 1,
         'no_online_presence': 2

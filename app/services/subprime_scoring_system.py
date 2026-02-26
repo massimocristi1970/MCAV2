@@ -61,7 +61,6 @@ class SubprimeScoring:
             }
             self.risk_factor_penalties = {
                 "business_ccj": 6,
-                "director_ccj": 4,
                 'poor_or_no_online_presence': 2,
                 'uses_generic_email': 1
             }
@@ -361,11 +360,6 @@ class SubprimeScoring:
             total_penalty += penalty
             applied_penalties.append(f"Business CCJ: -{penalty}")
 
-        if params.get('director_ccj', False):
-            penalty = self.risk_factor_penalties['director_ccj']
-            total_penalty += penalty
-            applied_penalties.append(f"Director CCJ:  -{penalty}")
-
         if params.get('uses_generic_email', False):
             penalty = self.risk_factor_penalties['uses_generic_email']
             total_penalty += penalty
@@ -396,8 +390,7 @@ class SubprimeScoring:
         volatility = metrics.get('Cash Flow Volatility', 1.0)
 
         has_major_risk_factors = (
-                params.get('business_ccj', False) or
-                params.get('director_ccj', False)
+                params.get('business_ccj', False)
         )
 
         # Tier 1: Premium - Score 65+, good fundamentals
@@ -493,8 +486,7 @@ class SubprimeScoring:
         """Generate lending recommendation based on risk tier and risk factors."""
 
         has_major_risk_factors = (
-                params.get('business_ccj', False) or
-                params.get('director_ccj', False)
+                params.get('business_ccj', False)
         )
 
         if risk_tier == "Tier 1":
@@ -1125,7 +1117,6 @@ def test_subprime_scoring_with_risk_factors():
                 'company_age_months': 14,
                 'industry': 'Retail',
                 'business_ccj': False,
-                'director_ccj': False,
                 'uses_generic_email': False,
                 'poor_or_no_online_presence': False
             }
@@ -1137,7 +1128,6 @@ def test_subprime_scoring_with_risk_factors():
                 'company_age_months': 14,
                 'industry': 'Retail',
                 'business_ccj': False,
-                'director_ccj': False,
                 'uses_generic_email': True,
                 'poor_or_no_online_presence': True
             }
@@ -1149,7 +1139,6 @@ def test_subprime_scoring_with_risk_factors():
                 'company_age_months': 14,
                 'industry': 'Retail',
                 'business_ccj': True,
-                'director_ccj': False,
                 'uses_generic_email': False,
                 'poor_or_no_online_presence': False
             }
@@ -1161,7 +1150,6 @@ def test_subprime_scoring_with_risk_factors():
                 'company_age_months': 14,
                 'industry': 'Retail',
                 'business_ccj': True,
-                'director_ccj': True,
                 'uses_generic_email': True,
                 'poor_or_no_online_presence': True
             }

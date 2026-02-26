@@ -1,10 +1,14 @@
 import sys
 from pathlib import Path
 
-# Ensure repo root is on Python path (so imports from repo root work when running app/main.py)
-ROOT_DIR = Path(__file__).resolve().parents[1]
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
+REPO_ROOT = Path(__file__).resolve().parents[1]   # app/main.py -> repo_root
+SRC_PATH = REPO_ROOT / "src"
+
+# root-level modules (e.g. mca_scorecard_rules.py)
+sys.path.insert(0, str(REPO_ROOT))
+
+# src package (e.g. src/tu_scorecard)
+sys.path.insert(0, str(SRC_PATH))
 
 import streamlit as st
 import pandas as pd
@@ -19,9 +23,16 @@ from plotly.subplots import make_subplots
 import os
 import base64
 from io import BytesIO
+from dataclasses import asdict
 
 from mca_scorecard_rules import decide_application, Thresholds
 from build_training_dataset import _flatten_transactions, build_mca_features
+
+# --- TU XML Scorecard (Director) ---
+from src.tu_scorecard.feature_extractor import extract_features_from_xml_bytes
+from src.tu_scorecard.scorecard_rules import score_tu_features
+
+
 
 # Import modular components from pages package
 # These modules contain extracted and refactored functions from this file
@@ -443,181 +454,181 @@ INDUSTRY_THRESHOLDS = dict(sorted({
     'Medical Practices (GPs, Clinics, Dentists)': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 1000, 'Operating Margin': 0.10,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 16000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 900,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 900,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'Pharmacies (Independent or Small Chains)': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 500, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 15000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 750,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'Business Consultants': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 1000, 'Operating Margin': 0.09,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 14000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 750,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'IT Services and Support Companies': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 500, 'Operating Margin': 0.12,
         'Revenue Growth Rate': 0.07, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'Courier Services (Independent and Regional Operators)': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 500, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 12000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 600,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'Grocery Stores and Mini-Markets': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 500, 'Operating Margin': 0.07,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 10000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 600,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Education': {
         'Debt Service Coverage Ratio': 1.45, 'Net Income': 1500, 'Operating Margin': 0.10,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.09, 'Gross Burn Rate': 11500,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Engineering': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 7000, 'Operating Margin': 0.07,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Estate Agent': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 4500, 'Operating Margin': 0.09,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'Food Service': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 2500, 'Operating Margin': 0.06,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 11000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Import / Export': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 3000, 'Operating Margin': 0.07,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.15, 'Gross Burn Rate': 11000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Manufacturing': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 1500, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 13500,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 750,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Marketing / Advertising / Design': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 5000, 'Operating Margin': 0.11,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 13500,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 750,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Off-Licence Business': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 4500, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 14000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Telecommunications': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 5000, 'Operating Margin': 0.11,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Tradesman': {
         'Debt Service Coverage Ratio': 1.40, 'Net Income': 4000, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.15, 'Gross Burn Rate': 11500,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
     'Wholesaler / Distributor': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 3500, 'Operating Margin': 0.10,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Other': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 3000, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 11000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Personal Services': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 2000, 'Operating Margin': 0.09,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 12000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Restaurants and Cafes': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 0, 'Operating Margin': 0.05,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 11000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
     'Bars and Pubs': {
         'Debt Service Coverage Ratio': 1.25, 'Net Income': 0, 'Operating Margin': 0.04,
         'Revenue Growth Rate': 0.03, 'Cash Flow Volatility': 0.18, 'Gross Burn Rate': 10000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
     'Beauty Salons and Spas': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 500, 'Operating Margin': 0.06,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 9500,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 550,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 550,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
     'E-Commerce Retailers': {
         'Debt Service Coverage Ratio': 1.35, 'Net Income': 1000, 'Operating Margin': 0.07,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 10000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Event Planning and Management Firms': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 500, 'Operating Margin': 0.05,
         'Revenue Growth Rate': 0.03, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 10000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Auto Repair Shops': {
         'Debt Service Coverage Ratio': 1.40, 'Net Income': 1000, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 9500,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 650,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Fitness Centres and Gyms': {
         'Debt Service Coverage Ratio': 1.35, 'Net Income': 500, 'Operating Margin': 0.06,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.18, 'Gross Burn Rate': 10000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Construction Firms': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 1000, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 12500,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 700,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
     'Printing / Publishing': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 2500, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 650,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Recruitment': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 2000, 'Operating Margin': 0.09,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Retail': {
         'Debt Service Coverage Ratio': 1.40, 'Net Income': 2500, 'Operating Margin': 0.09,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11500,
-        'Directors Score': 75, 'Sector Risk': 1, 'Average Month-End Balance': 620,
+        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 620,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
 }.items()))
@@ -632,8 +643,7 @@ WEIGHTS = {
 }
 
 PENALTIES = {
-    "business_ccj": 5, "director_ccj": 3,
-    'poor_or_no_online_presence': 3, 'uses_generic_email': 1
+    "business_ccj": 5, 'poor_or_no_online_presence': 3, 'uses_generic_email': 1
 }
 
 def calculate_weighted_scores(metrics, params, industry_thresholds):
@@ -956,6 +966,7 @@ def calculate_all_scores_enhanced(metrics, params):
         print(f"  Calling calculate_subprime_score with:")
         print(f"    Metrics keys: {list(metrics.keys())}")
         print(f"    Params keys: {list(params.keys())}")
+        print(f"DEBUG Directors Score going into Subprime: {params.get('directors_score')}")
         
         subprime_result = subprime_scorer.calculate_subprime_score(metrics, params)
         print(f"  Subprime calculation successful!")
@@ -1138,6 +1149,18 @@ def calculate_all_scores_enhanced(metrics, params):
             import traceback
             print(f"  {traceback.format_exc()}")
             ensemble_result = None
+
+    # -----------------------------
+    # 4B) Apply TU × MCA Decision Logic
+    # -----------------------------
+    tu_decision = params.get("tu_director_decision")
+    mca_decision = ensemble_result.get("decision") if isinstance(ensemble_result, dict) else params.get(
+        "mca_rule_decision", "REFER")
+
+    final_decision = combine_mca_and_tu_decisions(mca_decision, tu_decision)
+
+    params["mca_main_decision"] = mca_decision
+    params["final_decision"] = final_decision
     
     print(f"="*50)
     
@@ -1158,7 +1181,8 @@ def calculate_all_scores_enhanced(metrics, params):
         'subprime_breakdown': subprime_result['breakdown'],
         'ml_validation': ml_validation,
         # Ensemble scoring results
-        'ensemble': ensemble_result
+        'ensemble': ensemble_result,
+        "final_decision": final_decision,
     }
 
 def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
@@ -2001,12 +2025,17 @@ class DashboardExporter:
                 'requested_loan': params.get('requested_loan'),
                 'directors_score': params.get('directors_score'),
                 'company_age_months': params.get('company_age_months'),
-                'risk_factors':  {
-                    'business_ccj': params. get('business_ccj', False),
-                    'director_ccj': params.get('director_ccj', False),
-                    'poor_or_no_online_presence': params.get('poor_or_no_online_presence', False),
-                    'uses_generic_email': params.get('uses_generic_email', False)
-                }
+
+                # TU director outputs
+                'tu_director_score': params.get('tu_director_score'),
+                'tu_director_decision': params.get('tu_director_decision'),
+                'tu_director_flags': params.get('tu_director_flags', []),
+                'tu_director_reasons': params.get('tu_director_reasons', []),
+
+                # Optional: overall decision
+                'overall_decision': params.get('overall_decision'),
+                'mca_main_decision': params.get('mca_main_decision'),
+
             },
             'financial_metrics': metrics,
             'scoring_results': {
@@ -2065,7 +2094,15 @@ class DashboardExporter:
                 </div>
             </div>
             """
-        
+
+        # ---- Safe access (prevents KeyError if risk_factors missing) ----
+        bp = export_data.get("business_parameters", {}) or {}
+        rf = bp.get("risk_factors", {}) or {}
+
+        business_ccj = bool(rf.get("business_ccj", False))
+        poor_online = bool(rf.get("poor_or_no_online_presence", False))
+        generic_email = bool(rf.get("uses_generic_email", False))
+
         html_template = f"""
         <!DOCTYPE html>
         <html>
@@ -2222,10 +2259,9 @@ class DashboardExporter:
                 <div class="table-responsive">
                     <table>
                         <tr><th>Risk Factor</th><th>Status</th></tr>
-                        <tr><td>Business CCJs</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['business_ccj'] else '✅ No'}</td></tr>
-                        <tr><td>Director CCJs</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['director_ccj'] else '✅ No'}</td></tr>
-                        <tr><td>Poor/No Online Presence</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['poor_or_no_online_presence'] else '✅ No'}</td></tr>
-                        <tr><td>Generic Email</td><td>{'❌ Yes' if export_data['business_parameters']['risk_factors']['uses_generic_email'] else '✅ No'}</td></tr>
+                        <tr><td>Business CCJs</td><td>{'❌ Yes' if business_ccj else '✅ No'}</td></tr>
+                        <tr><td>Poor/No Online Presence</td><td>{'❌ Yes' if poor_online else '✅ No'}</td></tr>
+                        <tr><td>Generic Email</td><td>{'❌ Yes' if generic_email else '✅ No'}</td></tr>
                     </table>
                 </div>
             </div>
@@ -2329,6 +2365,49 @@ class DashboardExporter:
         **Export includes**: All scoring results, financial metrics, revenue insights, risk factors, loans analysis, and business parameters.
         """)
 
+def _normalise_mca_decision_for_overlay(d: str | None) -> str:
+    d = (d or "REFER").upper()
+    if d in {"CONDITIONAL_APPROVE"}:
+        return "APPROVE"
+    if d in {"SENIOR_REVIEW"}:
+        return "REFER"
+    if d not in {"APPROVE", "REFER", "DECLINE"}:
+        return "REFER"
+    return d
+
+# -----------------------------
+# 4A) Decision combiner (TU × MCA)
+# -----------------------------
+def combine_mca_and_tu_decisions(mca_decision: str | None, tu_decision: str | None) -> str:
+    """
+    Overlay TU on top of MCA ensemble decision.
+
+    Policy:
+      - If MCA is DECLINE -> final DECLINE
+      - If MCA is REFER/SENIOR_REVIEW -> final REFER
+      - If MCA is APPROVE/CONDITIONAL_APPROVE:
+            TU DECLINE -> final REFER
+            TU APPROVE -> keep MCA decision (APPROVE or CONDITIONAL_APPROVE)
+            TU missing/REFER -> REFER
+    """
+    raw_mca = (mca_decision or "REFER").upper()
+    mca_norm = _normalise_mca_decision_for_overlay(raw_mca)
+    tu = (tu_decision or "").upper()
+
+    if mca_norm == "DECLINE":
+        return "DECLINE"
+    if mca_norm == "REFER":
+        return "REFER"
+
+    # MCA is APPROVE (including CONDITIONAL_APPROVE normalised)
+    if tu == "DECLINE":
+        return "REFER"
+    if tu == "APPROVE":
+        # keep conditional if that’s what ensemble said
+        return "CONDITIONAL_APPROVE" if raw_mca == "CONDITIONAL_APPROVE" else "APPROVE"
+
+    return "REFER"
+
 def main():
     """Main application"""
     try:
@@ -2341,15 +2420,63 @@ def main():
         company_name = st.sidebar.text_input("Company Name", "Sample Business Ltd")
         industry = st.sidebar.selectbox("Industry", list(INDUSTRY_THRESHOLDS.keys()))
         requested_loan = st.sidebar.number_input("Requested Loan (£)", min_value=0.0, value=5000.0, step=1000.0)
-        directors_score = st.sidebar.slider("Director Credit Score", 0, 100, 75)
         company_age_months = st.sidebar.number_input("Company Age (Months)", min_value=0, value=12, step=1)
+
+        from pathlib import Path
+
+        # -----------------------------
+        # Director TU XML Upload
+        # -----------------------------
+        st.sidebar.subheader("Director TU Credit File (TransUnion XML)")
+        tu_xml_file = st.sidebar.file_uploader("Upload TU XML", type=["xml"], key="tu_xml_upload")
+
+        tu_result = None
+        directors_score = 0
+
+        if tu_xml_file is not None:
+            try:
+                xml_bytes = tu_xml_file.getvalue()
+                app_id = Path(tu_xml_file.name).stem
+
+                # EXACT same pattern as TU project
+                feats_obj = extract_features_from_xml_bytes(
+                    xml_bytes=xml_bytes,
+                    app_id=app_id
+                )
+
+                feats = feats_obj.features
+                sr = score_tu_features(feats)
+
+                directors_score = sr.score
+
+                tu_result = {
+                    "score": sr.score,
+                    "decision": sr.decision,
+                    "reasons": sr.reasons,
+                    "flags": sr.recovery_flags,
+                }
+
+                st.sidebar.success(f"Director TU Score: {sr.score}/100")
+                st.sidebar.write(f"Director TU Decision: **{sr.decision}**")
+
+                if sr.recovery_flags:
+                    st.sidebar.caption("Recovery Flags")
+                    st.sidebar.write(sr.recovery_flags)
+
+                if sr.reasons:
+                    st.sidebar.caption("Reasons")
+                    st.sidebar.write(sr.reasons)
+
+            except Exception as e:
+                st.sidebar.error(f"TU XML scoring failed: {e}")
+                directors_score = 0
+                tu_result = None
 
         st.sidebar.subheader("Risk Factors")
         business_ccj = st.sidebar.checkbox("Business CCJs")
-        director_ccj = st.sidebar.checkbox("Director CCJs")
         poor_or_no_online_presence = st.sidebar.checkbox("Poor/No Online Presence")
         uses_generic_email = st.sidebar.checkbox("Generic Email")
-        
+
         # Time period filter
         st.sidebar.subheader("Analysis Period")
         analysis_period = st.sidebar.selectbox(
@@ -2359,17 +2486,26 @@ def main():
         )
 
         params = {
-            'company_name': company_name,
-            'industry': industry,
-            'requested_loan': requested_loan,
-            'directors_score': directors_score,
-            'company_age_months': company_age_months,
-            'business_ccj': business_ccj,
-            'director_ccj': director_ccj,
-            'poor_or_no_online_presence': poor_or_no_online_presence,
-            'uses_generic_email': uses_generic_email
+            "company_name": company_name,
+            "industry": industry,
+            "requested_loan": requested_loan,
+
+            # IMPORTANT: keep the same param name the rest of the app already uses
+            "directors_score": directors_score,
+
+            # Persist TU outputs for display/export
+            "tu_director_score": directors_score,
+            "tu_director_decision": (tu_result or {}).get("decision"),
+            "tu_director_flags": (tu_result or {}).get("flags") or [],
+            "tu_director_reasons": (tu_result or {}).get("reasons") or [],
+
+            "company_age_months": company_age_months,
+            "business_ccj": business_ccj,
+            "poor_or_no_online_presence": poor_or_no_online_presence,
+            "uses_generic_email": uses_generic_email,
         }
-        
+
+
         # File upload
         uploaded_file = st.file_uploader("Upload Transaction Data (JSON)", type=['json'])
         
@@ -2377,7 +2513,15 @@ def main():
             try:
                 # Read and process file
                 uploaded_file.seek(0)
-                string_data = uploaded_file.getvalue().decode("utf-8")
+                raw_bytes = uploaded_file.getvalue()
+
+                try:
+                    string_data = raw_bytes.decode("utf-8")
+                except UnicodeDecodeError:
+                    try:
+                        string_data = raw_bytes.decode("utf-16")
+                    except UnicodeDecodeError:
+                        string_data = raw_bytes.decode("latin-1")
                 
                 if not string_data.strip():
                     st.error("❌ Uploaded file is empty")
@@ -2473,9 +2617,11 @@ def main():
                     s = (recommendation_text or "").upper()
                     if "APPROVE" in s:
                         return "APPROVE"
-                    # Treat conditional / senior review as REFER
+                    # Treat conditional / senior review as REFER first (covers "CONDITIONAL APPROVE")
                     if "CONDITIONAL" in s or "SENIOR REVIEW" in s or "REVIEW" in s:
                         return "REFER"
+                    if "APPROVE" in s:
+                        return "APPROVE"
                     return "DECLINE"
 
                 base_decision = _base_decision_from_subprime(scores.get("subprime_recommendation", ""))
@@ -2492,6 +2638,26 @@ def main():
                     final_reasons.append("MCA Rule override: REFER (manual review)")
                 elif mca_decision == "APPROVE":
                     final_reasons.append("MCA Rule: APPROVE (no override)")
+
+                # -------------------------------
+                # ENSEMBLE OVERRIDE (TU-aware)
+                # -------------------------------
+                ensemble = scores.get("ensemble") or {}
+                ensemble_decision = ensemble.get("decision")
+
+                # normalise enums / casing
+                if ensemble_decision is not None:
+                    ensemble_decision = str(ensemble_decision).upper().strip()
+
+                # Precedence:
+                # 1) MCA hard-decline always wins
+                # 2) Otherwise, if ensemble exists, use it (includes TU director hard stops)
+                if mca_decision != "DECLINE" and ensemble_decision in ("DECLINE", "REFER", "APPROVE", "SENIOR_REVIEW", "CONDITIONAL_APPROVE"):
+                    final_decision = ensemble_decision
+                    final_reasons.append(
+                        f"Ensemble override applied: {ensemble_decision} "
+                        f"(reason: {ensemble.get('primary_reason', 'n/a')})"
+                    )
 
                 # Persist for UI + exports
                 scores["final_decision"] = final_decision
@@ -2510,7 +2676,7 @@ def main():
                 # ============================================
                 ensemble = scores.get('ensemble')
                 if ensemble:
-                    decision = ensemble.get('decision', 'REFER')
+                    decision = scores.get('final_decision') or ensemble.get('decision', 'REFER')
                     combined_score = ensemble.get('combined_score', 0)
                     confidence = ensemble.get('confidence', 0)
                     

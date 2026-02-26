@@ -214,7 +214,7 @@ class EnsembleScorer:
             hard_stop_reasons.append(self.HARD_STOP_CONDITIONS['directors_critical'])
         
         # Multiple CCJs
-        if params.get('business_ccj', False) and params.get('director_ccj', False):
+        if params.get('business_ccj', False):
             hard_stop_reasons.append(self.HARD_STOP_CONDITIONS['multiple_ccjs'])
         
         if hard_stop_reasons:
@@ -437,9 +437,7 @@ class EnsembleScorer:
         # CCJs
         if params.get('business_ccj', False):
             risk_factors.append("Business CCJ on record")
-        if params.get('director_ccj', False):
-            risk_factors.append("Director CCJ on record")
-        
+
         # Company age
         age = params.get('company_age_months', 12)
         if age < 6:
@@ -529,7 +527,7 @@ class EnsembleScorer:
                 "Consider bi-weekly payment collection",
                 "Request additional documentation"
             ])
-            if params.get('business_ccj') or params.get('director_ccj'):
+            if params.get('business_ccj'):
                 recommendations.append("Obtain personal guarantee")
         
         elif decision == Decision.REFER:
@@ -573,7 +571,7 @@ class EnsembleScorer:
                 'collection_frequency': 'N/A'
             }
         
-        has_ccj = params.get('business_ccj', False) or params.get('director_ccj', False)
+        has_ccj = params.get('business_ccj', False)
         
         if score >= 70:
             base_rate = "1.15-1.25"

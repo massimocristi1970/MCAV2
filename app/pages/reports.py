@@ -55,7 +55,6 @@ class DashboardExporter:
                 'company_age_months': params.get('company_age_months'),
                 'risk_factors': {
                     'business_ccj': params.get('business_ccj', False),
-                    'director_ccj': params.get('director_ccj', False),
                     'poor_or_no_online_presence': params.get('poor_or_no_online_presence', False),
                     'uses_generic_email': params.get('uses_generic_email', False)
                 }
@@ -142,6 +141,13 @@ class DashboardExporter:
         subprime_score = export_data['scoring_results'].get('subprime_score') or 0
         mca_rule_score = export_data['scoring_results'].get('mca_rule_score') or 0
         adjusted_ml_score = export_data['scoring_results'].get('adjusted_ml_score') or 0
+
+        bp = export_data.get("business_parameters", {}) or {}
+        rf = bp.get("risk_factors", {}) or {}
+
+        business_ccj = bool(rf.get("business_ccj", False))
+        poor_online = bool(rf.get("poor_or_no_online_presence", False))
+        generic_email = bool(rf.get("uses_generic_email", False))
         
         html_template = f"""
         <!DOCTYPE html>
@@ -260,7 +266,6 @@ class DashboardExporter:
                     <tr><td>Company Age</td><td>{export_data['business_parameters']['company_age_months']} months</td></tr>
                     <tr><td>Directors Score</td><td>{export_data['business_parameters']['directors_score']}/100</td></tr>
                     <tr><td>Business CCJs</td><td>{'Yes' if export_data['business_parameters']['risk_factors']['business_ccj'] else 'No'}</td></tr>
-                    <tr><td>Director CCJs</td><td>{'Yes' if export_data['business_parameters']['risk_factors']['director_ccj'] else 'No'}</td></tr>
                 </table>
             </div>
             
