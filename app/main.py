@@ -75,6 +75,192 @@ except ImportError as e:
     Decision = None
     print(f"Note: Ensemble scorer not available ({e}).")
 
+import re
+from io import BytesIO
+
+def _extract_text_from_pdf_bytes(pdf_bytes: bytes) -> tuple[str, str, str]:
+    """
+    Returns: (text, backend_used, error_msg)
+    Tries multiple backends. Does NOT silently swallow errors.
+    """
+    if not pdf_bytes or not pdf_bytes[:4] == b"%PDF":
+        return "", "none", "Not a valid PDF header (expected %PDF)."
+
+    errors = []
+
+    # 1) pdfplumber (good general extractor)
+    try:
+        import pdfplumber
+        from io import BytesIO
+        parts = []
+        with pdfplumber.open(BytesIO(pdf_bytes)) as pdf:
+            for page in pdf.pages:
+                parts.append(page.extract_text() or "")
+        text = "\n".join(parts).strip()
+        if text:
+            return text, "pdfplumber", ""
+        errors.append("pdfplumber: extracted empty text")
+    except Exception as e:
+        errors.append(f"pdfplumber: {repr(e)}")
+
+    # 2) PyMuPDF (fitz) (often best for “weird” PDFs)
+    try:
+        import fitz  # PyMuPDF
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        parts = []
+        for page in doc:
+            parts.append(page.get_text("text") or "")
+        text = "\n".join(parts).strip()
+        if text:
+            return text, "pymupdf", ""
+        errors.append("pymupdf: extracted empty text")
+    except Exception as e:
+        errors.append(f"pymupdf: {repr(e)}")
+
+    # 3) PyPDF2 / pypdf (weak for many bureau PDFs but try anyway)
+    try:
+        import PyPDF2
+        from io import BytesIO
+        reader = PyPDF2.PdfReader(BytesIO(pdf_bytes))
+        parts = [(p.extract_text() or "") for p in reader.pages]
+        text = "\n".join(parts).strip()
+        if text:
+            return text, "pypdf2", ""
+        errors.append("pypdf2: extracted empty text")
+    except Exception as e:
+        errors.append(f"pypdf2: {repr(e)}")
+
+    return "", "none", " | ".join(errors)
+
+def _explicit_ccj_present(pdf_text: str) -> bool:
+    """
+    If not explicitly positive → treat as False.
+
+    'Explicitly positive' means we see CCJ mentioned AND a clear indicator of presence
+    (e.g. 'Yes', 'Present', '1', 'Registered', etc.) and NOT a clear 'None/No' statement.
+    """
+    t = (pdf_text or "").lower()
+
+    # Quick exit if CCJ never appears
+    if "ccj" not in t and "county court judgment" not in t and "county court judgement" not in t:
+        return False
+
+    # Explicit negatives (prefer these)
+    negative_patterns = [
+        r"\bno\s+ccj\b",
+        r"\bno\s+county\s+court\s+judg(e)?ment(s)?\b",
+        r"\bcounty\s+court\s+judg(e)?ment(s)?\s*:\s*(none|no|0)\b",
+        r"\bccj\s*:\s*(none|no|0)\b",
+        r"\bnone\s+recorded\b.*\bccj\b",
+        r"\bno\s+adverse\b.*\bccj\b",
+    ]
+    for pat in negative_patterns:
+        if re.search(pat, t, re.IGNORECASE):
+            return False
+
+    # Explicit positives
+    positive_patterns = [
+        r"\bccj\s*:\s*(yes|present|1|registered|found)\b",
+        r"\bcounty\s+court\s+judg(e)?ment(s)?\s*:\s*(yes|present|1|registered|found)\b",
+        r"\bnumber\s+of\s+ccj(s)?\s*:\s*([1-9]\d*)\b",
+        r"\bccj(s)?\s+recorded\b",
+        r"\bjudg(e)?ment(s)?\s+recorded\b.*\bccj\b",
+    ]
+    for pat in positive_patterns:
+        m = re.search(pat, t, re.IGNORECASE)
+        if m:
+            # If a count was captured, ensure >0
+            if m.lastindex and m.lastindex >= 2:
+                try:
+                    return int(m.group(2)) > 0
+                except Exception:
+                    return True
+            return True
+
+    # Not explicitly positive → False
+    return False
+
+def _bureau_band_from_pdf_text(pdf_text: str) -> tuple[str, list[str]]:
+    """
+    Returns (bureau_band, reasons).
+
+    This version is tailored to the bureau PDF format you uploaded:
+    - Detects: 'Maximum risk', letter grade (A-F), and 'Credit score 2 - 15'
+    - Banding is informational to the underwriter ONLY.
+    """
+    t = (pdf_text or "").lower()
+    reasons: list[str] = []
+
+    # 1) Strong explicit signals
+    if "maximum risk" in t:
+        reasons.append("Report states: Maximum risk")
+        return "D (Very High Risk)", reasons
+
+    # 2) Letter grade (A-F) — seen as 'F' in your report
+    # Match patterns like: "Credit score ... F" or isolated grade near "credit score"
+    grade = None
+    m_grade = re.search(r"\bcredit\s+score\b[\s\S]{0,120}\b([a-f])\b", t, re.IGNORECASE)
+    if m_grade:
+        grade = m_grade.group(1).upper()
+        reasons.append(f"Detected credit grade: {grade}")
+
+    # Map grade to band (conservative)
+    if grade in ("F", "E"):
+        return "D (Very High Risk)", reasons
+    if grade == "D":
+        return "C (High Risk)", reasons
+    if grade == "C":
+        return "B (Moderate Risk)", reasons
+    if grade in ("A", "B"):
+        return "A (Low Risk)", reasons
+
+    # 3) Credit score range like "2 - 15"
+    # Use the upper bound as a proxy of where they sit within the bureau scale.
+    score_hi = None
+    m_range = re.search(r"\bcredit\s+score\b[\s:]*([0-9]{1,3})\s*[-–]\s*([0-9]{1,3})\b", t, re.IGNORECASE)
+    if m_range:
+        try:
+            lo = int(m_range.group(1))
+            hi = int(m_range.group(2))
+            score_hi = hi
+            reasons.append(f"Detected credit score range: {lo}-{hi}")
+        except Exception:
+            score_hi = None
+
+    # For a 2–15 scale, 15 is worst (per your report showing 'Maximum risk' with 2–15)
+    if score_hi is not None:
+        if score_hi >= 12:
+            return "D (Very High Risk)", reasons
+        if score_hi >= 9:
+            return "C (High Risk)", reasons
+        if score_hi >= 6:
+            return "B (Moderate Risk)", reasons
+        return "A (Low Risk)", reasons
+
+    # 4) Final fallback: adverse keyword density
+    adverse_hits = 0
+    adverse_rules = [
+        (r"\binsolvenc(y|ies)\b|\bliquidat(e|ion)\b|\badministration\b|\bwinding\s+up\b", "Insolvency / liquidation indicator"),
+        (r"\bdefault(s)?\b", "Defaults mentioned"),
+        (r"\barrear(s)?\b|\blate\s+payment(s)?\b|\bdelinquen(t|cy)\b", "Arrears / late payments mentioned"),
+        (r"\bcollections?\b|\bdebt\s+collection\b", "Collections mentioned"),
+        (r"\bdissolved\b|\bstrike\s+off\b", "Dissolved/strike-off mentioned"),
+        (r"\bneeds\s+attention\b", "Needs attention flagged"),
+    ]
+    for pat, label in adverse_rules:
+        if re.search(pat, t, re.IGNORECASE):
+            adverse_hits += 1
+            reasons.append(label)
+
+    if adverse_hits >= 3:
+        return "D (Very High Risk)", reasons
+    if adverse_hits == 2:
+        return "C (High Risk)", reasons
+    if adverse_hits == 1:
+        return "B (Moderate Risk)", reasons
+    reasons.append("No specific indicators extracted (fallback)")
+    return "A (Low Risk)", reasons
+
 
 # Debug mode - only enabled when DEBUG environment variable is set to 'true'
 DEBUG_MODE = os.environ.get('DEBUG', 'false').lower() == 'true'
@@ -2472,10 +2658,65 @@ def main():
                 directors_score = 0
                 tu_result = None
 
+        # -----------------------------
+        # Business Bureau PDF Upload (NEW)
+        # -----------------------------
+        st.sidebar.subheader("Business Credit Report (PDF)")
+        bureau_pdf = st.sidebar.file_uploader(
+            "Upload Business Credit Report (PDF)",
+            type=["pdf"],
+            key="bureau_pdf_upload"
+        )
+
+        # ✅ defaults so variables always exist
+        bureau_text = ""
+        bureau_backend = "none"
+        bureau_err = ""
+        business_ccj = False
+        bureau_band = None
+        bureau_band_reasons = []
+
+        if bureau_pdf is not None:
+            pdf_bytes = bureau_pdf.getvalue()
+            bureau_text, bureau_backend, bureau_err = _extract_text_from_pdf_bytes(pdf_bytes)
+
+            # CCJ detection (scoring-impacting)
+            business_ccj = _explicit_ccj_present(bureau_text)
+
+            # Banding (UW display only)
+            bureau_band, bureau_band_reasons = _bureau_band_from_pdf_text(bureau_text)
+
+        with st.sidebar.expander("DEBUG: Bureau PDF parsing", expanded=False):
+            st.write("Backend used:", bureau_backend)
+            st.write("Error:", bureau_err if bureau_err else "[none]")
+            st.write("Text length:", len(bureau_text or ""))
+            st.write("'maximum risk' present:", "maximum risk" in (bureau_text or "").lower())
+            st.write("'credit score' present:", "credit score" in (bureau_text or "").lower())
+            st.write("'needs attention' present:", "needs attention" in (bureau_text or "").lower())
+            st.text(((bureau_text or "")[:800]) if bureau_text else "[EMPTY TEXT]")
+
+        # -----------------------------
+        # Risk Factors (UPDATED)
+        # -----------------------------
         st.sidebar.subheader("Risk Factors")
-        business_ccj = st.sidebar.checkbox("Business CCJs")
+
+        # Show CCJ as derived (no manual tick box)
+        st.sidebar.write(f"**Business CCJ:** {'Yes' if business_ccj else 'No'}")
+
+        # Keep your other manual flags as-is
         poor_or_no_online_presence = st.sidebar.checkbox("Poor/No Online Presence")
         uses_generic_email = st.sidebar.checkbox("Generic Email")
+
+        # Show banding (informational)
+        if bureau_band:
+            st.sidebar.markdown("---")
+            st.sidebar.write(f"**bureau_band = {bureau_band}**")
+            with st.sidebar.expander("Why this band?", expanded=False):
+                if bureau_band_reasons:
+                    for r in bureau_band_reasons[:10]:
+                        st.sidebar.write(f"• {r}")
+                else:
+                    st.sidebar.write("• No specific indicators extracted (text-only fallback).")
 
         # Time period filter
         st.sidebar.subheader("Analysis Period")
@@ -2500,9 +2741,13 @@ def main():
             "tu_director_reasons": (tu_result or {}).get("reasons") or [],
 
             "company_age_months": company_age_months,
-            "business_ccj": business_ccj,
+            "business_ccj": business_ccj,  # now derived from PDF (not a checkbox)
             "poor_or_no_online_presence": poor_or_no_online_presence,
             "uses_generic_email": uses_generic_email,
+
+            # Optional: persist bureau band for display/export (NOT used in scoring)
+            "bureau_band": bureau_band,
+            "bureau_band_reasons": bureau_band_reasons,
         }
 
 

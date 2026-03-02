@@ -37,3 +37,6 @@ psutil>=5.9.0,<7.0.0
 
 # JSON logging support
 python-json-logger>=2.0.0,<3.0.0
+
+pdfplumber
+PyMuPDF
