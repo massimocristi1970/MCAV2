@@ -460,3 +460,26 @@ def create_risk_gauge_chart(score: float, title: str = "Risk Score") -> go.Figur
     )
     
     return fig
+# ----------------------------
+# Streamlit Page Entry Point
+# ----------------------------
+import streamlit as st
+
+st.set_page_config(page_title="Charts", layout="wide")
+st.title("📈 Charts")
+
+run = st.session_state.get("last_run")
+if not run:
+    st.info("Run an analysis on the Main page first, then come back to Charts.")
+    st.stop()
+
+metrics = run["metrics"]
+scores = run["scores"]
+
+# Use your existing chart builders (examples — call the ones that already exist in this file)
+try:
+    figs = create_financial_charts(metrics)  # if your charts.py exposes this
+    for fig in figs:
+        st.plotly_chart(fig, use_container_width=True)
+except NameError:
+    st.warning("No chart-rendering functions found in charts.py. Add calls to your existing chart functions here.")

@@ -320,6 +320,68 @@ class DashboardExporter:
         
         return df.to_csv(index=False)
 
+    def create_export_buttons(
+            self,
+            company_name: str,
+            params: dict,
+            metrics: dict,
+            scores: dict,
+            analysis_period: str,
+            revenue_insights: dict,
+            loans_analysis: dict = None
+    ) -> None:
+
+        import streamlit as st
+        import json
+        from datetime import datetime
+
+        st.markdown("---")
+        st.subheader("📥 Export Dashboard Report")
+
+        export_data = self.export_dashboard_data(
+            company_name=company_name,
+            params=params,
+            metrics=metrics,
+            scores=scores,
+            analysis_period=analysis_period,
+            revenue_insights=revenue_insights,
+            loans_analysis=loans_analysis,
+        )
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            html_report = self.generate_html_report(export_data)
+            st.download_button(
+                label="📄 Export HTML Report",
+                data=html_report,
+                file_name=f"{company_name.replace(' ', '_')}_report_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+                mime="text/html",
+                type="primary"
+            )
+
+        with col2:
+            json_data = json.dumps(export_data, indent=2, default=str)
+            st.download_button(
+                label="📊 Export JSON Data",
+                data=json_data,
+                file_name=f"{company_name.replace(' ', '_')}_data_{datetime.now().strftime('%Y%m%d_%H%M')}.json",
+                mime="application/json"
+            )
+
+        with col3:
+            csv_data = self.generate_csv_metrics(metrics, company_name)
+            st.download_button(
+                label="📈 Export CSV Metrics",
+                data=csv_data,
+                file_name=f"{company_name.replace(' ', '_')}_metrics_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+                mime="text/csv"
+            )
+
+        st.info(
+            "Export includes scoring results, financial metrics, revenue insights and business parameters."
+        )
+
 
 def get_score_summary_text(scores: Dict[str, Any]) -> str:
     """
@@ -391,3 +453,34 @@ def format_metrics_for_display(metrics: Dict[str, Any]) -> Dict[str, str]:
             formatted[key] = str(value)
     
     return formatted
+# ----------------------------
+# Streamlit Page Entry Point
+# ----------------------------
+import streamlit as st
+
+st.set_page_config(page_title="Reports", layout="wide")
+st.title("📄 Reports / Export")
+
+run = st.session_state.get("last_run")
+if not run:
+    st.info("Run an analysis on the Main page first, then come back to Reports.")
+    st.stop()
+
+company_name = run["company_name"]
+params = run["params"]
+metrics = run["metrics"]
+scores = run["scores"]
+analysis_period = run["analysis_period"]
+revenue_insights = run.get("revenue_insights", {})
+
+st.subheader("Export")
+exporter = DashboardExporter()
+exporter.create_export_buttons(
+    company_name=company_name,
+    params=params,
+    metrics=metrics,
+    scores=scores,
+    analysis_period=analysis_period,
+    revenue_insights=revenue_insights,
+    loans_analysis=None,
+)

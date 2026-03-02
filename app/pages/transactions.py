@@ -651,3 +651,35 @@ def analyze_loans_and_repayments(df: pd.DataFrame) -> Dict[str, Any]:
     analysis['repayment_ratio'] = total_repaid / total_loans if total_loans > 0 else 0
     
     return analysis
+# ----------------------------
+# Streamlit Page Entry Point
+# ----------------------------
+import streamlit as st
+
+st.set_page_config(page_title="Transactions", layout="wide")
+st.title("🧾 Transactions")
+
+run = st.session_state.get("last_run")
+if not run:
+    st.info("Run an analysis on the Main page first, then come back to Transactions.")
+    st.stop()
+
+filtered_df = run["filtered_df"]
+company_name = run["company_name"]
+
+st.dataframe(filtered_df, use_container_width=True)
+
+# Reuse your existing CSV export helper used in main.py (if available in scope/importable)
+try:
+    csv_data = create_categorized_csv(filtered_df)
+    if csv_data:
+        st.download_button(
+            label="📥 Export Categorized CSV",
+            data=csv_data,
+            file_name=f"{company_name.replace(' ', '_')}_transactions_categorized.csv",
+            mime="text/csv",
+            type="primary",
+            key="csv_export_transactions_page"
+        )
+except NameError:
+    st.warning("create_categorized_csv() is not available in this module. Import it or add an export helper here.")

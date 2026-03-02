@@ -134,51 +134,395 @@ def _extract_text_from_pdf_bytes(pdf_bytes: bytes) -> tuple[str, str, str]:
 
 def _explicit_ccj_present(pdf_text: str) -> bool:
     """
-    If not explicitly positive → treat as False.
-
-    'Explicitly positive' means we see CCJ mentioned AND a clear indicator of presence
-    (e.g. 'Yes', 'Present', '1', 'Registered', etc.) and NOT a clear 'None/No' statement.
+    Detect CCJ presence.
+    Policy: If explicitly registered -> True.
+            If explicitly says none -> False.
+            Otherwise -> False.
     """
+
     t = (pdf_text or "").lower()
 
-    # Quick exit if CCJ never appears
-    if "ccj" not in t and "county court judgment" not in t and "county court judgement" not in t:
-        return False
-
-    # Explicit negatives (prefer these)
+    # 1️⃣ Explicit negatives (must check first)
     negative_patterns = [
-        r"\bno\s+ccj\b",
         r"\bno\s+county\s+court\s+judg(e)?ment(s)?\b",
-        r"\bcounty\s+court\s+judg(e)?ment(s)?\s*:\s*(none|no|0)\b",
+        r"\bno\s+ccj\b",
         r"\bccj\s*:\s*(none|no|0)\b",
         r"\bnone\s+recorded\b.*\bccj\b",
-        r"\bno\s+adverse\b.*\bccj\b",
     ]
+
     for pat in negative_patterns:
         if re.search(pat, t, re.IGNORECASE):
             return False
 
-    # Explicit positives
+    # 2️⃣ Explicit positives (expanded for your bureau format)
+
     positive_patterns = [
-        r"\bccj\s*:\s*(yes|present|1|registered|found)\b",
-        r"\bcounty\s+court\s+judg(e)?ment(s)?\s*:\s*(yes|present|1|registered|found)\b",
-        r"\bnumber\s+of\s+ccj(s)?\s*:\s*([1-9]\d*)\b",
-        r"\bccj(s)?\s+recorded\b",
-        r"\bjudg(e)?ment(s)?\s+recorded\b.*\bccj\b",
+        r"county\s+court\s+judg(e)?ment\s+registered",
+        r"county\s+court\s+judg(e)?ments\s+registered",
+        r"county\s+court\s+judg(e)?ment\s+has\s+been\s+registered",
+        r"\bccj\s+registered\b",
+        r"\bat\s+least\s+one\s+county\s+court\s+judg(e)?ment\b",
+        r"\blegal\s+notices\b[\s\S]{0,300}county\s+court\s+judg(e)?ment",
     ]
+
     for pat in positive_patterns:
-        m = re.search(pat, t, re.IGNORECASE)
-        if m:
-            # If a count was captured, ensure >0
-            if m.lastindex and m.lastindex >= 2:
-                try:
-                    return int(m.group(2)) > 0
-                except Exception:
-                    return True
+        if re.search(pat, t, re.IGNORECASE):
             return True
 
-    # Not explicitly positive → False
+    # 3️⃣ Fallback: detect structured CCJ section with amount + date
+    # e.g.:
+    # Registered
+    # 31 Jul 2025
+    # £2,059
+    if re.search(r"county\s+court\s+judg(e)?ments?\b", t):
+        if re.search(r"£\s*\d", t) and re.search(r"\b\d{1,2}\s+[a-z]{3}\s+\d{4}\b", t):
+            return True
+
     return False
+
+# -----------------------------
+# Report Information (Structured) (NEW)
+# -----------------------------
+def _norm_pdf_text(t: str) -> str:
+    """
+    Normalise common PDF extraction artefacts:
+    - Fix ligatures (fi/fl)
+    - Replace odd bullet/space characters
+    - Collapse whitespace lightly
+    """
+    if not t:
+        return ""
+    # common ligatures
+    t = t.replace("\ufb01", "fi").replace("\ufb02", "fl")
+    # common replacement char
+    t = t.replace("�", "")
+    return t
+
+def _re_first(pattern: str, text: str, flags=re.IGNORECASE):
+    m = re.search(pattern, text, flags)
+    return m.group(1).strip() if m else None
+
+def _re_first2(pattern: str, text: str, flags=re.IGNORECASE):
+    m = re.search(pattern, text, flags)
+    return (m.group(1).strip(), m.group(2).strip()) if m else (None, None)
+
+def _money_clean(s: str | None) -> str | None:
+    if not s:
+        return None
+    s = s.replace(",", "").strip()
+    # ensure £ format if present
+    if s.startswith("£"):
+        return "£" + s[1:].strip()
+    return s
+
+def _parse_credit_information(t: str) -> list[str]:
+    bullets = []
+    tl = t.lower()
+
+    # Credit score (often appears as "Credit score 65")
+    score = _re_first(r"\bcredit score\b\s*[\:\-]?\s*(\d{1,3})\b", t)
+    if score:
+        bullets.append(f"Credit score: {score}")
+
+    # Credit limit (often "Credit limit £0")
+    credit_limit = _re_first(r"\bcredit limit\b\s*[\:\-]?\s*(£\s*\d[\d,]*)", t)
+    if credit_limit:
+        bullets.append(f"Credit limit: {_money_clean(credit_limit)}")
+
+    # --- Max. recommended credit (current + from-date amount) ---
+    # Current value usually appears near "Max. recommended credit" and may be £0.
+    mrc_current = _re_first(r"\bmax\.?\s*recommended\s*credit\b[\s\S]{0,60}?(£\s*\d[\d,]*)", t)
+
+    # "from Aug 2025 (£2,000)" style
+    m_from = re.search(
+        r"\bfrom\s+([A-Za-z]{3,9}\s+\d{4})\s*\(\s*(£\s*\d[\d,]*)\s*\)",
+        t,
+        re.IGNORECASE
+    )
+    from_date = m_from.group(1).strip() if m_from else None
+    from_amt = m_from.group(2).strip() if m_from else None
+
+    if mrc_current:
+        if from_date and from_amt:
+            bullets.append(
+                f"Max. recommended credit: {_money_clean(mrc_current)} (from {from_date} - {_money_clean(from_amt)})"
+            )
+        else:
+            bullets.append(f"Max. recommended credit: {_money_clean(mrc_current)}")
+    else:
+        # fallback: if only from-date value exists
+        if from_date and from_amt:
+            bullets.append(f"Max. recommended credit: {_money_clean(from_amt)} (from {from_date})")
+
+    # Searches / enquiries
+    enquiries_3m = _re_first(r"\b(\d+)\s+enquiries\s+in\s+last\s+3\s+months\b", t)
+    if enquiries_3m:
+        bullets.append(f"Searches: {enquiries_3m} enquiries in last 3 months")
+
+    # Needs attention + Negative impact count
+    needs_attention = "needs attention" if "needs attention" in tl else None
+    neg_impact = _re_first(r"\bnegative impact:\s*(\d+)\b", t)
+    if needs_attention:
+        if neg_impact:
+            bullets.append(f"Credit risk factors: Needs attention (Negative impact: {neg_impact})")
+        else:
+            bullets.append("Credit risk factors: Needs attention")
+
+    return bullets
+
+def _parse_payment_performance(t: str) -> list[str]:
+    bullets = []
+    tl = t.lower()
+
+    # Payment average Beyond terms / Within terms etc.
+    if "payment average" in tl:
+        avg = _re_first(r"\bpayment average\b\s*([A-Za-z\s]+)", t)
+        if avg:
+            bullets.append(f"Payment average: {avg.strip()}")
+
+    # Average days late
+    days_late = _re_first(r"\b(\d+)\s+days\s+late\b", t)
+    if days_late:
+        bullets.append(f"Average days late: {days_late} days late")
+
+    # Industry average days late
+    ind = _re_first(r"\bindustry average\b[\s\S]{0,60}\b(\d+)\s+days\s+late\b", t)
+    if ind:
+        bullets.append(f"Industry average: {ind} days late")
+
+    # Pattern
+    if "significantly worsening payment pattern" in tl:
+        bullets.append("Pattern: Significantly worsening payment pattern")
+    elif "worsening payment pattern" in tl:
+        bullets.append("Pattern: Worsening payment pattern")
+
+    return bullets
+
+def _parse_legal_notices(t: str) -> list[str]:
+    bullets = []
+    tl = t.lower()
+
+    # CCJ registered yes/no
+    ccj_yes = bool(re.search(r"county\s+court\s+judg(e)?ment\s+registered", tl))
+    if ccj_yes:
+        bullets.append("County Court Judgement registered: Yes")
+    elif re.search(r"\bno\s+county\s+court\s+judg(e)?ment", tl):
+        bullets.append("County Court Judgement registered: No")
+
+    # Registered: source (often appears after "Registered" line)
+    # Example from your other report: "Registered" then "THE COUNTY COURT ONLINE"
+    reg_source = _re_first(r"\bregistered\b\s*\n\s*([A-Z][A-Z\s]+)\n", t, flags=0)
+    if reg_source:
+        bullets.append(f"Registered: {reg_source.strip()}")
+
+    # Ref: (often like 678MC129)
+    ref = _re_first(r"\bregistered\b[\s\S]{0,200}\b([A-Z0-9]{6,})\b", t)
+    # That pattern is broad; only accept if looks like a CCJ ref
+    if ref and re.match(r"^[A-Z0-9]{6,}$", ref):
+        bullets.append(f"Ref: {ref}")
+
+    # Date: e.g. 31 Jul 2025
+    date = _re_first(r"\b(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})\b", t)
+    if date:
+        bullets.append(f"Date: {date}")
+
+    # Value: prefer the largest £ amount found in Legal notices block (avoids £0)
+    money_vals = re.findall(r"£\s*\d[\d,]*", t)
+    if money_vals:
+        # convert to numeric, pick max
+        def _to_int(m):
+            return int(m.replace("£", "").replace(",", "").strip())
+
+        max_val = max(money_vals, key=_to_int)
+        bullets.append(f"Value: {_money_clean(max_val)}")
+
+    return bullets
+
+def _parse_public_record(t: str) -> list[str]:
+    """
+    Robust Public Record parser for Capital-style PDFs where labels and values
+    may be split across lines or labels may appear grouped.
+
+    Output format (exact labels):
+    - Company name:
+    - Company number:
+    - Company Status:
+    - Incorporation date:
+    - SIC:
+    """
+    bullets = []
+    if not t:
+        return bullets
+
+    # Normalise once
+    full = _norm_pdf_text(t)
+
+    # -----------------------------
+    # 1) Company name from header (best source)
+    # Capital report
+    # BOUND STUDIOS LTD
+    # ...
+    # -----------------------------
+    company_name = None
+    header_lines = [ln.strip() for ln in full.splitlines() if ln.strip()]
+    for i, ln in enumerate(header_lines[:25]):  # only need top part
+        if ln.lower() == "capital report" and i + 1 < len(header_lines):
+            nxt = header_lines[i + 1].strip()
+            # accept all-caps-ish names and ignore obvious section headers
+            if nxt and nxt.lower() not in ("credit information", "payment performance", "legal notices", "public record", "charges"):
+                company_name = nxt
+                break
+    if not company_name:
+        # fallback: first ALL CAPS line near top that isn't a section title
+        for ln in header_lines[:25]:
+            if ln.isupper() and len(ln) >= 5 and ln.lower() not in ("capital report", "credit information", "payment performance", "legal notices", "public record", "charges"):
+                company_name = ln
+                break
+
+    # -----------------------------
+    # 2) Extract Public Record block (line based)
+    # -----------------------------
+    lines = header_lines
+    start = None
+    for i, ln in enumerate(lines):
+        if ln.strip().lower() == "public record":
+            start = i
+            break
+
+    block = []
+    if start is not None:
+        # end at next major header
+        end = len(lines)
+        for j in range(start + 1, len(lines)):
+            if lines[j].strip().lower() in ("charges", "credit information", "payment performance", "legal notices"):
+                end = j
+                break
+        block = lines[start + 1:end]  # exclude the "Public Record" header line
+
+    # Helpers to take value after label
+    LABELS = {
+        "company number": "Company number",
+        "company status": "Company Status",
+        "incorporation date": "Incorporation date",
+        "sic": "SIC",
+    }
+    label_set = set(LABELS.keys())
+
+    def is_label_line(s: str) -> bool:
+        s2 = s.strip().lower()
+        # Some PDFs merge labels onto one line: "Company number Company Status Incorporation date"
+        return any(lbl in s2 for lbl in label_set)
+
+    def next_value_after(label: str):
+        """Return the first non-label line after a label line, within the block."""
+        lbl = label.lower()
+        for idx, ln in enumerate(block):
+            if lbl in ln.lower():
+                # if the label and value are on the same line, try to extract value on that line
+                tail = re.sub(rf"(?i).*{re.escape(label)}\s*[:\-]?\s*", "", ln).strip()
+                # if tail looks like a value (not just other labels), accept it
+                if tail and not is_label_line(tail):
+                    return tail
+
+                # otherwise take next non-label line
+                for k in range(idx + 1, min(idx + 6, len(block))):
+                    cand = block[k].strip()
+                    if cand and not is_label_line(cand):
+                        return cand
+        return None
+
+    # Company number (prefer strict numeric)
+    company_number = None
+    # try line-based label extraction
+    cand_num = next_value_after("Company number")
+    if cand_num:
+        m = re.search(r"\b(\d{6,10})\b", cand_num)
+        if m:
+            company_number = m.group(1)
+
+    # fallback: anywhere in public record block
+    if not company_number and block:
+        m = re.search(r"\b(\d{6,10})\b", "\n".join(block))
+        if m:
+            company_number = m.group(1)
+
+    # Company status
+    company_status = next_value_after("Company Status") or next_value_after("Company status")
+    if company_status:
+        # guard against grabbing another label word like "Incorporation"
+        if is_label_line(company_status):
+            company_status = None
+        else:
+            # keep first word-ish value (Active/Dissolved etc.) if it’s noisy
+            company_status = company_status.strip()
+
+    # Incorporation date (strict date pattern)
+    incorporation_date = None
+    cand_inc = next_value_after("Incorporation date")
+    if cand_inc:
+        m = re.search(r"\b(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\b", cand_inc)
+        if m:
+            incorporation_date = m.group(1)
+    if not incorporation_date:
+        m = re.search(r"\b(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\b", "\n".join(block)) if block else None
+        if m:
+            incorporation_date = m.group(1)
+
+    # SIC (keep full “code - description”)
+    sic = None
+    cand_sic = next_value_after("SIC")
+    if cand_sic:
+        # if it already contains "47710 - ..." keep it
+        m = re.search(r"\b(\d{4,6}\s*-\s*.+)$", cand_sic)
+        if m:
+            sic = m.group(1).strip()
+    if not sic:
+        m = re.search(r"\b(\d{4,6}\s*-\s*[A-Za-z].+)", "\n".join(block)) if block else None
+        if m:
+            sic = m.group(1).strip()
+
+    # -----------------------------
+    # Output in the exact format you want
+    # -----------------------------
+    if company_name:
+        bullets.append(f"Company name: {company_name}")
+    if company_number:
+        bullets.append(f"Company number: {company_number}")
+    if company_status:
+        bullets.append(f"Company Status: {company_status}")
+    if incorporation_date:
+        bullets.append(f"Incorporation date: {incorporation_date}")
+    if sic:
+        bullets.append(f"SIC: {sic}")
+
+    return bullets
+
+def _parse_charges(t: str) -> list[str]:
+    bullets = []
+    tl = t.lower()
+
+    if "no mortgages or charges" in tl:
+        bullets.append("No mortgages or charges")
+        return bullets
+
+    # fallback: if “Charges” section exists but not the “no charges” sentence
+    if "charges" in tl:
+        bullets.append("Charges: present (details in report)")
+    return bullets
+
+def build_report_information(full_text: str) -> dict[str, list[str]]:
+    """
+    Returns exactly the 5 sections with formatted bullet lines.
+    """
+    t = _norm_pdf_text(full_text)
+
+    return {
+        "Credit information": _parse_credit_information(t),
+        "Payment performance": _parse_payment_performance(t),
+        "Legal notices": _parse_legal_notices(t),
+        "Public Record": _parse_public_record(t),
+        "Charges": _parse_charges(t),
+    }
 
 def _bureau_band_from_pdf_text(pdf_text: str) -> tuple[str, list[str]]:
     """
@@ -829,7 +1173,7 @@ WEIGHTS = {
 }
 
 PENALTIES = {
-    "business_ccj": 5, 'poor_or_no_online_presence': 3, 'uses_generic_email': 1
+    "business_ccj": 5
 }
 
 def calculate_weighted_scores(metrics, params, industry_thresholds):
@@ -2618,6 +2962,7 @@ def main():
 
         tu_result = None
         directors_score = 0
+        revenue_insights = {}
 
         if tu_xml_file is not None:
             try:
@@ -2680,20 +3025,36 @@ def main():
             pdf_bytes = bureau_pdf.getvalue()
             bureau_text, bureau_backend, bureau_err = _extract_text_from_pdf_bytes(pdf_bytes)
 
+            # 🔴 ADD THIS BLOCK RIGHT HERE
+            if bureau_backend == "none":
+                st.sidebar.error(
+                    "PDF text extraction is not available. "
+                    "Install PyMuPDF in requirements.txt to enable bureau banding."
+                )
+
             # CCJ detection (scoring-impacting)
             business_ccj = _explicit_ccj_present(bureau_text)
 
             # Banding (UW display only)
             bureau_band, bureau_band_reasons = _bureau_band_from_pdf_text(bureau_text)
 
-        with st.sidebar.expander("DEBUG: Bureau PDF parsing", expanded=False):
-            st.write("Backend used:", bureau_backend)
-            st.write("Error:", bureau_err if bureau_err else "[none]")
-            st.write("Text length:", len(bureau_text or ""))
-            st.write("'maximum risk' present:", "maximum risk" in (bureau_text or "").lower())
-            st.write("'credit score' present:", "credit score" in (bureau_text or "").lower())
-            st.write("'needs attention' present:", "needs attention" in (bureau_text or "").lower())
-            st.text(((bureau_text or "")[:800]) if bureau_text else "[EMPTY TEXT]")
+        report_info = build_report_information(bureau_text) if bureau_text else {}
+
+        report_info = build_report_information(bureau_text) if bureau_text else {}
+
+        with st.sidebar.expander("Report Information", expanded=False):
+            for section_name in ["Credit information", "Payment performance", "Legal notices", "Public Record",
+                                 "Charges"]:
+                st.markdown(f"**{section_name}**")
+                bullets = report_info.get(section_name, []) or []
+
+                if not bullets:
+                    st.write("Not found in report")
+                else:
+                    for b in bullets:
+                        st.write(f"• {b}")
+
+                st.markdown("---")
 
         # -----------------------------
         # Risk Factors (UPDATED)
@@ -2703,9 +3064,9 @@ def main():
         # Show CCJ as derived (no manual tick box)
         st.sidebar.write(f"**Business CCJ:** {'Yes' if business_ccj else 'No'}")
 
-        # Keep your other manual flags as-is
-        poor_or_no_online_presence = st.sidebar.checkbox("Poor/No Online Presence")
-        uses_generic_email = st.sidebar.checkbox("Generic Email")
+        # Removed: Poor/No Online Presence + Generic Email (no longer used / no penalties)
+        poor_or_no_online_presence = False
+        uses_generic_email = False
 
         # Show banding (informational)
         if bureau_band:
@@ -2742,8 +3103,8 @@ def main():
 
             "company_age_months": company_age_months,
             "business_ccj": business_ccj,  # now derived from PDF (not a checkbox)
-            "poor_or_no_online_presence": poor_or_no_online_presence,
-            "uses_generic_email": uses_generic_email,
+            "poor_or_no_online_presence": False,
+            "uses_generic_email": False,
 
             # Optional: persist bureau band for display/export (NOT used in scoring)
             "bureau_band": bureau_band,
@@ -2849,6 +3210,18 @@ def main():
                 filtered_df = filter_data_by_period(df, analysis_period)
                 metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
                 scores = calculate_all_scores_enhanced(metrics, params)
+
+                # NEW: store last successful run so Streamlit pages can render
+                st.session_state["last_run"] = {
+                    "company_name": company_name,
+                    "analysis_period": analysis_period,
+                    "df": df,
+                    "filtered_df": filtered_df,
+                    "params": params,
+                    "metrics": metrics,
+                    "scores": scores,
+                    "revenue_insights": revenue_insights,
+                }
 
                 # ensure MCA rule outputs are part of scoring_results for export
                 scores["mca_rule_decision"] = params.get("mca_rule_decision")

@@ -31,8 +31,8 @@ WEIGHTS = {
 }
 
 PENALTIES = {
-    "business_ccj": 5, "director_ccj": 3,
-    'poor_or_no_online_presence': 3, 'uses_generic_email': 1
+    "business_ccj": 5,
+    "director_ccj": 3
 }
 
 # Continuous scoring configuration
@@ -561,3 +561,33 @@ def determine_loan_risk_level(
         return "High Risk - Enhanced Monitoring"
     else:
         return "Very High Risk - Senior Review Required"
+
+# ----------------------------
+# Streamlit Page Entry Point
+# ----------------------------
+import streamlit as st
+
+st.set_page_config(page_title="Scoring", layout="wide")
+st.title("🎯 Scoring")
+
+run = st.session_state.get("last_run")
+if not run:
+    st.info("Run an analysis on the Main page first, then come back to Scoring.")
+    st.stop()
+
+scores = run["scores"]
+
+st.subheader("Score Summary")
+for k in [
+    "subprime_score",
+    "subprime_tier",
+    "subprime_recommendation",
+    "mca_rule_score",
+    "mca_rule_decision",
+    "adjusted_ml_score",
+]:
+    if k in scores:
+        st.write(f"**{k}**: {scores.get(k)}")
+
+with st.expander("Full score JSON"):
+    st.json(scores)

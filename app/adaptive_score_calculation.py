@@ -259,15 +259,7 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
             penalty = penalties.get("website_or_social_outdated", 0)
             penalty_total += penalty
             scoring_details.append(f"Outdated Web Presence Penalty: -{penalty} pts")
-        if uses_generic_email:
-            penalty = penalties.get("uses_generic_email", 0)
-            penalty_total += penalty
-            scoring_details.append(f"Generic Email Penalty: -{penalty} pts")
-        if no_online_presence:
-            penalty = penalties.get("no_online_presence", 0)
-            penalty_total += penalty
-            scoring_details.append(f"No Online Presence Penalty: -{penalty} pts")
-    
+
     final_score = max(0, weighted_score - penalty_total)  # Don't go below 0
     
     return final_score, scoring_details
@@ -299,11 +291,13 @@ def get_improved_weighted_score(metrics, directors_score, sector_risk, industry_
     Drop-in replacement for your existing calculate_weighted_score function
     Returns ML-aligned percentage for consistency with ML model output
     """
-    
+
     adaptive_score, details = calculate_adaptive_weighted_score(
         metrics, directors_score, sector_risk, industry_thresholds, company_age_months,
         personal_default_12m, business_ccj, website_or_social_outdated,
-        uses_generic_email, no_online_presence, penalties
+        False,  # uses_generic_email disabled
+        False,  # no_online_presence disabled
+        penalties
     )
     
     # Return ML-aligned percentage for consistency with ML model output
@@ -318,11 +312,13 @@ def get_detailed_scoring_breakdown(metrics, directors_score, sector_risk, indust
     """
     Get both the score and detailed breakdown for display purposes
     """
-    
+
     adaptive_score, details = calculate_adaptive_weighted_score(
         metrics, directors_score, sector_risk, industry_thresholds, company_age_months,
         personal_default_12m, business_ccj, website_or_social_outdated,
-        uses_generic_email, no_online_presence, penalties
+        False,  # uses_generic_email disabled
+        False,  # no_online_presence disabled
+        penalties
     )
     
     ml_aligned_percentage = calculate_ml_aligned_score_percentage(adaptive_score)

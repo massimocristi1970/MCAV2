@@ -189,12 +189,10 @@ class ScoringThresholds:
     # ===========================================
     # RISK FACTOR PENALTIES
     # ===========================================
-    
+
     RISK_PENALTIES: Dict[str, int] = field(default_factory=lambda: {
         "business_ccj": 6,
         "director_ccj": 4,
-        "poor_or_no_online_presence": 2,
-        "uses_generic_email": 1,
         "personal_default_12m": 5,
         "website_or_social_outdated": 2
     })

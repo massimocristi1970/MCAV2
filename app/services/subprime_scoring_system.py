@@ -61,8 +61,7 @@ class SubprimeScoring:
             }
             self.risk_factor_penalties = {
                 "business_ccj": 6,
-                'poor_or_no_online_presence': 2,
-                'uses_generic_email': 1
+                "director_ccj": 4
             }
             self.industry_multipliers = {
                 'Medical Practices (GPs, Clinics, Dentists)': 1.05,
@@ -360,15 +359,6 @@ class SubprimeScoring:
             total_penalty += penalty
             applied_penalties.append(f"Business CCJ: -{penalty}")
 
-        if params.get('uses_generic_email', False):
-            penalty = self.risk_factor_penalties['uses_generic_email']
-            total_penalty += penalty
-            applied_penalties.append(f"Generic Email: -{penalty}")
-
-        if params.get('poor_or_no_online_presence', False):
-            penalty = self.risk_factor_penalties['poor_or_no_online_presence']
-            total_penalty += penalty
-            applied_penalties.append(f"Poor/No Online Presence: -{penalty}")
 
         # Cap maximum penalty to prevent "death by 1000 cuts"
         if total_penalty > self._max_penalty_cap:
