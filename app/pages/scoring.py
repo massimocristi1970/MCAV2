@@ -523,6 +523,7 @@ def get_ml_score_interpretation(adjusted_score: float, raw_score: float) -> str:
     
     return interpretation
 
+import streamlit as st
 
 def determine_loan_risk_level(
     scores: Dict[str, Any], 
@@ -565,7 +566,6 @@ def determine_loan_risk_level(
 # ----------------------------
 # Streamlit Page Entry Point
 # ----------------------------
-import streamlit as st
 
 st.set_page_config(page_title="Scoring", layout="wide")
 st.title("🎯 Scoring")

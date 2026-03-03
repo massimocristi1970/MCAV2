@@ -5,6 +5,8 @@ import json
 import pandas as pd
 from datetime import datetime
 from typing import Dict, Any, Optional
+from app.main import DashboardExporter
+
 
 
 class DashboardExporter:

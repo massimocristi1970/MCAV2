@@ -34,36 +34,30 @@ from src.tu_scorecard.scorecard_rules import score_tu_features
 
 
 
-# Import modular components from pages package
-# These modules contain extracted and refactored functions from this file
-# For new development, prefer using these modular imports
-try:
-    from app.pages import (
-        # Scoring functions
-        calculate_weighted_scores as modular_weighted_scores,
-        load_models as modular_load_models,
-        calculate_subprime_score as modular_subprime_score,
-        adjust_ml_score_for_growth_business as modular_ml_adjustment,
-        # Chart functions
-        create_score_charts as modular_score_charts,
-        create_financial_charts as modular_financial_charts,
-        create_loans_repayments_charts as modular_loans_charts,
-        # Transaction functions - canonical implementations
-        map_transaction_category as _map_transaction_category,
-        categorize_transactions as modular_categorize,
-        filter_data_by_period as modular_filter_period,
-        calculate_financial_metrics as modular_calc_metrics,
-        calculate_revenue_insights as modular_revenue_insights,
-        create_categorized_csv as modular_create_csv,
-        analyze_loans_and_repayments as modular_analyze_loans,
-        # Report functions
-        DashboardExporter as ModularDashboardExporter,
-    )
-    MODULAR_IMPORTS_AVAILABLE = True
-except ImportError as e:
-    MODULAR_IMPORTS_AVAILABLE = False
-    _map_transaction_category = None  # Will use local fallback
-    print(f"Note: Modular imports not available ({e}). Using inline functions.")
+# IMPORTANT:
+# Do NOT import from app.pages inside app/main.py.
+# app/pages is Streamlit's multipage folder; importing it here can execute page scripts
+# at import-time and override the Main page UI.
+MODULAR_IMPORTS_AVAILABLE = False
+
+modular_weighted_scores = None
+modular_load_models = None
+modular_subprime_score = None
+modular_ml_adjustment = None
+
+modular_score_charts = None
+modular_financial_charts = None
+modular_loans_charts = None
+
+_map_transaction_category = None  # force fallback map_transaction_category() below
+modular_categorize = None
+modular_filter_period = None
+modular_calc_metrics = None
+modular_revenue_insights = None
+modular_create_csv = None
+modular_analyze_loans = None
+
+ModularDashboardExporter = None
 
 # Import ensemble scorer for unified recommendations
 try:
