@@ -309,6 +309,36 @@ The training script addresses issues with naive Random Forest defaults:
 | oob_score | False | True | Free validation metric |
 | Calibration | None | CalibratedClassifierCV | Well-calibrated probabilities |
 
+### Reject inference pipeline (optional)
+
+A separate pipeline builds a **full feature dataset** (funded + rejected applications), trains a **funded-only** logistic regression model, scores rejected applications, and performs **reject inference by parceling** to produce an augmented training dataset. This does not modify `build_training_dataset.py` or the main app model.
+
+**Single command (builds full feature dataset if missing, then runs Stages 2–5):**
+
+```bash
+python reject_inference_pipeline.py
+```
+
+Force rebuild of the full feature dataset first:
+
+```bash
+python reject_inference_pipeline.py --rebuild
+```
+
+**Outputs** (all under `data/` by default):
+
+| File | Description |
+|------|-------------|
+| `full_feature_dataset.csv` | All matched applications (labelled + unlabelled) with ML features, `is_labelled`, `is_rejected_or_unfunded` |
+| `funded_only_training.csv` | Funded rows used to train the funded-only model |
+| `funded_only_holdout_scored.csv` | Holdout scored (if n ≥ 30) |
+| `rejected_scored.csv` | Rejected applications with `predicted_pd` and `pd_band` |
+| `parceling_band_summary.csv` | Band-level summary (funded/rejected counts, bad rates, inferred bad counts) |
+| `rejected_inferred_labels.csv` | Rejecteds with `inferred_outcome` and `label_source` |
+| `augmented_training_dataset.csv` | Funded (actual outcome) + rejected (inferred outcome), ready for training |
+
+**Config** (environment variables): `REJECT_INFERENCE_N_BANDS` (default 5), `REJECT_INFERENCE_UPLIFT` (default 1.0), `REJECT_INFERENCE_RANDOM_SEED` (default 42). Same path env vars as `build_training_dataset.py`: `TRAINING_OUTCOMES_XLSX`, `TRAINING_JSON_ROOT`, `TRAINING_OUTPUT_DIR`.
+
 ---
 
 ## Project Structure
@@ -356,7 +386,9 @@ MCAV2/
 │   ├── debug_csv.py                         # CSV debugging tool
 │   └── requirements.txt                     # Batch processor dependencies
 ├── mca_scorecard_rules.py                   # MCA Rule engine
-├── build_training_dataset.py                # Training data builder
+├── build_training_dataset.py                # Training data builder (labelled only)
+├── build_full_feature_dataset.py           # Full feature dataset (labelled + rejected)
+├── reject_inference_pipeline.py            # Reject scoring + parceling + augmented dataset
 ├── train_improved_model.py                  # ML model training script
 ├── score_all_apps.py                        # Batch MCA rule scorer
 ├── requirements.txt                         # Python dependencies
@@ -376,7 +408,9 @@ MCAV2/
 | `app/models/ml_predictor.py` | ML prediction service with feature clipping, confidence intervals, and explainability |
 | `mca_scorecard_rules.py` | Transaction consistency rule engine (inflow days, gaps, volatility) |
 | `app/config/scoring_thresholds.py` | Centralised threshold definitions for all scoring systems |
-| `build_training_dataset.py` | Builds ML training data from transaction JSONs + application spreadsheet |
+| `build_training_dataset.py` | Builds ML training data from transaction JSONs + application spreadsheet (labelled only) |
+| `build_full_feature_dataset.py` | Builds full feature dataset for all matched applications (labelled + rejected) |
+| `reject_inference_pipeline.py` | Reject inference: funded-only model, scoring, parceling, augmented training dataset |
 | `train_improved_model.py` | Trains and calibrates the ML model with regularised hyperparameters |
 
 ---

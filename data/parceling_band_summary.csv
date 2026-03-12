@@ -1,0 +1,6 @@
+pd_band,funded_count,funded_bad_count,funded_bad_rate,rejected_count,adjusted_rejected_bad_rate,inferred_bad_count
+1,54,24,0.4444444444444444,0,,0
+2,53,37,0.6981132075471698,0,,0
+3,54,42,0.7777777777777778,0,,0
+4,53,53,1.0,0,,0
+5,54,54,1.0,0,,0
