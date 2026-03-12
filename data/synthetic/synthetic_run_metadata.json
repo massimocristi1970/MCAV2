@@ -1,0 +1,17 @@
+{
+  "run_at": "2026-03-12T21:20:16.380160Z",
+  "input_path": "data/ml_training_dataset.csv",
+  "output_dir": "data/synthetic",
+  "reference_rows": 268,
+  "synthetic_rows": 150,
+  "scenario": "adverse_case",
+  "mode": "hybrid_rules",
+  "generate_outcomes": true,
+  "seed": 42,
+  "perturbation_strength": 0.2,
+  "target_bad_rate": 0.25,
+  "high_risk_sector_share": null,
+  "n_clipped": 0,
+  "synthetic_avg_pd": 0.25000000000000006,
+  "synthetic_bad_rate": 0.22666666666666666
+}

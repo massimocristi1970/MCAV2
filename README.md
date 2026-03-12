@@ -339,6 +339,25 @@ python reject_inference_pipeline.py --rebuild
 
 **Config** (environment variables): `REJECT_INFERENCE_N_BANDS` (default 5), `REJECT_INFERENCE_UPLIFT` (default 1.0), `REJECT_INFERENCE_RANDOM_SEED` (default 42). Same path env vars as `build_training_dataset.py`: `TRAINING_OUTCOMES_XLSX`, `TRAINING_JSON_ROOT`, `TRAINING_OUTPUT_DIR`.
 
+### Synthetic data engine (testing / simulation only)
+
+A **synthetic data engine** generates synthetic MCA application datasets using the same 13 ML features as the repo. It is for **testing, scenario analysis, stress testing, dashboard/demo data, and pipeline validation only** — not for production model calibration.
+
+```bash
+# Default: 1000 rows, hybrid_rules, base_case
+python build_synthetic_dataset.py --input data/ml_training_dataset.csv
+
+# Adverse scenario with synthetic outcomes and target bad rate
+python build_synthetic_dataset.py --input data/augmented_training_dataset.csv --rows 5000 --scenario adverse_case --mode hybrid_rules --generate-outcomes --target-bad-rate 0.25 --seed 42
+
+# With validation metadata JSON
+python build_synthetic_dataset.py --input data/ml_training_dataset.csv --rows 2000 --scenario weak_credit_mix --generate-outcomes --output-dir data/synthetic --metadata-json
+```
+
+**Outputs** (in `data/synthetic/` by default): `synthetic_dataset.csv`, `synthetic_validation_summary.csv`, `synthetic_feature_comparison.csv`, `synthetic_correlation_comparison.csv`, and optionally `synthetic_run_metadata.json`. All rows are labelled `data_source=synthetic`.
+
+**Modes**: `hybrid_rules` (default), `bootstrap_rows`, `independent_feature_sampling`. **Scenarios**: `base_case`, `growth_case`, `adverse_case`, `recession_case`, `weak_credit_mix`, `strong_credit_mix`, `high_bounce_segment`, `young_business_segment`.
+
 ---
 
 ## Project Structure
@@ -389,6 +408,8 @@ MCAV2/
 ├── build_training_dataset.py                # Training data builder (labelled only)
 ├── build_full_feature_dataset.py           # Full feature dataset (labelled + rejected)
 ├── reject_inference_pipeline.py            # Reject scoring + parceling + augmented dataset
+├── build_synthetic_dataset.py             # Synthetic data engine (testing/simulation only)
+├── synthetic_data/                         # Synthetic data package (schema, generator, scenarios, validator)
 ├── train_improved_model.py                  # ML model training script
 ├── score_all_apps.py                        # Batch MCA rule scorer
 ├── requirements.txt                         # Python dependencies
