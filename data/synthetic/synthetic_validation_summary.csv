@@ -1,2 +1,2 @@
 reference_rows,synthetic_rows,feature_count,synthetic_bad_rate,synthetic_avg_pd,scenario_name,mode,generate_outcomes
-268,150,13,0.22666666666666666,0.25000000000000006,adverse_case,hybrid_rules,True
+268,1000,13,,,base_case,hybrid_rules,False

@@ -23,13 +23,25 @@ from .schema import ML_FEATURE_NAMES, clip_dataframe, get_required_columns
 
 def load_reference(path: str) -> pd.DataFrame:
     """
-    Load reference CSV and extract the 13 feature columns. Fail loudly if any missing.
+    Load reference CSV or Excel and extract the 13 feature columns. Fail loudly if any missing.
+    Supports: .csv (UTF-8 or latin-1), .xlsx, .xls.
     """
-    df = pd.read_csv(path)
+    path_lower = path.lower()
+    if path_lower.endswith((".xlsx", ".xls")):
+        df = pd.read_excel(path)
+    else:
+        try:
+            df = pd.read_csv(path, encoding="utf-8")
+        except UnicodeDecodeError:
+            df = pd.read_csv(path, encoding="latin-1")
     required = get_required_columns()
     missing = [c for c in required if c not in df.columns]
     if missing:
-        raise ValueError(f"Reference dataset missing required columns: {missing}")
+        raise ValueError(
+            f"Reference dataset missing required columns: {missing}. "
+            "Use a file that contains the 13 ML features (e.g. data/ml_training_dataset.csv, "
+            "data/full_feature_dataset.csv, or data/augmented_training_dataset.csv)."
+        )
     return df[required].copy()
 
 

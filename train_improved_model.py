@@ -191,10 +191,16 @@ def main():
         required=True,
         help="Path to training CSV/XLSX with feature columns and 'outcome' target",
     )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=OUTPUT_DIR,
+        help=f"Directory for model.pkl and scaler.pkl (default: {OUTPUT_DIR})",
+    )
     args = parser.parse_args()
 
     df = load_data(args.data)
-    train(df)
+    train(df, output_dir=args.output_dir)
 
 
 if __name__ == "__main__":

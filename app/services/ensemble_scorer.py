@@ -77,7 +77,7 @@ class EnsembleScorer:
         'approve': 75,
         'conditional_approve': 70,
         'refer': 65,
-        'senior_review': 65
+        'senior_review': 60
     }
     
     # Hard stop conditions that override ensemble
@@ -213,8 +213,14 @@ class EnsembleScorer:
         if directors < 20:
             hard_stop_reasons.append(self.HARD_STOP_CONDITIONS['directors_critical'])
         
-        # Multiple CCJs
-        if params.get('business_ccj', False):
+        # Only treat repeated CCJs as a hard stop. A single CCJ is still a
+        # material risk factor, but it should not automatically trump strong
+        # scores from the other models.
+        business_ccj_count = params.get('business_ccj_count')
+        if business_ccj_count is None:
+            business_ccj_count = 1 if params.get('business_ccj', False) else 0
+
+        if params.get('multiple_ccjs', False) or business_ccj_count >= 2:
             hard_stop_reasons.append(self.HARD_STOP_CONDITIONS['multiple_ccjs'])
         
         if hard_stop_reasons:

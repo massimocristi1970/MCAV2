@@ -1790,8 +1790,9 @@ def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
         adjustment += 1
         adjustment_reasons.append(f"Good revenue scale (£{monthly_revenue:,.0f}/month) (+2)")
     
-    # Apply adjustment with cap
-    adjusted_score = min(50, raw_ml_score + adjustment)  # Cap at 85%
+    # Apply adjustment with cap. The adjustment is intended to uplift
+    # undervalued growth businesses, not compress already-strong ML scores.
+    adjusted_score = min(85, raw_ml_score + adjustment)
     
     print(f"  Adjustment Factors:")
     for reason in adjustment_reasons:
@@ -3108,7 +3109,8 @@ def main():
 
         # File upload
         uploaded_file = st.file_uploader("Upload Transaction Data (JSON)", type=['json'])
-        
+        run_to_show = None  # set after processing or from last_run when returning from another page
+
         if uploaded_file is not None:
             try:
                 # Read and process file
@@ -3205,18 +3207,6 @@ def main():
                 metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
                 scores = calculate_all_scores_enhanced(metrics, params)
 
-                # NEW: store last successful run so Streamlit pages can render
-                st.session_state["last_run"] = {
-                    "company_name": company_name,
-                    "analysis_period": analysis_period,
-                    "df": df,
-                    "filtered_df": filtered_df,
-                    "params": params,
-                    "metrics": metrics,
-                    "scores": scores,
-                    "revenue_insights": revenue_insights,
-                }
-
                 # ensure MCA rule outputs are part of scoring_results for export
                 scores["mca_rule_decision"] = params.get("mca_rule_decision")
                 scores["mca_rule_score"] = params.get("mca_rule_score")
@@ -3265,9 +3255,12 @@ def main():
                 # 1) MCA hard-decline always wins
                 # 2) Otherwise, if ensemble exists, use it (includes TU director hard stops)
                 if mca_decision != "DECLINE" and ensemble_decision in ("DECLINE", "REFER", "APPROVE", "SENIOR_REVIEW", "CONDITIONAL_APPROVE"):
-                    final_decision = ensemble_decision
+                    final_decision = combine_mca_and_tu_decisions(
+                        ensemble_decision,
+                        params.get("tu_director_decision"),
+                    )
                     final_reasons.append(
-                        f"Ensemble override applied: {ensemble_decision} "
+                        f"Ensemble override applied: {ensemble_decision} -> {final_decision} "
                         f"(reason: {ensemble.get('primary_reason', 'n/a')})"
                     )
 
@@ -3278,6 +3271,18 @@ def main():
                 params["final_decision_reasons"] = final_reasons
 
                 revenue_insights = calculate_revenue_insights(filtered_df)
+
+                # Store last successful run (complete, so other pages / return to Main can use it)
+                st.session_state["last_run"] = {
+                    "company_name": company_name,
+                    "analysis_period": analysis_period,
+                    "df": df,
+                    "filtered_df": filtered_df,
+                    "params": params,
+                    "metrics": metrics,
+                    "scores": scores,
+                    "revenue_insights": revenue_insights,
+                }
 
                 # ENHANCED DASHBOARD RENDERING
                 period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
@@ -3807,6 +3812,41 @@ def main():
                 st.code(full_traceback)
                 print(full_traceback)
         
+        elif st.session_state.get("last_run"):
+            # Returned from another page (e.g. Synthetic Compare): restore and show last run
+            run = st.session_state["last_run"]
+            st.info("Showing previous run. Upload a new file to refresh.")
+            company_name = run["company_name"]
+            analysis_period = run["analysis_period"]
+            df = run["df"]
+            filtered_df = run["filtered_df"]
+            params = run["params"]
+            metrics = run["metrics"]
+            scores = run["scores"]
+            revenue_insights = run.get("revenue_insights") or {}
+            if not revenue_insights and not filtered_df.empty:
+                revenue_insights = calculate_revenue_insights(filtered_df)
+            period_label = f"Last {analysis_period} Months" if analysis_period != "All" else "Full Period"
+            st.header(f"Financial Dashboard: {company_name} ({period_label})")
+            ensemble = scores.get("ensemble") or {}
+            decision = scores.get("final_decision") or ensemble.get("decision", "REFER")
+            combined_score = ensemble.get("combined_score", 0)
+            confidence = ensemble.get("confidence", 0)
+            if decision == "APPROVE":
+                st.success(f"## 🎯 Recommendation: ✅ APPROVE — **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%")
+            elif decision in ("CONDITIONAL_APPROVE", "SENIOR_REVIEW", "REFER"):
+                st.warning(f"## 🎯 Recommendation: ⚠️ {decision.replace('_', ' ')} — **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%")
+            else:
+                st.error(f"## 🎯 Recommendation: ❌ DECLINE — **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%")
+            c1, c2, c3 = st.columns(3)
+            with c1:
+                st.metric("MCA Rule (40%)", f"{params.get('mca_rule_score', 0):.0f}")
+            with c2:
+                st.metric("Subprime (40%)", f"{scores.get('subprime_score', 0):.1f}")
+            with c3:
+                ml_s = scores.get("adjusted_ml_score") or scores.get("ml_score") or 0
+                st.metric("ML Score (20%)", f"{ml_s:.1f}%" if ml_s else "N/A")
+            st.caption("Upload a new JSON file above to run a full analysis again, or use **Scoring** / **Charts** / **Reports** for more detail.")
         else:
             st.info("Upload a JSON transaction file to begin analysis")
 
