@@ -45,6 +45,8 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 
+from app.services.business_risk_signals import categorize_business_transactions
+
 
 # ============================================================
 # CONFIG
@@ -264,8 +266,14 @@ def build_mca_features(transactions):
                 "date": dt,
                 "month": _month_key(dt),
                 "amount": amt,
+                "amount_raw": amt,
                 "name": name,
+                "name_y": name,
+                "merchant_name": t.get("merchant_name") or "",
                 "pfc": pfc_primary,
+                "personal_finance_category.detailed": str(pfc.get("detailed") or "").lower()
+                if isinstance(pfc, dict) else "",
+                "transaction_type": str(t.get("transaction_type") or "").lower(),
             }
         )
 
@@ -276,20 +284,48 @@ def build_mca_features(transactions):
 
     # Direction logic
     if df["amount"].min() >= 0:
-        inflow_keys = {"INCOME", "TRANSFER_IN"}
-        df["inflow"] = np.where(df["pfc"].isin(inflow_keys), df["amount"], 0.0)
-        df["outflow"] = np.where(~df["pfc"].isin(inflow_keys), df["amount"], 0.0)
-        sign_label = "CATEGORY(primary)"
+        credit_mask = (
+            df["transaction_type"].isin({"credit", "deposit", "refund"})
+            | df["pfc"].eq("INCOME")
+            | df["personal_finance_category.detailed"].str.startswith(
+                ("income_", "transfer_in_", "loan_disbursements_"),
+                na=False
+            )
+        )
+        df["signed_amount"] = np.where(credit_mask, -df["amount"].abs(), df["amount"].abs())
+        sign_label = "CATEGORY(primary/detailed)"
     else:
         inflow_A = df["amount"].clip(upper=0).abs()
-        outflow_A = df["amount"].clip(lower=0)
         inflow_B = df["amount"].clip(lower=0)
-        outflow_B = df["amount"].clip(upper=0).abs()
-
         use_B = inflow_B.sum() > inflow_A.sum()
-        df["inflow"] = inflow_B if use_B else inflow_A
-        df["outflow"] = outflow_B if use_B else outflow_A
+        df["signed_amount"] = -df["amount"] if use_B else df["amount"]
         sign_label = "B(+inflow)" if use_B else "A(-inflow)"
+
+    df["amount_original"] = df["signed_amount"]
+    categorized = categorize_business_transactions(
+        df[
+            [
+                "date",
+                "amount",
+                "amount_original",
+                "name",
+                "name_y",
+                "merchant_name",
+                "personal_finance_category.detailed",
+                "transaction_type",
+            ]
+        ].copy()
+    )
+    df["subcategory"] = categorized["subcategory"].values
+    df["is_revenue"] = categorized["is_revenue"].values
+    df["signed_amount"] = categorized["signed_amount"].values
+    df["inflow"] = np.where(df["is_revenue"], df["signed_amount"].abs(), 0.0)
+    df["outflow"] = np.where(df["signed_amount"] > 0, df["signed_amount"].abs(), 0.0)
+    df["excluded_non_revenue_inflows"] = np.where(
+        (df["signed_amount"] < 0) & ~df["is_revenue"],
+        df["signed_amount"].abs(),
+        0.0
+    )
 
     # Monthly aggregation
     m = df.groupby("month").agg(
@@ -319,7 +355,11 @@ def build_mca_features(transactions):
 
     # Running balance for Average Month-End Balance and Negative Balance Days
     df_sorted = df.sort_values("date").copy()
-    df_sorted["signed"] = df_sorted["inflow"] - df_sorted["outflow"]
+    df_sorted["signed"] = -df_sorted["outflow"]
+    df_sorted.loc[df_sorted["is_revenue"], "signed"] = df_sorted.loc[df_sorted["is_revenue"], "inflow"]
+    df_sorted.loc[(df_sorted["signed_amount"] < 0) & ~df_sorted["is_revenue"], "signed"] = (
+        df_sorted.loc[(df_sorted["signed_amount"] < 0) & ~df_sorted["is_revenue"], "signed_amount"].abs()
+    )
     df_sorted["running_balance"] = df_sorted["signed"].cumsum()
 
     # Month-end balances
@@ -380,6 +420,7 @@ def build_mca_features(transactions):
         "first_txn_date": df["date"].min().date().isoformat(),
         "last_txn_date": df["date"].max().date().isoformat(),
         "sign_convention_used": sign_label,
+        "non_revenue_inflow_total": df["excluded_non_revenue_inflows"].sum(),
         # Additional features needed by the ML model
         "avg_month_end_balance": avg_month_end_balance,
         "avg_neg_days_per_month": avg_neg_days_per_month,

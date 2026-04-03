@@ -195,11 +195,11 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
         "income_unemployment": "Special Inflow",
 
         "transfer_in_cash_advances_and_loans": "Loans",
-        "transfer_in_investment_and_retirement_funds": "Special Inflow",
-        "transfer_in_savings": "Special Inflow",
-        "transfer_in_account_transfer": "Special Inflow",
-        "transfer_in_other_transfer_in": "Special Inflow",
-        "transfer_in_deposit": "Special Inflow",
+        "transfer_in_investment_and_retirement_funds": "Transfer In",
+        "transfer_in_savings": "Transfer In",
+        "transfer_in_account_transfer": "Transfer In",
+        "transfer_in_other_transfer_in": "Transfer In",
+        "transfer_in_deposit": "Transfer In",
 
         "transfer_out_investment_and_retirement_funds": "Special Outflow",
         "transfer_out_savings": "Special Outflow",
@@ -279,10 +279,11 @@ def categorize_transactions(data: pd.DataFrame) -> pd.DataFrame:
     
     data = data.copy()
     data['subcategory'] = data.apply(map_transaction_category, axis=1)
-    data['is_revenue'] = data['subcategory'].isin(['Income', 'Special Inflow'])
+    data['is_revenue'] = data['subcategory'].isin(['Income'])
     data['is_expense'] = data['subcategory'].isin(['Expenses', 'Special Outflow'])
     data['is_debt_repayment'] = data['subcategory'].isin(['Debt Repayments'])
     data['is_debt'] = data['subcategory'].isin(['Loans'])
+    data['is_transfer_in'] = data['subcategory'].isin(['Transfer In'])
     
     return data
 
