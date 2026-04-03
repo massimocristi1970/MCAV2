@@ -1,7 +1,59 @@
 @echo off
-cd /d "C:\Users\Massimo Cristi\OneDrive\Documents\GitHub\MCAv2\MCAV2"
-python -m venv venv
-call venv\Scripts\activate
-python -m pip install --upgrade pip
-pip install -r requirements.txt
+setlocal
+
+cd /d "%~dp0"
+
+set "VENV_DIR=.venv"
+set "VENV_PYTHON=%CD%\%VENV_DIR%\Scripts\python.exe"
+set "BOOTSTRAP_PYTHON="
+
+if exist "%LocalAppData%\Programs\Python\Python313\python.exe" (
+    set "BOOTSTRAP_PYTHON=%LocalAppData%\Programs\Python\Python313\python.exe"
+)
+
+if not defined BOOTSTRAP_PYTHON (
+    py -3.13 -c "import sys; print(sys.version)" >nul 2>&1
+    if not errorlevel 1 (
+        for /f "delims=" %%I in ('py -3.13 -c "import sys; print(sys.executable)"') do set "BOOTSTRAP_PYTHON=%%I"
+    )
+)
+
+if not defined BOOTSTRAP_PYTHON (
+    python -c "import sys; print(sys.version)" >nul 2>&1
+    if not errorlevel 1 (
+        for /f "delims=" %%I in ('python -c "import sys; print(sys.executable)"') do set "BOOTSTRAP_PYTHON=%%I"
+    )
+)
+
+if not defined BOOTSTRAP_PYTHON (
+    echo No working Python 3.13 interpreter found.
+    pause
+    exit /b 1
+)
+
+if not exist "%VENV_PYTHON%" (
+    echo Creating local virtual environment in %VENV_DIR%...
+    call "%BOOTSTRAP_PYTHON%" -m venv "%VENV_DIR%"
+    if errorlevel 1 (
+        echo Failed to create virtual environment.
+        pause
+        exit /b 1
+    )
+)
+
+call "%VENV_PYTHON%" -m pip install --upgrade pip
+if errorlevel 1 (
+    echo Failed to upgrade pip.
+    pause
+    exit /b 1
+)
+
+call "%VENV_PYTHON%" -m pip install -r requirements.txt
+if errorlevel 1 (
+    echo Failed to install requirements.txt.
+    pause
+    exit /b 1
+)
+
+echo Requirements installed successfully in %VENV_DIR%.
 pause
