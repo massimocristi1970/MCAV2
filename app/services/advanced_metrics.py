@@ -92,8 +92,11 @@ class AdvancedMetricsCalculator:
         
         # Identify credit transactions (deposits/income)
         if 'amount' in df.columns:
-            df['is_credit'] = df['amount'] < 0  # Negative = money in
-            credits = df[df['is_credit']].copy()
+            if 'is_revenue' in df.columns:
+                credits = df[df['is_revenue']].copy()
+            else:
+                df['is_credit'] = df['amount'] < 0  # Negative = money in
+                credits = df[df['is_credit']].copy()
         else:
             return {'transaction_pattern_error': 'Missing amount column'}
         
@@ -174,7 +177,10 @@ class AdvancedMetricsCalculator:
         metrics = {}
         
         # Get credit transactions
-        credits = df[df['amount'] < 0].copy() if 'amount' in df.columns else pd.DataFrame()
+        if 'is_revenue' in df.columns:
+            credits = df[df['is_revenue']].copy()
+        else:
+            credits = df[df['amount'] < 0].copy() if 'amount' in df.columns else pd.DataFrame()
         
         if credits.empty or 'name' not in credits.columns:
             return {
@@ -380,7 +386,18 @@ class AdvancedMetricsCalculator:
             metrics['balance_improving'] = None
         
         # NSF/Bounced payment recency
-        if 'name' in df.columns:
+        if 'is_failed_payment' in df.columns:
+            nsf_dates = df[df['is_failed_payment']]['date']
+            if not nsf_dates.empty:
+                last_nsf = nsf_dates.max()
+                metrics['days_since_last_nsf'] = int((df['date'].max() - last_nsf).days)
+                metrics['nsf_count_90d'] = int(
+                    len(nsf_dates[nsf_dates >= df['date'].max() - timedelta(days=90)])
+                )
+            else:
+                metrics['days_since_last_nsf'] = 999
+                metrics['nsf_count_90d'] = 0
+        elif 'name' in df.columns:
             nsf_keywords = ['nsf', 'insufficient', 'bounced', 'returned', 'unpaid', 'failed']
             df['is_nsf'] = df['name'].str.lower().str.contains('|'.join(nsf_keywords), na=False)
             

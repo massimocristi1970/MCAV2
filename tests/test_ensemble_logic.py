@@ -95,3 +95,39 @@ def test_growth_business_ml_adjustment_caps_at_85_not_50():
     )
 
     assert adjusted == 85
+
+@pytest.mark.unit
+def test_zero_scores_are_treated_as_real_inputs_not_missing_data():
+    result = get_ensemble_recommendation(
+        scores={
+            "mca_score": 0,
+            "mca_decision": "REFER",
+            "subprime_score": 80,
+            "ml_score": 80,
+        },
+        metrics=_strong_metrics(),
+        params=_strong_params(),
+    )
+
+    assert result["combined_score"] == 40
+    assert result["contributing_scores"]["mca_score"] == 0
+
+
+@pytest.mark.unit
+def test_missing_scores_still_renormalize_weights():
+    result = get_ensemble_recommendation(
+        scores={
+            "mca_score": 80,
+            "mca_decision": "APPROVE",
+            "subprime_score": 60,
+        },
+        metrics=_strong_metrics(),
+        params=_strong_params(),
+    )
+
+    assert result["detailed_breakdown"]["raw_combined_score"] == 70
+    assert result["combined_score"] == 68
+    assert "ml_score" not in result["contributing_scores"]
+
+
+

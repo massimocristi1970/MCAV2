@@ -119,6 +119,23 @@ class TransactionCategorizer:
                 r'community[\s\-]?development[\s\-]?finance',
                 r'cdfi'
             ],
+            'transfer_patterns': [
+                r'\btransfer\s+(from|to)\b', r'\btrf\b', r'\bfaster\s+payment\b',
+                r'\bown\s+account\b', r'\bbetween\s+accounts\b', r'\bmove\s+money\b',
+                r'\baccount\s+transfer\b', r'\bsweep\b', r'\bsavings\s+transfer\b',
+                r'\bcurrent\s+account\s+transfer\b'
+            ],
+            'funding_injection_patterns': [
+                r'director[\' ]?s?\s+loan', r'shareholder\s+loan', r'capital\s+introduced',
+                r'capital\s+injection', r'capital\s+contribution', r'owner\s+funds?',
+                r'owner\s+investment', r'founder\s+loan', r'member\s+loan',
+                r'partners?\s+capital', r'shareholder\s+funding'
+            ],
+            'bank_charge_patterns': [
+                r'account\s+fee', r'monthly\s+fee', r'service\s+charge', r'bank\s+charge',
+                r'overdraft\s+fee', r'arranged\s+overdraft', r'unarranged\s+overdraft',
+                r'paid\s+item\s+fee', r'card\s+terminal\s+fee', r'merchant\s+service\s+charge'
+            ],
             'expense_patterns': {
                 'operational': [
                     r'rent', r'utilities', r'insurance', r'supplies', r'inventory',
@@ -194,6 +211,23 @@ class TransactionCategorizer:
             refund_category, confidence = self._check_refund_patterns(combined_text)
             if confidence > self.confidence_threshold:
                 return refund_category, confidence
+
+        # STEP 2.5: Separate transfers and owner funding before revenue checks
+        transfer_category, confidence = self._check_transfer_patterns(
+            combined_text, category, is_credit, is_debit
+        )
+        if confidence > self.confidence_threshold:
+            return transfer_category, confidence
+
+        if is_credit:
+            funding_category, confidence = self._check_funding_patterns(combined_text)
+            if confidence > self.confidence_threshold:
+                return funding_category, confidence
+
+        if is_debit:
+            bank_charge_category, confidence = self._check_bank_charge_patterns(combined_text, category)
+            if confidence > self.confidence_threshold:
+                return bank_charge_category, confidence
         
         # STEP 3: Check for special income patterns (only for credits)
         if is_credit:
@@ -259,6 +293,52 @@ class TransactionCategorizer:
                 else:
                     return "Debt Repayments", 0.9
         
+        return "Unknown", 0.0
+
+    def _check_transfer_patterns(
+        self,
+        text: str,
+        category: str,
+        is_credit: bool,
+        is_debit: bool
+    ) -> Tuple[str, float]:
+        """Check for internal transfers that should not count as trading revenue."""
+        for pattern in self.categorization_rules['transfer_patterns']:
+            if re.search(pattern, text, re.IGNORECASE):
+                if is_credit:
+                    return "Transfer In", 0.9
+                if is_debit:
+                    return "Transfer Out", 0.9
+
+        if category.startswith("transfer_in_") and category != "transfer_in_cash_advances_and_loans":
+            return "Transfer In", 0.9
+        if category.startswith("transfer_out_"):
+            return "Transfer Out", 0.9
+
+        return "Unknown", 0.0
+
+    def _check_funding_patterns(self, text: str) -> Tuple[str, float]:
+        """Check for owner, director, or shareholder funding injections."""
+        for pattern in self.categorization_rules['funding_injection_patterns']:
+            if re.search(pattern, text, re.IGNORECASE):
+                return "Funding Inflow", 0.9
+
+        return "Unknown", 0.0
+
+    def _check_bank_charge_patterns(self, text: str, category: str = "") -> Tuple[str, float]:
+        """Check for bank charges distinct from failed payments."""
+        for pattern in self.categorization_rules['bank_charge_patterns']:
+            if re.search(pattern, text, re.IGNORECASE):
+                return "Bank Charge", 0.9
+
+        if category.startswith("bank_fees_") and category not in {
+            'bank_fees_insufficient_funds',
+            'bank_fees_late_payment',
+            'bank_fees_overdraft',
+            'bank_fees_returned_payment'
+        }:
+            return "Bank Charge", 0.85
+
         return "Unknown", 0.0
     
     def _check_debt_patterns(self, text: str) -> Tuple[str, float]:
@@ -360,11 +440,11 @@ class TransactionCategorizer:
         elif category.startswith("loan_payments_"):
             return "Debt Repayments", 0.7
         elif category.startswith("bank_fees_"):
-            return "Failed Payment", 0.8
+            return "Bank Charge", 0.8
         elif category.startswith("transfer_in_"):
-            return "Special Inflow", 0.6
+            return "Transfer In", 0.7
         elif category.startswith("transfer_out_"):
-            return "Special Outflow", 0.6
+            return "Transfer Out", 0.7
         
         # CRITICAL FIX: Expense-like categories must respect credit/debit direction
         expense_prefixes = [
@@ -558,11 +638,17 @@ class DataProcessor:
             data['categorization_confidence'] = confidences
         
         # Add boolean columns for easy filtering
-        data['is_revenue'] = data['subcategory'].isin(['Income', 'Special Inflow'])
-        data['is_expense'] = data['subcategory'].isin(['Expenses', 'Special Outflow'])
+        data['is_revenue'] = data['subcategory'].isin(['Income'])
+        data['is_expense'] = data['subcategory'].isin(['Expenses', 'Special Outflow', 'Bank Charge'])
         data['is_debt_repayment'] = data['subcategory'].isin(['Debt Repayments'])
         data['is_debt'] = data['subcategory'].isin(['Loans'])
         data['is_failed_payment'] = data['subcategory'].isin(['Failed Payment'])
+        data['is_transfer_in'] = data['subcategory'].isin(['Transfer In'])
+        data['is_transfer_out'] = data['subcategory'].isin(['Transfer Out'])
+        data['is_internal_transfer'] = data['is_transfer_in'] | data['is_transfer_out']
+        data['is_funding_injection'] = data['subcategory'].isin(['Funding Inflow'])
+        data['is_bank_charge'] = data['subcategory'].isin(['Bank Charge'])
+        data['is_special_inflow'] = data['subcategory'].isin(['Special Inflow'])
         
         return data
     

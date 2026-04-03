@@ -251,11 +251,11 @@ class EnsembleScorer:
         
         # MCA Rule Score (MOST IMPORTANT - transaction consistency)
         # Score is 0-100 from decide_application()
-        mca_score = scores.get('mca_score', 0)
+        mca_score = scores.get('mca_score')
         mca_decision = scores.get('mca_decision', 'REFER')
         results['mca_score'] = ScoringResult(
-            score=float(mca_score) if mca_score else 50,
-            available=mca_score is not None and mca_score > 0,
+            score=float(mca_score) if mca_score is not None else 50,
+            available=mca_score is not None,
             weight=self.weights.get('mca_score', 0),
             details={
                 'decision': mca_decision,
@@ -264,19 +264,21 @@ class EnsembleScorer:
         )
         
         # Subprime score (already 0-100)
-        subprime = scores.get('subprime_score', 0)
+        subprime = scores.get('subprime_score')
         results['subprime_score'] = ScoringResult(
-            score=float(subprime) if subprime else 0,
-            available=subprime is not None and subprime > 0,
+            score=float(subprime) if subprime is not None else 0,
+            available=subprime is not None,
             weight=self.weights.get('subprime_score', 0),
             details=scores.get('subprime_details', {})
         )
         
         # ML score (already 0-100 percentage)
-        ml_score = scores.get('ml_score') or scores.get('adjusted_ml_score', 0)
+        ml_score = scores.get('ml_score')
+        if ml_score is None:
+            ml_score = scores.get('adjusted_ml_score')
         results['ml_score'] = ScoringResult(
-            score=float(ml_score) if ml_score else 0,
-            available=ml_score is not None and ml_score > 0,
+            score=float(ml_score) if ml_score is not None else 0,
+            available=ml_score is not None,
             weight=self.weights.get('ml_score', 0),
             details=scores.get('ml_details', {})
         )
@@ -294,7 +296,7 @@ class EnsembleScorer:
         contributing_scores = {}
         
         for name, result in scoring_results.items():
-            if result.available and result.score > 0:
+            if result.available:
                 weighted_sum += result.score * result.weight
                 total_weight += result.weight
                 contributing_scores[name] = round(result.score, 1)
@@ -319,7 +321,7 @@ class EnsembleScorer:
         """
         primary_scores = [
             r.score for r in scoring_results.values()
-            if r.available and r.score > 0
+            if r.available
         ]
         
         if len(primary_scores) < 2:
@@ -458,6 +460,31 @@ class EnsembleScorer:
         bounced = metrics.get('Number of Bounced Payments', 0)
         if bounced > 2:
             risk_factors.append(f"Multiple bounced payments ({bounced})")
+
+        funding_reliance = metrics.get('Funding Reliance Ratio', 0)
+        if funding_reliance >= 0.25:
+            risk_factors.append(f"Material owner/funding inflows ({funding_reliance*100:.0f}% of core inflows)")
+
+        transfer_ratio = metrics.get('Internal Transfer Activity Ratio', 0)
+        if transfer_ratio >= 0.25:
+            risk_factors.append(f"High internal transfer activity ({transfer_ratio*100:.0f}% of cash movement)")
+
+        concentration_risk = metrics.get('Revenue Concentration Risk')
+        top_source = metrics.get('Top Revenue Source Percentage', 0)
+        if concentration_risk == 'High' or top_source >= 60:
+            risk_factors.append(f"Revenue concentration risk (top source {top_source:.0f}%)")
+
+        active_lenders = metrics.get('Active Lenders Detected', 0)
+        if active_lenders >= 2:
+            risk_factors.append(f"Multiple active lenders detected ({active_lenders})")
+
+        bank_charge_count = metrics.get('Bank Charge Count', 0)
+        if bank_charge_count >= 3:
+            risk_factors.append(f"Frequent bank charges ({bank_charge_count})")
+
+        recent_nsf = metrics.get('NSF Count 90D', 0)
+        if recent_nsf > 0:
+            risk_factors.append(f"Recent unpaid/NSF activity ({recent_nsf} in 90 days)")
         
         return risk_factors[:5]  # Top 5 risk factors
     
@@ -505,6 +532,22 @@ class EnsembleScorer:
         bounced = metrics.get('Number of Bounced Payments', 0)
         if bounced == 0:
             positive_factors.append("No bounced payments")
+
+        funding_reliance = metrics.get('Funding Reliance Ratio', 0)
+        if funding_reliance <= 0.1:
+            positive_factors.append("Low reliance on owner/funding inflows")
+
+        concentration_risk = metrics.get('Revenue Concentration Risk')
+        if concentration_risk == 'Low':
+            positive_factors.append("Diversified revenue base")
+
+        regularity = metrics.get('Revenue Regularity Score', 0)
+        if regularity >= 70:
+            positive_factors.append(f"Consistent revenue cadence ({regularity:.0f}/100)")
+
+        recent_nsf = metrics.get('NSF Count 90D', 0)
+        if recent_nsf == 0:
+            positive_factors.append("No recent NSF activity")
         
         return positive_factors[:5]  # Top 5 positive factors
     
