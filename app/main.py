@@ -1589,10 +1589,10 @@ def calculate_all_scores_enhanced(metrics, params):
             mca_rule_score = params.get('mca_rule_score', 50)
             
             # Prepare scores for ensemble
-            # Weights based on predictive power:
-            # - MCA Rule (transaction consistency): 40% - empirically validated
-            # - Subprime Score: 40% - comprehensive micro-enterprise assessment  
-            # - ML Score: 20% - data-driven probability (retrained, 0.922 ROC-AUC)
+            # Decision weights:
+            # - MCA Rule (transaction consistency): 60%
+            # - Subprime Score: 40%
+            # - ML Score: informational only
             ensemble_scores = {
                 'subprime_score': subprime_result['subprime_score'],
                 'ml_score': adjusted_ml_score or ml_score,
@@ -2615,11 +2615,11 @@ class DashboardExporter:
                         <p>{export_data['scoring_results']['subprime_tier']}</p>
                     </div>
                     <div class="metric-card">
-                        <h3>🏛️ MCA Rule (40%)</h3>
+                        <h3>🏛️ MCA Rule (60%)</h3>
                         <div class="score-{get_score_class(export_data['scoring_results'].get('mca_rule_score', 0))}">{export_data['scoring_results'].get('mca_rule_score', 0):.0f}/100</div>
                     </div>
                     <div class="metric-card">
-                        <h3>🤖 ML Score</h3>
+                        <h3>🤖 ML Score (Info Only)</h3>
                         <div class="score-{get_score_class(export_data['scoring_results'].get('adjusted_ml_score', 0))}">{export_data['scoring_results'].get('adjusted_ml_score', 0):.1f}%</div>
                     </div>
                     <div class="metric-card">
@@ -2664,11 +2664,11 @@ class DashboardExporter:
                         &nbsp;&nbsp;|&nbsp;&nbsp; Tier: {export_data['scoring_results'].get('subprime_tier', 'N/A')}</td>
                     </tr>
                     <tr>
-                        <td>MCA Rule (40%)</td>
+                        <td>MCA Rule (60%)</td>
                         <td>{export_data['scoring_results'].get('mca_rule_score', 'N/A')}/100</td>
                     </tr>
                     <tr>
-                        <td>ML Score</td>
+                        <td>ML Score (Info Only)</td>
                         <td>{export_data['scoring_results'].get('adjusted_ml_score', export_data['scoring_results'].get('ml_score', 'N/A'))}</td>
                     </tr>
                     <tr>
@@ -3286,24 +3286,25 @@ def main():
 
                     with score_cols[0]:
                         mca_s = contributing.get('mca_score', params.get('mca_rule_score', 50))
-                        st.metric("MCA Rule (40%)", f"{mca_s:.0f}")
+                        st.metric("MCA Rule (60%)", f"{mca_s:.0f}")
                     
                     with score_cols[1]:
                         subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
                         st.metric("Subprime (40%)", f"{subprime_s:.1f}")
                     
                     with score_cols[2]:
-                        ml_s = contributing.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
-                        st.metric("ML Score (20%)", f"{ml_s:.1f}%" if ml_s else "N/A")
+                        ml_info = ensemble.get('detailed_breakdown', {}).get('informational_scores', {})
+                        ml_s = ml_info.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
+                        st.metric("ML Score (Info Only)", f"{ml_s:.1f}%" if ml_s else "N/A")
                     
                     # Score convergence indicator
                     convergence = ensemble.get('score_convergence', 'Unknown')
                     if 'High' in convergence:
-                        st.success(f"📊 **Score Convergence:** {convergence} - All scoring methods agree")
+                        st.success(f"📊 **Score Convergence:** {convergence} - MCA and Subprime agree")
                     elif 'Good' in convergence:
                         st.info(f"📊 **Score Convergence:** {convergence}")
                     elif 'Moderate' in convergence:
-                        st.warning(f"📊 **Score Convergence:** {convergence} - Some disagreement between methods")
+                        st.warning(f"📊 **Score Convergence:** {convergence} - Some disagreement between MCA and Subprime")
                     else:
                         st.error(f"📊 **Score Convergence:** {convergence} - Significant disagreement")
                     
@@ -3786,12 +3787,12 @@ def main():
                 st.error(f"## 🎯 Recommendation: ❌ DECLINE — **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%")
             c1, c2, c3 = st.columns(3)
             with c1:
-                st.metric("MCA Rule (40%)", f"{params.get('mca_rule_score', 0):.0f}")
+                st.metric("MCA Rule (60%)", f"{params.get('mca_rule_score', 0):.0f}")
             with c2:
                 st.metric("Subprime (40%)", f"{scores.get('subprime_score', 0):.1f}")
             with c3:
                 ml_s = scores.get("adjusted_ml_score") or scores.get("ml_score") or 0
-                st.metric("ML Score (20%)", f"{ml_s:.1f}%" if ml_s else "N/A")
+                st.metric("ML Score (Info Only)", f"{ml_s:.1f}%" if ml_s else "N/A")
             st.caption("Upload a new JSON file above to run a full analysis again, or use **Scoring** / **Charts** / **Reports** for more detail.")
         else:
             st.info("Upload a JSON transaction file to begin analysis")

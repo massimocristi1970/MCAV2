@@ -1,20 +1,22 @@
 # MCA v2 - Business Finance Scorecard
 
-A risk assessment platform for **short-term subprime business lending** (typically £1,000-£10,000 loans, 6-9 month terms). The application analyses bank transaction data, calculates financial metrics, and produces a unified lending recommendation using an ensemble of three scoring systems.
+A risk assessment platform for **short-term subprime business lending** (typically £1,000-£10,000 loans, 6-9 month terms). The application analyses bank transaction data, calculates financial metrics, and produces a unified lending recommendation using MCA and subprime scoring, with ML retained as an informational signal.
 
 ---
 
 ## Scoring System
 
-The application combines three scoring methodologies into a single weighted recommendation:
+The application combines two decisioning methodologies into a single weighted recommendation:
 
 ```
-Combined Score = (MCA Rule x 40%) + (Subprime x 40%) + (ML Score x 20%)
+Combined Score = (MCA Rule x 60%) + (Subprime x 40%)
+
+ML Score = Info only, not used in the combined score or final decision
 
 Decision: APPROVE | CONDITIONAL | REFER | SENIOR_REVIEW | DECLINE
 ```
 
-### MCA Rule Score (40%)
+### MCA Rule Score (60%)
 
 Assesses transaction consistency -- the most important predictor of MCA repayment.
 
@@ -62,9 +64,9 @@ Risk tier classification:
 
 Penalties are applied for business CCJs (-12), personal defaults (-8), director CCJs (-8), no online presence (-4), outdated web presence (-3), and generic email (-2).
 
-### ML Score (20%)
+### ML Score (Info Only)
 
-A Random Forest classifier trained on 272 historical loan applications, wrapped in probability calibration (CalibratedClassifierCV). Achieves 0.922 ROC-AUC on 5-fold cross-validation.
+A Random Forest classifier trained on 272 historical loan applications, wrapped in probability calibration (CalibratedClassifierCV). Achieves 0.922 ROC-AUC on 5-fold cross-validation. This score is displayed for underwriting context, but it does not affect the combined score, convergence penalty, or final decision.
 
 Top features by importance:
 
@@ -93,13 +95,13 @@ The model uses 13 features in total. It is regularised with `max_depth=8`, `min_
    Combined Score >= 75  ->  APPROVE
    Combined Score >= 70  ->  CONDITIONAL_APPROVE
    Combined Score >= 65  ->  REFER
-   Combined Score >= 65  ->  SENIOR_REVIEW
-   Combined Score <  65  ->  DECLINE
+   Combined Score >= 60  ->  SENIOR_REVIEW
+   Combined Score <  60  ->  DECLINE
 
 3. CONVERGENCE CHECK:
-   All three scores compared. If they disagree significantly
-   (range > 30 points), confidence is reduced and the combined
-   score is penalised by up to 8 points.
+   MCA and Subprime scores are compared. If they disagree significantly
+   (range > 30 points), confidence is reduced and the combined score
+   is penalised by up to 8 points. ML is excluded from convergence.
 ```
 
 ### Score Convergence
@@ -174,7 +176,7 @@ make stop       # Stop all services
 
 The dashboard is organised top-down by importance:
 
-1. **Unified Recommendation** -- Decision (APPROVE/DECLINE/REFER), combined score, confidence percentage, contributing scores for MCA Rule (40%), Subprime (40%), ML Score (20%), convergence indicator, and expandable pricing guidance / risk factors / recommendations.
+1. **Unified Recommendation** -- Decision (APPROVE/DECLINE/REFER), combined score, confidence percentage, contributing scores for MCA Rule (60%) and Subprime (40%), ML Score (info only), convergence indicator, and expandable pricing guidance / risk factors / recommendations.
 2. **Revenue Insights** -- Unique revenue sources, daily metrics, revenue active days.
 3. **Charts and Analysis** -- Score comparison, financial metrics, monthly trends, threshold comparisons.
 4. **Monthly Breakdown** -- Transaction counts and amounts by category, monthly tables.
@@ -424,7 +426,7 @@ MCAV2/
 | File | Purpose |
 |------|---------|
 | `app/main.py` | Main Streamlit application -- all dashboard UI, scoring orchestration, and export logic |
-| `app/services/ensemble_scorer.py` | Combines MCA Rule (40%), Subprime (40%), and ML (20%) into a unified recommendation |
+| `app/services/ensemble_scorer.py` | Combines MCA Rule (60%) and Subprime (40%) into a unified recommendation; ML is informational |
 | `app/services/subprime_scoring_system.py` | Subprime risk-tier scoring with industry adjustments and penalties |
 | `app/models/ml_predictor.py` | ML prediction service with feature clipping, confidence intervals, and explainability |
 | `mca_scorecard_rules.py` | Transaction consistency rule engine (inflow days, gaps, volatility) |
@@ -444,9 +446,9 @@ Edit `app/services/ensemble_scorer.py`:
 
 ```python
 DEFAULT_WEIGHTS = {
-    'mca_score': 0.40,
+    'mca_score': 0.60,
     'subprime_score': 0.40,
-    'ml_score': 0.20,
+    'ml_score': 0.00,
 }
 ```
 
@@ -495,11 +497,11 @@ Transactions are automatically classified into:
 
 ### v2.3.0 (February 2026)
 - Removed Weighted (5%) scoring system from ensemble
-- New scoring weights: MCA Rule 40%, Subprime 40%, ML Score 20%
+- New scoring weights: MCA Rule 60%, Subprime 40%; ML Score is informational only
 - Retrained ML model on 272 applications (0.922 ROC-AUC, up from no validation)
 - Added probability calibration (CalibratedClassifierCV) to ML model
 - Added feature clipping to prevent extrapolation on extreme values
-- Updated convergence check to include all three scoring systems
+- Updated convergence check to compare MCA and Subprime only
 - Updated build_training_dataset.py to produce ML-ready training data
 - Added train_improved_model.py for reproducible model retraining
 - Aligned batch processor with all scoring changes

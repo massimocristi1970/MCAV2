@@ -50,10 +50,13 @@ class EnsembleScorer:
     """
     Combines multiple scoring systems into unified recommendations.
     
-    Scoring systems considered (weights based on predictive power):
-    1. MCA Rule Score (40%) - Transaction consistency, empirically validated
+    Decision scoring systems:
+    1. MCA Rule Score (60%) - Transaction consistency, empirically validated
     2. Subprime Score (40%) - Comprehensive micro-enterprise assessment
-    3. ML Score (20%) - Data-driven probability (retrained model, 0.922 ROC-AUC)
+
+    ML Score is retained as an informational signal only. It is displayed for
+    context, but it does not affect the combined score, convergence penalty, or
+    final decision.
     
     The MCA Rule Score is based on:
     - inflow_days_30d: Days with deposits in last 30 days
@@ -67,9 +70,9 @@ class EnsembleScorer:
     """
     
     DEFAULT_WEIGHTS = {
-        'mca_score': 0.40,        # Transaction consistency - empirically validated
+        'mca_score': 0.60,        # Transaction consistency - empirically validated
         'subprime_score': 0.40,   # Micro-enterprise assessment
-        'ml_score': 0.20,         # Data-driven probability (retrained, 0.922 ROC-AUC)
+        'ml_score': 0.00,         # Informational only
     }
     
     # Decision thresholds
@@ -134,7 +137,7 @@ class EnsembleScorer:
         # Calculate weighted ensemble score
         combined_score, contributing_scores = self._calculate_weighted_score(scoring_results)
         
-        # Analyze score convergence
+        # Analyze score convergence between decision-driving systems only.
         convergence, convergence_penalty = self._analyze_convergence(scoring_results)
         
         # Apply convergence penalty (divergent scores reduce confidence)
@@ -162,7 +165,14 @@ class EnsembleScorer:
         
         # Primary reason for decision
         primary_reason = self._get_primary_reason(
-            decision, adjusted_score, risk_factors, positive_factors
+            decision,
+            adjusted_score,
+            combined_score,
+            convergence_penalty,
+            convergence,
+            contributing_scores,
+            risk_factors,
+            positive_factors,
         )
         
         return EnsembleResult(
@@ -179,8 +189,16 @@ class EnsembleScorer:
             detailed_breakdown={
                 'raw_combined_score': round(combined_score, 1),
                 'convergence_penalty': round(convergence_penalty, 1),
-                'scoring_systems_used': len([s for s in scoring_results.values() if s.available]),
-                'weights_applied': self.weights
+                'scoring_systems_used': len([
+                    s for s in scoring_results.values()
+                    if s.available and s.weight > 0
+                ]),
+                'weights_applied': self.weights,
+                'informational_scores': {
+                    name: round(result.score, 1)
+                    for name, result in scoring_results.items()
+                    if result.available and result.weight <= 0
+                },
             }
         )
     
@@ -272,7 +290,7 @@ class EnsembleScorer:
             details=scores.get('subprime_details', {})
         )
         
-        # ML score (already 0-100 percentage)
+        # ML score (already 0-100 percentage). Informational only by default.
         ml_score = scores.get('ml_score')
         if ml_score is None:
             ml_score = scores.get('adjusted_ml_score')
@@ -296,7 +314,7 @@ class EnsembleScorer:
         contributing_scores = {}
         
         for name, result in scoring_results.items():
-            if result.available:
+            if result.available and result.weight > 0:
                 weighted_sum += result.score * result.weight
                 total_weight += result.weight
                 contributing_scores[name] = round(result.score, 1)
@@ -321,7 +339,7 @@ class EnsembleScorer:
         """
         primary_scores = [
             r.score for r in scoring_results.values()
-            if r.available
+            if r.available and r.weight > 0
         ]
         
         if len(primary_scores) < 2:
@@ -395,8 +413,8 @@ class EnsembleScorer:
     ) -> float:
         """Calculate confidence in the ensemble decision."""
         
-        # Base confidence from number of available scores
-        available_count = sum(1 for r in scoring_results.values() if r.available)
+        # Base confidence from number of available decision scores
+        available_count = sum(1 for r in scoring_results.values() if r.available and r.weight > 0)
         base_confidence = min(90, 60 + available_count * 10)
         
         # Adjust for convergence
@@ -659,33 +677,48 @@ class EnsembleScorer:
         self,
         decision: Decision,
         score: float,
+        raw_score: float,
+        convergence_penalty: float,
+        convergence: str,
+        contributing_scores: Dict[str, float],
         risk_factors: List[str],
         positive_factors: List[str]
     ) -> str:
-        """Generate primary reason for decision."""
+        """Generate a decision-mechanics-first primary reason."""
+        threshold_labels = {
+            Decision.APPROVE: ("approval", self.THRESHOLDS['approve']),
+            Decision.CONDITIONAL_APPROVE: ("conditional approval", self.THRESHOLDS['conditional_approve']),
+            Decision.REFER: ("referral", self.THRESHOLDS['refer']),
+            Decision.SENIOR_REVIEW: ("senior review", self.THRESHOLDS['senior_review']),
+            Decision.DECLINE: ("senior review", self.THRESHOLDS['senior_review']),
+        }
+
+        mca = contributing_scores.get('mca_score')
+        subprime = contributing_scores.get('subprime_score')
+        score_context = f"MCA {mca:.0f} / Subprime {subprime:.0f}" if mca is not None and subprime is not None else "available decision scores"
+
+        penalty_text = ""
+        if convergence_penalty > 0:
+            penalty_text = (
+                f" Raw 60/40 score was {raw_score:.1f}, reduced by {convergence_penalty:.1f} "
+                f"for {convergence.lower()} between MCA and Subprime."
+            )
         
         if decision == Decision.APPROVE:
-            if positive_factors:
-                return f"Strong overall profile: {positive_factors[0]}"
-            return f"Combined score ({score:.0f}) exceeds approval threshold"
+            return f"Combined 60/40 MCA/Subprime score {score:.1f} meets approval threshold ({score_context})."
         
         elif decision == Decision.CONDITIONAL_APPROVE:
-            return f"Good score ({score:.0f}) with manageable risk factors"
+            return f"Combined 60/40 MCA/Subprime score {score:.1f} supports conditional approval ({score_context})."
         
         elif decision == Decision.REFER:
-            if risk_factors:
-                return f"Manual review needed due to: {risk_factors[0]}"
-            return f"Score ({score:.0f}) requires underwriter review"
+            return f"Combined 60/40 MCA/Subprime score {score:.1f} falls in the referral band ({score_context}).{penalty_text}"
         
         elif decision == Decision.SENIOR_REVIEW:
-            if risk_factors:
-                return f"Multiple concerns including: {risk_factors[0]}"
-            return f"Low score ({score:.0f}) requires senior approval"
+            return f"Combined 60/40 MCA/Subprime score {score:.1f} falls in the senior-review band ({score_context}).{penalty_text}"
         
         else:  # DECLINE
-            if risk_factors:
-                return f"Does not meet criteria: {risk_factors[0]}"
-            return f"Score ({score:.0f}) below minimum threshold"
+            label, threshold = threshold_labels[Decision.DECLINE]
+            return f"Combined 60/40 MCA/Subprime score {score:.1f} is below the {label} threshold of {threshold} ({score_context}).{penalty_text}"
 
 
 def get_ensemble_recommendation(

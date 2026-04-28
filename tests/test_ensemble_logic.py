@@ -109,8 +109,9 @@ def test_zero_scores_are_treated_as_real_inputs_not_missing_data():
         params=_strong_params(),
     )
 
-    assert result["combined_score"] == 40
+    assert result["combined_score"] == 24
     assert result["contributing_scores"]["mca_score"] == 0
+    assert "ml_score" not in result["contributing_scores"]
 
 
 @pytest.mark.unit
@@ -125,9 +126,55 @@ def test_missing_scores_still_renormalize_weights():
         params=_strong_params(),
     )
 
-    assert result["detailed_breakdown"]["raw_combined_score"] == 70
-    assert result["combined_score"] == 68
+    assert result["detailed_breakdown"]["raw_combined_score"] == 72
+    assert result["combined_score"] == 70
     assert "ml_score" not in result["contributing_scores"]
 
 
+@pytest.mark.unit
+def test_ml_score_is_informational_only_and_does_not_drive_decline():
+    result = get_ensemble_recommendation(
+        scores={
+            "mca_score": 80,
+            "mca_decision": "APPROVE",
+            "subprime_score": 82,
+            "ml_score": 0,
+        },
+        metrics={
+            **_strong_metrics(),
+            "Cash Flow Volatility": 0.62,
+        },
+        params=_strong_params(directors_score=48),
+    )
+
+    assert result["detailed_breakdown"]["raw_combined_score"] == 80.8
+    assert result["combined_score"] == 80.8
+    assert result["decision"] == "APPROVE"
+    assert "ml_score" not in result["contributing_scores"]
+    assert result["detailed_breakdown"]["informational_scores"]["ml_score"] == 0
+    assert result["primary_reason"].startswith("Combined 60/40 MCA/Subprime score")
+    assert "High cash flow volatility" not in result["primary_reason"]
+
+
+@pytest.mark.unit
+def test_primary_reason_explains_threshold_not_first_risk_factor():
+    result = get_ensemble_recommendation(
+        scores={
+            "mca_score": 55,
+            "mca_decision": "APPROVE",
+            "subprime_score": 55,
+            "ml_score": 90,
+        },
+        metrics={
+            **_strong_metrics(),
+            "Cash Flow Volatility": 0.75,
+        },
+        params=_strong_params(directors_score=48),
+    )
+
+    assert result["decision"] == "DECLINE"
+    assert result["combined_score"] == 55
+    assert "below the senior review threshold" in result["primary_reason"]
+    assert any("High cash flow volatility" in r for r in result["risk_factors"])
+    assert "High cash flow volatility" not in result["primary_reason"]
 

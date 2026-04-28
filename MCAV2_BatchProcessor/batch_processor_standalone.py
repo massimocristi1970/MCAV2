@@ -26,6 +26,19 @@ from plotly.subplots import make_subplots
 import re
 from pathlib import Path
 import joblib
+import sys
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+try:
+    from app.services.ensemble_scorer import get_ensemble_recommendation
+    ENSEMBLE_SCORER_AVAILABLE = True
+except ImportError as e:
+    get_ensemble_recommendation = None
+    ENSEMBLE_SCORER_AVAILABLE = False
+    print(f"Ensemble scorer not available: {e}")
 
 # Try to import rapidfuzz, fallback if not available
 try:
@@ -1727,7 +1740,7 @@ class TightenedSubprimeScoring:
 
     def compare_scoring_methods(self, mca_rule_score: float,
                                 ml_score: float, subprime_score: float) -> Dict[str, Any]:
-        """Compare all scoring methods and provide unified guidance."""
+        """Compare MCA/Subprime decision scores and show ML for context."""
 
         # Convergence based on the two trusted systems only (MCA Rule + Subprime)
         primary_scores = [s for s in [mca_rule_score, subprime_score] if s and s > 0]
@@ -1884,30 +1897,56 @@ def calculate_all_scores_tightened(metrics, params):
     # -----------------------------
     # FINAL decision rules (batch)
     # -----------------------------
-    def _base_decision_from_subprime(recommendation_text: str) -> str:
-        s = (recommendation_text or "").upper()
-        if "APPROVE" in s:
-            return "APPROVE"
-        if "CONDITIONAL" in s or "SENIOR REVIEW" in s or "REVIEW" in s:
-            return "REFER"
-        return "DECLINE"
+    # Keep batch aligned with the main app: MCA Rule 60%, Subprime 40%,
+    # ML displayed as information only.
+    ensemble_result = None
+    final_decision = "REFER"
+    final_reasons = []
 
-    base_decision = _base_decision_from_subprime(subprime_result.get("recommendation", ""))
-    final_decision = base_decision
-    final_reasons = [f"Base decision from Subprime: {base_decision}"]
+    if ENSEMBLE_SCORER_AVAILABLE and get_ensemble_recommendation:
+        ensemble_result = get_ensemble_recommendation(
+            scores={
+                "mca_score": mca_rule.get("mca_rule_score"),
+                "mca_decision": mca_rule.get("mca_rule_decision"),
+                "subprime_score": subprime_result["subprime_score"],
+                "ml_score": ml_score,
+            },
+            metrics=metrics,
+            params=params,
+        )
+        final_decision = ensemble_result["decision"]
+        final_reasons = [
+            f"Ensemble decision: {final_decision}",
+            ensemble_result.get("primary_reason", "No primary reason returned"),
+        ]
+    else:
+        def _base_decision_from_subprime(recommendation_text: str) -> str:
+            s = (recommendation_text or "").upper()
+            if "APPROVE" in s:
+                return "APPROVE"
+            if "CONDITIONAL" in s or "SENIOR REVIEW" in s or "REVIEW" in s:
+                return "REFER"
+            return "DECLINE"
 
-    if mca_rule_decision == "DECLINE":
-        final_decision = "DECLINE"
-        final_reasons.append("MCA Rule override: DECLINE (hard stop)")
-    elif mca_rule_decision == "REFER" and base_decision != "DECLINE":
-        final_decision = "REFER"
-        final_reasons.append("MCA Rule override: REFER (manual review)")
-    elif mca_rule_decision == "APPROVE":
-        final_reasons.append("MCA Rule: APPROVE (no override)")
+        base_decision = _base_decision_from_subprime(subprime_result.get("recommendation", ""))
+        final_decision = base_decision
+        final_reasons = [f"Base decision from Subprime: {base_decision}"]
+
+        if mca_rule_decision == "DECLINE":
+            final_decision = "DECLINE"
+            final_reasons.append("MCA Rule override: DECLINE (hard stop)")
+        elif mca_rule_decision == "REFER" and base_decision != "DECLINE":
+            final_decision = "REFER"
+            final_reasons.append("MCA Rule override: REFER (manual review)")
+        elif mca_rule_decision == "APPROVE":
+            final_reasons.append("MCA Rule: APPROVE (no override)")
 
     return {
         'industry_score': industry_score,
         'ml_score': ml_score,
+        'ensemble': ensemble_result,
+        'combined_score': ensemble_result.get('combined_score') if ensemble_result else None,
+        'score_convergence': ensemble_result.get('score_convergence') if ensemble_result else None,
         'loan_risk': loan_risk,
         'score_breakdown': score_breakdown,
 
@@ -2621,9 +2660,9 @@ def create_results_dashboard(results_df):
     with col4:
         if 'ml_score' in results_df.columns and results_df['ml_score'].notna().any():
             avg_ml = results_df['ml_score'].mean()
-            st.metric("Avg ML Score", f"{avg_ml:.1f}%")
+            st.metric("Avg ML Score (Info Only)", f"{avg_ml:.1f}%")
         else:
-            st.metric("Avg ML Score", "N/A")
+            st.metric("Avg ML Score (Info Only)", "N/A")
     
     with col5:
         avg_revenue = results_df['Total Revenue'].mean() if 'Total Revenue' in results_df.columns else 0
