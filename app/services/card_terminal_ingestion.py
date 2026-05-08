@@ -10,6 +10,8 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 import pdfplumber
+from .payment_provider_registry import detect_providers_in_text, provider_catalog
+from .provider_parser_profiles import get_provider_profile
 
 
 @dataclass
@@ -31,6 +33,7 @@ class ParseResult:
     confidence: float
     warnings: List[str]
     raw_summary: Dict[str, Any]
+    extraction_diagnostics: Dict[str, Any]
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -49,6 +52,7 @@ class ParseResult:
             "confidence": self.confidence,
             "warnings": self.warnings,
             "raw_summary": self.raw_summary,
+            "extraction_diagnostics": self.extraction_diagnostics,
         }
 
 
@@ -59,6 +63,14 @@ class CardTerminalIngestionService:
     _period_re = re.compile(r"Period:\s*([0-9]{2}/[0-9]{2}/[0-9]{4})\s*-\s*([0-9]{2}/[0-9]{2}/[0-9]{4})", re.IGNORECASE)
     _merchant_re = re.compile(r"Merchant ID\s*:?\s*([0-9]{8,20})", re.IGNORECASE)
     _currency_re = re.compile(r"Currency:\s*([A-Z]{3})", re.IGNORECASE)
+    _clover_transactions_summary_re = re.compile(
+        r"Your Card Processing Statement.*?Description\s+Amount.*?Transactions\s+([0-9][0-9,]*\.?[0-9]{0,2})",
+        re.IGNORECASE | re.DOTALL,
+    )
+    _clover_total_row_re = re.compile(
+        r"Transactions\s+Currency:\s*[A-Z]{3}.*?Card type.*?Total\s+([0-9]{1,7})\s+([0-9][0-9,]*\.?[0-9]{0,2})",
+        re.IGNORECASE | re.DOTALL,
+    )
 
     def parse_uploaded_files(self, uploaded_files: List[Any]) -> Dict[str, Any]:
         """Parse multiple uploaded files and return normalized records."""
@@ -135,6 +147,27 @@ class CardTerminalIngestionService:
             .sort_values("year_month")
         )
 
+        # Provider-aware bank inflow extraction using narration aliases from registry
+        narration_cols = [c for c in ["name", "transaction_name", "merchant_name", "name_y"] if c in revenue_credits.columns]
+        if narration_cols:
+            revenue_credits["narration"] = revenue_credits[narration_cols].fillna("").astype(str).agg(" ".join, axis=1)
+        else:
+            revenue_credits["narration"] = ""
+        revenue_credits["detected_providers"] = revenue_credits["narration"].apply(detect_providers_in_text)
+        provider_tx = revenue_credits[revenue_credits["detected_providers"].map(len) > 0].copy()
+        if not provider_tx.empty:
+            provider_tx = provider_tx.explode("detected_providers")
+            provider_bank_monthly = (
+                provider_tx.groupby(["year_month", "detected_providers"], as_index=False)
+                .agg(provider_bank_inflows=("amount", lambda s: abs(float(s.sum()))))
+                .rename(columns={"detected_providers": "provider"})
+                .sort_values(["year_month", "provider"])
+            )
+            provider_detected_inflows_total = float(provider_tx["amount"].abs().sum())
+        else:
+            provider_bank_monthly = pd.DataFrame(columns=["year_month", "provider", "provider_bank_inflows"])
+            provider_detected_inflows_total = 0.0
+
         terminal_monthly = terminal_summary_df[["year_month", "gross_card_sales", "fees_total", "transaction_count"]].copy()
         merged = pd.merge(terminal_monthly, bank_monthly, on="year_month", how="outer").fillna(0.0)
         merged["difference_amount"] = merged["bank_revenue_inflows"] - merged["gross_card_sales"]
@@ -160,11 +193,21 @@ class CardTerminalIngestionService:
 
         return {
             "comparison": merged.sort_values("year_month"),
+            "provider_bank_monthly": provider_bank_monthly,
             "summary": {
                 "months_compared": int(len(merged)),
                 "average_abs_variance_pct": round(avg_abs_var, 2),
                 "coverage_pct": round(coverage, 1),
                 "reconciliation_quality": quality,
+                "providers_detected_in_bank_narration": sorted(provider_tx["detected_providers"].unique().tolist()) if not provider_tx.empty else [],
+                "provider_detected_inflows_total": round(provider_detected_inflows_total, 2),
+                "provider_detection_coverage_pct": round(
+                    (provider_detected_inflows_total / float(revenue_credits["amount"].abs().sum()) * 100.0)
+                    if not revenue_credits.empty and float(revenue_credits["amount"].abs().sum()) > 0
+                    else 0.0,
+                    2,
+                ),
+                "provider_catalog": provider_catalog(),
             },
         }
 
@@ -177,15 +220,24 @@ class CardTerminalIngestionService:
             text = self._extract_pdf_text(raw)
             if "clover" in text.lower() or "merchantportal.app" in text.lower():
                 return self._parse_clover_pdf(filename, text)
+            provider_hint = self._detect_provider_hint(f"{filename} {text[:8000]}")
+            if provider_hint:
+                prof = get_provider_profile(provider_hint)
+                if prof:
+                    return self._parse_profile_pdf(filename, text, prof)
             return self._parse_generic_pdf(filename, text)
 
         if ext in {"csv"}:
             df = pd.read_csv(io.BytesIO(raw))
-            return self._parse_tabular_statement(filename, df, provider_hint="csv")
+            provider_hint = self._detect_provider_hint(f"{filename} {' '.join([str(c) for c in df.columns[:30]])}")
+            prof = get_provider_profile(provider_hint) if provider_hint else None
+            return self._parse_tabular_statement(filename, df, provider_hint="csv", profile=prof)
 
         if ext in {"xls", "xlsx"}:
             df = pd.read_excel(io.BytesIO(raw))
-            return self._parse_tabular_statement(filename, df, provider_hint="excel")
+            provider_hint = self._detect_provider_hint(f"{filename} {' '.join([str(c) for c in df.columns[:30]])}")
+            prof = get_provider_profile(provider_hint) if provider_hint else None
+            return self._parse_tabular_statement(filename, df, provider_hint="excel", profile=prof)
 
         raise ValueError(f"Unsupported file format: {ext or 'unknown'}")
 
@@ -198,13 +250,13 @@ class CardTerminalIngestionService:
         period_start, period_end = self._extract_period(text)
         currency = self._extract_first(self._currency_re, text) or "GBP"
 
-        gross_card_sales = self._extract_amount_after_label(text, "Transactions")
+        gross_card_sales = self._extract_clover_gross_sales(text)
         fees_total = self._extract_amount_after_label(text, "Total Fees (excluding VAT)")
         if fees_total == 0.0:
             fees_total = self._extract_amount_after_label(text, "Transaction Fees")
         refunds_amount = self._extract_amount_after_label(text, "Refunds")
         chargebacks_amount = self._extract_amount_after_label(text, "Chargebacks / Reversals")
-        transaction_count = self._extract_total_txn_count(text)
+        transaction_count = self._extract_clover_total_txn_count(text)
 
         warnings: List[str] = []
         if gross_card_sales <= 0:
@@ -229,6 +281,16 @@ class CardTerminalIngestionService:
             confidence=confidence,
             warnings=warnings,
             raw_summary={"text_length": len(text)},
+            extraction_diagnostics={
+                "profile": "Clover",
+                "fields": {
+                    "gross_card_sales": gross_card_sales > 0,
+                    "fees_total": fees_total > 0,
+                    "period_end": period_end is not None,
+                    "merchant_id": merchant_id is not None,
+                },
+                "fallback_used": gross_card_sales <= 0,
+            },
         )
 
     def _parse_generic_pdf(self, filename: str, text: str) -> ParseResult:
@@ -245,9 +307,10 @@ class CardTerminalIngestionService:
             "Parsed with generic PDF parser; validate totals before relying operationally."
         ]
         confidence = 0.6 if gross_card_sales > 0 else 0.45
+        provider = self._detect_provider_hint(f"{filename} {text[:2000]}")
         return ParseResult(
             filename=filename,
-            provider="Unknown",
+            provider=provider or "Unknown",
             parser="generic_pdf_v1",
             merchant_id=merchant_id,
             statement_start=period_start,
@@ -261,18 +324,80 @@ class CardTerminalIngestionService:
             confidence=confidence,
             warnings=warnings,
             raw_summary={"text_length": len(text)},
+            extraction_diagnostics={
+                "profile": provider or "Unknown",
+                "fields": {
+                    "gross_card_sales": gross_card_sales > 0,
+                    "fees_total": fees_total > 0,
+                    "period_end": period_end is not None,
+                    "merchant_id": merchant_id is not None,
+                },
+                "fallback_used": True,
+            },
         )
 
-    def _parse_tabular_statement(self, filename: str, df: pd.DataFrame, provider_hint: str) -> ParseResult:
+    def _parse_profile_pdf(self, filename: str, text: str, profile) -> ParseResult:
+        merchant_id = self._extract_first(self._merchant_re, text)
+        period_start, period_end = self._extract_period(text)
+        currency = self._extract_first(self._currency_re, text) or "GBP"
+
+        gross_card_sales = self._extract_from_labels(text, profile.amount_labels_pdf)
+        fees_total = self._extract_from_labels(text, profile.fee_labels_pdf)
+        refunds_amount = self._extract_from_labels(text, profile.refund_labels_pdf)
+        chargebacks_amount = self._extract_from_labels(text, profile.chargeback_labels_pdf)
+        transaction_count = self._extract_total_txn_count(text)
+
+        confidence = 0.8 if gross_card_sales > 0 else 0.55
+        warnings: List[str] = []
+        if gross_card_sales <= 0:
+            warnings.append("Native profile used, but gross card sales could not be confidently extracted.")
+        warnings.append("Native provider profile parser used (layout may vary by statement template/version).")
+
+        return ParseResult(
+            filename=filename,
+            provider=profile.provider,
+            parser=f"{profile.provider.lower().replace(' ', '_')}_profile_pdf_v1",
+            merchant_id=merchant_id,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency=currency,
+            gross_card_sales=float(gross_card_sales),
+            refunds_amount=float(refunds_amount),
+            chargebacks_amount=float(chargebacks_amount),
+            fees_total=float(fees_total),
+            transaction_count=int(transaction_count),
+            confidence=confidence,
+            warnings=warnings,
+            raw_summary={"text_length": len(text)},
+            extraction_diagnostics={
+                "profile": profile.provider,
+                "fields": {
+                    "gross_card_sales": gross_card_sales > 0,
+                    "fees_total": fees_total > 0,
+                    "period_end": period_end is not None,
+                    "merchant_id": merchant_id is not None,
+                },
+                "fallback_used": gross_card_sales <= 0,
+            },
+        )
+
+    def _parse_tabular_statement(self, filename: str, df: pd.DataFrame, provider_hint: str, profile=None) -> ParseResult:
         normalized_cols = {str(c).strip().lower(): c for c in df.columns}
         warnings: List[str] = []
 
-        amount_col = self._pick_col(normalized_cols, ["amount", "gross", "sales", "sale amount", "transaction amount"])
-        date_col = self._pick_col(normalized_cols, ["date", "transaction date", "settlement date"])
-        fee_col = self._pick_col(normalized_cols, ["fee", "fees", "charge", "commission"])
-        refund_col = self._pick_col(normalized_cols, ["refund", "refund amount"])
-        merchant_col = self._pick_col(normalized_cols, ["merchant id", "merchant", "mid"])
-        chargeback_col = self._pick_col(normalized_cols, ["chargeback", "reversal"])
+        amount_candidates = profile.amount_columns_tabular if profile else ["amount", "gross", "sales", "sale amount", "transaction amount"]
+        date_candidates = profile.date_columns_tabular if profile else ["date", "transaction date", "settlement date"]
+        fee_candidates = profile.fee_columns_tabular if profile else ["fee", "fees", "charge", "commission"]
+        refund_candidates = profile.refund_columns_tabular if profile else ["refund", "refund amount"]
+        merchant_candidates = profile.merchant_columns_tabular if profile else ["merchant id", "merchant", "mid"]
+        chargeback_candidates = profile.chargeback_columns_tabular if profile else ["chargeback", "reversal"]
+
+        amount_col = self._pick_col(normalized_cols, amount_candidates)
+        date_col = self._pick_col(normalized_cols, date_candidates)
+        fee_col = self._pick_col(normalized_cols, fee_candidates)
+        refund_col = self._pick_col(normalized_cols, refund_candidates)
+        merchant_col = self._pick_col(normalized_cols, merchant_candidates)
+        chargeback_col = self._pick_col(normalized_cols, chargeback_candidates)
 
         if amount_col is None:
             raise ValueError("Unable to identify sales amount column in tabular statement.")
@@ -298,10 +423,18 @@ class CardTerminalIngestionService:
         else:
             warnings.append("No date column detected; monthly alignment may be less reliable.")
 
+        provider_probe_text = f"{filename} {' '.join([str(c) for c in df.columns[:20]])}"
+        provider = self._detect_provider_hint(provider_probe_text)
+        parser_name = f"generic_{provider_hint}_v1"
+        conf = 0.75 if end_dt else 0.6
+        if profile:
+            parser_name = f"{profile.provider.lower().replace(' ', '_')}_profile_{provider_hint}_v1"
+            conf = 0.85 if end_dt else 0.7
+            warnings.append("Native provider profile parser used for tabular statement mapping.")
         return ParseResult(
             filename=filename,
-            provider="Unknown",
-            parser=f"generic_{provider_hint}_v1",
+            provider=provider or "Unknown",
+            parser=parser_name,
             merchant_id=merchant_id,
             statement_start=start_dt,
             statement_end=end_dt,
@@ -311,9 +444,21 @@ class CardTerminalIngestionService:
             chargebacks_amount=chargebacks,
             fees_total=fees_total,
             transaction_count=tx_count,
-            confidence=0.75 if end_dt else 0.6,
+            confidence=conf,
             warnings=warnings,
             raw_summary={"columns": list(df.columns)},
+            extraction_diagnostics={
+                "profile": (profile.provider if profile else "Generic"),
+                "fields": {
+                    "gross_card_sales": gross > 0,
+                    "fees_total": fees_total > 0 if fee_col else False,
+                    "period_end": end_dt is not None,
+                    "merchant_id": merchant_id is not None,
+                    "amount_col_detected": amount_col is not None,
+                    "date_col_detected": date_col is not None,
+                },
+                "fallback_used": profile is None,
+            },
         )
 
     @staticmethod
@@ -361,6 +506,53 @@ class CardTerminalIngestionService:
                     except ValueError:
                         return 0
         return 0
+
+    def _extract_clover_gross_sales(self, text: str) -> float:
+        """
+        Clover-specific gross sales extraction.
+        Prioritizes the statement summary/table sections and avoids matching
+        unrelated values like "last 12 months".
+        """
+        if not text:
+            return 0.0
+
+        m = self._clover_transactions_summary_re.search(text)
+        if m:
+            return self._to_float(m.group(1))
+
+        m = self._clover_total_row_re.search(text)
+        if m:
+            return self._to_float(m.group(2))
+
+        # Fallback to generic extraction as a last resort
+        return self._extract_amount_after_label(text, "Transactions")
+
+    def _extract_clover_total_txn_count(self, text: str) -> int:
+        """Extract Clover transaction count from the card-type total row."""
+        if not text:
+            return 0
+
+        m = self._clover_total_row_re.search(text)
+        if m:
+            try:
+                return int(m.group(1))
+            except ValueError:
+                return 0
+
+        # Fallback to generic extraction
+        return self._extract_total_txn_count(text)
+
+    def _extract_from_labels(self, text: str, labels: List[str]) -> float:
+        for label in labels or []:
+            value = self._extract_amount_after_label(text, label)
+            if value > 0:
+                return value
+        return 0.0
+
+    @staticmethod
+    def _detect_provider_hint(text: str) -> Optional[str]:
+        hits = detect_providers_in_text(text or "")
+        return hits[0] if hits else None
 
     @staticmethod
     def _to_float(value: Any) -> float:

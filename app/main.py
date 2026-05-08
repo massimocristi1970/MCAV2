@@ -1949,8 +1949,8 @@ def assess_primary_account_signal(df):
     }
 
 
-def render_card_terminal_reconciliation(bank_df):
-    """Render multi-format card terminal upload and bank reconciliation section."""
+def render_card_terminal_reconciliation(bank_df, card_files):
+    """Render card terminal reconciliation from already uploaded files."""
     st.markdown("---")
     st.subheader("💳 Card Terminal Statements (Multi-Company)")
     st.caption(
@@ -1958,15 +1958,8 @@ def render_card_terminal_reconciliation(bank_df):
         "The app normalizes totals and compares monthly card sales to bank revenue inflows."
     )
 
-    card_files = st.file_uploader(
-        "Upload card terminal statements",
-        type=["pdf", "csv", "xls", "xlsx"],
-        accept_multiple_files=True,
-        key="card_terminal_statements_uploader",
-        help="You can upload mixed formats and multiple files in one run.",
-    )
-
     if not card_files:
+        st.info("No card terminal statements uploaded yet.")
         return
 
     if not CARD_TERMINAL_SERVICE_AVAILABLE or CardTerminalIngestionService is None:
@@ -2000,11 +1993,46 @@ def render_card_terminal_reconciliation(bank_df):
         return
 
     st.markdown("**Parsed Statement Totals**")
+    parsed_view = parsed_df.copy()
+    if "extraction_diagnostics" in parsed_view.columns:
+        def _diag_status(diag):
+            if not isinstance(diag, dict):
+                return "Unknown"
+            fields = (diag.get("fields") or {})
+            ok = sum(1 for _, v in fields.items() if bool(v))
+            total = len(fields)
+            if total == 0:
+                return "Unknown"
+            ratio = ok / total
+            if ratio >= 0.85:
+                return "High"
+            if ratio >= 0.6:
+                return "Medium"
+            return "Low"
+
+        parsed_view["parser_reliability"] = parsed_view["extraction_diagnostics"].apply(_diag_status)
+        parsed_view["profile_used"] = parsed_view["extraction_diagnostics"].apply(
+            lambda d: (d.get("profile") if isinstance(d, dict) else "Unknown")
+        )
+    else:
+        parsed_view["parser_reliability"] = "Unknown"
+        parsed_view["profile_used"] = "Unknown"
+
+    rel_counts = parsed_view["parser_reliability"].value_counts().to_dict()
+    r1, r2, r3 = st.columns(3)
+    with r1:
+        st.metric("High Reliability Files", int(rel_counts.get("High", 0)))
+    with r2:
+        st.metric("Medium Reliability Files", int(rel_counts.get("Medium", 0)))
+    with r3:
+        st.metric("Low Reliability Files", int(rel_counts.get("Low", 0)))
+
     st.dataframe(
-        parsed_df[
+        parsed_view[
             [
                 "filename",
                 "provider",
+                "profile_used",
                 "parser",
                 "merchant_id",
                 "statement_start",
@@ -2013,11 +2041,19 @@ def render_card_terminal_reconciliation(bank_df):
                 "fees_total",
                 "transaction_count",
                 "confidence",
+                "parser_reliability",
             ]
         ],
         use_container_width=True,
         hide_index=True,
     )
+
+    with st.expander("Per-file Extraction Diagnostics", expanded=False):
+        st.dataframe(
+            parsed_view[["filename", "provider", "parser", "parser_reliability", "extraction_diagnostics", "warnings"]],
+            use_container_width=True,
+            hide_index=True,
+        )
 
     monthly_terminal = service.summarize_by_month(parsed_df)
     if monthly_terminal.empty:
@@ -2026,7 +2062,22 @@ def render_card_terminal_reconciliation(bank_df):
 
     comparison_payload = service.compare_with_banking_data(bank_df, monthly_terminal)
     comp_df = comparison_payload.get("comparison", pd.DataFrame())
+    provider_bank_df = comparison_payload.get("provider_bank_monthly", pd.DataFrame())
     summary = comparison_payload.get("summary", {})
+    uploaded_providers = sorted(
+        p for p in parsed_df.get("provider", pd.Series(dtype=str)).dropna().astype(str).unique().tolist()
+        if p and p != "Unknown"
+    )
+    detected_providers = summary.get("providers_detected_in_bank_narration", [])
+    provider_overlap = sorted(set(uploaded_providers).intersection(set(detected_providers)))
+    provider_detection_coverage_pct = float(summary.get("provider_detection_coverage_pct", 0.0) or 0.0)
+
+    if provider_overlap and provider_detection_coverage_pct >= 40:
+        narration_confidence = "High"
+    elif provider_overlap or provider_detection_coverage_pct >= 20:
+        narration_confidence = "Medium"
+    else:
+        narration_confidence = "Low"
 
     st.markdown("**Monthly Card Sales vs Bank Revenue Inflows**")
     if not comp_df.empty:
@@ -2037,6 +2088,27 @@ def render_card_terminal_reconciliation(bank_df):
             st.metric("Avg Abs Variance", f"{summary.get('average_abs_variance_pct', 0):.1f}%")
         with c3:
             st.metric("Reconciliation Quality", summary.get("reconciliation_quality", "N/A"))
+
+        c4, c5, c6 = st.columns(3)
+        with c4:
+            st.metric("Uploaded Statement Providers", ", ".join(uploaded_providers) if uploaded_providers else "Unknown")
+        with c5:
+            st.metric("Bank Narration Match Coverage", f"{provider_detection_coverage_pct:.1f}%")
+        with c6:
+            st.metric("Narration Signal Confidence", narration_confidence)
+
+        if detected_providers:
+            st.info("Bank narration detected provider-like terms: " + ", ".join(detected_providers))
+        else:
+            st.info("No known provider narration detected in bank inflows for this period.")
+
+        if provider_overlap:
+            st.success("✅ Verified overlap between uploaded providers and bank narration: " + ", ".join(provider_overlap))
+        else:
+            st.warning(
+                "⚠️ No direct overlap between uploaded statement providers and bank narration signals. "
+                "Treat narration-based providers as unverified leads."
+            )
 
         fig = go.Figure()
         fig.add_trace(
@@ -2066,8 +2138,25 @@ def render_card_terminal_reconciliation(bank_df):
         display_df["difference_amount"] = display_df["difference_amount"].round(2)
         display_df["difference_pct_vs_terminal"] = display_df["difference_pct_vs_terminal"].round(2)
         st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+        if provider_bank_df is not None and not provider_bank_df.empty:
+            st.markdown("**Bank Narration Provider Signals (Unverified unless matched to uploaded provider)**")
+            provider_bank_display = provider_bank_df.copy()
+            provider_bank_display["verified_against_uploaded"] = provider_bank_display["provider"].isin(uploaded_providers)
+            provider_bank_display["signal_confidence"] = provider_bank_display["verified_against_uploaded"].map(
+                lambda v: "High" if v else ("Medium" if narration_confidence == "High" else "Low")
+            )
+            st.dataframe(provider_bank_display, use_container_width=True, hide_index=True)
     else:
         st.info("No comparable months found between uploaded card statements and bank transaction period.")
+
+    with st.expander("Supported Provider Reference (from current rules + docs links)", expanded=False):
+        catalog = summary.get("provider_catalog", [])
+        if catalog:
+            catalog_df = pd.DataFrame(catalog)
+            st.dataframe(catalog_df, use_container_width=True, hide_index=True)
+        else:
+            st.info("Provider reference catalog not available.")
 
 def create_score_charts(scores, metrics):
     """Create clean bar charts for scores - Updated for 3 scoring methods"""
@@ -3290,6 +3379,15 @@ def main():
 
         # File upload
         uploaded_file = st.file_uploader("Upload Transaction Data (JSON)", type=['json'])
+        st.markdown("### Card Terminal Statement Upload")
+        st.caption("Upload card terminal statements (PDF/CSV/Excel) for reconciliation against bank inflows.")
+        card_terminal_files = st.file_uploader(
+            "Upload card terminal statements",
+            type=["pdf", "csv", "xls", "xlsx"],
+            accept_multiple_files=True,
+            key="card_terminal_statements_uploader",
+            help="You can upload mixed providers/formats in one run.",
+        )
         run_to_show = None  # set after processing or from last_run when returning from another page
 
         if uploaded_file is not None:
@@ -3478,8 +3576,21 @@ def main():
                 ensemble = scores.get('ensemble')
                 if ensemble:
                     decision = scores.get('final_decision') or ensemble.get('decision', 'REFER')
+                    ensemble_decision = str(ensemble.get('decision', '')).upper().strip()
                     combined_score = ensemble.get('combined_score', 0)
                     confidence = ensemble.get('confidence', 0)
+                    final_reasons = scores.get('final_decision_reasons', []) or []
+                    ensemble_reason = ensemble.get('primary_reason', '')
+
+                    # Keep reason text consistent with displayed decision.
+                    reason_text = ensemble_reason
+                    if ensemble_decision and decision != ensemble_decision:
+                        override_reason = final_reasons[-1] if final_reasons else (
+                            f"Final decision overridden from {ensemble_decision} to {decision} by policy overlay."
+                        )
+                        reason_text = f"{override_reason}\nEnsemble context: {ensemble_reason}"
+                    elif final_reasons:
+                        reason_text = final_reasons[-1]
                     
                     # Main recommendation display with prominent styling
                     if decision == 'APPROVE':
@@ -3487,35 +3598,35 @@ def main():
                         ## 🎯 Recommendation: ✅ APPROVE
                         **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
                         
-                        *{ensemble.get('primary_reason', '')}*
+                        *{reason_text}*
                         """)
                     elif decision == 'CONDITIONAL_APPROVE':
                         st.info(f"""
                         ## 🎯 Recommendation: ℹ️ CONDITIONAL APPROVE
                         **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
                         
-                        *{ensemble.get('primary_reason', '')}*
+                        *{reason_text}*
                         """)
                     elif decision == 'REFER':
                         st.warning(f"""
                         ## 🎯 Recommendation: ⚠️ REFER FOR REVIEW
                         **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
                         
-                        *{ensemble.get('primary_reason', '')}*
+                        *{reason_text}*
                         """)
                     elif decision == 'SENIOR_REVIEW':
                         st.warning(f"""
                         ## 🎯 Recommendation: 🔍 SENIOR REVIEW REQUIRED
                         **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
                         
-                        *{ensemble.get('primary_reason', '')}*
+                        *{reason_text}*
                         """)
                     else:  # DECLINE
                         st.error(f"""
                         ## 🎯 Recommendation: ❌ DECLINE
                         **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
                         
-                        *{ensemble.get('primary_reason', '')}*
+                        *{reason_text}*
                         """)
                     
                     # Contributing scores in compact row
@@ -3617,7 +3728,7 @@ def main():
                     with st.expander("Primary Account Check Details", expanded=False):
                         st.json(primary_signal)
 
-                render_card_terminal_reconciliation(filtered_df)
+                render_card_terminal_reconciliation(filtered_df, card_terminal_files)
 
                 # Revenue Insights
                 st.markdown("---")

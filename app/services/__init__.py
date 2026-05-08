@@ -40,6 +40,21 @@ try:
 except (ImportError, FileNotFoundError, OSError):
     CardTerminalIngestionService = None
 
+try:
+    from .payment_provider_registry import ProviderSpec, PROVIDER_SPECS, provider_catalog, detect_providers_in_text
+except (ImportError, FileNotFoundError, OSError):
+    ProviderSpec = None
+    PROVIDER_SPECS = []
+    provider_catalog = None
+    detect_providers_in_text = None
+
+try:
+    from .provider_parser_profiles import ProviderParserProfile, PROVIDER_PARSER_PROFILES, providers_with_native_profiles
+except (ImportError, FileNotFoundError, OSError):
+    ProviderParserProfile = None
+    PROVIDER_PARSER_PROFILES = {}
+    providers_with_native_profiles = None
+
 __all__ = [
     # Scoring systems
     'SubprimeScoring',
@@ -57,4 +72,11 @@ __all__ = [
     'TransactionCategorizer',
     'FinancialAnalyzer',
     'CardTerminalIngestionService',
+    'ProviderSpec',
+    'PROVIDER_SPECS',
+    'provider_catalog',
+    'detect_providers_in_text',
+    'ProviderParserProfile',
+    'PROVIDER_PARSER_PROFILES',
+    'providers_with_native_profiles',
 ]
