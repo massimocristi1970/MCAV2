@@ -81,6 +81,14 @@ except ImportError as e:
     modular_business_categorize = None
     print(f"Note: business risk signal services not available ({e}).")
 
+try:
+    from app.services.card_terminal_ingestion import CardTerminalIngestionService
+    CARD_TERMINAL_SERVICE_AVAILABLE = True
+except ImportError as e:
+    CARD_TERMINAL_SERVICE_AVAILABLE = False
+    CardTerminalIngestionService = None
+    print(f"Note: card terminal ingestion service not available ({e}).")
+
 import re
 from io import BytesIO
 
@@ -1836,6 +1844,231 @@ def calculate_revenue_insights(df):
         'daily_revenue_data': daily_revenue
     }
 
+
+def assess_primary_account_signal(df):
+    """
+    UW-only heuristic signal to indicate whether uploaded data may not represent
+    the primary operating account.
+    This is informational only and does not affect scoring decisions.
+    """
+    default_result = {
+        "status": "unable_to_determine",
+        "is_potential_non_primary": False,
+        "note": "Unable to determine primary account reliability from uploaded data.",
+        "active_accounts": 0,
+        "top_account_share_non_transfer_credits": 0.0,
+        "top_account_share_activity": 0.0,
+        "internal_transfer_ratio": 0.0,
+    }
+
+    if df is None or df.empty or "account_id" not in df.columns:
+        return default_result
+
+    work = df.copy()
+    work["amount"] = pd.to_numeric(work.get("amount"), errors="coerce").fillna(0.0)
+    work = work[work["account_id"].notna()]
+    if work.empty:
+        return default_result
+
+    category_col = "personal_finance_category.detailed"
+    name_col = "name"
+    if name_col not in work.columns:
+        name_col = "name_y" if "name_y" in work.columns else None
+    if category_col not in work.columns:
+        work[category_col] = ""
+    if name_col is None:
+        work["_txn_name"] = ""
+    else:
+        work["_txn_name"] = work[name_col].fillna("").astype(str).str.lower()
+
+    work["_pf_category"] = work[category_col].fillna("").astype(str).str.lower()
+    transfer_name_regex = r"\b(transfer|trf|faster payment|own account|between accounts|sweep)\b"
+    work["_is_transfer_like"] = (
+        work["_pf_category"].str.startswith("transfer_")
+        | work["_txn_name"].str.contains(transfer_name_regex, regex=True)
+    )
+
+    active_threshold = 5
+    account_activity = work.groupby("account_id").size().rename("txn_count")
+    active_accounts = int((account_activity >= active_threshold).sum())
+    if active_accounts == 0:
+        active_accounts = int((account_activity > 0).sum())
+
+    non_transfer = work[~work["_is_transfer_like"]].copy()
+    if non_transfer.empty:
+        return {
+            **default_result,
+            "status": "unable_to_determine",
+            "note": "Most transactions appear transfer-like; unable to infer a clear primary operating account.",
+            "active_accounts": active_accounts,
+            "internal_transfer_ratio": 1.0,
+        }
+
+    credits = non_transfer[non_transfer["amount"] < 0].copy()
+    if credits.empty:
+        return {
+            **default_result,
+            "status": "unable_to_determine",
+            "note": "No non-transfer credit inflows found; unable to infer a primary operating account.",
+            "active_accounts": active_accounts,
+        }
+
+    credit_by_account = credits.groupby("account_id")["amount"].apply(lambda s: abs(float(s.sum())))
+    total_credits = float(credit_by_account.sum())
+    top_credit_share = float((credit_by_account.max() / total_credits) if total_credits > 0 else 0.0)
+
+    total_txn = float(len(work))
+    top_activity_share = float((account_activity.max() / total_txn) if total_txn > 0 else 0.0)
+
+    transfer_ratio = float(work["_is_transfer_like"].mean()) if len(work) > 0 else 0.0
+
+    is_potential_non_primary = (
+        (active_accounts >= 2 and top_credit_share < 0.60 and top_activity_share < 0.60)
+        or (active_accounts >= 2 and top_credit_share < 0.50)
+        or (transfer_ratio >= 0.45)
+    )
+
+    if is_potential_non_primary:
+        note = (
+            "Potential non-primary account data: activity appears spread across accounts "
+            "or transfer-heavy. Underwriter review recommended."
+        )
+        status = "potential_non_primary"
+    else:
+        note = "Primary account likely represented in uploaded data (informational check)."
+        status = "likely_primary"
+
+    return {
+        "status": status,
+        "is_potential_non_primary": bool(is_potential_non_primary),
+        "note": note,
+        "active_accounts": active_accounts,
+        "top_account_share_non_transfer_credits": round(top_credit_share, 3),
+        "top_account_share_activity": round(top_activity_share, 3),
+        "internal_transfer_ratio": round(transfer_ratio, 3),
+    }
+
+
+def render_card_terminal_reconciliation(bank_df):
+    """Render multi-format card terminal upload and bank reconciliation section."""
+    st.markdown("---")
+    st.subheader("💳 Card Terminal Statements (Multi-Company)")
+    st.caption(
+        "Upload one or more terminal statements (PDF/CSV/Excel) from any provider. "
+        "The app normalizes totals and compares monthly card sales to bank revenue inflows."
+    )
+
+    card_files = st.file_uploader(
+        "Upload card terminal statements",
+        type=["pdf", "csv", "xls", "xlsx"],
+        accept_multiple_files=True,
+        key="card_terminal_statements_uploader",
+        help="You can upload mixed formats and multiple files in one run.",
+    )
+
+    if not card_files:
+        return
+
+    if not CARD_TERMINAL_SERVICE_AVAILABLE or CardTerminalIngestionService is None:
+        st.warning("Card terminal ingestion service is currently unavailable.")
+        return
+
+    try:
+        service = CardTerminalIngestionService()
+        parse_output = service.parse_uploaded_files(card_files)
+        parsed_df = parse_output.get("dataframe", pd.DataFrame())
+        parse_errors = parse_output.get("errors", [])
+    except Exception as exc:
+        st.error(f"Failed to parse card terminal statements: {exc}")
+        return
+
+    top1, top2, top3 = st.columns(3)
+    with top1:
+        st.metric("Statements Parsed", int(parse_output.get("parsed_count", 0)))
+    with top2:
+        st.metric("Parse Errors", int(parse_output.get("error_count", 0)))
+    with top3:
+        providers = parsed_df["provider"].nunique() if not parsed_df.empty and "provider" in parsed_df.columns else 0
+        st.metric("Providers Detected", int(providers))
+
+    if parse_errors:
+        with st.expander("Card Statement Parse Errors", expanded=False):
+            st.json(parse_errors)
+
+    if parsed_df.empty:
+        st.warning("No card terminal statements were parsed successfully.")
+        return
+
+    st.markdown("**Parsed Statement Totals**")
+    st.dataframe(
+        parsed_df[
+            [
+                "filename",
+                "provider",
+                "parser",
+                "merchant_id",
+                "statement_start",
+                "statement_end",
+                "gross_card_sales",
+                "fees_total",
+                "transaction_count",
+                "confidence",
+            ]
+        ],
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    monthly_terminal = service.summarize_by_month(parsed_df)
+    if monthly_terminal.empty:
+        st.info("Unable to build monthly card-sales summary from uploaded statements.")
+        return
+
+    comparison_payload = service.compare_with_banking_data(bank_df, monthly_terminal)
+    comp_df = comparison_payload.get("comparison", pd.DataFrame())
+    summary = comparison_payload.get("summary", {})
+
+    st.markdown("**Monthly Card Sales vs Bank Revenue Inflows**")
+    if not comp_df.empty:
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.metric("Months Compared", int(summary.get("months_compared", 0)))
+        with c2:
+            st.metric("Avg Abs Variance", f"{summary.get('average_abs_variance_pct', 0):.1f}%")
+        with c3:
+            st.metric("Reconciliation Quality", summary.get("reconciliation_quality", "N/A"))
+
+        fig = go.Figure()
+        fig.add_trace(
+            go.Bar(
+                x=comp_df["year_month"],
+                y=comp_df["gross_card_sales"],
+                name="Terminal Gross Card Sales",
+            )
+        )
+        fig.add_trace(
+            go.Scatter(
+                x=comp_df["year_month"],
+                y=comp_df["bank_revenue_inflows"],
+                mode="lines+markers",
+                name="Bank Revenue Inflows",
+            )
+        )
+        fig.update_layout(
+            height=380,
+            xaxis_title="Month",
+            yaxis_title="Amount (£)",
+            legend_title_text="Series",
+        )
+        st.plotly_chart(fig, use_container_width=True, key="card_vs_bank_monthly")
+
+        display_df = comp_df.copy()
+        display_df["difference_amount"] = display_df["difference_amount"].round(2)
+        display_df["difference_pct_vs_terminal"] = display_df["difference_pct_vs_terminal"].round(2)
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
+    else:
+        st.info("No comparable months found between uploaded card statements and bank transaction period.")
+
 def create_score_charts(scores, metrics):
     """Create clean bar charts for scores - Updated for 3 scoring methods"""
     
@@ -2506,6 +2739,7 @@ class DashboardExporter:
                 # Optional: overall decision
                 'overall_decision': params.get('overall_decision'),
                 'mca_main_decision': params.get('mca_main_decision'),
+                'primary_account_assessment': params.get('primary_account_assessment'),
 
             },
             'financial_metrics': metrics,
@@ -2517,7 +2751,8 @@ class DashboardExporter:
                 'ml_score': scores.get('ml_score'),
                 'adjusted_ml_score': scores.get('adjusted_ml_score'),
                 'industry_score': scores.get('industry_score'),
-                'loan_risk': scores.get('loan_risk')
+                'loan_risk': scores.get('loan_risk'),
+                'primary_account_assessment': scores.get('primary_account_assessment', params.get('primary_account_assessment'))
             },
             'revenue_insights': revenue_insights,
             'loans_analysis': loans_analysis or {}
@@ -3150,6 +3385,8 @@ def main():
 
                 # Filter data and calculate metrics
                 filtered_df = filter_data_by_period(df, analysis_period)
+                primary_account_assessment = assess_primary_account_signal(filtered_df)
+                params["primary_account_assessment"] = primary_account_assessment
                 metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
                 scores = calculate_all_scores_enhanced(metrics, params)
 
@@ -3157,6 +3394,7 @@ def main():
                 scores["mca_rule_decision"] = params.get("mca_rule_decision")
                 scores["mca_rule_score"] = params.get("mca_rule_score")
                 scores["mca_rule_reasons"] = params.get("mca_rule_reasons", [])
+                scores["primary_account_assessment"] = primary_account_assessment
 
                 # -------------------------------
                 # FINAL DECISION RULES (NEW)
@@ -3365,6 +3603,21 @@ def main():
                 else:
                     # Fallback if ensemble not available
                     st.info("Unified ensemble scoring not available. Showing individual scores below.")
+
+                primary_signal = params.get("primary_account_assessment", {})
+                primary_note = primary_signal.get("note")
+                if primary_note:
+                    if primary_signal.get("is_potential_non_primary", False):
+                        st.warning(f"⚠️ **Primary Account Check (UW Note):** {primary_note}")
+                    elif primary_signal.get("status") == "unable_to_determine":
+                        st.info(f"ℹ️ **Primary Account Check (UW Note):** {primary_note}")
+                    else:
+                        st.success(f"✅ **Primary Account Check (UW Note):** {primary_note}")
+
+                    with st.expander("Primary Account Check Details", expanded=False):
+                        st.json(primary_signal)
+
+                render_card_terminal_reconciliation(filtered_df)
 
                 # Revenue Insights
                 st.markdown("---")

@@ -1,0 +1,381 @@
+"""Card terminal statement ingestion and reconciliation services."""
+
+from __future__ import annotations
+
+import io
+import re
+from dataclasses import dataclass
+from datetime import date
+from typing import Any, Dict, List, Optional
+
+import pandas as pd
+import pdfplumber
+
+
+@dataclass
+class ParseResult:
+    """Normalized parse result for one uploaded terminal statement."""
+
+    filename: str
+    provider: str
+    parser: str
+    merchant_id: Optional[str]
+    statement_start: Optional[date]
+    statement_end: Optional[date]
+    currency: str
+    gross_card_sales: float
+    refunds_amount: float
+    chargebacks_amount: float
+    fees_total: float
+    transaction_count: int
+    confidence: float
+    warnings: List[str]
+    raw_summary: Dict[str, Any]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "filename": self.filename,
+            "provider": self.provider,
+            "parser": self.parser,
+            "merchant_id": self.merchant_id,
+            "statement_start": self.statement_start,
+            "statement_end": self.statement_end,
+            "currency": self.currency,
+            "gross_card_sales": self.gross_card_sales,
+            "refunds_amount": self.refunds_amount,
+            "chargebacks_amount": self.chargebacks_amount,
+            "fees_total": self.fees_total,
+            "transaction_count": self.transaction_count,
+            "confidence": self.confidence,
+            "warnings": self.warnings,
+            "raw_summary": self.raw_summary,
+        }
+
+
+class CardTerminalIngestionService:
+    """Ingest card-terminal statements across providers and formats."""
+
+    _money_re = re.compile(r"£?\s*([0-9][0-9,]*\.?[0-9]{0,2})")
+    _period_re = re.compile(r"Period:\s*([0-9]{2}/[0-9]{2}/[0-9]{4})\s*-\s*([0-9]{2}/[0-9]{2}/[0-9]{4})", re.IGNORECASE)
+    _merchant_re = re.compile(r"Merchant ID\s*:?\s*([0-9]{8,20})", re.IGNORECASE)
+    _currency_re = re.compile(r"Currency:\s*([A-Z]{3})", re.IGNORECASE)
+
+    def parse_uploaded_files(self, uploaded_files: List[Any]) -> Dict[str, Any]:
+        """Parse multiple uploaded files and return normalized records."""
+        results: List[ParseResult] = []
+        errors: List[Dict[str, str]] = []
+
+        for file in uploaded_files or []:
+            filename = getattr(file, "name", "unknown_file")
+            try:
+                result = self._parse_single(file)
+                results.append(result)
+            except Exception as exc:  # pragma: no cover - safety path
+                errors.append({"filename": filename, "error": str(exc)})
+
+        df = pd.DataFrame([r.to_dict() for r in results]) if results else pd.DataFrame()
+        return {
+            "records": results,
+            "dataframe": df,
+            "errors": errors,
+            "parsed_count": len(results),
+            "error_count": len(errors),
+        }
+
+    def summarize_by_month(self, parsed_df: pd.DataFrame) -> pd.DataFrame:
+        """Aggregate normalized terminal data by statement month."""
+        if parsed_df is None or parsed_df.empty:
+            return pd.DataFrame()
+
+        work = parsed_df.copy()
+        work["statement_end"] = pd.to_datetime(work["statement_end"], errors="coerce")
+        work = work.dropna(subset=["statement_end"])
+        if work.empty:
+            return pd.DataFrame()
+
+        work["year_month"] = work["statement_end"].dt.to_period("M").astype(str)
+        out = (
+            work.groupby("year_month", as_index=False)
+            .agg(
+                gross_card_sales=("gross_card_sales", "sum"),
+                refunds_amount=("refunds_amount", "sum"),
+                chargebacks_amount=("chargebacks_amount", "sum"),
+                fees_total=("fees_total", "sum"),
+                transaction_count=("transaction_count", "sum"),
+                statements=("filename", "count"),
+            )
+            .sort_values("year_month")
+        )
+        return out
+
+    def compare_with_banking_data(self, bank_df: pd.DataFrame, terminal_summary_df: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Compare monthly card sales from terminal statements against bank inflows.
+        Uses revenue-like credits as proxy for settled card inflows.
+        """
+        if bank_df is None or bank_df.empty or terminal_summary_df is None or terminal_summary_df.empty:
+            return {"comparison": pd.DataFrame(), "summary": {}}
+
+        b = bank_df.copy()
+        b["date"] = pd.to_datetime(b["date"], errors="coerce")
+        b = b.dropna(subset=["date"])
+        if b.empty:
+            return {"comparison": pd.DataFrame(), "summary": {}}
+
+        # Ensure categorization flags exist
+        if "is_revenue" not in b.columns:
+            b["is_revenue"] = b["amount"] < 0
+
+        # Credits are negative in this project convention; use absolute values
+        revenue_credits = b[b["is_revenue"] & (b["amount"] < 0)].copy()
+        revenue_credits["year_month"] = revenue_credits["date"].dt.to_period("M").astype(str)
+        bank_monthly = (
+            revenue_credits.groupby("year_month", as_index=False)
+            .agg(bank_revenue_inflows=("amount", lambda s: abs(float(s.sum()))))
+            .sort_values("year_month")
+        )
+
+        terminal_monthly = terminal_summary_df[["year_month", "gross_card_sales", "fees_total", "transaction_count"]].copy()
+        merged = pd.merge(terminal_monthly, bank_monthly, on="year_month", how="outer").fillna(0.0)
+        merged["difference_amount"] = merged["bank_revenue_inflows"] - merged["gross_card_sales"]
+        merged["difference_pct_vs_terminal"] = merged.apply(
+            lambda r: (r["difference_amount"] / r["gross_card_sales"] * 100.0) if r["gross_card_sales"] > 0 else 0.0,
+            axis=1,
+        )
+        merged["abs_difference_pct"] = merged["difference_pct_vs_terminal"].abs()
+
+        if len(merged) > 0:
+            avg_abs_var = float(merged["abs_difference_pct"].mean())
+            coverage = float((merged["gross_card_sales"] > 0).sum() / len(merged) * 100.0)
+        else:
+            avg_abs_var = 0.0
+            coverage = 0.0
+
+        if avg_abs_var <= 15:
+            quality = "Good"
+        elif avg_abs_var <= 30:
+            quality = "Moderate"
+        else:
+            quality = "Poor"
+
+        return {
+            "comparison": merged.sort_values("year_month"),
+            "summary": {
+                "months_compared": int(len(merged)),
+                "average_abs_variance_pct": round(avg_abs_var, 2),
+                "coverage_pct": round(coverage, 1),
+                "reconciliation_quality": quality,
+            },
+        }
+
+    def _parse_single(self, file: Any) -> ParseResult:
+        filename = getattr(file, "name", "unknown_file")
+        ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+        raw = file.getvalue() if hasattr(file, "getvalue") else file.read()
+
+        if ext == "pdf":
+            text = self._extract_pdf_text(raw)
+            if "clover" in text.lower() or "merchantportal.app" in text.lower():
+                return self._parse_clover_pdf(filename, text)
+            return self._parse_generic_pdf(filename, text)
+
+        if ext in {"csv"}:
+            df = pd.read_csv(io.BytesIO(raw))
+            return self._parse_tabular_statement(filename, df, provider_hint="csv")
+
+        if ext in {"xls", "xlsx"}:
+            df = pd.read_excel(io.BytesIO(raw))
+            return self._parse_tabular_statement(filename, df, provider_hint="excel")
+
+        raise ValueError(f"Unsupported file format: {ext or 'unknown'}")
+
+    def _extract_pdf_text(self, raw: bytes) -> str:
+        with pdfplumber.open(io.BytesIO(raw)) as pdf:
+            return "\n".join((page.extract_text() or "") for page in pdf.pages)
+
+    def _parse_clover_pdf(self, filename: str, text: str) -> ParseResult:
+        merchant_id = self._extract_first(self._merchant_re, text)
+        period_start, period_end = self._extract_period(text)
+        currency = self._extract_first(self._currency_re, text) or "GBP"
+
+        gross_card_sales = self._extract_amount_after_label(text, "Transactions")
+        fees_total = self._extract_amount_after_label(text, "Total Fees (excluding VAT)")
+        if fees_total == 0.0:
+            fees_total = self._extract_amount_after_label(text, "Transaction Fees")
+        refunds_amount = self._extract_amount_after_label(text, "Refunds")
+        chargebacks_amount = self._extract_amount_after_label(text, "Chargebacks / Reversals")
+        transaction_count = self._extract_total_txn_count(text)
+
+        warnings: List[str] = []
+        if gross_card_sales <= 0:
+            warnings.append("Could not confidently extract gross card sales from statement.")
+        if period_end is None:
+            warnings.append("Could not extract statement period.")
+
+        confidence = 0.95 if gross_card_sales > 0 and period_end is not None else 0.7
+        return ParseResult(
+            filename=filename,
+            provider="Clover",
+            parser="clover_pdf_v1",
+            merchant_id=merchant_id,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency=currency,
+            gross_card_sales=float(gross_card_sales),
+            refunds_amount=float(refunds_amount),
+            chargebacks_amount=float(chargebacks_amount),
+            fees_total=float(fees_total),
+            transaction_count=int(transaction_count),
+            confidence=confidence,
+            warnings=warnings,
+            raw_summary={"text_length": len(text)},
+        )
+
+    def _parse_generic_pdf(self, filename: str, text: str) -> ParseResult:
+        merchant_id = self._extract_first(self._merchant_re, text)
+        period_start, period_end = self._extract_period(text)
+        currency = self._extract_first(self._currency_re, text) or "GBP"
+
+        gross_card_sales = self._extract_amount_after_label(text, "Transactions")
+        fees_total = self._extract_amount_after_label(text, "Transaction Fees")
+        refunds_amount = self._extract_amount_after_label(text, "Refunds")
+        chargebacks_amount = self._extract_amount_after_label(text, "Chargeback")
+
+        warnings = [
+            "Parsed with generic PDF parser; validate totals before relying operationally."
+        ]
+        confidence = 0.6 if gross_card_sales > 0 else 0.45
+        return ParseResult(
+            filename=filename,
+            provider="Unknown",
+            parser="generic_pdf_v1",
+            merchant_id=merchant_id,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency=currency,
+            gross_card_sales=float(gross_card_sales),
+            refunds_amount=float(refunds_amount),
+            chargebacks_amount=float(chargebacks_amount),
+            fees_total=float(fees_total),
+            transaction_count=0,
+            confidence=confidence,
+            warnings=warnings,
+            raw_summary={"text_length": len(text)},
+        )
+
+    def _parse_tabular_statement(self, filename: str, df: pd.DataFrame, provider_hint: str) -> ParseResult:
+        normalized_cols = {str(c).strip().lower(): c for c in df.columns}
+        warnings: List[str] = []
+
+        amount_col = self._pick_col(normalized_cols, ["amount", "gross", "sales", "sale amount", "transaction amount"])
+        date_col = self._pick_col(normalized_cols, ["date", "transaction date", "settlement date"])
+        fee_col = self._pick_col(normalized_cols, ["fee", "fees", "charge", "commission"])
+        refund_col = self._pick_col(normalized_cols, ["refund", "refund amount"])
+        merchant_col = self._pick_col(normalized_cols, ["merchant id", "merchant", "mid"])
+        chargeback_col = self._pick_col(normalized_cols, ["chargeback", "reversal"])
+
+        if amount_col is None:
+            raise ValueError("Unable to identify sales amount column in tabular statement.")
+
+        work = df.copy()
+        work[amount_col] = pd.to_numeric(work[amount_col], errors="coerce").fillna(0.0)
+        gross = float(work[amount_col].clip(lower=0).sum())
+        tx_count = int((work[amount_col] > 0).sum())
+
+        fees_total = float(pd.to_numeric(work[fee_col], errors="coerce").fillna(0.0).abs().sum()) if fee_col else 0.0
+        refunds = float(pd.to_numeric(work[refund_col], errors="coerce").fillna(0.0).abs().sum()) if refund_col else 0.0
+        chargebacks = float(pd.to_numeric(work[chargeback_col], errors="coerce").fillna(0.0).abs().sum()) if chargeback_col else 0.0
+        merchant_id = str(work[merchant_col].dropna().iloc[0]) if merchant_col and not work[merchant_col].dropna().empty else None
+
+        start_dt: Optional[date] = None
+        end_dt: Optional[date] = None
+        if date_col:
+            work[date_col] = pd.to_datetime(work[date_col], errors="coerce")
+            valid_dates = work[date_col].dropna()
+            if not valid_dates.empty:
+                start_dt = valid_dates.min().date()
+                end_dt = valid_dates.max().date()
+        else:
+            warnings.append("No date column detected; monthly alignment may be less reliable.")
+
+        return ParseResult(
+            filename=filename,
+            provider="Unknown",
+            parser=f"generic_{provider_hint}_v1",
+            merchant_id=merchant_id,
+            statement_start=start_dt,
+            statement_end=end_dt,
+            currency="GBP",
+            gross_card_sales=gross,
+            refunds_amount=refunds,
+            chargebacks_amount=chargebacks,
+            fees_total=fees_total,
+            transaction_count=tx_count,
+            confidence=0.75 if end_dt else 0.6,
+            warnings=warnings,
+            raw_summary={"columns": list(df.columns)},
+        )
+
+    @staticmethod
+    def _extract_first(pattern: re.Pattern, text: str) -> Optional[str]:
+        match = pattern.search(text or "")
+        if not match:
+            return None
+        return match.group(1).strip()
+
+    def _extract_period(self, text: str) -> tuple[Optional[date], Optional[date]]:
+        match = self._period_re.search(text or "")
+        if not match:
+            return None, None
+        start = pd.to_datetime(match.group(1), dayfirst=True, errors="coerce")
+        end = pd.to_datetime(match.group(2), dayfirst=True, errors="coerce")
+        return (
+            start.date() if pd.notna(start) else None,
+            end.date() if pd.notna(end) else None,
+        )
+
+    def _extract_amount_after_label(self, text: str, label: str) -> float:
+        if not text:
+            return 0.0
+        pattern = re.compile(re.escape(label) + r"[^\n\r£0-9]*([£]?\s*[0-9][0-9,]*\.?[0-9]{0,2})", re.IGNORECASE)
+        match = pattern.search(text)
+        if match:
+            return self._to_float(match.group(1))
+
+        # fallback: line-based relaxed matching
+        for line in text.splitlines():
+            if label.lower() in line.lower():
+                all_matches = self._money_re.findall(line)
+                if all_matches:
+                    return self._to_float(all_matches[-1])
+        return 0.0
+
+    def _extract_total_txn_count(self, text: str) -> int:
+        # Example line: "Total 1005 10,615.99 0 0.00"
+        for line in text.splitlines():
+            if line.strip().lower().startswith("total "):
+                nums = re.findall(r"\b[0-9]{1,6}\b", line)
+                if nums:
+                    try:
+                        return int(nums[0])
+                    except ValueError:
+                        return 0
+        return 0
+
+    @staticmethod
+    def _to_float(value: Any) -> float:
+        if value is None:
+            return 0.0
+        s = str(value).replace("£", "").replace(",", "").strip()
+        try:
+            return float(s)
+        except ValueError:
+            return 0.0
+
+    @staticmethod
+    def _pick_col(normalized_cols: Dict[str, Any], candidates: List[str]) -> Optional[Any]:
+        for c in candidates:
+            for normalized, original in normalized_cols.items():
+                if c == normalized or c in normalized:
+                    return original
+        return None

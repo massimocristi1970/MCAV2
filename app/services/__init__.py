@@ -35,6 +35,11 @@ try:
 except (ImportError, FileNotFoundError, OSError):
     FinancialAnalyzer = None
 
+try:
+    from .card_terminal_ingestion import CardTerminalIngestionService
+except (ImportError, FileNotFoundError, OSError):
+    CardTerminalIngestionService = None
+
 __all__ = [
     # Scoring systems
     'SubprimeScoring',
@@ -51,4 +56,5 @@ __all__ = [
     'DataProcessor',
     'TransactionCategorizer',
     'FinancialAnalyzer',
+    'CardTerminalIngestionService',
 ]
