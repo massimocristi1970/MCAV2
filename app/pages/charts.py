@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from typing import Dict, Any, Optional, Tuple, List
 
+from app.plotly_theme import LEGEND_BELOW, MCA_PLOT, THRESHOLD_LINE, THRESHOLD_MARKER, show_mca_plotly
+
 
 def create_score_charts(scores: Dict[str, Any], metrics: Dict[str, Any]) -> go.Figure:
     """
@@ -38,11 +40,11 @@ def create_score_charts(scores: Dict[str, Any], metrics: Dict[str, Any]) -> go.F
     ))
     
     fig_scores.update_layout(
-        title="Primary Scoring Methods Comparison",
+        title=dict(text="Primary scoring methods", x=0.02, xanchor="left"),
         yaxis_title="Score",
         showlegend=False,
         height=400,
-        yaxis=dict(range=[0, 100])
+        yaxis=dict(range=[0, 100]),
     )
     
     return fig_scores
@@ -80,10 +82,10 @@ def create_financial_charts(metrics: Dict[str, Any]) -> Tuple[go.Figure, Optiona
     ))
     
     fig_financial.update_layout(
-        title="Financial Overview",
+        title=dict(text="Financial overview", x=0.02, xanchor="left"),
         yaxis_title="Amount (£)",
         showlegend=False,
-        height=400
+        height=420,
     )
     
     # Monthly trend chart if data available
@@ -99,7 +101,8 @@ def create_financial_charts(metrics: Dict[str, Any]) -> Tuple[go.Figure, Optiona
             y=monthly_data['monthly_revenue'],
             mode='lines+markers',
             name='Revenue',
-            line=dict(color='green', width=3)
+            line=dict(color='#34d399', width=2.5),
+            marker=dict(size=7, line=dict(width=1, color='#064e3b')),
         ))
         
         fig_trend.add_trace(go.Scatter(
@@ -107,15 +110,17 @@ def create_financial_charts(metrics: Dict[str, Any]) -> Tuple[go.Figure, Optiona
             y=monthly_data['monthly_expenses'],
             mode='lines+markers',
             name='Expenses',
-            line=dict(color='red', width=3)
+            line=dict(color='#fb7185', width=2.5),
+            marker=dict(size=7, line=dict(width=1, color='#881337')),
         ))
         
         fig_trend.update_layout(
-            title="Monthly Revenue vs Expenses Trend",
+            title=dict(text="Monthly revenue vs expenses", x=0.02, xanchor="left"),
             xaxis_title="Month",
             yaxis_title="Amount (£)",
-            height=400,
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            height=440,
+            legend=LEGEND_BELOW,
+            margin=dict(t=56, b=108, l=56, r=36),
         )
     
     return fig_financial, fig_trend
@@ -164,19 +169,27 @@ def create_threshold_chart(score_breakdown: Dict[str, Dict[str, Any]]) -> go.Fig
         x=metrics_list,
         y=threshold_values,
         mode='lines+markers',
-        line=dict(color='black', width=2, dash='dash'),
-        marker=dict(size=8)
+        line=dict(color=THRESHOLD_LINE, width=2, dash='dash'),
+        marker=dict(
+            size=9,
+            symbol='diamond',
+            color=THRESHOLD_MARKER,
+            line=dict(color='#f8fafc', width=1),
+        ),
+        connectgaps=True,
     ))
     
     fig.update_layout(
-        title="Metrics vs Industry Thresholds",
+        title=dict(text="Actual vs industry thresholds", x=0.02, xanchor="left"),
         xaxis_title="Metric",
         yaxis_title="Value",
-        height=500,
+        height=540,
         barmode='group',
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        legend=LEGEND_BELOW,
+        margin=dict(t=56, b=120, l=56, r=36),
     )
-    
+    fig.update_xaxes(tickangle=-28, tickfont=dict(size=10), automargin=True)
+
     return fig
 
 
@@ -209,12 +222,13 @@ def create_monthly_breakdown_charts(
         ))
     
     fig_counts.update_layout(
-        title="Monthly Transaction Counts by Category",
+        title=dict(text="Monthly transaction counts by category", x=0.02, xanchor="left"),
         xaxis_title="Month",
-        yaxis_title="Number of Transactions",
+        yaxis_title="Number of transactions",
         barmode='stack',
-        height=400,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        height=460,
+        legend=LEGEND_BELOW,
+        margin=dict(t=56, b=130, l=56, r=28),
     )
     
     # Amount chart
@@ -229,12 +243,13 @@ def create_monthly_breakdown_charts(
         ))
     
     fig_amounts.update_layout(
-        title="Monthly Transaction Amounts by Category",
+        title=dict(text="Monthly transaction amounts by category", x=0.02, xanchor="left"),
         xaxis_title="Month",
         yaxis_title="Amount (£)",
         barmode='stack',
-        height=400,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        height=460,
+        legend=LEGEND_BELOW,
+        margin=dict(t=56, b=130, l=56, r=28),
     )
     
     return fig_counts, fig_amounts
@@ -268,11 +283,11 @@ def create_loans_repayments_charts(analysis: Dict[str, Any]) -> Tuple[Optional[g
         ))
         
         fig_loans.update_layout(
-            title="Loans Received by Month",
+            title=dict(text="Loans received by month", x=0.02, xanchor="left"),
             xaxis_title="Month",
             yaxis_title="Amount (£)",
-            height=400,
-            showlegend=False
+            height=420,
+            showlegend=False,
         )
     
     # Repayments by month chart
@@ -290,11 +305,11 @@ def create_loans_repayments_charts(analysis: Dict[str, Any]) -> Tuple[Optional[g
         ))
         
         fig_repayments.update_layout(
-            title="Debt Repayments by Month",
+            title=dict(text="Debt repayments by month", x=0.02, xanchor="left"),
             xaxis_title="Month",
             yaxis_title="Amount (£)",
-            height=400,
-            showlegend=False
+            height=420,
+            showlegend=False,
         )
     
     return fig_loans, fig_repayments
@@ -329,11 +344,11 @@ def create_score_comparison_chart(scores: Dict[str, Any]) -> go.Figure:
     ))
     
     fig.update_layout(
-        title="Scoring Methods for Subprime Lending",
+        title=dict(text="Scoring methods (subprime context)", x=0.02, xanchor="left"),
         yaxis_title="Score",
         showlegend=False,
-        height=350,
-        yaxis=dict(range=[0, 100])
+        height=380,
+        yaxis=dict(range=[0, 100]),
     )
     
     return fig
@@ -397,12 +412,13 @@ def create_cashflow_trend_chart(df: pd.DataFrame) -> Optional[go.Figure]:
     ))
     
     fig.update_layout(
-        title="Monthly Cashflow Analysis",
+        title=dict(text="Monthly cashflow analysis", x=0.02, xanchor="left"),
         xaxis_title="Month",
         yaxis_title="Amount (£)",
         barmode='group',
-        height=450,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        height=460,
+        legend=LEGEND_BELOW,
+        margin=dict(t=56, b=108, l=56, r=36),
     )
     
     return fig
@@ -437,9 +453,9 @@ def create_risk_gauge_chart(score: float, title: str = "Risk Score") -> go.Figur
         gauge={
             'axis': {'range': [0, 100], 'tickwidth': 1},
             'bar': {'color': color},
-            'bgcolor': "white",
+            'bgcolor': MCA_PLOT,
             'borderwidth': 2,
-            'bordercolor': "gray",
+            'bordercolor': "#475569",
             'steps': [
                 {'range': [0, 30], 'color': '#ffcccb'},
                 {'range': [30, 50], 'color': '#fff4cc'},
@@ -447,7 +463,7 @@ def create_risk_gauge_chart(score: float, title: str = "Risk Score") -> go.Figur
                 {'range': [70, 100], 'color': '#ccffcc'}
             ],
             'threshold': {
-                'line': {'color': "black", 'width': 4},
+                'line': {'color': THRESHOLD_LINE, 'width': 4},
                 'thickness': 0.75,
                 'value': score
             }
@@ -455,8 +471,8 @@ def create_risk_gauge_chart(score: float, title: str = "Risk Score") -> go.Figur
     ))
     
     fig.update_layout(
-        height=250,
-        margin=dict(l=20, r=20, t=50, b=20)
+        height=260,
+        margin=dict(l=28, r=28, t=56, b=28),
     )
     
     return fig
@@ -465,12 +481,31 @@ def create_risk_gauge_chart(score: float, title: str = "Risk Score") -> go.Figur
 # ----------------------------
 import streamlit as st
 
-st.set_page_config(page_title="Charts", layout="wide")
-st.title("📈 Charts")
+from app.ui_theme import (
+    apply_ui_theme,
+    render_compact_page_title,
+    render_empty_state_no_run,
+)
+
+st.set_page_config(
+    page_title="Charts | MCA Scorecard",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={"Get Help": None, "Report a bug": None, "About": None},
+)
+apply_ui_theme()
+render_compact_page_title(
+    "Charts & visual analysis",
+    "Figures from your latest Main-page run—switch datasets there, then return here.",
+    eyebrow="MCA Scorecard",
+)
 
 run = st.session_state.get("last_run")
 if not run:
-    st.info("Run an analysis on the Main page first, then come back to Charts.")
+    render_empty_state_no_run(
+        "Charts",
+        "Figures appear automatically after a successful Main-page score.",
+    )
     st.stop()
 
 metrics = run["metrics"]
@@ -480,6 +515,6 @@ scores = run["scores"]
 try:
     figs = create_financial_charts(metrics)  # if your charts.py exposes this
     for fig in figs:
-        st.plotly_chart(fig, use_container_width=True)
+        show_mca_plotly(fig)
 except NameError:
     st.warning("No chart-rendering functions found in charts.py. Add calls to your existing chart functions here.")

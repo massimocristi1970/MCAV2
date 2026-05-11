@@ -1,0 +1,3 @@
+# Align Streamlit's built-in widget chrome with the app's dark-only UI (see app/ui_theme.py).
+[theme]
+base = "dark"

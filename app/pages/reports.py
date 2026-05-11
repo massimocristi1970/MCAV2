@@ -115,7 +115,7 @@ class DashboardExporter:
         if export_data['loans_analysis'] and export_data['loans_analysis'].get('loan_count', 0) > 0:
             loans_section = f"""
             <div class="section">
-                <h2>💰 Loans & Debt Analysis</h2>
+                <h2>Loans &amp; debt analysis</h2>
                 <div class="metric-grid">
                     <div class="metric-card">
                         <h4>Total Loans Received</h4>
@@ -175,7 +175,7 @@ class DashboardExporter:
         <body>
             <!-- Header Section -->
             <div class="header">
-                <h1>🏦 Business Finance Scorecard Report</h1>
+                <h1>Business Finance Scorecard report</h1>
                 <h2>{export_data['export_info']['company_name']}</h2>
                 <p><strong>Generated:</strong> {datetime.fromisoformat(export_data['export_info']['export_timestamp']).strftime('%B %d, %Y at %I:%M %p')}</p>
                 <p><strong>Analysis Period:</strong> {export_data['export_info']['analysis_period']}</p>
@@ -184,23 +184,23 @@ class DashboardExporter:
             
             <!-- Executive Summary -->
             <div class="section">
-                <h2>📊 Executive Summary</h2>
+                <h2>Executive summary</h2>
                 <div class="metric-grid">
                     <div class="metric-card">
-                        <h3>🎯 Subprime Score</h3>
+                        <h3>Subprime score</h3>
                         <div class="score-{get_score_class(subprime_score)}">{subprime_score:.1f}/100</div>
                         <p>{export_data['scoring_results'].get('subprime_tier', 'N/A')}</p>
                     </div>
                     <div class="metric-card">
-                        <h3>🏛️ MCA Rule (40%)</h3>
+                        <h3>MCA rule (40%)</h3>
                         <div class="score-{get_score_class(mca_rule_score)}">{mca_rule_score:.0f}/100</div>
                     </div>
                     <div class="metric-card">
-                        <h3>🤖 ML Score</h3>
+                        <h3>ML score</h3>
                         <div class="score-{get_score_class(adjusted_ml_score)}">{adjusted_ml_score:.1f}%</div>
                     </div>
                     <div class="metric-card">
-                        <h3>💰 Requested Loan</h3>
+                        <h3>Requested loan</h3>
                         <div>£{export_data['business_parameters']['requested_loan']:,.0f}</div>
                         <p>{export_data['scoring_results'].get('loan_risk', 'N/A')}</p>
                     </div>
@@ -209,7 +209,7 @@ class DashboardExporter:
             
             <!-- Financial Metrics -->
             <div class="section">
-                <h2>📈 Financial Metrics</h2>
+                <h2>Financial metrics</h2>
                 <div class="metric-grid">
                     <div class="metric-card">
                         <h4>Total Revenue</h4>
@@ -240,7 +240,7 @@ class DashboardExporter:
             
             <!-- Revenue Insights -->
             <div class="section">
-                <h2>💵 Revenue Insights</h2>
+                <h2>Revenue insights</h2>
                 <div class="metric-grid">
                     <div class="metric-card">
                         <h4>Revenue Sources</h4>
@@ -261,7 +261,7 @@ class DashboardExporter:
             
             <!-- Business Parameters -->
             <div class="section">
-                <h2>⚙️ Business Parameters</h2>
+                <h2>Business parameters</h2>
                 <table>
                     <tr><th>Parameter</th><th>Value</th></tr>
                     <tr><td>Industry</td><td>{export_data['business_parameters']['industry']}</td></tr>
@@ -273,7 +273,7 @@ class DashboardExporter:
             
             <!-- Recommendation -->
             <div class="section">
-                <h2>📋 Recommendation</h2>
+                <h2>Recommendation</h2>
                 <p><strong>{export_data['scoring_results'].get('subprime_recommendation', 'No recommendation available')}</strong></p>
             </div>
             
@@ -338,7 +338,7 @@ class DashboardExporter:
         from datetime import datetime
 
         st.markdown("---")
-        st.subheader("📥 Export Dashboard Report")
+        st.subheader("Export dashboard report")
 
         export_data = self.export_dashboard_data(
             company_name=company_name,
@@ -355,7 +355,7 @@ class DashboardExporter:
         with col1:
             html_report = self.generate_html_report(export_data)
             st.download_button(
-                label="📄 Export HTML Report",
+                label="Export HTML report",
                 data=html_report,
                 file_name=f"{company_name.replace(' ', '_')}_report_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
                 mime="text/html",
@@ -365,7 +365,7 @@ class DashboardExporter:
         with col2:
             json_data = json.dumps(export_data, indent=2, default=str)
             st.download_button(
-                label="📊 Export JSON Data",
+                label="Export JSON data",
                 data=json_data,
                 file_name=f"{company_name.replace(' ', '_')}_data_{datetime.now().strftime('%Y%m%d_%H%M')}.json",
                 mime="application/json"
@@ -374,7 +374,7 @@ class DashboardExporter:
         with col3:
             csv_data = self.generate_csv_metrics(metrics, company_name)
             st.download_button(
-                label="📈 Export CSV Metrics",
+                label="Export CSV metrics",
                 data=csv_data,
                 file_name=f"{company_name.replace(' ', '_')}_metrics_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv"
@@ -460,12 +460,31 @@ def format_metrics_for_display(metrics: Dict[str, Any]) -> Dict[str, str]:
 # ----------------------------
 import streamlit as st
 
-st.set_page_config(page_title="Reports", layout="wide")
-st.title("📄 Reports / Export")
+from app.ui_theme import (
+    apply_ui_theme,
+    render_compact_page_title,
+    render_empty_state_no_run,
+)
+
+st.set_page_config(
+    page_title="Reports | MCA Scorecard",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={"Get Help": None, "Report a bug": None, "About": None},
+)
+apply_ui_theme()
+render_compact_page_title(
+    "Reports / export",
+    "Download HTML, JSON, or CSV from your latest scored run.",
+    eyebrow="MCA Scorecard",
+)
 
 run = st.session_state.get("last_run")
 if not run:
-    st.info("Run an analysis on the Main page first, then come back to Reports.")
+    render_empty_state_no_run(
+        "Reports",
+        "Exports unlock after you score a case on Main.",
+    )
     st.stop()
 
 company_name = run["company_name"]

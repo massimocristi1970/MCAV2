@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 
 from ..core.logger import get_logger
 from ..core.cache import CacheManager
+from app.plotly_theme import register_mca_plotly_template, show_mca_plotly
 
 logger = get_logger("charts")
 
@@ -19,6 +20,7 @@ class ChartGenerator:
     """Generate interactive charts for financial analysis."""
     
     def __init__(self):
+        register_mca_plotly_template()
         self.color_palette = {
             'revenue': '#2E8B57',      # Sea Green
             'expenses': '#DC143C',      # Crimson
@@ -31,11 +33,13 @@ class ChartGenerator:
         }
         
         self.chart_theme = {
-            'template': 'plotly_white',
-            'font_family': 'Arial, sans-serif',
-            'font_size': 12,
-            'title_font_size': 16,
-            'margin': dict(l=50, r=50, t=80, b=50)
+            'template': 'mca_dark',
+            'font': dict(
+                family="DM Sans, ui-sans-serif, system-ui, sans-serif",
+                size=12,
+            ),
+            'title': dict(font=dict(size=15)),
+            'margin': dict(l=56, r=36, t=62, b=72),
         }
     
     @CacheManager.cache_data(ttl=900)  # 15 minutes
@@ -655,7 +659,7 @@ class ChartGenerator:
         
         fig = go.Figure()
         fig.add_annotation(
-            text=f"⚠️ {message}",
+            text=message,
             xref="paper", yref="paper",
             x=0.5, y=0.5,
             showarrow=False,
@@ -710,7 +714,7 @@ def display_chart(fig: go.Figure, use_container_width: bool = True) -> None:
     """Display Plotly chart in Streamlit with error handling."""
     
     try:
-        st.plotly_chart(fig, use_container_width=use_container_width)
+        show_mca_plotly(fig, use_container_width=use_container_width)
     except Exception as e:
         logger.error(f"Error displaying chart: {str(e)}")
         st.error("Error displaying chart. Please try again.")

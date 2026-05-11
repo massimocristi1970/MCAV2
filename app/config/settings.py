@@ -26,6 +26,10 @@ class Settings:
     MODEL_PATH: str = os.getenv("MODEL_PATH", "app/models/model_artifacts/model.pkl")
     SCALER_PATH: str = os.getenv("SCALER_PATH", "app/models/model_artifacts/scaler.pkl")
     
+    # Persist completed runs under data/app_runs/ for monitoring and modelling (see app.services.run_persistence)
+    # Set SAVE_APP_RUNS=false to disable writing JSON snapshots.
+    SAVE_APP_RUNS: bool = os.getenv("SAVE_APP_RUNS", "true").lower().strip() in ("1", "true", "yes")
+
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     

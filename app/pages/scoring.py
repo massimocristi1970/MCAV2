@@ -513,17 +513,23 @@ def get_ml_score_interpretation(adjusted_score: float, raw_score: float) -> str:
         interpretation = "**High risk** - enhanced monitoring recommended"
     
     if improvement >= 15:
-        interpretation += f"\n📈 **Significant upward adjustment** (+{improvement:.1f}) for growth business profile"
+        interpretation += f"\n**Significant upward adjustment** (+{improvement:.1f}) for growth business profile"
     elif improvement >= 8:
-        interpretation += f"\n📈 **Notable upward adjustment** (+{improvement:.1f}) for growth characteristics"
+        interpretation += f"\n**Notable upward adjustment** (+{improvement:.1f}) for growth characteristics"
     elif improvement >= 3:
-        interpretation += f"\n📈 **Minor upward adjustment** (+{improvement:.1f}) for positive factors"
+        interpretation += f"\n**Minor upward adjustment** (+{improvement:.1f}) for positive factors"
     else:
-        interpretation += f"\n➡️ **Minimal adjustment** (+{improvement:.1f}) - standard risk profile"
+        interpretation += f"\n**Minimal adjustment** (+{improvement:.1f}) — standard risk profile"
     
     return interpretation
 
 import streamlit as st
+
+from app.ui_theme import (
+    apply_ui_theme,
+    render_compact_page_title,
+    render_empty_state_no_run,
+)
 
 def determine_loan_risk_level(
     scores: Dict[str, Any], 
@@ -567,12 +573,25 @@ def determine_loan_risk_level(
 # Streamlit Page Entry Point
 # ----------------------------
 
-st.set_page_config(page_title="Scoring", layout="wide")
-st.title("🎯 Scoring")
+st.set_page_config(
+    page_title="Scoring | MCA Scorecard",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={"Get Help": None, "Report a bug": None, "About": None},
+)
+apply_ui_theme()
+render_compact_page_title(
+    "Scoring detail",
+    "Key outputs from your latest Main-page run.",
+    eyebrow="MCA Scorecard",
+)
 
 run = st.session_state.get("last_run")
 if not run:
-    st.info("Run an analysis on the Main page first, then come back to Scoring.")
+    render_empty_state_no_run(
+        "Scoring",
+        "Scores appear here after you complete an analysis on Main.",
+    )
     st.stop()
 
 scores = run["scores"]

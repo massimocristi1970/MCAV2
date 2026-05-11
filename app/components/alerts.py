@@ -10,7 +10,7 @@ def show_success(message: str, details: Optional[Dict[str, Any]] = None) -> None
     
     st.markdown(f"""
     <div class="success-container">
-        <strong>✅ Success</strong><br>
+        <strong>Success</strong><br>
         {message}
     </div>
     """, unsafe_allow_html=True)
@@ -24,7 +24,7 @@ def show_error(message: str, details: Optional[Dict[str, Any]] = None) -> None:
     
     st.markdown(f"""
     <div class="error-container">
-        <strong>❌ Error</strong><br>
+        <strong>Error</strong><br>
         {message}
     </div>
     """, unsafe_allow_html=True)
@@ -36,7 +36,7 @@ def show_error(message: str, details: Optional[Dict[str, Any]] = None) -> None:
 def show_warning(message: str, details: Optional[Dict[str, Any]] = None) -> None:
     """Display a warning alert."""
     
-    st.warning(f"⚠️ **Warning:** {message}")
+    st.warning(f"**Warning:** {message}")
     
     if details:
         with st.expander("Warning Details"):
@@ -45,7 +45,7 @@ def show_warning(message: str, details: Optional[Dict[str, Any]] = None) -> None
 def show_info(message: str, details: Optional[Dict[str, Any]] = None) -> None:
     """Display an info alert."""
     
-    st.info(f"ℹ️ **Info:** {message}")
+    st.info(f"**Info:** {message}")
     
     if details:
         with st.expander("Additional Information"):
@@ -54,7 +54,7 @@ def show_info(message: str, details: Optional[Dict[str, Any]] = None) -> None:
 def show_progress_alert(message: str, progress: float) -> None:
     """Display a progress alert with progress bar."""
     
-    st.info(f"🔄 {message}")
+    st.info(message)
     st.progress(progress)
 
 def show_data_quality_alert(quality_score: float, issues: list = None) -> None:
@@ -62,18 +62,15 @@ def show_data_quality_alert(quality_score: float, issues: list = None) -> None:
     
     if quality_score >= 90:
         alert_type = "success"
-        icon = "✅"
         status = "Excellent"
     elif quality_score >= 70:
         alert_type = "warning"
-        icon = "⚠️"
         status = "Good"
     else:
         alert_type = "error"
-        icon = "❌"
         status = "Poor"
-    
-    message = f"{icon} **Data Quality: {status}** ({quality_score:.1f}%)"
+
+    message = f"**Data quality: {status}** ({quality_score:.1f}%)"
     
     if alert_type == "success":
         st.success(message)
@@ -91,16 +88,16 @@ def show_financial_health_alert(health_status: str, score: float) -> None:
     """Display financial health status alert."""
     
     status_config = {
-        "Excellent": {"color": "success", "icon": "🟢"},
-        "Good": {"color": "success", "icon": "🟡"},
-        "Fair": {"color": "warning", "icon": "🟠"},
-        "Poor": {"color": "error", "icon": "🔴"},
-        "Critical": {"color": "error", "icon": "🔴"}
+        "Excellent": {"color": "success"},
+        "Good": {"color": "success"},
+        "Fair": {"color": "warning"},
+        "Poor": {"color": "error"},
+        "Critical": {"color": "error"},
     }
-    
-    config = status_config.get(health_status, {"color": "info", "icon": "⚪"})
-    
-    message = f"{config['icon']} **Financial Health: {health_status}** (Score: {score:.1f}/100)"
+
+    config = status_config.get(health_status, {"color": "info"})
+
+    message = f"**Financial health: {health_status}** (score: {score:.1f}/100)"
     
     if config["color"] == "success":
         st.success(message)
@@ -115,16 +112,16 @@ def show_risk_assessment_alert(risk_level: str, probability: float) -> None:
     """Display risk assessment alert."""
     
     risk_config = {
-        "Very Low Risk": {"color": "success", "icon": "🟢"},
-        "Low Risk": {"color": "success", "icon": "🟡"},
-        "Moderate Risk": {"color": "warning", "icon": "🟠"},
-        "High Risk": {"color": "error", "icon": "🔴"},
-        "Very High Risk": {"color": "error", "icon": "🔴"}
+        "Very Low Risk": {"color": "success"},
+        "Low Risk": {"color": "success"},
+        "Moderate Risk": {"color": "warning"},
+        "High Risk": {"color": "error"},
+        "Very High Risk": {"color": "error"},
     }
-    
-    config = risk_config.get(risk_level, {"color": "info", "icon": "⚪"})
-    
-    message = f"{config['icon']} **Risk Level: {risk_level}** (Repayment Probability: {probability:.1f}%)"
+
+    config = risk_config.get(risk_level, {"color": "info"})
+
+    message = f"**Risk level: {risk_level}** (repayment probability: {probability:.1f}%)"
     
     if config["color"] == "success":
         st.success(message)
@@ -140,22 +137,18 @@ def show_benchmark_alert(score: float, metrics_passed: int, total_metrics: int) 
     
     if score >= 80:
         alert_type = "success"
-        icon = "🏆"
-        status = "Exceeds Industry Standards"
+        status = "Exceeds industry standards"
     elif score >= 60:
         alert_type = "success"
-        icon = "✅"
-        status = "Meets Industry Standards"
+        status = "Meets industry standards"
     elif score >= 40:
         alert_type = "warning"
-        icon = "⚠️"
-        status = "Below Industry Average"
+        status = "Below industry average"
     else:
         alert_type = "error"
-        icon = "❌"
-        status = "Well Below Industry Standards"
-    
-    message = f"{icon} **{status}** ({metrics_passed}/{total_metrics} benchmarks met, {score:.1f}% score)"
+        status = "Well below industry standards"
+
+    message = f"**{status}** ({metrics_passed}/{total_metrics} benchmarks met, {score:.1f}% score)"
     
     if alert_type == "success":
         st.success(message)
@@ -167,29 +160,28 @@ def show_benchmark_alert(score: float, metrics_passed: int, total_metrics: int) 
 def show_loading_alert(message: str) -> None:
     """Display a loading alert with spinner."""
     
-    st.info(f"🔄 {message}")
+    st.info(message)
 
 def show_ml_prediction_alert(probability: float, confidence: float) -> None:
     """Display ML prediction results alert."""
-    
+
     if probability >= 80:
         alert_type = "success"
-        icon = "🟢"
-        risk_text = "Low Risk"
+        risk_text = "Low risk"
     elif probability >= 60:
         alert_type = "success"
-        icon = "🟡"
-        risk_text = "Moderate Risk"
+        risk_text = "Moderate risk"
     elif probability >= 40:
         alert_type = "warning"
-        icon = "🟠"
-        risk_text = "High Risk"
+        risk_text = "High risk"
     else:
         alert_type = "error"
-        icon = "🔴"
-        risk_text = "Very High Risk"
-    
-    message = f"{icon} **AI Assessment: {risk_text}** (Repayment Probability: {probability:.1f}%, Model Confidence: {confidence:.1f}%)"
+        risk_text = "Very high risk"
+
+    message = (
+        f"**AI assessment: {risk_text}** (repayment probability: {probability:.1f}%, "
+        f"model confidence: {confidence:.1f}%)"
+    )
     
     if alert_type == "success":
         st.success(message)
@@ -213,20 +205,20 @@ def show_data_upload_success(filename: str, records: int, accounts: int) -> None
 def show_validation_error(field_name: str, error_message: str) -> None:
     """Display validation error for specific field."""
     
-    st.error(f"❌ **Validation Error in {field_name}:** {error_message}")
+    st.error(f"**Validation error in {field_name}:** {error_message}")
 
 def show_api_connection_status(service: str, is_connected: bool, details: str = None) -> None:
     """Display API connection status."""
     
     if is_connected:
-        message = f"🟢 **{service} Connected**"
+        message = f"**{service} connected**"
         if details:
-            message += f" - {details}"
+            message += f" — {details}"
         st.success(message)
     else:
-        message = f"🔴 **{service} Not Connected**"
+        message = f"**{service} not connected**"
         if details:
-            message += f" - {details}"
+            message += f" — {details}"
         st.error(message)
 
 def show_feature_importance_alert(top_factors: list, positive_factors: int) -> None:
@@ -234,18 +226,15 @@ def show_feature_importance_alert(top_factors: list, positive_factors: int) -> N
     
     if positive_factors >= len(top_factors) * 0.7:  # 70% positive
         alert_type = "success"
-        icon = "✅"
         message = f"Strong financial position with {positive_factors}/{len(top_factors)} positive key factors"
     elif positive_factors >= len(top_factors) * 0.4:  # 40% positive
-        alert_type = "warning" 
-        icon = "⚠️"
+        alert_type = "warning"
         message = f"Mixed financial position with {positive_factors}/{len(top_factors)} positive key factors"
     else:
         alert_type = "error"
-        icon = "❌"
         message = f"Concerning financial position with only {positive_factors}/{len(top_factors)} positive key factors"
-    
-    full_message = f"{icon} **Key Factors Analysis:** {message}"
+
+    full_message = f"**Key factors analysis:** {message}"
     
     if alert_type == "success":
         st.success(full_message)
@@ -259,18 +248,18 @@ def show_seasonal_pattern_alert(best_month: str, worst_month: str, volatility: f
     
     if volatility < 0.2:
         alert_type = "success"
-        icon = "📈"
         stability = "Stable"
     elif volatility < 0.5:
         alert_type = "warning"
-        icon = "📊"
         stability = "Moderate"
     else:
         alert_type = "error"
-        icon = "📉"
         stability = "Volatile"
-    
-    message = f"{icon} **Seasonal Analysis:** {stability} revenue pattern (Best: {best_month}, Worst: {worst_month}, Volatility: {volatility:.2f})"
+
+    message = (
+        f"**Seasonal analysis:** {stability} revenue pattern "
+        f"(best: {best_month}, worst: {worst_month}, volatility: {volatility:.2f})"
+    )
     
     if alert_type == "success":
         st.success(message)
@@ -286,18 +275,18 @@ def show_cash_flow_alert(negative_days: int, total_days: int, avg_balance: float
     
     if negative_ratio < 0.1 and avg_balance > 5000:  # Less than 10% negative days and good balance
         alert_type = "success"
-        icon = "💰"
-        status = "Healthy Cash Flow"
+        status = "Healthy cash flow"
     elif negative_ratio < 0.25 or avg_balance > 1000:  # Less than 25% negative days or decent balance
         alert_type = "warning"
-        icon = "⚠️"
-        status = "Moderate Cash Flow Concerns"
+        status = "Moderate cash flow concerns"
     else:
         alert_type = "error"
-        icon = "🚨"
-        status = "Significant Cash Flow Issues"
-    
-    message = f"{icon} **{status}:** {negative_days}/{total_days} negative cash flow days, £{avg_balance:,.2f} average balance"
+        status = "Significant cash flow issues"
+
+    message = (
+        f"**{status}:** {negative_days}/{total_days} negative cash flow days, "
+        f"£{avg_balance:,.2f} average balance"
+    )
     
     if alert_type == "success":
         st.success(message)
@@ -311,18 +300,15 @@ def show_debt_management_alert(dscr: float, debt_ratio: float) -> None:
     
     if dscr >= 1.5 and debt_ratio < 0.3:  # Good DSCR and low debt ratio
         alert_type = "success"
-        icon = "✅"
-        status = "Excellent Debt Management"
+        status = "Excellent debt management"
     elif dscr >= 1.2 and debt_ratio < 0.5:  # Acceptable DSCR and moderate debt ratio
         alert_type = "warning"
-        icon = "⚠️"
-        status = "Acceptable Debt Management"
+        status = "Acceptable debt management"
     else:
         alert_type = "error"
-        icon = "❌"
-        status = "Debt Management Concerns"
-    
-    message = f"{icon} **{status}:** DSCR {dscr:.2f}, Debt Ratio {debt_ratio*100:.1f}%"
+        status = "Debt management concerns"
+
+    message = f"**{status}:** DSCR {dscr:.2f}, debt ratio {debt_ratio*100:.1f}%"
     
     if alert_type == "success":
         st.success(message)
@@ -335,20 +321,18 @@ def show_transaction_anomaly_alert(anomalies: list) -> None:
     """Display transaction anomaly detection alert."""
     
     if not anomalies:
-        st.success("✅ **Transaction Analysis:** No significant anomalies detected")
+        st.success("**Transaction analysis:** No significant anomalies detected")
     else:
         severity = len(anomalies)
-        
+
         if severity <= 2:
             alert_type = "warning"
-            icon = "⚠️"
-            status = "Minor Anomalies"
+            status = "Minor anomalies"
         else:
             alert_type = "error"
-            icon = "🚨"
-            status = "Multiple Anomalies"
-        
-        message = f"{icon} **{status} Detected:** {severity} potential issues found"
+            status = "Multiple anomalies"
+
+        message = f"**{status} detected:** {severity} potential issues found"
         
         if alert_type == "warning":
             st.warning(message)
@@ -363,18 +347,18 @@ def show_recommendation_alert(recommendations: list, priority: str = "medium") -
     """Display recommendations alert."""
     
     if not recommendations:
-        st.info("ℹ️ **No specific recommendations at this time**")
+        st.info("**No specific recommendations at this time**")
         return
-    
+
     priority_config = {
-        "high": {"color": "error", "icon": "🚨", "text": "Urgent Recommendations"},
-        "medium": {"color": "warning", "icon": "💡", "text": "Recommendations"},
-        "low": {"color": "info", "icon": "💭", "text": "Suggestions"}
+        "high": {"color": "error", "text": "Urgent recommendations"},
+        "medium": {"color": "warning", "text": "Recommendations"},
+        "low": {"color": "info", "text": "Suggestions"},
     }
-    
+
     config = priority_config.get(priority, priority_config["medium"])
-    
-    message = f"{config['icon']} **{config['text']}:** {len(recommendations)} action items identified"
+
+    message = f"**{config['text']}:** {len(recommendations)} action items identified"
     
     if config["color"] == "error":
         st.error(message)
@@ -407,15 +391,14 @@ def show_cache_status_alert(cache_size: int, last_refresh: datetime) -> None:
     
     if hours_since < 1:
         status = "Fresh"
-        icon = "🟢"
     elif hours_since < 4:
         status = "Current"
-        icon = "🟡"
     else:
         status = "Stale"
-        icon = "🔴"
-    
-    st.info(f"{icon} **Cache Status:** {status} ({cache_size} items, last refresh: {hours_since:.1f}h ago)")
+
+    st.info(
+        f"**Cache status:** {status} ({cache_size} items, last refresh: {hours_since:.1f}h ago)"
+    )
 
 # Custom alert with custom styling
 def show_custom_alert(
@@ -426,16 +409,8 @@ def show_custom_alert(
 ) -> None:
     """Display a custom alert with flexible styling."""
     
-    # Default icons for each type
-    default_icons = {
-        "success": "✅",
-        "error": "❌", 
-        "warning": "⚠️",
-        "info": "ℹ️"
-    }
-    
-    display_icon = icon or default_icons.get(alert_type, "ℹ️")
-    full_message = f"{display_icon} {message}"
+    display_icon = (icon or "").strip()
+    full_message = f"{display_icon} {message}".strip() if display_icon else message
     
     # Display based on type
     if alert_type == "success":

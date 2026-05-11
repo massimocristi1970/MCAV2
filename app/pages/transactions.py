@@ -657,12 +657,31 @@ def analyze_loans_and_repayments(df: pd.DataFrame) -> Dict[str, Any]:
 # ----------------------------
 import streamlit as st
 
-st.set_page_config(page_title="Transactions", layout="wide")
-st.title("🧾 Transactions")
+from app.ui_theme import (
+    apply_ui_theme,
+    render_compact_page_title,
+    render_empty_state_no_run,
+)
+
+st.set_page_config(
+    page_title="Transactions | MCA Scorecard",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={"Get Help": None, "Report a bug": None, "About": None},
+)
+apply_ui_theme()
+render_compact_page_title(
+    "Transactions",
+    "Raw categorized transactions from your latest Main-page run.",
+    eyebrow="MCA Scorecard",
+)
 
 run = st.session_state.get("last_run")
 if not run:
-    st.info("Run an analysis on the Main page first, then come back to Transactions.")
+    render_empty_state_no_run(
+        "Transactions",
+        "The transaction grid loads after you score a JSON file on Main.",
+    )
     st.stop()
 
 filtered_df = run["filtered_df"]
@@ -675,7 +694,7 @@ try:
     csv_data = create_categorized_csv(filtered_df)
     if csv_data:
         st.download_button(
-            label="📥 Export Categorized CSV",
+            label="Export categorized CSV",
             data=csv_data,
             file_name=f"{company_name.replace(' ', '_')}_transactions_categorized.csv",
             mime="text/csv",

@@ -11,6 +11,19 @@ sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(SRC_PATH))
 
 import streamlit as st
+
+from app.plotly_theme import LEGEND_BELOW, THRESHOLD_LINE, THRESHOLD_MARKER, show_mca_plotly
+from app.ui_theme import (
+    apply_ui_theme,
+    render_empty_state_main,
+    render_intake_panel_intro,
+    render_main_hero,
+    render_sidebar_help_footer,
+    render_workflow_rail,
+    sidebar_section,
+    sidebar_subsection,
+)
+
 import pandas as pd
 import joblib
 import json
@@ -156,7 +169,7 @@ def _explicit_ccj_present(pdf_text: str) -> bool:
 
     t = (pdf_text or "").lower()
 
-    # 1️⃣ Explicit negatives (must check first)
+    # 1) Explicit negatives (must check first)
     negative_patterns = [
         r"\bno\s+county\s+court\s+judg(e)?ment(s)?\b",
         r"\bno\s+ccj\b",
@@ -168,7 +181,7 @@ def _explicit_ccj_present(pdf_text: str) -> bool:
         if re.search(pat, t, re.IGNORECASE):
             return False
 
-    # 2️⃣ Explicit positives (expanded for your bureau format)
+    # 2) Explicit positives (expanded for your bureau format)
 
     positive_patterns = [
         r"county\s+court\s+judg(e)?ment\s+registered",
@@ -183,7 +196,7 @@ def _explicit_ccj_present(pdf_text: str) -> bool:
         if re.search(pat, t, re.IGNORECASE):
             return True
 
-    # 3️⃣ Fallback: detect structured CCJ section with amount + date
+    # 3) Fallback: detect structured CCJ section with amount + date
     # e.g.:
     # Registered
     # 31 Jul 2025
@@ -867,23 +880,25 @@ class MLScalerInsights:
         
         # Generate appropriate recommendations
         if good_outliers:
-            recommendations.append("✅ Some differences indicate healthier metrics than training data")
-        
+            recommendations.append(
+                "Some differences indicate healthier metrics than training data"
+            )
+
         if concerning_outliers and len(concerning_outliers) <= 2:
-            recommendations.append("⚠️ A few metrics need verification")
+            recommendations.append("A few metrics need verification")
         elif len(concerning_outliers) > 2:
-            recommendations.append("🔍 Multiple metrics need review")
-        
+            recommendations.append("Multiple metrics need review")
+
         if avg_z <= 2.0:
-            recommendations.append("💡 Business profile more stable than much of training data")
+            recommendations.append("Business profile more stable than much of training data")
         elif avg_z > 4.0:
-            recommendations.append("⚠️ Business very different - use rule-based scores")
-        
+            recommendations.append("Business very different — prioritize rule-based scores")
+
         # ML usage guidance
         if avg_z <= 2.0 and len(concerning_outliers) <= 1:
-            recommendations.append("✅ ML score likely reliable despite training data issues")
+            recommendations.append("ML score likely reliable despite training data issues")
         else:
-            recommendations.append("⚠️ Prioritize subprime and weighted scores over ML score")
+            recommendations.append("Prioritize subprime and weighted scores over ML score")
         
         return recommendations
 
@@ -990,7 +1005,13 @@ if not SUBPRIME_SCORING_AVAILABLE:
 
 st.set_page_config(
     page_title="Business Finance Scorecard",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={
+        "Get Help": None,
+        "Report a bug": None,
+        "About": None,
+    },
 )
 
 # Complete Industry thresholds with all sectors
@@ -1768,27 +1789,23 @@ def get_ml_score_interpretation(adjusted_score, raw_score):
     
     if adjusted_score >= 80:
         risk_level = "Low Risk"
-        color = "🟢"
     elif adjusted_score >= 70:
-        risk_level = "Moderate Risk" 
-        color = "🟡"
+        risk_level = "Moderate Risk"
     elif adjusted_score >= 60:
         risk_level = "Higher Risk"
-        color = "🟠"
     else:
         risk_level = "High Risk"
-        color = "🔴"
-    
-    interpretation = f"{color} **{risk_level}** (Adjusted: {adjusted_score:.1f}%, Raw: {raw_score:.1f}%)"
-    
+
+    interpretation = f"**{risk_level}** (Adjusted: {adjusted_score:.1f}%, Raw: {raw_score:.1f}%)"
+
     if improvement >= 15:
-        interpretation += f"\n  📈 **Significant upward adjustment** (+{improvement:.1f}) for growth business profile"
+        interpretation += f"\n  **Significant upward adjustment** (+{improvement:.1f}) for growth business profile"
     elif improvement >= 8:
-        interpretation += f"\n  📈 **Notable upward adjustment** (+{improvement:.1f}) for growth characteristics"
+        interpretation += f"\n  **Notable upward adjustment** (+{improvement:.1f}) for growth characteristics"
     elif improvement >= 3:
-        interpretation += f"\n  📈 **Minor upward adjustment** (+{improvement:.1f}) for positive factors"
+        interpretation += f"\n  **Minor upward adjustment** (+{improvement:.1f}) for positive factors"
     else:
-        interpretation += f"\n  ➡️ **Minimal adjustment** (+{improvement:.1f}) - standard risk profile"
+        interpretation += f"\n  **Minimal adjustment** (+{improvement:.1f}) — standard risk profile"
     
     return interpretation
 
@@ -1952,7 +1969,7 @@ def assess_primary_account_signal(df):
 def render_card_terminal_reconciliation(bank_df, card_files):
     """Render card terminal reconciliation from already uploaded files."""
     st.markdown("---")
-    st.subheader("💳 Card Terminal Statements (Multi-Company)")
+    st.subheader("Card terminal statements (multi-company)")
     st.caption(
         "Upload one or more terminal statements (PDF/CSV/Excel) from any provider. "
         "The app normalizes totals and compares monthly card sales to bank revenue inflows."
@@ -2103,10 +2120,13 @@ def render_card_terminal_reconciliation(bank_df, card_files):
             st.info("No known provider narration detected in bank inflows for this period.")
 
         if provider_overlap:
-            st.success("✅ Verified overlap between uploaded providers and bank narration: " + ", ".join(provider_overlap))
+            st.success(
+                "Verified overlap between uploaded providers and bank narration: "
+                + ", ".join(provider_overlap)
+            )
         else:
             st.warning(
-                "⚠️ No direct overlap between uploaded statement providers and bank narration signals. "
+                "No direct overlap between uploaded statement providers and bank narration signals. "
                 "Treat narration-based providers as unverified leads."
             )
 
@@ -2127,12 +2147,15 @@ def render_card_terminal_reconciliation(bank_df, card_files):
             )
         )
         fig.update_layout(
-            height=380,
+            title=dict(text="Terminal card sales vs bank revenue inflows", x=0.02, xanchor="left"),
+            height=420,
             xaxis_title="Month",
             yaxis_title="Amount (£)",
             legend_title_text="Series",
+            legend=LEGEND_BELOW,
+            margin=dict(t=56, b=108, l=56, r=36),
         )
-        st.plotly_chart(fig, use_container_width=True, key="card_vs_bank_monthly")
+        show_mca_plotly(fig, key="card_vs_bank_monthly")
 
         display_df = comp_df.copy()
         display_df["difference_amount"] = display_df["difference_amount"].round(2)
@@ -2181,11 +2204,11 @@ def create_score_charts(scores, metrics):
     ))
     
     fig_scores.update_layout(
-        title="Primary Scoring Methods Comparison",
+        title=dict(text="Primary scoring methods", x=0.02, xanchor="left"),
         yaxis_title="Score",
         showlegend=False,
-        height=400,
-        yaxis=dict(range=[0, 100])
+        height=420,
+        yaxis=dict(range=[0, 100]),
     )
     
     return fig_scores
@@ -2215,10 +2238,10 @@ def create_financial_charts(metrics):
     ))
     
     fig_financial.update_layout(
-        title="Financial Overview",
+        title=dict(text="Financial overview", x=0.02, xanchor="left"),
         yaxis_title="Amount (£)",
         showlegend=False,
-        height=400
+        height=420,
     )
     
     # Monthly trend if available
@@ -2234,7 +2257,8 @@ def create_financial_charts(metrics):
             y=monthly_data['monthly_revenue'],
             mode='lines+markers',
             name='Revenue',
-            line=dict(color='green', width=3)
+            line=dict(color='#34d399', width=2.5),
+            marker=dict(size=7, line=dict(width=1, color='#064e3b')),
         ))
         
         fig_trend.add_trace(go.Scatter(
@@ -2242,14 +2266,17 @@ def create_financial_charts(metrics):
             y=monthly_data['monthly_expenses'],
             mode='lines+markers',
             name='Expenses',
-            line=dict(color='red', width=3)
+            line=dict(color='#fb7185', width=2.5),
+            marker=dict(size=7, line=dict(width=1, color='#881337')),
         ))
         
         fig_trend.update_layout(
-            title="Monthly Revenue vs Expenses",
+            title=dict(text="Monthly revenue vs expenses", x=0.02, xanchor="left"),
             xaxis_title="Month",
             yaxis_title="Amount (£)",
-            height=400
+            height=440,
+            legend=LEGEND_BELOW,
+            margin=dict(t=56, b=108, l=56, r=36),
         )
     
     return fig_financial, fig_trend
@@ -2284,19 +2311,27 @@ def create_threshold_chart(score_breakdown):
         name='Threshold',
         x=metrics,
         y=threshold_values,
-        mode='markers',
-        marker=dict(color='black', size=10, symbol='diamond'),
-        line=dict(color='black', width=2, dash='dash')
+        mode='lines+markers',
+        line=dict(color=THRESHOLD_LINE, width=2, dash='dash'),
+        marker=dict(
+            size=9,
+            symbol='diamond',
+            color=THRESHOLD_MARKER,
+            line=dict(color='#f8fafc', width=1),
+        ),
+        connectgaps=True,
     ))
     
     fig.update_layout(
-        title="Actual vs Threshold Performance",
-        xaxis_title="Metrics",
-        yaxis_title="Values",
-        height=500,
-        xaxis_tickangle=-45
+        title=dict(text="Actual vs industry thresholds", x=0.02, xanchor="left"),
+        xaxis_title="Metric",
+        yaxis_title="Value",
+        height=540,
+        legend=LEGEND_BELOW,
+        margin=dict(t=56, b=120, l=56, r=36),
     )
-    
+    fig.update_xaxes(tickangle=-28, tickfont=dict(size=10), automargin=True)
+
     return fig
 
 def create_monthly_breakdown(df):
@@ -2343,12 +2378,13 @@ def create_monthly_charts(pivot_counts, pivot_amounts):
         ))
     
     fig_counts.update_layout(
-        title="Monthly Transaction Counts by Category",
+        title=dict(text="Monthly transaction counts by category", x=0.02, xanchor="left"),
         xaxis_title="Month",
-        yaxis_title="Number of Transactions",
+        yaxis_title="Number of transactions",
         barmode='stack',
-        height=400,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        height=460,
+        legend=LEGEND_BELOW,
+        margin=dict(t=56, b=130, l=56, r=28),
     )
     
     # Amount chart
@@ -2363,12 +2399,13 @@ def create_monthly_charts(pivot_counts, pivot_amounts):
         ))
     
     fig_amounts.update_layout(
-        title="Monthly Transaction Amounts by Category",
+        title=dict(text="Monthly transaction amounts by category", x=0.02, xanchor="left"),
         xaxis_title="Month",
         yaxis_title="Amount (£)",
         barmode='stack',
-        height=400,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        height=460,
+        legend=LEGEND_BELOW,
+        margin=dict(t=56, b=130, l=56, r=28),
     )
     
     return fig_counts, fig_amounts
@@ -2535,11 +2572,13 @@ def create_loans_repayments_charts(analysis):
         ))
         
         fig_monthly.update_layout(
-            title="Monthly Loans vs Repayments",
+            title=dict(text="Monthly loans vs repayments", x=0.02, xanchor="left"),
             xaxis_title="Month",
             yaxis_title="Amount (£)",
             barmode='relative',
-            height=400
+            height=440,
+            legend=LEGEND_BELOW,
+            margin=dict(t=56, b=108, l=56, r=36),
         )
         
         charts['monthly_comparison'] = fig_monthly
@@ -2551,7 +2590,7 @@ def create_loans_repayments_charts(analysis):
         fig_lenders = go.Figure(data=[
             go.Bar(
                 x=top_lenders['sum'],
-                y=[name.title()[:30] + '...' if len(name) > 30 else name.title() for name in top_lenders['lender_clean']],
+                y=[name.title()[:42] + '…' if len(name) > 42 else name.title() for name in top_lenders['lender_clean']],
                 orientation='h',
                 marker_color='lightcoral',
                 text=[f"£{amount:,.0f}" for amount in top_lenders['sum']],
@@ -2560,13 +2599,15 @@ def create_loans_repayments_charts(analysis):
         ])
         
         fig_lenders.update_layout(
-            title="Loans by Lender (Top 10)",
+            title=dict(text="Loans by lender (top 10)", x=0.02, xanchor="left"),
             xaxis_title="Total Amount (£)",
             yaxis_title="Lender",
-            height=400,
-            yaxis=dict(autorange="reversed")
+            height=440,
+            yaxis=dict(autorange="reversed"),
+            margin=dict(t=56, b=56, l=56, r=36),
         )
-        
+        fig_lenders.update_yaxes(automargin=True, tickfont=dict(size=11))
+
         charts['loans_by_lender'] = fig_lenders
     
     # 3. Repayments by Recipient (Top 10)
@@ -2576,7 +2617,7 @@ def create_loans_repayments_charts(analysis):
         fig_recipients = go.Figure(data=[
             go.Bar(
                 x=top_recipients['sum'],
-                y=[name.title()[:30] + '...' if len(name) > 30 else name.title() for name in top_recipients['recipient_clean']],
+                y=[name.title()[:42] + '…' if len(name) > 42 else name.title() for name in top_recipients['recipient_clean']],
                 orientation='h',
                 marker_color='lightblue',
                 text=[f"£{amount:,.0f}" for amount in top_recipients['sum']],
@@ -2585,13 +2626,15 @@ def create_loans_repayments_charts(analysis):
         ])
         
         fig_recipients.update_layout(
-            title="Repayments by Recipient (Top 10)",
+            title=dict(text="Repayments by recipient (top 10)", x=0.02, xanchor="left"),
             xaxis_title="Total Amount (£)",
             yaxis_title="Recipient",
-            height=400,
-            yaxis=dict(autorange="reversed")
+            height=440,
+            yaxis=dict(autorange="reversed"),
+            margin=dict(t=56, b=56, l=56, r=36),
         )
-        
+        fig_recipients.update_yaxes(automargin=True, tickfont=dict(size=11))
+
         charts['repayments_by_recipient'] = fig_recipients
     
     # 4. Cumulative Borrowing Position
@@ -2611,13 +2654,14 @@ def create_loans_repayments_charts(analysis):
             marker=dict(size=8)
         ))
         
-        fig_cumulative.add_hline(y=0, line_dash="dash", line_color="black", opacity=0.5)
+        fig_cumulative.add_hline(y=0, line_dash="dash", line_color="#64748b", opacity=0.7)
         
         fig_cumulative.update_layout(
-            title="Cumulative Net Borrowing Position",
+            title=dict(text="Cumulative net borrowing position", x=0.02, xanchor="left"),
             xaxis_title="Month",
             yaxis_title="Cumulative Amount (£)",
-            height=400
+            height=440,
+            margin=dict(t=56, b=56, l=56, r=36),
         )
         
         charts['cumulative_borrowing'] = fig_cumulative
@@ -2627,7 +2671,7 @@ def create_loans_repayments_charts(analysis):
 def display_loans_repayments_section(df, analysis_period):
     """Display the complete loans and repayments analysis section"""
     st.markdown("---")
-    st.subheader("💰 Loans and Debt Repayments Analysis")
+    st.subheader("Loans and debt repayments analysis")
     
     # Filter data by period if needed
     filtered_df = filter_data_by_period(df, analysis_period)
@@ -2684,40 +2728,40 @@ def display_loans_repayments_section(df, analysis_period):
         )
     
     # Risk Assessment Row
-    st.markdown("### 🎯 Risk Assessment")
+    st.markdown("### Risk assessment")
     risk_col1, risk_col2, risk_col3 = st.columns(3)
     
     with risk_col1:
         if analysis['loan_count'] == 0:
-            st.info("✅ **No External Debt** - Business operates without external financing")
+            st.info("**No external debt** — business operates without external financing")
         elif analysis['repayment_ratio'] >= 0.8:
-            st.success("✅ **Good Repayment Behavior** - Consistently repays debt obligations")
+            st.success("**Good repayment behavior** — consistently repays debt obligations")
         elif analysis['repayment_ratio'] >= 0.5:
-            st.warning("⚠️ **Moderate Debt Management** - Some outstanding obligations")
+            st.warning("**Moderate debt management** — some outstanding obligations")
         else:
-            st.error("🚨 **High Debt Risk** - Low repayment ratio indicates potential issues")
+            st.error("**High debt risk** — low repayment ratio indicates potential issues")
     
     with risk_col2:
         if analysis['loan_count'] == 0:
-            st.info("📊 **No Borrowing History** - Cannot assess borrowing patterns")
+            st.info("**No borrowing history** — cannot assess borrowing patterns")
         elif analysis['loan_count'] <= 3:
-            st.success("📊 **Conservative Borrowing** - Infrequent use of external financing")
+            st.success("**Conservative borrowing** — infrequent use of external financing")
         elif analysis['loan_count'] <= 10:
-            st.warning("📊 **Moderate Borrowing** - Regular use of external financing")
+            st.warning("**Moderate borrowing** — regular use of external financing")
         else:
-            st.error("📊 **High Borrowing Frequency** - Heavy reliance on external financing")
+            st.error("**High borrowing frequency** — heavy reliance on external financing")
     
     with risk_col3:
         if analysis['net_borrowing'] <= 0:
-            st.success("💰 **Positive Net Position** - More repaid than borrowed")
+            st.success("**Positive net position** — more repaid than borrowed")
         elif analysis['net_borrowing'] <= analysis['total_loans_received'] * 0.3:
-            st.info("💰 **Manageable Outstanding** - Reasonable debt burden")
+            st.info("**Manageable outstanding** — reasonable debt burden")
         else:
-            st.warning("💰 **High Outstanding Debt** - Significant borrowing position")
+            st.warning("**High outstanding debt** — significant borrowing position")
     
     # Charts Section
     if analysis['loan_count'] > 0 or analysis['repayment_count'] > 0:
-        st.markdown("### 📈 Borrowing and Repayment Patterns")
+        st.markdown("### Borrowing and repayment patterns")
         
         charts = create_loans_repayments_charts(analysis)
         
@@ -2725,29 +2769,29 @@ def display_loans_repayments_section(df, analysis_period):
         if 'monthly_comparison' in charts and 'cumulative_borrowing' in charts:
             col1, col2 = st.columns(2)
             with col1:
-                st.plotly_chart(charts['monthly_comparison'], use_container_width=True, key="loans_monthly_comparison")
+                show_mca_plotly(charts['monthly_comparison'], key="loans_monthly_comparison")
             with col2:
-                st.plotly_chart(charts['cumulative_borrowing'], use_container_width=True, key="loans_cumulative")
+                show_mca_plotly(charts['cumulative_borrowing'], key="loans_cumulative")
         
         # Row 2: Lender and recipient analysis
         chart_row2_col1, chart_row2_col2 = st.columns(2)
         
         if 'loans_by_lender' in charts and charts['loans_by_lender'] is not None:
             with chart_row2_col1:
-                st.plotly_chart(charts['loans_by_lender'], use_container_width=True, key="loans_by_lender")
+                show_mca_plotly(charts['loans_by_lender'], key="loans_by_lender")
         else:
             with chart_row2_col1:
                 st.info("No loan data available for lender analysis")
         
         if 'repayments_by_recipient' in charts and charts['repayments_by_recipient'] is not None:
             with chart_row2_col2:
-                st.plotly_chart(charts['repayments_by_recipient'], use_container_width=True, key="repayments_by_recipient")
+                show_mca_plotly(charts['repayments_by_recipient'], key="repayments_by_recipient")
         else:
             with chart_row2_col2:
                 st.info("No repayment data available for recipient analysis")
     
     # Detailed Breakdown Tables
-    with st.expander("📋 Detailed Loan and Repayment Breakdown", expanded=False):
+    with st.expander("Detailed loan and repayment breakdown", expanded=False):
         tab1, tab2, tab3 = st.tabs(["Loans Received", "Repayments Made", "Monthly Summary"])
         
         with tab1:
@@ -2866,7 +2910,7 @@ class DashboardExporter:
         if export_data['loans_analysis'] and export_data['loans_analysis'].get('loan_count', 0) > 0:
             loans_section = f"""
             <div class="section">
-                <h2>💰 Loans & Debt Analysis</h2>
+                <h2>Loans &amp; debt analysis</h2>
                 <div class="metric-grid">
                     <div class="metric-card">
                         <h4>Total Loans Received</h4>
@@ -2922,7 +2966,7 @@ class DashboardExporter:
         <body>
             <!-- Header Section -->
             <div class="header">
-                <h1>🏦 Business Finance Scorecard Report</h1>
+                <h1>Business Finance Scorecard report</h1>
                 <h2>{export_data['export_info']['company_name']}</h2>
                 <p><strong>Generated:</strong> {datetime.fromisoformat(export_data['export_info']['export_timestamp']).strftime('%B %d, %Y at %I:%M %p')}</p>
                 <p><strong>Analysis Period:</strong> {export_data['export_info']['analysis_period']}</p>
@@ -2931,37 +2975,37 @@ class DashboardExporter:
             
             <!-- Executive Summary -->
             <div class="section">
-                <h2>📊 Executive Summary</h2>
+                <h2>Executive summary</h2>
                 <div class="metric-grid">
                     <div class="metric-card">
-                        <h3>🎯 Subprime Score</h3>
+                        <h3>Subprime score</h3>
                         <div class="score-{get_score_class(export_data['scoring_results']['subprime_score'])}">{export_data['scoring_results']['subprime_score']:.1f}/100</div>
                         <p>{export_data['scoring_results']['subprime_tier']}</p>
                     </div>
                     <div class="metric-card">
-                        <h3>🏛️ MCA Rule (60%)</h3>
+                        <h3>MCA rule (60%)</h3>
                         <div class="score-{get_score_class(export_data['scoring_results'].get('mca_rule_score', 0))}">{export_data['scoring_results'].get('mca_rule_score', 0):.0f}/100</div>
                     </div>
                     <div class="metric-card">
-                        <h3>🤖 ML Score (Info Only)</h3>
+                        <h3>ML score (informational)</h3>
                         <div class="score-{get_score_class(export_data['scoring_results'].get('adjusted_ml_score', 0))}">{export_data['scoring_results'].get('adjusted_ml_score', 0):.1f}%</div>
                     </div>
                     <div class="metric-card">
-                        <h3>💰 Requested Loan</h3>
+                        <h3>Requested loan</h3>
                         <div>£{export_data['business_parameters']['requested_loan']:,.0f}</div>
                         <p>{export_data['scoring_results']['loan_risk']}</p>
                     </div>
                     <div class="metric-card">
-                        <h3>📌 MCA Rule</h3>
+                        <h3>MCA rule</h3>
                         <div>{export_data['scoring_results'].get('mca_rule_decision', 'N/A')}</div>
                         <p>Score: {export_data['scoring_results'].get('mca_rule_score', 'N/A')}</p>
                     </div>
                 </div>
                 
-                <h3>📋 Primary Recommendation</h3>
+                <h3>Primary recommendation</h3>
                 <p><strong>{export_data['scoring_results']['subprime_recommendation']}</strong></p>
 
-                <h3>📌 MCA Rule Decision (Transparent)</h3>
+                <h3>MCA rule decision (transparent)</h3>
                 <p><strong>{export_data['scoring_results'].get('mca_rule_decision', 'N/A')}</strong>
                 &nbsp;&nbsp;|&nbsp;&nbsp; Score: <strong>{export_data['scoring_results'].get('mca_rule_score', 'N/A')}</strong></p>
 
@@ -2970,7 +3014,7 @@ class DashboardExporter:
                 {''.join([f"<li>{r}</li>" for r in export_data['scoring_results'].get('mca_rule_reasons', [])])}
                 </ul>
 
-                <h3>📌 Decision Stack Summary</h3>
+                <h3>Decision stack summary</h3>
                 <table>
                     <tr><th>Layer</th><th>Result</th></tr>
                     <tr>
@@ -3006,7 +3050,7 @@ class DashboardExporter:
             
             <!-- Financial Metrics -->
             <div class="section">
-                <h2>💰 Financial Performance</h2>
+                <h2>Financial performance</h2>
                 <div class="table-responsive">
                     <table>
                         <tr><th>Metric</th><th>Value</th></tr>
@@ -3024,7 +3068,7 @@ class DashboardExporter:
             
             <!-- Revenue Analysis -->
             <div class="section">
-                <h2>📈 Revenue Insights</h2>
+                <h2>Revenue insights</h2>
                 <div class="metric-grid">
                     <div class="metric-card">
                         <h4>Revenue Sources</h4>
@@ -3050,20 +3094,20 @@ class DashboardExporter:
             
             <!-- Risk Factors -->
             <div class="section">
-                <h2>⚠️ Risk Factors Assessment</h2>
+                <h2>Risk factors assessment</h2>
                 <div class="table-responsive">
                     <table>
                         <tr><th>Risk Factor</th><th>Status</th></tr>
-                        <tr><td>Business CCJs</td><td>{'❌ Yes' if business_ccj else '✅ No'}</td></tr>
-                        <tr><td>Poor/No Online Presence</td><td>{'❌ Yes' if poor_online else '✅ No'}</td></tr>
-                        <tr><td>Generic Email</td><td>{'❌ Yes' if generic_email else '✅ No'}</td></tr>
+                        <tr><td>Business CCJs</td><td>{'Yes' if business_ccj else 'No'}</td></tr>
+                        <tr><td>Poor/No Online Presence</td><td>{'Yes' if poor_online else 'No'}</td></tr>
+                        <tr><td>Generic Email</td><td>{'Yes' if generic_email else 'No'}</td></tr>
                     </table>
                 </div>
             </div>
             
             <!-- Business Parameters -->
             <div class="section">
-                <h2>🏢 Business Information</h2>
+                <h2>Business information</h2>
                 <div class="table-responsive">
                     <table>
                         <tr><th>Parameter</th><th>Value</th></tr>
@@ -3101,7 +3145,7 @@ class DashboardExporter:
         """Create export buttons in Streamlit interface."""
         
         st.markdown("---")
-        st.subheader("📥 Export Dashboard Report")
+        st.subheader("Export dashboard report")
         
         # Prepare export data
         export_data = self.export_dashboard_data(
@@ -3116,7 +3160,7 @@ class DashboardExporter:
             # HTML Export
             html_report = self.generate_html_report(export_data)
             st.download_button(
-                label="📄 Export HTML Report",
+                label="Export HTML report",
                 data=html_report,
                 file_name=f"{company_name.replace(' ', '_')}_financial_report_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
                 mime="text/html",
@@ -3128,7 +3172,7 @@ class DashboardExporter:
             # JSON Export
             json_data = json.dumps(export_data, indent=2, default=str)
             st.download_button(
-                label="📊 Export JSON Data",
+                label="Export JSON data",
                 data=json_data,
                 file_name=f"{company_name.replace(' ', '_')}_data_{datetime.now().strftime('%Y%m%d_%H%M')}.json",
                 mime="application/json",
@@ -3143,7 +3187,7 @@ class DashboardExporter:
             ])
             csv_data = metrics_df.to_csv(index=False)
             st.download_button(
-                label="📈 Export CSV Metrics",
+                label="Export CSV metrics",
                 data=csv_data,
                 file_name=f"{company_name.replace(' ', '_')}_metrics_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
                 mime="text/csv",
@@ -3151,13 +3195,13 @@ class DashboardExporter:
             )
         
         # Export information
-        st.info(f"""
-        **📊 Export Options Available:**
-        - **HTML Report**: ✅ Complete dashboard in professional web format
-        - **JSON Data**: ✅ All data for external analysis and integration
-        - **CSV Metrics**: ✅ Financial metrics for spreadsheet analysis
-        
-        **Export includes**: All scoring results, financial metrics, revenue insights, risk factors, loans analysis, and business parameters.
+        st.info("""
+        **Export options**
+        - **HTML report** — full dashboard in a web page you can open in any browser
+        - **JSON data** — all fields for analysis or integration
+        - **CSV metrics** — key numbers for spreadsheet work
+
+        **Includes:** scoring results, financial metrics, revenue insights, risk factors, loans analysis, and business parameters.
         """)
 
 def _normalise_mca_decision_for_overlay(d: str | None) -> str:
@@ -3203,14 +3247,601 @@ def combine_mca_and_tu_decisions(mca_decision: str | None, tu_decision: str | No
 
     return "REFER"
 
+def render_full_financial_dashboard(
+    company_name: str,
+    analysis_period: str,
+    df: pd.DataFrame,
+    filtered_df: pd.DataFrame,
+    params: dict,
+    metrics: dict,
+    scores: dict,
+    revenue_insights: dict,
+    card_terminal_files,
+) -> None:
+    """Render the full main-page dashboard (shared by fresh upload and session restore)."""
+    # ENHANCED DASHBOARD RENDERING
+    period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
+    st.header(f"Financial Dashboard: {company_name} ({period_label})")
+
+    # ============================================
+    # UNIFIED RECOMMENDATION (TOP OF DASHBOARD)
+    # ============================================
+    ensemble = scores.get('ensemble')
+    if ensemble:
+        decision = scores.get('final_decision') or ensemble.get('decision', 'REFER')
+        ensemble_decision = str(ensemble.get('decision', '')).upper().strip()
+        combined_score = ensemble.get('combined_score', 0)
+        confidence = ensemble.get('confidence', 0)
+        final_reasons = scores.get('final_decision_reasons', []) or []
+        ensemble_reason = ensemble.get('primary_reason', '')
+
+        # Keep reason text consistent with displayed decision.
+        reason_text = ensemble_reason
+        if ensemble_decision and decision != ensemble_decision:
+            override_reason = final_reasons[-1] if final_reasons else (
+                f"Final decision overridden from {ensemble_decision} to {decision} by policy overlay."
+            )
+            reason_text = f"{override_reason}\nEnsemble context: {ensemble_reason}"
+        elif final_reasons:
+            reason_text = final_reasons[-1]
+
+        # Main recommendation display with prominent styling
+        if decision == 'APPROVE':
+            st.success(f"""
+            ## Recommendation: APPROVE
+            **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+
+            *{reason_text}*
+            """)
+        elif decision == 'CONDITIONAL_APPROVE':
+            st.info(f"""
+            ## Recommendation: CONDITIONAL APPROVE
+            **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+
+            *{reason_text}*
+            """)
+        elif decision == 'REFER':
+            st.warning(f"""
+            ## Recommendation: REFER FOR REVIEW
+            **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+
+            *{reason_text}*
+            """)
+        elif decision == 'SENIOR_REVIEW':
+            st.warning(f"""
+            ## Recommendation: SENIOR REVIEW REQUIRED
+            **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+
+            *{reason_text}*
+            """)
+        else:  # DECLINE
+            st.error(f"""
+            ## Recommendation: DECLINE
+            **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
+
+            *{reason_text}*
+            """)
+
+        # Contributing scores in compact row
+        contributing = ensemble.get('contributing_scores', {})
+        score_cols = st.columns(3)
+
+        with score_cols[0]:
+            mca_s = contributing.get('mca_score', params.get('mca_rule_score', 50))
+            st.metric("MCA Rule (60%)", f"{mca_s:.0f}")
+
+        with score_cols[1]:
+            subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
+            st.metric("Subprime (40%)", f"{subprime_s:.1f}")
+
+        with score_cols[2]:
+            ml_info = ensemble.get('detailed_breakdown', {}).get('informational_scores', {})
+            ml_s = ml_info.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
+            st.metric("ML Score (Info Only)", f"{ml_s:.1f}%" if ml_s else "N/A")
+
+        # Score convergence indicator
+        convergence = ensemble.get('score_convergence', 'Unknown')
+        if 'High' in convergence:
+            st.success(f"**Score convergence:** {convergence} — MCA and Subprime agree")
+        elif 'Good' in convergence:
+            st.info(f"**Score convergence:** {convergence}")
+        elif 'Moderate' in convergence:
+            st.warning(
+                f"**Score convergence:** {convergence} — some disagreement between MCA and Subprime"
+            )
+        else:
+            st.error(f"**Score convergence:** {convergence} — significant disagreement")
+
+        # Pricing and details in expander
+        with st.expander("Pricing guidance & risk analysis", expanded=False):
+            pricing = ensemble.get('pricing_guidance', {})
+            if pricing and pricing.get('factor_rate') != 'N/A':
+                pricing_cols = st.columns(4)
+                with pricing_cols[0]:
+                    st.write(f"**Factor Rate:** {pricing.get('factor_rate', 'N/A')}")
+                with pricing_cols[1]:
+                    st.write(f"**Max Term:** {pricing.get('max_term', 'N/A')}")
+                with pricing_cols[2]:
+                    st.write(f"**Max Amount:** {pricing.get('max_multiple', 'N/A')}")
+                with pricing_cols[3]:
+                    st.write(f"**Collection:** {pricing.get('collection_frequency', 'N/A')}")
+
+            st.markdown("---")
+            risk_col, positive_col = st.columns(2)
+
+            with risk_col:
+                st.markdown("**Risk factors:**")
+                risk_factors = ensemble.get('risk_factors', [])
+                if risk_factors:
+                    for rf in risk_factors:
+                        st.write(f"• {rf}")
+                else:
+                    st.write("• No significant risk factors identified")
+
+            with positive_col:
+                st.markdown("**Positive factors:**")
+                positive_factors = ensemble.get('positive_factors', [])
+                if positive_factors:
+                    for pf in positive_factors:
+                        st.write(f"• {pf}")
+                else:
+                    st.write("• No notable positive factors")
+
+            st.markdown("---")
+            st.markdown("**Recommendations:**")
+            recommendations = ensemble.get('recommendations', [])
+            for rec in recommendations:
+                st.write(f"• {rec}")
+
+            # MCA Rule signals (moved from standalone section)
+            if "mca_rule_decision" in params:
+                st.markdown("---")
+                st.markdown("**MCA Rule Analysis:**")
+                mca_r = params.get("mca_rule_reasons", [])
+                for r in mca_r:
+                    st.write(f"• {r}")
+
+                # Show MCA signals in a compact format (no nested expander)
+                mca_signals = params.get("mca_rule_signals", {})
+                if mca_signals:
+                    st.markdown("**MCA Rule Signals:**")
+                    st.code(str(mca_signals), language="json")
+    else:
+        # Fallback if ensemble not available
+        st.info("Unified ensemble scoring not available. Showing individual scores below.")
+
+    primary_signal = params.get("primary_account_assessment", {})
+    primary_note = primary_signal.get("note")
+    if primary_note:
+        if primary_signal.get("is_potential_non_primary", False):
+            st.warning(f"**Primary account check (UW note):** {primary_note}")
+        elif primary_signal.get("status") == "unable_to_determine":
+            st.info(f"**Primary account check (UW note):** {primary_note}")
+        else:
+            st.success(f"**Primary account check (UW note):** {primary_note}")
+
+        with st.expander("Primary Account Check Details", expanded=False):
+            st.json(primary_signal)
+
+    render_card_terminal_reconciliation(filtered_df, card_terminal_files)
+
+    # Revenue Insights
+    st.markdown("---")
+    st.subheader("Revenue insights")
+
+    rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
+    with rev_col1:
+        sources_count = revenue_insights.get('unique_revenue_sources', 0)
+        st.metric("Unique Revenue Sources", f"{sources_count}")
+        if sources_count == 1:
+            st.warning("Single revenue source — consider diversification")
+        elif sources_count <= 3:
+            st.info("Limited revenue sources — moderate concentration risk")
+        else:
+            st.success("Good revenue diversification")
+    with rev_col2:
+        avg_txns = revenue_insights.get('avg_revenue_transactions_per_day', 0)
+        st.metric("Avg Revenue Transactions/Day", f"{avg_txns:.1f}")
+    with rev_col3:
+        avg_daily_rev = revenue_insights.get('avg_daily_revenue_amount', 0)
+        st.metric("Avg Daily Revenue", f"£{avg_daily_rev:,.2f}")
+    with rev_col4:
+        total_days = revenue_insights.get('total_revenue_days', 0)
+        st.metric("Revenue Active Days", f"{total_days}")
+
+    # Charts Section
+    st.markdown("---")
+    st.subheader("Charts & Analysis")
+
+    # Row 1: Enhanced Score and Financial Charts
+    col1, col2 = st.columns(2)
+    with col1:
+        fig_scores = create_score_charts(scores, metrics)
+        show_mca_plotly(fig_scores, key="enhanced_scores_chart")
+    with col2:
+        fig_financial, fig_trend = create_financial_charts(metrics)
+        show_mca_plotly(fig_financial, key="main_financial_chart")
+
+    # Row 2: Trend and Threshold Charts
+    col1, col2 = st.columns(2)
+    with col1:
+        if fig_trend:
+            show_mca_plotly(fig_trend, key="main_trend_chart")
+        else:
+            st.info("Monthly trend requires multiple months of data")
+    with col2:
+        fig_threshold = create_threshold_chart(scores['score_breakdown'])
+        show_mca_plotly(fig_threshold, key="main_threshold_chart")
+
+    # Monthly Breakdown Section
+    st.markdown("---")
+    st.subheader("Monthly Breakdown by Category")
+
+    pivot_counts, pivot_amounts = create_monthly_breakdown(filtered_df)
+
+    if pivot_counts is not None and not pivot_counts.empty:
+        # Create monthly breakdown charts
+        fig_monthly_counts, fig_monthly_amounts = create_monthly_charts(pivot_counts, pivot_amounts)
+
+        # Display charts
+        col1, col2 = st.columns(2)
+        with col1:
+            show_mca_plotly(fig_monthly_counts, key="main_monthly_counts")
+        with col2:
+            show_mca_plotly(fig_monthly_amounts, key="main_monthly_amounts")
+
+        # Monthly summary table
+        with st.expander("Detailed Monthly Breakdown", expanded=False):
+            tab1, tab2 = st.tabs(["Transaction Counts", "Transaction Amounts (£)"])
+
+            with tab1:
+                counts_display = pivot_counts.copy()
+                counts_display.index = counts_display.index.astype(str)
+                counts_display = counts_display.astype(int)
+                st.dataframe(counts_display, use_container_width=True)
+
+                # Add totals
+                totals_counts = counts_display.sum()
+                st.write("**Totals:**")
+                total_cols = st.columns(len(totals_counts))
+                for i, (cat, total) in enumerate(totals_counts.items()):
+                    with total_cols[i]:
+                        st.metric(cat, f"{total:,.0f}")
+
+            with tab2:
+                amounts_display = pivot_amounts.copy()
+                amounts_display.index = amounts_display.index.astype(str)
+                amounts_display = amounts_display.round(2)
+                st.dataframe(amounts_display, use_container_width=True)
+
+                # Add totals
+                totals_amounts = amounts_display.sum()
+                st.write("**Totals:**")
+                total_cols = st.columns(len(totals_amounts))
+                for i, (cat, total) in enumerate(totals_amounts.items()):
+                    with total_cols[i]:
+                        st.metric(cat, f"£{total:,.2f}")
+    else:
+        st.info("Monthly breakdown requires multiple months of data")
+
+    # Transaction Category Analysis
+    st.markdown("---")
+    st.subheader("Transaction Analysis")
+
+    categorized_data = categorize_transactions(filtered_df)
+    category_summary = categorized_data['subcategory'].value_counts()
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("**Transaction Categories:**")
+        for category, count in category_summary.items():
+            category_amount = abs(categorized_data[categorized_data['subcategory'] == category]['amount'].sum())
+            percentage = (count / len(categorized_data)) * 100
+            st.write(f"• **{category}**: {count} transactions (£{category_amount:,.2f}) - {percentage:.1f}%")
+
+    with col2:
+        # Category pie chart
+        fig_pie = go.Figure(data=[go.Pie(
+            labels=category_summary.index,
+            values=category_summary.values,
+            hole=0.3,
+            marker_colors=['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
+        )])
+
+        fig_pie.update_layout(
+            title=dict(text="Transaction distribution", x=0.02, xanchor="left"),
+            height=340,
+            showlegend=True,
+            legend=dict(
+                orientation="v",
+                yanchor="middle",
+                y=0.5,
+                xanchor="left",
+                x=1.02,
+                bgcolor="rgba(15, 23, 42, 0.85)",
+                bordercolor="rgba(148, 163, 184, 0.35)",
+                borderwidth=1,
+            ),
+            margin=dict(t=52, b=48, l=48, r=180),
+        )
+        fig_pie.update_traces(
+            textposition="inside",
+            textinfo="percent",
+            insidetextfont=dict(color="#f8fafc", size=11),
+            hovertemplate="<b>%{label}</b><br>%{percent}<br>£%{value:,.0f}<extra></extra>",
+        )
+
+        show_mca_plotly(fig_pie, key="main_category_pie")
+
+    # NEW: Loans and Debt Repayments Analysis
+    display_loans_repayments_section(filtered_df, analysis_period)
+
+    # Detailed Metrics Table
+    st.markdown("---")
+    st.subheader("Detailed Financial Metrics")
+
+    # Create metrics table
+    metrics_data = []
+    industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
+
+    for metric, value in metrics.items():
+        if metric in industry_thresholds and metric != 'monthly_summary':
+            threshold = industry_thresholds[metric]
+            if metric in ['Cash Flow Volatility', 'Average Negative Balance Days per Month', 'Number of Bounced Payments']:
+                meets_threshold = value <= threshold
+                comparison = "≤"
+            else:
+                meets_threshold = value >= threshold
+                comparison = "≥"
+
+            # Format values appropriately
+            if isinstance(value, float):
+                if metric in ['Operating Margin', 'Debt-to-Income Ratio', 'Expense-to-Revenue Ratio']:
+                    formatted_value = f"{value:.3f} ({value*100:.1f}%)"
+                elif metric in ['Revenue Growth Rate']:
+                    formatted_value = f"{value:.3f} ({value:.1f}%)"
+                else:
+                    formatted_value = f"{value:.2f}"
+            else:
+                formatted_value = f"£{value:,.2f}" if 'Income' in metric or 'Revenue' in metric or 'Debt' in metric or 'Balance' in metric or 'Rate' in metric else str(value)
+
+            metrics_data.append({
+                'Metric': metric,
+                'Actual Value': formatted_value,
+                'Threshold': f"{comparison} {threshold}",
+                'Status': 'Pass' if meets_threshold else 'Fail'
+            })
+
+    if metrics_data:
+        df_metrics = pd.DataFrame(metrics_data)
+        st.dataframe(df_metrics, use_container_width=True, hide_index=True)
+
+    # Period Comparison (if applicable)
+    if analysis_period != 'All':
+        st.markdown("---")
+        with st.expander(f"Compare with Full Period Analysis", expanded=False):
+            full_metrics = calculate_financial_metrics(df, params['company_age_months'])
+            full_scores = calculate_all_scores_enhanced(full_metrics, params)
+
+            st.write("**Full Period vs Selected Period Comparison:**")
+            comp_col1, comp_col2, comp_col3, = st.columns(3)
+
+            with comp_col1:
+                delta_subprime = scores.get('subprime_score', 0) - full_scores.get('subprime_score', 0)
+                st.metric("Full Period Subprime Score", f"{full_scores.get('subprime_score', 0):.1f}/100", 
+                        delta=f"{delta_subprime:+.1f} difference")
+
+            with comp_col2:
+                if full_scores['ml_score'] and scores['ml_score']:
+                    delta_ml = scores['ml_score'] - full_scores['ml_score']
+                    st.metric("Full Period ML Probability", f"{full_scores['ml_score']:.1f}%",
+                            delta=f"{delta_ml:+.1f}% difference")
+                else:
+                    st.metric("Full Period ML Probability", "N/A")
+
+            with comp_col3:
+                delta_revenue = metrics.get('Monthly Average Revenue', 0) - full_metrics.get('Monthly Average Revenue', 0)
+                st.metric("Full Period Monthly Revenue", f"£{full_metrics.get('Monthly Average Revenue', 0):,.0f}",
+                        delta=f"£{delta_revenue:+,.0f} difference")
+
+    # ============================================
+    # DETAILED SCORING ANALYSIS (Consolidated)
+    # ============================================
+    st.markdown("---")
+    with st.expander("Detailed scoring analysis", expanded=False):
+        # Subprime scoring overview
+        subprime_col1, subprime_col2, subprime_col3 = st.columns(3)
+
+        with subprime_col1:
+            score = scores['subprime_score']
+            if score >= 75:
+                st.success(f"**Excellent candidate**\nScore: {score:.1f}/100")
+            elif score >= 60:
+                st.info(f"**Good candidate**\nScore: {score:.1f}/100")
+            elif score >= 45:
+                st.warning(f"**Conditional**\nScore: {score:.1f}/100")
+            elif score >= 30:
+                st.warning(f"**High monitoring**\nScore: {score:.1f}/100")
+            else:
+                st.error(f"**High risk**\nScore: {score:.1f}/100")
+
+        with subprime_col2:
+            st.write("**Pricing Guidance:**")
+            pricing = scores['subprime_pricing']
+            for key, value in pricing.items():
+                if key in ['suggested_rate', 'max_loan_multiple', 'term_range']:
+                    st.write(f"• **{key.replace('_', ' ').title()}**: {value}")
+
+        with subprime_col3:
+            st.write("**Monitoring:**")
+            monitoring = pricing.get('monitoring', 'Standard reviews')
+            approval_prob = pricing.get('approval_probability', 'Unknown')
+            st.write(f"• {monitoring}")
+            st.write(f"• Approval: {approval_prob}")
+
+        # Subprime recommendation
+        recommendation = scores['subprime_recommendation']
+        if "APPROVE" in recommendation:
+            st.success(f"**Subprime Recommendation**: {recommendation}")
+        elif "CONDITIONAL" in recommendation:
+            st.warning(f"**Subprime Recommendation**: {recommendation}")
+        elif "SENIOR REVIEW" in recommendation:
+            st.info(f"**Subprime Recommendation**: {recommendation}")
+        else:
+            st.error(f"**Subprime Recommendation**: {recommendation}")
+
+        # Metric Scoring Breakdown
+        st.markdown("---")
+        st.markdown("**Metric Scoring Breakdown:**")
+        if scores.get('score_breakdown'):
+            breakdown_data = []
+            for metric, data in scores['score_breakdown'].items():
+                status = 'Pass' if data['meets'] else 'Fail'
+                breakdown_data.append({
+                    'Metric': metric,
+                    'Actual': f"{data['actual']:.3f}",
+                    'Status': status
+                })
+            if breakdown_data:
+                breakdown_df = pd.DataFrame(breakdown_data)
+                st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
+
+        # Subprime breakdown
+        st.markdown("---")
+        st.markdown("**Subprime Scoring Components:**")
+        for line in scores['subprime_breakdown']:
+            st.write(f"• {line}")
+
+        # Score Diagnostics
+        if scores.get('diagnostics'):
+            st.markdown("---")
+            st.markdown("**Metric performance:**")
+            diagnostics = scores['diagnostics']
+
+            if diagnostics.get('metric_breakdown'):
+                metric_data = []
+                for metric in diagnostics['metric_breakdown']:
+                    actual = metric['actual_value']
+                    if 'Ratio' in metric['metric'] or 'DSCR' in metric['metric']:
+                        actual_str = f"{actual:.2f}"
+                    elif 'Volatility' in metric['metric']:
+                        actual_str = f"{actual:.3f}"
+                    elif 'Balance' in metric['metric']:
+                        actual_str = f"£{actual:,.0f}"
+                    elif 'Growth' in metric['metric'] or 'Margin' in metric['metric']:
+                        actual_str = f"{actual*100:.1f}%"
+                    elif 'Days' in metric['metric']:
+                        actual_str = f"{int(actual)}"
+                    elif 'Age' in metric['metric'] or 'Score' in metric['metric']:
+                        actual_str = f"{int(actual)}"
+                    else:
+                        actual_str = f"{actual:.2f}"
+
+                    threshold = metric['threshold_full_points']
+                    if 'Ratio' in metric['metric'] or 'DSCR' in metric['metric']:
+                        threshold_str = f"{threshold:.2f}"
+                    elif 'Volatility' in metric['metric']:
+                        threshold_str = f"≤{threshold:.2f}"
+                    elif 'Balance' in metric['metric']:
+                        threshold_str = f"£{threshold:,.0f}+"
+                    elif 'Growth' in metric['metric'] or 'Margin' in metric['metric']:
+                        threshold_str = f"{threshold*100:.1f}%+"
+                    elif 'Days' in metric['metric']:
+                        threshold_str = f"≤{int(threshold)}"
+                    elif 'Age' in metric['metric'] or 'Score' in metric['metric']:
+                        threshold_str = f"{int(threshold)}+"
+                    else:
+                        threshold_str = f"{threshold:.2f}"
+
+                    status_label = {'PASS': 'Pass', 'PARTIAL': 'Partial', 'FAIL': 'Fail'}
+
+                    metric_data.append({
+                        'Metric': metric['metric'],
+                        'Actual': actual_str,
+                        'Target': threshold_str,
+                        'Points': f"{metric['points_earned']:.1f}/{metric['points_possible']}",
+                        'Status': status_label.get(metric['status'], metric['status']),
+                    })
+
+                if metric_data:
+                    df_metrics = pd.DataFrame(metric_data)
+                    st.dataframe(df_metrics, use_container_width=True, hide_index=True)
+
+            # Key factors in columns
+            if diagnostics.get('top_negative_factors') or diagnostics.get('top_positive_factors'):
+                neg_col, pos_col = st.columns(2)
+
+                with neg_col:
+                    if diagnostics.get('top_negative_factors'):
+                        st.markdown("**Top risk factors:**")
+                        for factor in diagnostics['top_negative_factors'][:3]:
+                            st.write(f"• {factor['metric']}: -{factor['points_lost']:.1f} pts")
+
+                with pos_col:
+                    if diagnostics.get('top_positive_factors'):
+                        st.markdown("**Top strengths:**")
+                        for factor in diagnostics['top_positive_factors'][:3]:
+                            st.write(f"• {factor['metric']}: +{factor['points_earned']:.1f} pts")
+
+            # Improvement suggestions
+            if diagnostics.get('improvement_suggestions'):
+                st.markdown("**Improvements:**")
+                for suggestion in diagnostics['improvement_suggestions'][:3]:
+                    st.info(f"• {suggestion}")
+
+        # ML Validation (if available)
+        ml_validation = scores.get('ml_validation', {})
+        if ml_validation.get('available', False):
+            st.markdown("---")
+            st.markdown("**ML score reliability:**")
+            ml_col1, ml_col2, ml_col3 = st.columns(3)
+
+            with ml_col1:
+                quality = ml_validation.get('data_quality_score', 0)
+                st.metric("Data Quality", f"{quality}/100")
+
+            with ml_col2:
+                confidence = ml_validation.get('ml_confidence', 'Unknown')
+                st.metric("ML Confidence", confidence)
+
+            with ml_col3:
+                outliers = ml_validation.get('outlier_count', 0)
+                st.metric("Unusual Metrics", outliers)
+
+    # Dashboard Export Section
+    try:
+        exporter = DashboardExporter()
+        exporter.create_export_buttons(
+            company_name=company_name,
+            params=params,
+            metrics=metrics,
+            scores=scores,
+            analysis_period=analysis_period,
+            revenue_insights=revenue_insights,
+            loans_analysis=None,  # Will be added when loans analysis is available
+
+        )
+        st.success("Enhanced Dashboard complete with Export Functionality")
+
+    except Exception as e:
+        st.error(f"Export functionality error: {str(e)}")
+        st.success("Enhanced Dashboard complete (export disabled due to error)")
+
+
 def main():
     """Main application"""
     try:
-        st.title("Business Finance Scorecard")
-        st.markdown("---")
-           
+        apply_ui_theme()
+
+        render_main_hero(
+            "Business Finance Scorecard",
+            "Bank intelligence, bureau signals, and director credit—in one underwriting workspace.",
+            eyebrow="Merchant cash advance · underwriting",
+        )
+        render_workflow_rail()
+
         # Sidebar inputs
-        st.sidebar.header("Business Parameters")
+        sidebar_section("Business parameters")
         
         company_name = st.sidebar.text_input("Company Name", "Sample Business Ltd")
         industry = st.sidebar.selectbox("Industry", list(INDUSTRY_THRESHOLDS.keys()))
@@ -3222,7 +3853,7 @@ def main():
         # -----------------------------
         # Director TU XML Upload
         # -----------------------------
-        st.sidebar.subheader("Director TU Credit File (TransUnion XML)")
+        sidebar_subsection("Director TU credit file (TransUnion XML)")
         tu_xml_file = st.sidebar.file_uploader("Upload TU XML", type=["xml"], key="tu_xml_upload")
 
         tu_result = None
@@ -3271,14 +3902,14 @@ def main():
         # -----------------------------
         # Business Bureau PDF Upload (NEW)
         # -----------------------------
-        st.sidebar.subheader("Business Credit Report (PDF)")
+        sidebar_subsection("Business credit report (PDF)")
         bureau_pdf = st.sidebar.file_uploader(
             "Upload Business Credit Report (PDF)",
             type=["pdf"],
             key="bureau_pdf_upload"
         )
 
-        # ✅ defaults so variables always exist
+        # Defaults so variables always exist
         bureau_text = ""
         bureau_backend = "none"
         bureau_err = ""
@@ -3290,7 +3921,7 @@ def main():
             pdf_bytes = bureau_pdf.getvalue()
             bureau_text, bureau_backend, bureau_err = _extract_text_from_pdf_bytes(pdf_bytes)
 
-            # 🔴 ADD THIS BLOCK RIGHT HERE
+            # Bureau PDF required for extraction messaging
             if bureau_backend == "none":
                 st.sidebar.error(
                     "PDF text extraction is not available. "
@@ -3324,7 +3955,7 @@ def main():
         # -----------------------------
         # Risk Factors (UPDATED)
         # -----------------------------
-        st.sidebar.subheader("Risk Factors")
+        sidebar_subsection("Risk factors")
 
         # Show CCJ as derived (no manual tick box)
         st.sidebar.write(f"**Business CCJ:** {'Yes' if business_ccj else 'No'}")
@@ -3345,12 +3976,14 @@ def main():
                     st.sidebar.write("• No specific indicators extracted (text-only fallback).")
 
         # Time period filter
-        st.sidebar.subheader("Analysis Period")
+        sidebar_subsection("Analysis period")
         analysis_period = st.sidebar.selectbox(
             "Select Time Period",
             ["All", "3", "6", "9", "12"],
-            help="Choose how many months of data to analyze"
+            help="Choose how many months of data to analyze",
         )
+
+        render_sidebar_help_footer()
 
         params = {
             "company_name": company_name,
@@ -3378,9 +4011,16 @@ def main():
 
 
         # File upload
-        uploaded_file = st.file_uploader("Upload Transaction Data (JSON)", type=['json'])
-        st.markdown("### Card Terminal Statement Upload")
-        st.caption("Upload card terminal statements (PDF/CSV/Excel) for reconciliation against bank inflows.")
+        render_intake_panel_intro()
+        uploaded_file = st.file_uploader(
+            "Transaction file (JSON)",
+            type=["json"],
+            help="Plaid-style export or list of transactions with date, amount, and name.",
+        )
+        st.markdown("##### Card terminal statements (optional)")
+        st.caption(
+            "PDF, CSV, or Excel from your card provider—used to reconcile card sales against bank inflows."
+        )
         card_terminal_files = st.file_uploader(
             "Upload card terminal statements",
             type=["pdf", "csv", "xls", "xlsx"],
@@ -3405,7 +4045,7 @@ def main():
                         string_data = raw_bytes.decode("latin-1")
                 
                 if not string_data.strip():
-                    st.error("❌ Uploaded file is empty")
+                    st.error("Uploaded file is empty")
                     return
 
                 json_data = json.loads(string_data)
@@ -3416,11 +4056,11 @@ def main():
                 elif isinstance(json_data, dict):
                     transactions = json_data.get('transactions', [])  # Dictionary format
                 else:
-                    st.error("❌ Unexpected JSON format - expected list or dictionary")
+                    st.error("Unexpected JSON format — expected list or dictionary")
                     return
 
                 if not transactions:
-                    st.error("❌ No transactions found in JSON file")
+                    st.error("No transactions found in JSON file")
                     return
 
                 # --- MCA rule-based decision (new) ---
@@ -3446,7 +4086,7 @@ def main():
                 missing_columns = [col for col in required_columns if col not in df.columns]
                 
                 if missing_columns:
-                    st.error(f"❌ Missing required columns: {missing_columns}")
+                    st.error(f"Missing required columns: {missing_columns}")
                     return
                 
                 df['date'] = pd.to_datetime(df['date'], errors='coerce')
@@ -3454,25 +4094,25 @@ def main():
                 df = df.dropna(subset=['date', 'amount'])
                 
                 if df.empty:
-                    st.error("❌ No valid transactions after cleaning")
+                    st.error("No valid transactions after cleaning")
                     return
                 
                 # Display data info and export
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
-                    st.success(f"✅ Loaded {len(df)} transactions")
+                    st.success(f"Loaded {len(df)} transactions")
                 with col2:
                     date_range = f"{df['date'].min().date()} to {df['date'].max().date()}"
-                    st.info(f"📅 Date Range: {date_range}")
+                    st.info(f"Date range: {date_range}")
                 with col3:
                     if analysis_period != 'All':
                         filtered_count = len(filter_data_by_period(df, analysis_period))
-                        st.info(f"📊 Period: {filtered_count} transactions")
+                        st.info(f"Period: {filtered_count} transactions")
                 with col4:
                     csv_data = create_categorized_csv(df)
                     if csv_data:
                         st.download_button(
-                            label="📥 Export Categorized CSV",
+                            label="Export categorized CSV",
                             data=csv_data,
                             file_name=f"{company_name.replace(' ', '_')}_transactions_categorized.csv",
                             mime="text/csv",
@@ -3554,6 +4194,12 @@ def main():
 
                 revenue_insights = calculate_revenue_insights(filtered_df)
 
+                date_min_iso = None
+                date_max_iso = None
+                if df is not None and not df.empty and "date" in df.columns:
+                    date_min_iso = str(df["date"].min())
+                    date_max_iso = str(df["date"].max())
+
                 # Store last successful run (complete, so other pages / return to Main can use it)
                 st.session_state["last_run"] = {
                     "company_name": company_name,
@@ -3564,569 +4210,53 @@ def main():
                     "metrics": metrics,
                     "scores": scores,
                     "revenue_insights": revenue_insights,
+                    "card_terminal_files": card_terminal_files,
+                    "source_upload_name": uploaded_file.name if uploaded_file else None,
                 }
 
-                # ENHANCED DASHBOARD RENDERING
-                period_label = f"Last {analysis_period} Months" if analysis_period != 'All' else "Full Period"
-                st.header(f"Financial Dashboard: {company_name} ({period_label})")
-
-                # ============================================
-                # 🎯 UNIFIED RECOMMENDATION (TOP OF DASHBOARD)
-                # ============================================
-                ensemble = scores.get('ensemble')
-                if ensemble:
-                    decision = scores.get('final_decision') or ensemble.get('decision', 'REFER')
-                    ensemble_decision = str(ensemble.get('decision', '')).upper().strip()
-                    combined_score = ensemble.get('combined_score', 0)
-                    confidence = ensemble.get('confidence', 0)
-                    final_reasons = scores.get('final_decision_reasons', []) or []
-                    ensemble_reason = ensemble.get('primary_reason', '')
-
-                    # Keep reason text consistent with displayed decision.
-                    reason_text = ensemble_reason
-                    if ensemble_decision and decision != ensemble_decision:
-                        override_reason = final_reasons[-1] if final_reasons else (
-                            f"Final decision overridden from {ensemble_decision} to {decision} by policy overlay."
-                        )
-                        reason_text = f"{override_reason}\nEnsemble context: {ensemble_reason}"
-                    elif final_reasons:
-                        reason_text = final_reasons[-1]
-                    
-                    # Main recommendation display with prominent styling
-                    if decision == 'APPROVE':
-                        st.success(f"""
-                        ## 🎯 Recommendation: ✅ APPROVE
-                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
-                        
-                        *{reason_text}*
-                        """)
-                    elif decision == 'CONDITIONAL_APPROVE':
-                        st.info(f"""
-                        ## 🎯 Recommendation: ℹ️ CONDITIONAL APPROVE
-                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
-                        
-                        *{reason_text}*
-                        """)
-                    elif decision == 'REFER':
-                        st.warning(f"""
-                        ## 🎯 Recommendation: ⚠️ REFER FOR REVIEW
-                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
-                        
-                        *{reason_text}*
-                        """)
-                    elif decision == 'SENIOR_REVIEW':
-                        st.warning(f"""
-                        ## 🎯 Recommendation: 🔍 SENIOR REVIEW REQUIRED
-                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
-                        
-                        *{reason_text}*
-                        """)
-                    else:  # DECLINE
-                        st.error(f"""
-                        ## 🎯 Recommendation: ❌ DECLINE
-                        **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%
-                        
-                        *{reason_text}*
-                        """)
-                    
-                    # Contributing scores in compact row
-                    contributing = ensemble.get('contributing_scores', {})
-                    score_cols = st.columns(3)
-
-                    with score_cols[0]:
-                        mca_s = contributing.get('mca_score', params.get('mca_rule_score', 50))
-                        st.metric("MCA Rule (60%)", f"{mca_s:.0f}")
-                    
-                    with score_cols[1]:
-                        subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
-                        st.metric("Subprime (40%)", f"{subprime_s:.1f}")
-                    
-                    with score_cols[2]:
-                        ml_info = ensemble.get('detailed_breakdown', {}).get('informational_scores', {})
-                        ml_s = ml_info.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
-                        st.metric("ML Score (Info Only)", f"{ml_s:.1f}%" if ml_s else "N/A")
-                    
-                    # Score convergence indicator
-                    convergence = ensemble.get('score_convergence', 'Unknown')
-                    if 'High' in convergence:
-                        st.success(f"📊 **Score Convergence:** {convergence} - MCA and Subprime agree")
-                    elif 'Good' in convergence:
-                        st.info(f"📊 **Score Convergence:** {convergence}")
-                    elif 'Moderate' in convergence:
-                        st.warning(f"📊 **Score Convergence:** {convergence} - Some disagreement between MCA and Subprime")
-                    else:
-                        st.error(f"📊 **Score Convergence:** {convergence} - Significant disagreement")
-                    
-                    # Pricing and details in expander
-                    with st.expander("📋 Pricing Guidance & Risk Analysis", expanded=False):
-                        pricing = ensemble.get('pricing_guidance', {})
-                        if pricing and pricing.get('factor_rate') != 'N/A':
-                            pricing_cols = st.columns(4)
-                            with pricing_cols[0]:
-                                st.write(f"**Factor Rate:** {pricing.get('factor_rate', 'N/A')}")
-                            with pricing_cols[1]:
-                                st.write(f"**Max Term:** {pricing.get('max_term', 'N/A')}")
-                            with pricing_cols[2]:
-                                st.write(f"**Max Amount:** {pricing.get('max_multiple', 'N/A')}")
-                            with pricing_cols[3]:
-                                st.write(f"**Collection:** {pricing.get('collection_frequency', 'N/A')}")
-                        
-                        st.markdown("---")
-                        risk_col, positive_col = st.columns(2)
-                        
-                        with risk_col:
-                            st.markdown("**⚠️ Risk Factors:**")
-                            risk_factors = ensemble.get('risk_factors', [])
-                            if risk_factors:
-                                for rf in risk_factors:
-                                    st.write(f"• {rf}")
-                            else:
-                                st.write("• No significant risk factors identified")
-                        
-                        with positive_col:
-                            st.markdown("**✅ Positive Factors:**")
-                            positive_factors = ensemble.get('positive_factors', [])
-                            if positive_factors:
-                                for pf in positive_factors:
-                                    st.write(f"• {pf}")
-                            else:
-                                st.write("• No notable positive factors")
-                        
-                        st.markdown("---")
-                        st.markdown("**📝 Recommendations:**")
-                        recommendations = ensemble.get('recommendations', [])
-                        for rec in recommendations:
-                            st.write(f"• {rec}")
-                        
-                        # MCA Rule signals (moved from standalone section)
-                        if "mca_rule_decision" in params:
-                            st.markdown("---")
-                            st.markdown("**MCA Rule Analysis:**")
-                            mca_r = params.get("mca_rule_reasons", [])
-                            for r in mca_r:
-                                st.write(f"• {r}")
-                            
-                            # Show MCA signals in a compact format (no nested expander)
-                            mca_signals = params.get("mca_rule_signals", {})
-                            if mca_signals:
-                                st.markdown("**MCA Rule Signals:**")
-                                st.code(str(mca_signals), language="json")
-                else:
-                    # Fallback if ensemble not available
-                    st.info("Unified ensemble scoring not available. Showing individual scores below.")
-
-                primary_signal = params.get("primary_account_assessment", {})
-                primary_note = primary_signal.get("note")
-                if primary_note:
-                    if primary_signal.get("is_potential_non_primary", False):
-                        st.warning(f"⚠️ **Primary Account Check (UW Note):** {primary_note}")
-                    elif primary_signal.get("status") == "unable_to_determine":
-                        st.info(f"ℹ️ **Primary Account Check (UW Note):** {primary_note}")
-                    else:
-                        st.success(f"✅ **Primary Account Check (UW Note):** {primary_note}")
-
-                    with st.expander("Primary Account Check Details", expanded=False):
-                        st.json(primary_signal)
-
-                render_card_terminal_reconciliation(filtered_df, card_terminal_files)
-
-                # Revenue Insights
-                st.markdown("---")
-                st.subheader("💰 Revenue Insights")
-
-                rev_col1, rev_col2, rev_col3, rev_col4 = st.columns(4)
-                with rev_col1:
-                    sources_count = revenue_insights.get('unique_revenue_sources', 0)
-                    st.metric("Unique Revenue Sources", f"{sources_count}")
-                    if sources_count == 1:
-                        st.warning("⚠️ Single revenue source - consider diversification")
-                    elif sources_count <= 3:
-                        st.info("ℹ️ Limited revenue sources - moderate concentration risk")
-                    else:
-                        st.success("✅ Good revenue diversification")
-                with rev_col2:
-                    avg_txns = revenue_insights.get('avg_revenue_transactions_per_day', 0)
-                    st.metric("Avg Revenue Transactions/Day", f"{avg_txns:.1f}")
-                with rev_col3:
-                    avg_daily_rev = revenue_insights.get('avg_daily_revenue_amount', 0)
-                    st.metric("Avg Daily Revenue", f"£{avg_daily_rev:,.2f}")
-                with rev_col4:
-                    total_days = revenue_insights.get('total_revenue_days', 0)
-                    st.metric("Revenue Active Days", f"{total_days}")
-
-                # Charts Section
-                st.markdown("---")
-                st.subheader("Charts & Analysis")
-
-                # Row 1: Enhanced Score and Financial Charts
-                col1, col2 = st.columns(2)
-                with col1:
-                    fig_scores = create_score_charts(scores, metrics)
-                    st.plotly_chart(fig_scores, use_container_width=True, key="enhanced_scores_chart")
-                with col2:
-                    fig_financial, fig_trend = create_financial_charts(metrics)
-                    st.plotly_chart(fig_financial, use_container_width=True, key="main_financial_chart")
-                
-                # Row 2: Trend and Threshold Charts
-                col1, col2 = st.columns(2)
-                with col1:
-                    if fig_trend:
-                        st.plotly_chart(fig_trend, use_container_width=True, key="main_trend_chart")
-                    else:
-                        st.info("Monthly trend requires multiple months of data")
-                with col2:
-                    fig_threshold = create_threshold_chart(scores['score_breakdown'])
-                    st.plotly_chart(fig_threshold, use_container_width=True, key="main_threshold_chart")
-                
-                # Monthly Breakdown Section
-                st.markdown("---")
-                st.subheader("Monthly Breakdown by Category")
-                
-                pivot_counts, pivot_amounts = create_monthly_breakdown(filtered_df)
-                
-                if pivot_counts is not None and not pivot_counts.empty:
-                    # Create monthly breakdown charts
-                    fig_monthly_counts, fig_monthly_amounts = create_monthly_charts(pivot_counts, pivot_amounts)
-                    
-                    # Display charts
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.plotly_chart(fig_monthly_counts, use_container_width=True, key="main_monthly_counts")
-                    with col2:
-                        st.plotly_chart(fig_monthly_amounts, use_container_width=True, key="main_monthly_amounts")
-                    
-                    # Monthly summary table
-                    with st.expander("Detailed Monthly Breakdown", expanded=False):
-                        tab1, tab2 = st.tabs(["Transaction Counts", "Transaction Amounts (£)"])
-                        
-                        with tab1:
-                            counts_display = pivot_counts.copy()
-                            counts_display.index = counts_display.index.astype(str)
-                            counts_display = counts_display.astype(int)
-                            st.dataframe(counts_display, use_container_width=True)
-                            
-                            # Add totals
-                            totals_counts = counts_display.sum()
-                            st.write("**Totals:**")
-                            total_cols = st.columns(len(totals_counts))
-                            for i, (cat, total) in enumerate(totals_counts.items()):
-                                with total_cols[i]:
-                                    st.metric(cat, f"{total:,.0f}")
-                        
-                        with tab2:
-                            amounts_display = pivot_amounts.copy()
-                            amounts_display.index = amounts_display.index.astype(str)
-                            amounts_display = amounts_display.round(2)
-                            st.dataframe(amounts_display, use_container_width=True)
-                            
-                            # Add totals
-                            totals_amounts = amounts_display.sum()
-                            st.write("**Totals:**")
-                            total_cols = st.columns(len(totals_amounts))
-                            for i, (cat, total) in enumerate(totals_amounts.items()):
-                                with total_cols[i]:
-                                    st.metric(cat, f"£{total:,.2f}")
-                else:
-                    st.info("Monthly breakdown requires multiple months of data")
-                
-                # Transaction Category Analysis
-                st.markdown("---")
-                st.subheader("Transaction Analysis")
-                
-                categorized_data = categorize_transactions(filtered_df)
-                category_summary = categorized_data['subcategory'].value_counts()
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.write("**Transaction Categories:**")
-                    for category, count in category_summary.items():
-                        category_amount = abs(categorized_data[categorized_data['subcategory'] == category]['amount'].sum())
-                        percentage = (count / len(categorized_data)) * 100
-                        st.write(f"• **{category}**: {count} transactions (£{category_amount:,.2f}) - {percentage:.1f}%")
-                
-                with col2:
-                    # Category pie chart
-                    fig_pie = go.Figure(data=[go.Pie(
-                        labels=category_summary.index,
-                        values=category_summary.values,
-                        hole=0.3,
-                        marker_colors=['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
-                    )])
-                    
-                    fig_pie.update_layout(
-                        title="Transaction Distribution",
-                        height=300,
-                        showlegend=True,
-                        legend=dict(orientation="v", yanchor="middle", y=0.5, xanchor="left", x=1.01)
-                    )
-                    
-                    st.plotly_chart(fig_pie, use_container_width=True, key="main_category_pie")
-                
-                # NEW: Loans and Debt Repayments Analysis
-                display_loans_repayments_section(filtered_df, analysis_period)
-
-                # Detailed Metrics Table
-                st.markdown("---")
-                st.subheader("Detailed Financial Metrics")
-                
-                # Create metrics table
-                metrics_data = []
-                industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
-                
-                for metric, value in metrics.items():
-                    if metric in industry_thresholds and metric != 'monthly_summary':
-                        threshold = industry_thresholds[metric]
-                        if metric in ['Cash Flow Volatility', 'Average Negative Balance Days per Month', 'Number of Bounced Payments']:
-                            meets_threshold = value <= threshold
-                            comparison = "≤"
-                        else:
-                            meets_threshold = value >= threshold
-                            comparison = "≥"
-                        
-                        # Format values appropriately
-                        if isinstance(value, float):
-                            if metric in ['Operating Margin', 'Debt-to-Income Ratio', 'Expense-to-Revenue Ratio']:
-                                formatted_value = f"{value:.3f} ({value*100:.1f}%)"
-                            elif metric in ['Revenue Growth Rate']:
-                                formatted_value = f"{value:.3f} ({value:.1f}%)"
-                            else:
-                                formatted_value = f"{value:.2f}"
-                        else:
-                            formatted_value = f"£{value:,.2f}" if 'Income' in metric or 'Revenue' in metric or 'Debt' in metric or 'Balance' in metric or 'Rate' in metric else str(value)
-                        
-                        metrics_data.append({
-                            'Metric': metric,
-                            'Actual Value': formatted_value,
-                            'Threshold': f"{comparison} {threshold}",
-                            'Status': '✅ Pass' if meets_threshold else '❌ Fail'
-                        })
-                
-                if metrics_data:
-                    df_metrics = pd.DataFrame(metrics_data)
-                    st.dataframe(df_metrics, use_container_width=True, hide_index=True)
-                
-                # Period Comparison (if applicable)
-                if analysis_period != 'All':
-                    st.markdown("---")
-                    with st.expander(f"Compare with Full Period Analysis", expanded=False):
-                        full_metrics = calculate_financial_metrics(df, params['company_age_months'])
-                        full_scores = calculate_all_scores_enhanced(full_metrics, params)
-                        
-                        st.write("**Full Period vs Selected Period Comparison:**")
-                        comp_col1, comp_col2, comp_col3, = st.columns(3)
-                        
-                        with comp_col1:
-                            delta_subprime = scores.get('subprime_score', 0) - full_scores.get('subprime_score', 0)
-                            st.metric("Full Period Subprime Score", f"{full_scores.get('subprime_score', 0):.1f}/100", 
-                                    delta=f"{delta_subprime:+.1f} difference")
-                        
-                        with comp_col2:
-                            if full_scores['ml_score'] and scores['ml_score']:
-                                delta_ml = scores['ml_score'] - full_scores['ml_score']
-                                st.metric("Full Period ML Probability", f"{full_scores['ml_score']:.1f}%",
-                                        delta=f"{delta_ml:+.1f}% difference")
-                            else:
-                                st.metric("Full Period ML Probability", "N/A")
-                        
-                        with comp_col3:
-                            delta_revenue = metrics.get('Monthly Average Revenue', 0) - full_metrics.get('Monthly Average Revenue', 0)
-                            st.metric("Full Period Monthly Revenue", f"£{full_metrics.get('Monthly Average Revenue', 0):,.0f}",
-                                    delta=f"£{delta_revenue:+,.0f} difference")
-                
-                # ============================================
-                # 📊 DETAILED SCORING ANALYSIS (Consolidated)
-                # ============================================
-                st.markdown("---")
-                with st.expander("📊 Detailed Scoring Analysis", expanded=False):
-                    # Subprime scoring overview
-                    subprime_col1, subprime_col2, subprime_col3 = st.columns(3)
-
-                    with subprime_col1:
-                        score = scores['subprime_score']
-                        if score >= 75:
-                            st.success(f"✅ **Excellent Candidate**\nScore: {score:.1f}/100")
-                        elif score >= 60:
-                            st.info(f"ℹ️ **Good Candidate**\nScore: {score:.1f}/100") 
-                        elif score >= 45:
-                            st.warning(f"⚠️ **Conditional**\nScore: {score:.1f}/100")
-                        elif score >= 30:
-                            st.warning(f"⚠️ **High Monitoring**\nScore: {score:.1f}/100")    
-                        else:
-                            st.error(f"❌ **High Risk**\nScore: {score:.1f}/100")
-
-                    with subprime_col2:
-                        st.write("**Pricing Guidance:**")
-                        pricing = scores['subprime_pricing']
-                        for key, value in pricing.items():
-                            if key in ['suggested_rate', 'max_loan_multiple', 'term_range']:
-                                st.write(f"• **{key.replace('_', ' ').title()}**: {value}")
-
-                    with subprime_col3:
-                        st.write("**Monitoring:**")
-                        monitoring = pricing.get('monitoring', 'Standard reviews')
-                        approval_prob = pricing.get('approval_probability', 'Unknown')
-                        st.write(f"• {monitoring}")
-                        st.write(f"• Approval: {approval_prob}")
-
-                    # Subprime recommendation
-                    recommendation = scores['subprime_recommendation']
-                    if "APPROVE" in recommendation:
-                        st.success(f"**Subprime Recommendation**: {recommendation}")
-                    elif "CONDITIONAL" in recommendation:
-                        st.warning(f"**Subprime Recommendation**: {recommendation}")
-                    elif "SENIOR REVIEW" in recommendation:
-                        st.info(f"**Subprime Recommendation**: {recommendation}")
-                    else:
-                        st.error(f"**Subprime Recommendation**: {recommendation}")
-
-                    # Metric Scoring Breakdown
-                    st.markdown("---")
-                    st.markdown("**Metric Scoring Breakdown:**")
-                    if scores.get('score_breakdown'):
-                        breakdown_data = []
-                        for metric, data in scores['score_breakdown'].items():
-                            status = '✅ Pass' if data['meets'] else '❌ Fail'
-                            breakdown_data.append({
-                                'Metric': metric,
-                                'Actual': f"{data['actual']:.3f}",
-                                'Status': status
-                            })
-                        if breakdown_data:
-                            breakdown_df = pd.DataFrame(breakdown_data)
-                            st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
-                    
-                    # Subprime breakdown
-                    st.markdown("---")
-                    st.markdown("**Subprime Scoring Components:**")
-                    for line in scores['subprime_breakdown']:
-                        st.write(f"• {line}")
-                    
-                    # Score Diagnostics
-                    if scores.get('diagnostics'):
-                        st.markdown("---")
-                        st.markdown("**📈 Metric Performance:**")
-                        diagnostics = scores['diagnostics']
-                        
-                        if diagnostics.get('metric_breakdown'):
-                            metric_data = []
-                            for metric in diagnostics['metric_breakdown']:
-                                actual = metric['actual_value']
-                                if 'Ratio' in metric['metric'] or 'DSCR' in metric['metric']:
-                                    actual_str = f"{actual:.2f}"
-                                elif 'Volatility' in metric['metric']:
-                                    actual_str = f"{actual:.3f}"
-                                elif 'Balance' in metric['metric']:
-                                    actual_str = f"£{actual:,.0f}"
-                                elif 'Growth' in metric['metric'] or 'Margin' in metric['metric']:
-                                    actual_str = f"{actual*100:.1f}%"
-                                elif 'Days' in metric['metric']:
-                                    actual_str = f"{int(actual)}"
-                                elif 'Age' in metric['metric'] or 'Score' in metric['metric']:
-                                    actual_str = f"{int(actual)}"
-                                else:
-                                    actual_str = f"{actual:.2f}"
-                                
-                                threshold = metric['threshold_full_points']
-                                if 'Ratio' in metric['metric'] or 'DSCR' in metric['metric']:
-                                    threshold_str = f"{threshold:.2f}"
-                                elif 'Volatility' in metric['metric']:
-                                    threshold_str = f"≤{threshold:.2f}"
-                                elif 'Balance' in metric['metric']:
-                                    threshold_str = f"£{threshold:,.0f}+"
-                                elif 'Growth' in metric['metric'] or 'Margin' in metric['metric']:
-                                    threshold_str = f"{threshold*100:.1f}%+"
-                                elif 'Days' in metric['metric']:
-                                    threshold_str = f"≤{int(threshold)}"
-                                elif 'Age' in metric['metric'] or 'Score' in metric['metric']:
-                                    threshold_str = f"{int(threshold)}+"
-                                else:
-                                    threshold_str = f"{threshold:.2f}"
-                                
-                                status_emoji = {'PASS': '✅', 'PARTIAL': '🟡', 'FAIL': '❌'}
-                                
-                                metric_data.append({
-                                    'Metric': metric['metric'],
-                                    'Actual': actual_str,
-                                    'Target': threshold_str,
-                                    'Points': f"{metric['points_earned']:.1f}/{metric['points_possible']}",
-                                    'Status': f"{status_emoji.get(metric['status'], '⚪')}"
-                                })
-                            
-                            if metric_data:
-                                df_metrics = pd.DataFrame(metric_data)
-                                st.dataframe(df_metrics, use_container_width=True, hide_index=True)
-                        
-                        # Key factors in columns
-                        if diagnostics.get('top_negative_factors') or diagnostics.get('top_positive_factors'):
-                            neg_col, pos_col = st.columns(2)
-                            
-                            with neg_col:
-                                if diagnostics.get('top_negative_factors'):
-                                    st.markdown("**🔴 Top Risk Factors:**")
-                                    for factor in diagnostics['top_negative_factors'][:3]:
-                                        st.write(f"• {factor['metric']}: -{factor['points_lost']:.1f} pts")
-                            
-                            with pos_col:
-                                if diagnostics.get('top_positive_factors'):
-                                    st.markdown("**🟢 Top Strengths:**")
-                                    for factor in diagnostics['top_positive_factors'][:3]:
-                                        st.write(f"• {factor['metric']}: +{factor['points_earned']:.1f} pts")
-                        
-                        # Improvement suggestions
-                        if diagnostics.get('improvement_suggestions'):
-                            st.markdown("**💡 Improvements:**")
-                            for suggestion in diagnostics['improvement_suggestions'][:3]:
-                                st.info(f"• {suggestion}")
-                    
-                    # ML Validation (if available)
-                    ml_validation = scores.get('ml_validation', {})
-                    if ml_validation.get('available', False):
-                        st.markdown("---")
-                        st.markdown("**🤖 ML Score Reliability:**")
-                        ml_col1, ml_col2, ml_col3 = st.columns(3)
-                        
-                        with ml_col1:
-                            quality = ml_validation.get('data_quality_score', 0)
-                            st.metric("Data Quality", f"{quality}/100")
-                        
-                        with ml_col2:
-                            confidence = ml_validation.get('ml_confidence', 'Unknown')
-                            st.metric("ML Confidence", confidence)
-                        
-                        with ml_col3:
-                            outliers = ml_validation.get('outlier_count', 0)
-                            st.metric("Unusual Metrics", outliers)
-                   
-                # Dashboard Export Section
                 try:
-                    exporter = DashboardExporter()
-                    exporter.create_export_buttons(
+                    from app.services.run_persistence import persist_scorecard_run
+
+                    persist_scorecard_run(
                         company_name=company_name,
+                        analysis_period=analysis_period,
                         params=params,
                         metrics=metrics,
                         scores=scores,
-                        analysis_period=analysis_period,
                         revenue_insights=revenue_insights,
-                        loans_analysis=None,  # Will be added when loans analysis is available
-                        
+                        source_upload_name=uploaded_file.name if uploaded_file else None,
+                        txn_row_count=len(df),
+                        date_min_iso=date_min_iso,
+                        date_max_iso=date_max_iso,
                     )
-                    st.success("Enhanced Dashboard complete with Export Functionality")
-                    
-                except Exception as e:
-                    st.error(f"❌ Export functionality error: {str(e)}")
-                    st.success("Enhanced Dashboard complete (export disabled due to error)")
+                except Exception:
+                    pass
+
+                render_full_financial_dashboard(
+                    company_name=company_name,
+                    analysis_period=analysis_period,
+                    df=df,
+                    filtered_df=filtered_df,
+                    params=params,
+                    metrics=metrics,
+                    scores=scores,
+                    revenue_insights=revenue_insights,
+                    card_terminal_files=card_terminal_files,
+                )
                     
             except Exception as e:
-                st.error(f"❌ Unexpected error during processing: {e}")
+                st.error(f"Unexpected error during processing: {e}")
                 import traceback
                 full_traceback = traceback.format_exc()
                 st.code(full_traceback)
                 print(full_traceback)
         
         elif st.session_state.get("last_run"):
-            # Returned from another page (e.g. Synthetic Compare): restore and show last run
             run = st.session_state["last_run"]
-            st.info("Showing previous run. Upload a new file to refresh.")
+            st.info(
+                "Showing your last completed analysis (same session). "
+                "Upload a new JSON transaction file to run a fresh score."
+            )
             company_name = run["company_name"]
             analysis_period = run["analysis_period"]
             df = run["df"]
@@ -4137,32 +4267,24 @@ def main():
             revenue_insights = run.get("revenue_insights") or {}
             if not revenue_insights and not filtered_df.empty:
                 revenue_insights = calculate_revenue_insights(filtered_df)
-            period_label = f"Last {analysis_period} Months" if analysis_period != "All" else "Full Period"
-            st.header(f"Financial Dashboard: {company_name} ({period_label})")
-            ensemble = scores.get("ensemble") or {}
-            decision = scores.get("final_decision") or ensemble.get("decision", "REFER")
-            combined_score = ensemble.get("combined_score", 0)
-            confidence = ensemble.get("confidence", 0)
-            if decision == "APPROVE":
-                st.success(f"## 🎯 Recommendation: ✅ APPROVE — **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%")
-            elif decision in ("CONDITIONAL_APPROVE", "SENIOR_REVIEW", "REFER"):
-                st.warning(f"## 🎯 Recommendation: ⚠️ {decision.replace('_', ' ')} — **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%")
-            else:
-                st.error(f"## 🎯 Recommendation: ❌ DECLINE — **Combined Score:** {combined_score:.1f}/100  |  **Confidence:** {confidence:.0f}%")
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.metric("MCA Rule (60%)", f"{params.get('mca_rule_score', 0):.0f}")
-            with c2:
-                st.metric("Subprime (40%)", f"{scores.get('subprime_score', 0):.1f}")
-            with c3:
-                ml_s = scores.get("adjusted_ml_score") or scores.get("ml_score") or 0
-                st.metric("ML Score (Info Only)", f"{ml_s:.1f}%" if ml_s else "N/A")
-            st.caption("Upload a new JSON file above to run a full analysis again, or use **Scoring** / **Charts** / **Reports** for more detail.")
+            card_terminal_files = run.get("card_terminal_files")
+
+            render_full_financial_dashboard(
+                company_name=company_name,
+                analysis_period=analysis_period,
+                df=df,
+                filtered_df=filtered_df,
+                params=params,
+                metrics=metrics,
+                scores=scores,
+                revenue_insights=revenue_insights,
+                card_terminal_files=card_terminal_files,
+            )
         else:
-            st.info("Upload a JSON transaction file to begin analysis")
+            render_empty_state_main()
 
     except Exception as e:
-        st.error(f"❌ Application Error: {str(e)}")
+        st.error(f"Application error: {str(e)}")
         import traceback
         full_traceback = traceback.format_exc()
         st.code(full_traceback)

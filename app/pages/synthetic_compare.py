@@ -18,6 +18,14 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+from app.ui_theme import (
+    apply_ui_theme,
+    render_compact_page_title,
+    render_empty_state_no_run,
+    sidebar_section,
+    sidebar_subsection,
+)
+
 # Repo root for build_training_dataset and synthetic_data
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -137,12 +145,21 @@ def _score_synthetic_benchmark(features_dict):
         return None, str(e)
 
 
-st.set_page_config(page_title="Dual model scoring", layout="wide")
-st.title("Dual model scoring")
-st.caption("Production ML model vs synthetic benchmark (comparison only; synthetic is not used for production decisions).")
+st.set_page_config(
+    page_title="Dual model scoring | MCA Scorecard",
+    layout="wide",
+    initial_sidebar_state="expanded",
+    menu_items={"Get Help": None, "Report a bug": None, "About": None},
+)
+apply_ui_theme()
+render_compact_page_title(
+    "Dual model scoring",
+    "Production ML vs synthetic benchmark (comparison only; synthetic is not used for production decisions).",
+    eyebrow="MCA Scorecard",
+)
 
 # Sidebar: data source and params
-st.sidebar.header("Data source")
+sidebar_section("Data source")
 use_last_run = st.sidebar.checkbox("Use last run from Main page", value=True)
 last_run = st.session_state.get("last_run")
 
@@ -152,7 +169,7 @@ if use_last_run and last_run:
 else:
     features = None
     data_source_label = None
-    st.sidebar.header("Or upload banking JSON")
+    sidebar_section("Or upload banking JSON")
     uploaded = st.sidebar.file_uploader("Upload transaction JSON", type=["json"], key="synthetic_compare_json")
     if uploaded:
         try:
@@ -162,7 +179,7 @@ else:
             st.sidebar.error(f"Invalid JSON: {e}")
             json_data = None
         if json_data is not None:
-            st.sidebar.subheader("Parameters for uploaded file")
+            sidebar_subsection("Parameters for uploaded file")
             directors_score = st.sidebar.number_input("Directors Score", 0, 100, 50, key="dc_ds")
             company_age_months = st.sidebar.number_input("Company Age (Months)", 0, 600, 12, key="dc_age")
             industry = st.sidebar.selectbox(
@@ -177,11 +194,17 @@ else:
                 data_source_label = f"Uploaded: {uploaded.name}"
 
 if features is None and not (use_last_run and last_run):
-    st.info("Upload application banking JSON in the sidebar, or run an analysis on the **Main** page and check **Use last run from Main page**.")
+    render_empty_state_no_run(
+        "Dual model scoring",
+        "Upload banking JSON in the sidebar, or tick “Use last run from Main page” after you score on Main.",
+    )
     st.stop()
 
 if features is None:
-    st.warning("No feature set available. Upload a valid JSON or use last run from Main.")
+    render_empty_state_no_run(
+        "Dual model scoring",
+        "Could not build features from the current inputs. Upload a valid banking JSON or use last run from Main.",
+    )
     st.stop()
 
 # Score with both models
