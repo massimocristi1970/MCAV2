@@ -1,0 +1,174 @@
+Merchant Account ID: 7XY7JKJ86QATN PayPal ID: bcppromotion@gmail.com 01/10/2025 - 31/10/2025
+Statement for October 2025
+U pper 6th consultancy Ltd
+7 1 Marlow Road
+S E20 7YG London
+Balance Summary (01/10/2025 - 31/10/2025)
+Available Start Available End Withheld Start Withheld End
+GBP 0.00 9.98 0.00 0.00
+EUR 0.00 0.00 0.00 0.00
+USD 0.00 0.00 0.00 0.00
+Page 1
+Merchant Account ID: 7XY7JKJ86QATN PayPal ID: bcppromotion@gmail.com 01/10/2025 - 31/10/2025
+Activity Summary (01/10/2025 - 31/10/2025)
+GBP USD
+Start Available Balance 0.00 0.00
+Payments received 178.36 0.00
+Payments sent -166.87 -36.00
+Withdrawals and Debits -141.14 0.00
+Deposits and Credits 179.83 0.00
+Fees -12.24 0.00
+Transfers -27.96 36.00
+End Available Balance 9.98 0.00
+Page 2
+Merchant Account ID: 7XY7JKJ86QATN PayPal ID: bcppromotion@gmail.com 01/10/2025 - 31/10/2025
+Payments received
+Description GBP USD
+Express Checkout Payment 178.36 0.00
+Total 178.36 0.00
+Payments sent
+Description GBP USD
+General Payment -49.80 0.00
+Pre-approved payment -117.07 -36.00
+Total -166.87 -36.00
+Withdrawals and Debits
+Description GBP USD
+Reversal of ACH Deposit -34.80 0.00
+Transfer Withdrawal -106.34 0.00
+Total -141.14 0.00
+Deposits and Credits
+Description GBP USD
+General Credit Card Deposit 125.44 0.00
+Transfer Deposit 54.39 0.00
+Total 179.83 0.00
+Fees
+Description GBP USD
+Payment Fee -12.24 0.00
+Total -12.24 0.00
+Transfers
+Description GBP USD
+Currency Conversion -27.96 36.00
+Total -27.96 36.00
+Page 3
+Merchant Account ID: 7XY7JKJ86QATN PayPal ID: bcppromotion@gmail.com 01/10/2025 - 31/10/2025
+Transaction History - GBP
+Date Description Name \ Email Address Gross Fee Net
+General Card Deposit
+01/10/2025 27.96 0.00 27.96
+ID: 3SW94812K07337631
+General Currency Conversion
+01/10/2025 -27.96 0.00 -27.96
+ID: 15X554244S304182A
+Pre-approved Payment Bill User Patreon DLC Limited
+01/10/2025 Payment paymentsadmin+ppmid5@patreon.co -3.60 0.00 -3.60
+ID: 8WW901207X782911N m
+Bank Deposit to PP Account
+01/10/2025 3.60 0.00 3.60
+ID: 6F062618T4506292E
+Pre-approved Payment Bill User
+Apple Services
+03/10/2025 Payment -9.99 0.00 -9.99
+paypal_uk_itunes_gbp@apple.com
+ID: 835746019R7086517
+Bank Deposit to PP Account
+03/10/2025 9.99 0.00 9.99
+ID: 0NK40813NE5374731
+Pre-approved Payment Bill User Patreon DLC Limited
+04/10/2025 Payment paymentsadmin+ppmid5@patreon.co -6.00 0.00 -6.00
+ID: 20N64978RB2812325 m
+Bank Deposit to PP Account
+04/10/2025 6.00 0.00 6.00
+ID: 5UV40947KW372681K
+Pre-approved Payment Bill User
+Wix.com (UK) Limited
+07/10/2025 Payment -34.80 0.00 -34.80
+paypalpremiumuk@wix.com
+ID: 1D5299461X136144Y
+Bank Deposit to PP Account
+07/10/2025 34.80 0.00 34.80
+ID: 5AM49657988829406
+Express Checkout Payment Claudette Thornton
+08/10/2025 33.82 -1.28 32.54
+ID: 31B255814U220122K claudette.thornton@btinternet.com
+Partner Fee
+08/10/2025 -0.82 0.00 -0.82
+ID: 7L783990RW333270B
+PayPal UK Ltd
+General Payment
+08/10/2025 uk-ppwc-brexit- -9.51 0.00 -9.51
+ID: 3L538094SY178671G
+repayment@paypal.com
+User Initiated Withdrawal
+08/10/2025 -22.21 0.00 -22.21
+ID: 24F75671M9274261J
+Express Checkout Payment terri jones
+11/10/2025 16.91 -0.79 16.12
+ID: 3YF50798P2516382E taijel@yahoo.co.uk
+Partner Fee
+11/10/2025 -0.41 0.00 -0.41
+ID: 6JE114077P475115M
+Page 4
+Merchant Account ID: 7XY7JKJ86QATN PayPal ID: bcppromotion@gmail.com 01/10/2025 - 31/10/2025
+Transaction History - GBP
+Date Description Name \ Email Address Gross Fee Net
+PayPal UK Ltd
+General Payment
+11/10/2025 uk-ppwc-brexit- -4.71 0.00 -4.71
+ID: 3NX454151F731052S
+repayment@paypal.com
+User Initiated Withdrawal
+11/10/2025 -11.00 0.00 -11.00
+ID: 4L367648TD430160E
+margaret wellington
+Express Checkout Payment
+13/10/2025 margaret.wellington@blueyonder.co.u 16.91 -0.79 16.12
+ID: 49B79612KE819904P
+k
+Partner Fee
+13/10/2025 -0.41 0.00 -0.41
+ID: 04410073V52525832
+PayPal UK Ltd
+General Payment
+13/10/2025 uk-ppwc-brexit- -4.71 0.00 -4.71
+ID: 1E292593UB989642B
+repayment@paypal.com
+Reversal of ACH Deposit
+13/10/2025 -34.80 0.00 -34.80
+ID: 35Y466192L761425W
+General Card Deposit
+13/10/2025 34.80 0.00 34.80
+ID: 3BT66543EG617660A
+Express Checkout Payment Claudette Thornton
+16/10/2025 30.76 -1.19 29.57
+ID: 0RE73000CJ737784V claudette.thornton@btinternet.com
+Partner Fee
+16/10/2025 -0.76 0.00 -0.76
+ID: 8VG58041X1957232G
+PayPal UK Ltd
+General Payment
+16/10/2025 uk-ppwc-brexit- -8.64 0.00 -8.64
+ID: 23N06113LN180820F
+repayment@paypal.com
+margaret wellington
+Express Checkout Payment
+16/10/2025 margaret.wellington@blueyonder.co.u 16.91 -0.79 16.12
+ID: 98V54646B42887047
+k
+Partner Fee
+16/10/2025 -0.41 0.00 -0.41
+ID: 4H607022DH3135404
+PayPal UK Ltd
+General Payment
+16/10/2025 uk-ppwc-brexit- -4.71 0.00 -4.71
+ID: 9K1393773J8882736
+repayment@paypal.com
+User Initiated Withdrawal
+16/10/2025 -42.17 0.00 -42.17
+ID: 23A82502A21804105
+Express Checkout Payment Karl Williams
+19/10/2025 15.38 -0.75 14.63
+ID: 188184311P994544Y donkarlos44@yahoo.com
+Partner Fee
+19/10/2025 -0.38 0.00 -0.38
+ID: 49042718SU3697219
+Page 5

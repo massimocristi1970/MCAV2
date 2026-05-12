@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import io
 import re
+import zipfile
 from dataclasses import dataclass
+from types import SimpleNamespace
 from datetime import date
 from typing import Any, Dict, List, Optional
 
@@ -73,15 +75,21 @@ class CardTerminalIngestionService:
     )
 
     def parse_uploaded_files(self, uploaded_files: List[Any]) -> Dict[str, Any]:
-        """Parse multiple uploaded files and return normalized records."""
+        """Parse multiple uploaded files and return normalized results (includes ZIP expansion)."""
         results: List[ParseResult] = []
         errors: List[Dict[str, str]] = []
 
         for file in uploaded_files or []:
             filename = getattr(file, "name", "unknown_file")
             try:
-                result = self._parse_single(file)
-                results.append(result)
+                ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+                raw = file.getvalue() if hasattr(file, "getvalue") else file.read()
+                if ext == "zip":
+                    inner_results, inner_errors = self._parse_zip_archive(filename, raw)
+                    results.extend(inner_results)
+                    errors.extend(inner_errors)
+                else:
+                    results.append(self._parse_single(file))
             except Exception as exc:  # pragma: no cover - safety path
                 errors.append({"filename": filename, "error": str(exc)})
 
@@ -211,6 +219,36 @@ class CardTerminalIngestionService:
             },
         }
 
+    def _parse_zip_archive(self, zip_filename: str, raw: bytes) -> tuple[List[ParseResult], List[Dict[str, str]]]:
+        """Expand a ZIP and parse each supported file inside."""
+        out: List[ParseResult] = []
+        errs: List[Dict[str, str]] = []
+        allowed = {"pdf", "csv", "xls", "xlsx"}
+        try:
+            with zipfile.ZipFile(io.BytesIO(raw)) as zf:
+                for info in zf.infolist():
+                    if info.is_dir():
+                        continue
+                    inner = info.filename.replace("\\", "/")
+                    if inner.endswith("/") or inner.startswith("__MACOSX/"):
+                        continue
+                    inner_base = inner.rsplit("/", 1)[-1]
+                    if inner_base.startswith("."):
+                        continue
+                    ext = inner_base.lower().rsplit(".", 1)[-1] if "." in inner_base else ""
+                    if ext not in allowed:
+                        continue
+                    try:
+                        member_bytes = zf.read(info)
+                        label = f"{zip_filename}/{inner}"
+                        pseudo = SimpleNamespace(name=label, getvalue=lambda b=member_bytes: b)
+                        out.append(self._parse_single(pseudo))
+                    except Exception as exc:
+                        errs.append({"filename": f"{zip_filename}/{inner}", "error": str(exc)})
+        except zipfile.BadZipFile as exc:
+            errs.append({"filename": zip_filename, "error": f"Invalid ZIP: {exc}"})
+        return out, errs
+
     def _parse_single(self, file: Any) -> ParseResult:
         filename = getattr(file, "name", "unknown_file")
         ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
@@ -220,6 +258,10 @@ class CardTerminalIngestionService:
             text = self._extract_pdf_text(raw)
             if "clover" in text.lower() or "merchantportal.app" in text.lower():
                 return self._parse_clover_pdf(filename, text)
+            if self._is_stripe_balance_report_pdf(text):
+                return self._parse_stripe_balance_report_pdf(filename, text)
+            if self._is_paypal_merchant_statement_pdf(text):
+                return self._parse_paypal_merchant_statement_pdf(filename, text)
             provider_hint = self._detect_provider_hint(f"{filename} {text[:8000]}")
             if provider_hint:
                 prof = get_provider_profile(provider_hint)
@@ -244,6 +286,219 @@ class CardTerminalIngestionService:
     def _extract_pdf_text(self, raw: bytes) -> str:
         with pdfplumber.open(io.BytesIO(raw)) as pdf:
             return "\n".join((page.extract_text() or "") for page in pdf.pages)
+
+    _stripe_balance_report_markers = re.compile(
+        r"balance\s+summary|balance\s+report|about\s+this\s+report",
+        re.IGNORECASE,
+    )
+
+    def _is_stripe_balance_report_pdf(self, text: str) -> bool:
+        t = (text or "").lower()
+        if "stripe" not in t:
+            return False
+        return bool(self._stripe_balance_report_markers.search(text or ""))
+
+    def _parse_stripe_balance_report_pdf(self, filename: str, text: str) -> ParseResult:
+        """Stripe Balance / balance-summary PDF (UK-style date range + Charges block)."""
+        warnings: List[str] = []
+        period_start: Optional[date] = None
+        period_end: Optional[date] = None
+
+        # Date range 1 Apr 2026 → 30 Apr 2026 (arrow may be Unicode)
+        dr = re.search(
+            r"Date\s+range\s+(\d{1,2}\s+\w+\s+\d{4})\s*(?:→|->|—|--|\u2192)\s*(\d{1,2}\s+\w+\s+\d{4})",
+            text,
+            re.IGNORECASE,
+        )
+        if dr:
+            s = pd.to_datetime(dr.group(1), dayfirst=True, errors="coerce")
+            e = pd.to_datetime(dr.group(2), dayfirst=True, errors="coerce")
+            period_start = s.date() if pd.notna(s) else None
+            period_end = e.date() if pd.notna(e) else None
+        if period_end is None:
+            warnings.append("Could not parse Stripe statement date range.")
+
+        acct = None
+        m_acct = re.search(r"\(acct_([A-Za-z0-9]+)\)", text)
+        if m_acct:
+            acct = f"acct_{m_acct.group(1)}"
+
+        gross = 0.0
+        txn_count = 0
+        # Allow a non-digit glyph (e.g. £ garbled in extraction) between ) and the amount.
+        m_ch = re.search(r"Charges\s*\((\d+)\)\s*[^\d-]*([\d,]+\.?\d*)", text, re.IGNORECASE)
+        if m_ch:
+            txn_count = int(m_ch.group(1))
+            gross = self._to_float(m_ch.group(2))
+
+        refunds = 0.0
+        m_rf = re.search(r"Refunds\s*\((\d+)\)\s*[^\d-]*([\d,]+\.?\d*)", text, re.IGNORECASE)
+        if m_rf:
+            refunds = abs(self._to_float(m_rf.group(2)))
+
+        fees = 0.0
+        # Prefer the summary "Activity" block (fees on balance activity), not payout-side lines like
+        # "Payout fees" / "Fees £12.06" under the Payouts table.
+        act_block = re.search(r"(?ms)^Activity\s*\n^(.*?)^\s*Payouts\s*$", text)
+        if act_block:
+            ab = act_block.group(1)
+            m_fee = re.search(r"(?mi)^Fees\s+-\s*(?:£|\u00a3)?\s*([\d,]+\.\d{2})", ab)
+            if not m_fee:
+                m_fee = re.search(r"(?mi)^Fees\s+-\D*?([\d,]+\.\d{2})", ab)
+            if m_fee:
+                fees = abs(self._to_float(m_fee.group(1)))
+        if fees == 0.0:
+            # Detailed breakdown: primary "Fees" plus "Additional Stripe fees" (same period).
+            det = re.search(
+                r"(?ms)^Balance\s+change\s+from\s+activity\s*$(.*?)(?=^About\s+this\s+report\s*$)",
+                text,
+                re.IGNORECASE,
+            )
+            if det:
+                sub = det.group(1)
+                fee_parts: List[float] = []
+                for m in re.finditer(
+                    r"(?mi)^Fees\s+-\s*(?:£|\u00a3)?\s*([\d,]+\.\d{2})",
+                    sub,
+                ):
+                    fee_parts.append(abs(self._to_float(m.group(1))))
+                for m in re.finditer(
+                    r"(?mi)^Additional\s+Stripe\s+fees\s*\(\d+\)\s+-\s*(?:£|\u00a3)?\s*([\d,]+\.\d{2})",
+                    sub,
+                ):
+                    fee_parts.append(abs(self._to_float(m.group(1))))
+                if fee_parts:
+                    fees = float(sum(fee_parts))
+
+        chargebacks = 0.0
+        currency = "GBP" if "£" in text else (self._extract_first(self._currency_re, text) or "GBP")
+
+        has_charges_line = m_ch is not None
+        confidence = (
+            0.92
+            if period_end is not None and (gross > 0 or fees > 0 or (has_charges_line and txn_count == 0))
+            else 0.65
+        )
+        if not has_charges_line:
+            warnings.append("Stripe balance report: could not find Charges(N) line.")
+        warnings.append("Parsed as Stripe Balance Report PDF (native).")
+
+        return ParseResult(
+            filename=filename,
+            provider="Stripe",
+            parser="stripe_balance_report_pdf_v1",
+            merchant_id=acct,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency=currency,
+            gross_card_sales=float(gross),
+            refunds_amount=float(refunds),
+            chargebacks_amount=float(chargebacks),
+            fees_total=float(fees),
+            transaction_count=int(txn_count),
+            confidence=confidence,
+            warnings=warnings,
+            raw_summary={"text_length": len(text)},
+            extraction_diagnostics={
+                "profile": "Stripe",
+                "fields": {
+                    "gross_card_sales": has_charges_line,
+                    "fees_total": fees > 0,
+                    "period_end": period_end is not None,
+                    "merchant_id": acct is not None,
+                },
+                "fallback_used": not has_charges_line and gross <= 0 and fees <= 0,
+            },
+        )
+
+    def _is_paypal_merchant_statement_pdf(self, text: str) -> bool:
+        t = text or ""
+        if "paypal" not in t.lower() and "pay pal" not in t.lower():
+            return False
+        return bool(re.search(r"Merchant\s+Account\s+ID", t, re.IGNORECASE)) and bool(
+            re.search(r"Activity\s+Summary", t, re.IGNORECASE)
+        )
+
+    def _parse_paypal_merchant_statement_pdf(self, filename: str, text: str) -> ParseResult:
+        """PayPal merchant monthly statement PDF (Activity Summary + Payments received)."""
+        warnings: List[str] = []
+        period_start: Optional[date] = None
+        period_end: Optional[date] = None
+
+        m_per = re.search(
+            r"Activity\s+Summary\s*\((\d{2}/\d{2}/\d{4})\s*-\s*(\d{2}/\d{2}/\d{4})\)",
+            text,
+            re.IGNORECASE,
+        )
+        if m_per:
+            s = pd.to_datetime(m_per.group(1), dayfirst=True, errors="coerce")
+            e = pd.to_datetime(m_per.group(2), dayfirst=True, errors="coerce")
+            period_start = s.date() if pd.notna(s) else None
+            period_end = e.date() if pd.notna(e) else None
+        if period_end is None:
+            m2 = re.search(r"(\d{2}/\d{2}/\d{4})\s*-\s*(\d{2}/\d{2}/\d{4})", text)
+            if m2:
+                s = pd.to_datetime(m2.group(1), dayfirst=True, errors="coerce")
+                e = pd.to_datetime(m2.group(2), dayfirst=True, errors="coerce")
+                period_start = s.date() if pd.notna(s) else period_start
+                period_end = e.date() if pd.notna(e) else period_end
+
+        merchant_id = None
+        m_mid = re.search(r"Merchant\s+Account\s+ID:\s*([A-Z0-9]+)", text, re.IGNORECASE)
+        if m_mid:
+            merchant_id = m_mid.group(1).strip()
+
+        gross = 0.0
+        m_pay = re.search(r"Payments\s+received\s+([\d,]+\.?\d*)", text, re.IGNORECASE)
+        if m_pay:
+            gross = abs(self._to_float(m_pay.group(1)))
+
+        fees = 0.0
+        m_fee = re.search(r"^Fees\s+-?([\d,]+\.?\d*)", text, re.IGNORECASE | re.MULTILINE)
+        if m_fee:
+            fees = abs(self._to_float(m_fee.group(1)))
+
+        refunds = 0.0
+        m_ref = re.search(r"Payments\s+sent\s+-?([\d,]+\.?\d*)", text, re.IGNORECASE)
+        if m_ref:
+            refunds = abs(self._to_float(m_ref.group(1)))
+
+        chargebacks = 0.0
+        txn_count = len(re.findall(r"\bID:\s+[A-Z0-9]{10,20}\b", text))
+
+        currency = "GBP"
+        confidence = 0.9 if gross > 0 and period_end is not None else 0.65
+        if gross <= 0:
+            warnings.append("PayPal statement: could not find Payments received amount.")
+        warnings.append("Parsed as PayPal Merchant Statement PDF (native).")
+
+        return ParseResult(
+            filename=filename,
+            provider="PayPal",
+            parser="paypal_merchant_statement_pdf_v1",
+            merchant_id=merchant_id,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency=currency,
+            gross_card_sales=float(gross),
+            refunds_amount=float(refunds),
+            chargebacks_amount=float(chargebacks),
+            fees_total=float(fees),
+            transaction_count=int(txn_count),
+            confidence=confidence,
+            warnings=warnings,
+            raw_summary={"text_length": len(text)},
+            extraction_diagnostics={
+                "profile": "PayPal",
+                "fields": {
+                    "gross_card_sales": gross > 0,
+                    "fees_total": fees > 0,
+                    "period_end": period_end is not None,
+                    "merchant_id": merchant_id is not None,
+                },
+                "fallback_used": gross <= 0,
+            },
+        )
 
     def _parse_clover_pdf(self, filename: str, text: str) -> ParseResult:
         merchant_id = self._extract_first(self._merchant_re, text)

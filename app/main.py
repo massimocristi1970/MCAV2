@@ -4017,13 +4017,13 @@ def main():
             type=["json"],
             help="Plaid-style export or list of transactions with date, amount, and name.",
         )
-        st.markdown("##### Card terminal statements (optional)")
+        st.markdown("##### Card terminal statements")
         st.caption(
-            "PDF, CSV, or Excel from your card provider—used to reconcile card sales against bank inflows."
+            "PDF, CSV, Excel, or a ZIP of those files from your card provider—used to reconcile card sales against bank inflows."
         )
         card_terminal_files = st.file_uploader(
             "Upload card terminal statements",
-            type=["pdf", "csv", "xls", "xlsx"],
+            type=["pdf", "csv", "xls", "xlsx", "zip"],
             accept_multiple_files=True,
             key="card_terminal_statements_uploader",
             help="You can upload mixed providers/formats in one run.",

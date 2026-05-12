@@ -1,0 +1,47 @@
+bcpevents.org (acct_1Jpg8XLqdmvSXifx)
+71 MarlowRoad
+London, SE20 7YG, GB
+Balance summary
+Schedule… Print
+Date range 1 Apr 2026 → 30 Apr 2026 Timezone UTC
+Balance summary
+Description Amount
+Starting balance 1 Apr UTC £0.00
+Activity
+Account activity before fees £1,391.93
+Fees -£87.78
+Net balance change from activity £1,304.15
+Payouts
+Payouts to bank -£1,064.81
+Payout fees -£12.06
+You can now audit activity
+Total payouts -£1,076.87
+Follow the audit trail for any activity by
+clicking on the amounts.
+Ending balance 30 Apr UTC £227.28
+Balance change from activity
+Description Amount
+Charges(48) £1,855.94
+Fees -£82.80
+Refunds(0) £0.00
+Advances(16) £1,076.87
+Advance funding(22) -£1,076.87
+Description Amount
+Additional Stripe fees(23) -£4.98
+Financing Paydown(48) -£464.01
+Net balance change from activity £1,304.15
+Payouts
+Description Amount
+Payouts(16) £1,064.81
+Fees £12.06
+Total paid out £1,076.87
+About this report
+The balance report shows how your Stripe balance changed over a period of time based on the balance change date. The
+starting balance is the sum of your available and pending balances. Changes to your balance come from payments, refunds,
+transfers, and payouts to your bank account.
+View docs ↗
+Related reports
+Fees
+View all Stripe and external fees
+Tax invoices
+Download your Stripe tax invoices
