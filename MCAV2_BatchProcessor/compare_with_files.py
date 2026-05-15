@@ -1,117 +1,115 @@
-import pandas as pd
-import os
-from fuzzywuzzy import fuzz
+import argparse
 import re
+from pathlib import Path
+
+import pandas as pd
+from rapidfuzz import fuzz
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_CSV_PATH = REPO_ROOT / "data" / "training_dataset.csv"
+DEFAULT_JSON_FOLDER = REPO_ROOT / "data" / "JsonExport"
+
 
 def normalize_name(name):
-    """Normalize names for better matching"""
-    if pd.isna(name) or name == "":
+    if pd.isna(name) or name is None:
         return ""
-    
-    name = str(name).strip().lower()
-    
-    # Remove file extensions
-    name = re.sub(r'\.(json|txt|pdf)$', '', name)
-    
-    # Standardize common business terms
+
+    normalized = str(name).strip().lower()
+    normalized = re.sub(r"\.(json|txt|pdf|csv|xlsx?)$", "", normalized)
+    normalized = re.sub(r"\s+transaction\s+reports?\b.*$", "", normalized)
+    normalized = re.sub(r"[^\w\s&]", " ", normalized)
+
     replacements = {
-        ' limited': ' ltd',
-        ' incorporated': ' inc',
-        ' corporation': ' corp',
-        ' company': ' co',
-        ' ltd.': ' ltd',
-        ' inc.': ' inc',
-        ' corp.': ' corp'
+        "limited": "ltd",
+        "incorporated": "inc",
+        "corporation": "corp",
+        "company": "co",
     }
-    
     for old, new in replacements.items():
-        name = name.replace(old, new)
-    
-    # Remove extra whitespace
-    name = re.sub(r'\s+', ' ', name).strip()
-    
-    return name
+        normalized = re.sub(rf"\b{old}\b", new, normalized)
 
-# File paths
-csv_path = r"D:\Dev\Github\MCAV2\data\training_dataset.csv"
-json_folder = r"D:\Dev\Github\MCAV2\data\JsonExport"
+    return re.sub(r"\s+", " ", normalized).strip()
 
-print("Loading data from CSV...")
-df = pd.read_csv(csv_path)
 
-# UPDATED: Using 'application_id' as the identifier to match against filenames
-# If you actually wanted to match by a different column, change 'application_id' below
-target_column = 'application_id' 
+def get_identifier_column(df, requested_column=None):
+    if requested_column:
+        if requested_column not in df.columns:
+            raise ValueError(f"Column '{requested_column}' not found. Available columns: {list(df.columns)}")
+        return requested_column
 
-if target_column not in df.columns:
-    print(f"Error: Column '{target_column}' not found in CSV.")
-    print(f"Available columns: {list(df.columns)}")
-    exit()
+    for candidate in ("application_id", "company_name", "Company Name", "company", "business_name", "Business Name"):
+        if candidate in df.columns:
+            return candidate
 
-companies = df[target_column].dropna().astype(str).tolist()
-print(f"Found {len(companies)} entries in CSV under '{target_column}'")
+    raise ValueError("No company identifier column found. Add application_id/company_name or pass --column.")
 
-print(f"\nLooking for JSON files in: {json_folder}")
-if os.path.exists(json_folder):
-    json_files = [f for f in os.listdir(json_folder) if f.endswith('.json')]
-    print(f"Found {len(json_files)} JSON files")
-else:
-    print("JSON folder not found! Please check the path.")
-    exit()
 
-# Normalize names for comparison
-normalized_companies = [normalize_name(comp) for comp in companies]
-normalized_files = [normalize_name(file) for file in json_files]
+def main():
+    parser = argparse.ArgumentParser(description="Write a CSV report comparing CSV companies with JSON files.")
+    parser.add_argument("--csv", default=DEFAULT_CSV_PATH, type=Path, help="Path to the parameter/training CSV.")
+    parser.add_argument("--json-folder", default=DEFAULT_JSON_FOLDER, type=Path, help="Folder containing JSON exports.")
+    parser.add_argument("--column", help="CSV identifier column. Defaults to application_id/company_name when present.")
+    parser.add_argument("--threshold", type=float, default=90, help="Minimum match score.")
+    parser.add_argument("--output", default=REPO_ROOT / "matching_results.csv", type=Path)
+    args = parser.parse_args()
 
-print(f"\nMatching '{target_column}' with files (threshold: 90%)...")
-missing_companies = []
-found_matches = []
+    if not args.csv.exists():
+        raise FileNotFoundError(f"CSV not found: {args.csv}")
+    if not args.json_folder.exists():
+        raise FileNotFoundError(f"JSON folder not found: {args.json_folder}")
 
-for i, company in enumerate(companies):
-    norm_company = normalized_companies[i]
-    
-    best_match = None
-    best_score = 0
-    best_file = None
-    
-    for j, file in enumerate(json_files):
-        norm_file = normalized_files[j]
-        
-        # Calculate similarity scores
-        score1 = fuzz.ratio(norm_company, norm_file)
-        score2 = fuzz.partial_ratio(norm_company, norm_file)
-        score3 = fuzz.token_set_ratio(norm_company, norm_file)
-        
-        score = max(score1, score2, score3)
-        
-        if score > best_score:
-            best_score = score
-            best_match = norm_file
-            best_file = file
-    
-    if best_score >= 90:
-        found_matches.append({
-            'identifier': company,
-            'file': best_file,
-            'score': best_score
-        })
-        print(f"✓ MATCH: {company} → {best_file} ({best_score}%)")
-    else:
-        missing_companies.append(company)
-        # Showing the best attempt even if it failed the threshold
-        print(f"✗ MISSING: {company} (Best guess: {best_file} - {best_score}%)")
+    df = pd.read_csv(args.csv)
+    identifier_column = get_identifier_column(df, args.column)
+    companies = df[identifier_column].dropna().astype(str).tolist()
+    json_files = sorted(path.name for path in args.json_folder.glob("*.json"))
 
-print(f"\n" + "="*60)
-print("SUMMARY:")
-print("="*60)
-print(f"Total entries: {len(companies)}")
-print(f"Matches found: {len(found_matches)}")
-print(f"Missing files: {len(missing_companies)}")
+    if not json_files:
+        raise ValueError(f"No JSON files found in {args.json_folder}")
 
-if len(companies) > 0:
-    print(f"Match rate: {len(found_matches)/len(companies)*100:.1f}%")
+    normalized_files = [(file_name, normalize_name(file_name)) for file_name in json_files]
+    rows = []
 
-# Save results
-results_df = pd.DataFrame(found_matches + [{'identifier': comp, 'file': 'MISSING', 'score': 0} for comp in missing_companies])
-results_df.to_csv('matching_results.csv', index=False)
-print(f"\nDetailed results saved to 'matching_results.csv'")
+    print(f"Matching '{identifier_column}' with JSON files (threshold: {args.threshold:.1f}%)...")
+
+    for company in companies:
+        norm_company = normalize_name(company)
+        best_file = None
+        best_score = 0
+
+        for file_name, norm_file in normalized_files:
+            score = max(
+                fuzz.ratio(norm_company, norm_file),
+                fuzz.partial_ratio(norm_company, norm_file),
+                fuzz.token_set_ratio(norm_company, norm_file),
+            )
+            if score > best_score:
+                best_score = score
+                best_file = file_name
+
+        matched = best_score >= args.threshold
+        rows.append(
+            {
+                "identifier": company,
+                "file": best_file if matched else "MISSING",
+                "best_guess": best_file,
+                "score": round(best_score, 1),
+                "matched": matched,
+            }
+        )
+        status = "MATCH" if matched else "MISSING"
+        print(f"{status}: {company} -> {best_file} ({best_score:.1f}%)")
+
+    results_df = pd.DataFrame(rows)
+    results_df.to_csv(args.output, index=False)
+
+    print("\nSUMMARY:")
+    print(f"Total entries: {len(companies)}")
+    print(f"Matches found: {int(results_df['matched'].sum())}")
+    print(f"Missing files: {int((~results_df['matched']).sum())}")
+    print(f"Match rate: {results_df['matched'].mean() * 100:.1f}%")
+    print(f"\nDetailed results saved to {args.output}")
+
+
+if __name__ == "__main__":
+    main()

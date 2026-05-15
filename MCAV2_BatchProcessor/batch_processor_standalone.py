@@ -1,6 +1,6 @@
 """
 MCA v2 Batch Processing Application - COMPLETE FIXED VERSION
-Run this as: streamlit run batch_processor_complete_fixed.py --server.port 8502
+Run this as: streamlit run batch_processor_standalone.py --server.port 8502
 
 MAJOR FIXES:
 1. FIXED fuzzy matching logic and company name extraction
@@ -29,6 +29,10 @@ import joblib
 import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+BATCH_PROCESSOR_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BATCH_PROCESSOR_DIR / "model.pkl"
+SCALER_PATH = BATCH_PROCESSOR_DIR / "scaler.pkl"
+
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -40,20 +44,91 @@ except ImportError as e:
     ENSEMBLE_SCORER_AVAILABLE = False
     print(f"Ensemble scorer not available: {e}")
 
+try:
+    from app.plotly_theme import show_mca_plotly
+    from app.ui_theme import (
+        apply_ui_theme,
+        render_intake_panel_intro,
+        render_main_hero,
+        sidebar_section,
+        sidebar_subsection,
+    )
+except ImportError as e:
+    show_mca_plotly = None
+    apply_ui_theme = None
+    render_intake_panel_intro = None
+    render_main_hero = None
+    sidebar_section = None
+    sidebar_subsection = None
+    print(f"Shared UI theme not available: {e}")
+
 # Try to import rapidfuzz, fallback if not available
 try:
     from rapidfuzz import fuzz, process
     RAPIDFUZZ_AVAILABLE = True
-    print("✅ RapidFuzz imported successfully")
+    print("RapidFuzz imported successfully")
 except ImportError:
     RAPIDFUZZ_AVAILABLE = False
-    print("⚠️ RapidFuzz not available, using fallback matching")
+    print("RapidFuzz not available, using fallback matching")
 
 st.set_page_config(
-    page_title="MCA v2 Batch Processor (COMPLETE FIXED)", 
+    page_title="MCA v2 Batch Processor",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    menu_items={
+        "Get Help": None,
+        "Report a bug": None,
+        "About": None,
+    },
 )
+
+if apply_ui_theme:
+    apply_ui_theme()
+
+
+def render_batch_workflow_rail() -> None:
+    """Compact batch workflow indicator."""
+    st.markdown(
+        """
+<div class="mca-workflow" aria-label="Batch workflow">
+  <div class="mca-workflow-step"><span>1</span><span>Upload parameter CSV</span></div>
+  <div class="mca-workflow-step"><span>2</span><span>Upload JSON batch</span></div>
+  <div class="mca-workflow-step"><span>3</span><span>Process and export results</span></div>
+</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_batch_empty_state() -> None:
+    """Initial empty state for the batch processor."""
+    st.markdown(
+        """
+<div class="mca-empty">
+  <p class="mca-empty-title">Ready for a batch run</p>
+  <p class="mca-empty-body">
+    Set fallback parameters in the sidebar, upload a CSV mapping if you have one,
+    then add JSON files or a ZIP archive to begin.
+  </p>
+</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def section_title(title: str, caption: str | None = None) -> None:
+    """Consistent compact section heading."""
+    st.markdown(f"### {title}")
+    if caption:
+        st.caption(caption)
+
+
+def plot_mca_chart(fig, key: str | None = None) -> None:
+    """Display Plotly charts using the main app theme when available."""
+    if show_mca_plotly:
+        show_mca_plotly(fig, key=key)
+    else:
+        st.plotly_chart(fig, use_container_width=True)
 
 # COMPLETE INDUSTRY THRESHOLDS
 INDUSTRY_THRESHOLDS = dict(sorted({
@@ -720,7 +795,7 @@ def calculate_financial_metrics(data, company_age_months):
                 bounced_payments += data['name_y'].str.contains(keyword, case=False, na=False).sum()
 
         # DEBUGGING: Print key values
-        print(f"\n🔍 DEBUG - Financial Metrics:")
+        print(f"\nDEBUG - Financial Metrics:")
         print(f"  Total Revenue: £{total_revenue:,.2f}" if total_revenue is not None else "  Total Revenue: N/A")
         print(f"  Total Expenses: £{total_expenses:,.2f}" if total_expenses is not None else "  Total Expenses: N/A")
         print(f"  Net Income: £{net_income:,.2f}" if net_income is not None else "  Net Income: N/A")
@@ -800,10 +875,11 @@ def calculate_weighted_scores(metrics, params, industry_thresholds):
 def load_models():
     """Load ML models"""
     try:
-        model = joblib.load('model.pkl')
-        scaler = joblib.load('scaler.pkl')
+        model = joblib.load(MODEL_PATH)
+        scaler = joblib.load(SCALER_PATH)
         return model, scaler
-    except:
+    except Exception as e:
+        print(f"ML model artifacts unavailable: {e}")
         return None, None
 
 # TIGHTENED SUBPRIME SCORING CLASS - More Realistic Risk Assessment
@@ -822,7 +898,7 @@ class TightenedSubprimeScoring:
             'Operating Margin': 6,  # Profitability indicator
             'Average Negative Balance Days per Month': 6,  # Monitor cash gaps
             'Company Age (Months)': 5,  # Business maturity
-            'Net Income': 0,  # ✅ ADD THIS (with 0 weight if you don't want to use it)
+            'Net Income': 0,
         }
 
         # Industry multipliers - micro enterprise friendly
@@ -904,7 +980,7 @@ class TightenedSubprimeScoring:
 
         # DEBT SERVICE COVERAGE RATIO (25 points) - slightly tightened
         dscr = metrics.get('Debt Service Coverage Ratio', 0)
-        w = self.subprime_weights['Debt Service Coverage Ratio']  # ✅ ADDED
+        w = self.subprime_weights['Debt Service Coverage Ratio']
         if dscr >= 1.9:
             score += w
         elif dscr >= 1.6:
@@ -918,7 +994,7 @@ class TightenedSubprimeScoring:
 
         # REVENUE GROWTH RATE (10 points) - slightly tightened downside
         growth = metrics.get('Revenue Growth Rate', 0)
-        w = self.subprime_weights['Revenue Growth Rate']  # ✅ ADDED
+        w = self.subprime_weights['Revenue Growth Rate']
         if growth >= 0.12:
             score += w
         elif growth >= 0.06:
@@ -932,7 +1008,7 @@ class TightenedSubprimeScoring:
 
         # DIRECTORS SCORE (16 points) - slightly tightened
         d = params.get('directors_score', 50)
-        w = self.subprime_weights['Directors Score']  # ✅ ADDED
+        w = self.subprime_weights['Directors Score']
         if d >= 78:
             score += w
         elif d >= 60:
@@ -946,7 +1022,7 @@ class TightenedSubprimeScoring:
 
         # AVERAGE MONTH-END BALANCE (18 points) - slightly tightened
         bal = metrics.get('Average Month-End Balance', 0)
-        w = self.subprime_weights['Average Month-End Balance']  # ✅ ADDED
+        w = self.subprime_weights['Average Month-End Balance']
         if bal >= 2500:
             score += w
         elif bal >= 1500:
@@ -960,7 +1036,7 @@ class TightenedSubprimeScoring:
 
         # CASH FLOW VOLATILITY (14 points) - slightly tightened
         vol = metrics.get('Cash Flow Volatility', 1.0)
-        w = self.subprime_weights['Cash Flow Volatility']  # ✅ ADDED
+        w = self.subprime_weights['Cash Flow Volatility']
         if vol <= 0.30:
             score += w
         elif vol <= 0.45:
@@ -974,7 +1050,7 @@ class TightenedSubprimeScoring:
 
         # OPERATING MARGIN (6 points) - slightly tightened
         m = metrics.get('Operating Margin', 0)
-        w = self.subprime_weights['Operating Margin']  # ✅ ADDED
+        w = self.subprime_weights['Operating Margin']
         if m >= 0.06:
             score += w
         elif m >= 0.04:
@@ -988,7 +1064,7 @@ class TightenedSubprimeScoring:
 
         # NET INCOME (4 points) - slightly tightened
         ni = metrics.get('Net Income', 0)
-        w = self.subprime_weights['Net Income']  # ✅ ADDED - but wait, this weight doesn't exist!
+        w = self.subprime_weights['Net Income']
         if ni >= 3000:
             score += w
         elif ni >= 500:
@@ -1002,7 +1078,7 @@ class TightenedSubprimeScoring:
 
         # NEGATIVE BALANCE DAYS (5 points) - slightly tightened
         nd = metrics.get('Average Negative Balance Days per Month', 0)
-        w = self.subprime_weights['Average Negative Balance Days per Month']  # ✅ ADDED
+        w = self.subprime_weights['Average Negative Balance Days per Month']
         if nd <= 1:
             score += w
         elif nd <= 4:
@@ -1016,7 +1092,7 @@ class TightenedSubprimeScoring:
 
         # COMPANY AGE (2 points) - Minimal weight
         age_months = params.get('company_age_months', 0)
-        # ✅ Already correct - uses self.subprime_weights directly
+        # Uses self.subprime_weights directly.
         if age_months >= 18:
             score += self.subprime_weights['Company Age (Months)']
         elif age_months >= 12:
@@ -1179,12 +1255,12 @@ class TightenedSubprimeScoring:
             f"Final Score: {final_score:.1f}/100",
             "",
             "Key Metrics (Micro Enterprise Thresholds):",
-            f"• DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f} (Need 1.2+ for good score)",
-            f"• Revenue Growth: {metrics.get('Revenue Growth Rate', 0) * 100:.1f}% (Need 5%+ for good score)",
-            f"• Directors Score: {params.get('directors_score', 0)}/100 (Need 55+ for good score)",
-            f"• Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.50 for good score)",
-            f"• Operating Margin: {metrics.get('Operating Margin', 0) * 100:.1f}% (Need 3%+ for good score)",
-            f"• Negative Balance Days:  {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need <5 for good score)"
+            f"- DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f} (Need 1.2+ for good score)",
+            f"- Revenue Growth: {metrics.get('Revenue Growth Rate', 0) * 100:.1f}% (Need 5%+ for good score)",
+            f"- Directors Score: {params.get('directors_score', 0)}/100 (Need 55+ for good score)",
+            f"- Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.50 for good score)",
+            f"- Operating Margin: {metrics.get('Operating Margin', 0) * 100:.1f}% (Need 3%+ for good score)",
+            f"- Negative Balance Days:  {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need <5 for good score)"
         ]
         return breakdown
 
@@ -1977,20 +2053,57 @@ class BatchProcessor:
         self.error_count = 0
         self.error_log = []
         self.debug_log = []
+
+    def normalize_industry(self, industry):
+        """Return an industry label that exists in INDUSTRY_THRESHOLDS."""
+        if pd.isna(industry) or industry is None:
+            return "Other"
+
+        industry_text = str(industry).strip()
+        if not industry_text:
+            return "Other"
+
+        if industry_text in INDUSTRY_THRESHOLDS:
+            return industry_text
+
+        industry_lookup = {key.lower(): key for key in INDUSTRY_THRESHOLDS}
+        exact_case_match = industry_lookup.get(industry_text.lower())
+        if exact_case_match:
+            return exact_case_match
+
+        if RAPIDFUZZ_AVAILABLE:
+            match = process.extractOne(
+                industry_text,
+                list(INDUSTRY_THRESHOLDS.keys()),
+                scorer=fuzz.token_sort_ratio,
+                score_cutoff=85,
+            )
+            if match:
+                return match[0]
+
+        return industry_text
     
     def clean_company_name(self, name):
         """Simple cleaning that preserves matching"""
-        if not name:
+        if pd.isna(name) or not name:
             return ""
     
         # Convert to string and lowercase
         clean_name = str(name).lower().strip()
     
         # Remove ONLY obvious filename junk
+        clean_name = re.sub(r'\.(json|csv|xlsx?|txt)$', '', clean_name, flags=re.IGNORECASE)
+        clean_name = re.sub(r'[_\s-]*\d+,\d+$', '', clean_name)
         clean_name = re.sub(r'_\d+,\d+\.json$', '', clean_name)
         clean_name = re.sub(r'_\d+,\d+$', '', clean_name) 
-        clean_name = re.sub(r'\.json$', '', clean_name)
-        clean_name = re.sub(r'\s+transaction\s+report$', '', clean_name)
+        clean_name = re.sub(r'\s+transaction\s+reports?\b.*$', '', clean_name)
+
+        # Normalize punctuation and common legal suffixes so CSV and filenames match.
+        clean_name = re.sub(r'[^\w\s&]', ' ', clean_name)
+        clean_name = re.sub(r'\blimited\b', 'ltd', clean_name)
+        clean_name = re.sub(r'\bincorporated\b', 'inc', clean_name)
+        clean_name = re.sub(r'\bcorporation\b', 'corp', clean_name)
+        clean_name = re.sub(r'\bcompany\b', 'co', clean_name)
     
         # Normalize whitespace
         clean_name = re.sub(r'\s+', ' ', clean_name).strip()
@@ -2134,7 +2247,8 @@ class BatchProcessor:
         clean_csv_companies = {}
         for company in csv_companies:
             clean_company = self.clean_company_name(company)
-            clean_csv_companies[clean_company] = company
+            if clean_company and clean_company not in clean_csv_companies:
+                clean_csv_companies[clean_company] = company
         
         debug_info['csv_companies_count'] = len(csv_companies)
         debug_info['first_few_csv'] = list(csv_companies)[:3]
@@ -2148,7 +2262,20 @@ class BatchProcessor:
             debug_info['fuzzy_match_debug'] = "Using RapidFuzz for matching"
             print(f"DEBUG FUZZY: Trying to match '{clean_search}' against {len(clean_csv_companies)} companies")
             
-            # Try multiple strategies
+            # Try exact/contains matches first to avoid fuzzy false positives.
+            if clean_search in clean_csv_companies:
+                original_company = clean_csv_companies[clean_search]
+                best_match = (original_company, 100)
+                best_score = 100
+                best_strategy = "exact_clean"
+            else:
+                for clean_company, original_company in clean_csv_companies.items():
+                    if clean_search and clean_company and (clean_search in clean_company or clean_company in clean_search):
+                        best_match = (original_company, 95)
+                        best_score = 95
+                        best_strategy = "contains_clean"
+                        break
+
             strategies = [
                 ('token_sort_ratio', fuzz.token_sort_ratio, 60),
                 ('token_set_ratio', fuzz.token_set_ratio, 55),
@@ -2179,8 +2306,6 @@ class BatchProcessor:
                         
                 except Exception as e:
                     debug_info[f'{strategy_name}_error'] = str(e)
-                    
-                print(f"DEBUG: No match found for '{clean_search}' against first CSV company '{list(clean_csv_companies.keys())[0] if clean_csv_companies else 'None'}'")
         else:
             # Fallback exact matching
             debug_info['fuzzy_match_debug'] = "Using fallback exact matching"
@@ -2190,6 +2315,13 @@ class BatchProcessor:
                 best_match = (original_company, 100)
                 best_score = 100
                 best_strategy = "exact_fallback"
+            else:
+                for clean_company, original_company in clean_csv_companies.items():
+                    if clean_search and clean_company and (clean_search in clean_company or clean_company in clean_search):
+                        best_match = (original_company, 95)
+                        best_score = 95
+                        best_strategy = "contains_fallback"
+                        break
         
         if best_match:
             debug_info['best_match_company'] = best_match[0]
@@ -2246,7 +2378,7 @@ class BatchProcessor:
 
             debug_info['transaction_count'] = len(transactions)
             debug_info['debug_step'] = f'Found {len(transactions)} transactions'
-            print(f"✅ Loaded {len(transactions)} transactions from {filename}")
+            print(f"Loaded {len(transactions)} transactions from {filename}")
 
             # Convert to DataFrame
             df = pd.json_normalize(transactions)
@@ -2432,6 +2564,8 @@ class BatchProcessor:
                     params['requested_loan'] = float(params['requested_loan'])
                 if 'company_age_months' in params:
                     params['company_age_months'] = int(float(params['company_age_months']))
+                if 'industry' in params:
+                    params['industry'] = self.normalize_industry(params['industry'])
 
                 # Convert boolean risk factors
                 risk_factors = ['business_ccj', 'director_ccj',
@@ -2579,33 +2713,33 @@ class BatchProcessor:
         
         total_files = len(files_data)
         
-        print(f"🚀 Starting batch processing of {total_files} files...")
-        print(f"📊 Parameter mapping available: {bool(parameter_mapping)}")
+        print(f"Starting batch processing of {total_files} files...")
+        print(f"Parameter mapping available: {bool(parameter_mapping)}")
         if parameter_mapping:
-            print(f"📋 CSV companies available: {len(parameter_mapping)}")
-            print(f"📝 First few CSV companies: {list(parameter_mapping.keys())[:3]}")
+            print(f"CSV companies available: {len(parameter_mapping)}")
+            print(f"First few CSV companies: {list(parameter_mapping.keys())[:3]}")
         
         for i, (filename, json_data) in enumerate(files_data):
             if progress_bar:
                 progress_bar.progress((i + 1) / total_files, text=f"Processing {filename}...")
             
-            print(f"\n🔄 Processing {i+1}/{total_files}: {filename}")
+            print(f"\nProcessing {i+1}/{total_files}: {filename}")
             
             result = self.process_single_application(json_data, filename, default_params, parameter_mapping)
             
             if result:
                 self.results.append(result)
-                print(f"✅ SUCCESS: {filename}")
+                print(f"SUCCESS: {filename}")
                 if result.get('fuzzy_match_success'):
-                    print(f"   🎯 Matched to: {result.get('fuzzy_match_company')} ({result.get('fuzzy_match_score')}%)")
+                    print(f"   Matched to: {result.get('fuzzy_match_company')} ({result.get('fuzzy_match_score')}%)")
                 if result.get('using_defaults'):
-                    print(f"   ⚠️ Using defaults for: {result.get('using_defaults_for', [])}")
+                    print(f"   Using defaults for: {result.get('using_defaults_for', [])}")
             else:
-                print(f"❌ FAILED: {filename}")
+                print(f"FAILED: {filename}")
         
-        print(f"\n🏁 Batch processing complete!")
-        print(f"✅ Successful: {self.processed_count}")
-        print(f"❌ Failed: {self.error_count}")
+        print(f"\nBatch processing complete!")
+        print(f"Successful: {self.processed_count}")
+        print(f"Failed: {self.error_count}")
         
         return pd.DataFrame(self.results) if self.results else pd.DataFrame()
 
@@ -2615,19 +2749,22 @@ def load_json_files(uploaded_files):
     
     for uploaded_file in uploaded_files:
         try:
-            if uploaded_file.name.endswith('.zip'):
+            uploaded_name = uploaded_file.name
+            uploaded_name_lower = uploaded_name.lower()
+
+            if uploaded_name_lower.endswith('.zip'):
                 # Handle ZIP files
                 with zipfile.ZipFile(uploaded_file, 'r') as zip_ref:
                     for file_info in zip_ref.filelist:
-                        if file_info.filename.endswith('.json') and not file_info.is_dir():
+                        if file_info.filename.lower().endswith('.json') and not file_info.is_dir():
                             with zip_ref.open(file_info.filename) as json_file:
                                 json_data = json.load(json_file)
                                 files_data.append((file_info.filename, json_data))
             
-            elif uploaded_file.name.endswith('.json'):
+            elif uploaded_name_lower.endswith('.json'):
                 # Handle individual JSON files
                 json_data = json.load(uploaded_file)
-                files_data.append((uploaded_file.name, json_data))
+                files_data.append((uploaded_name, json_data))
                 
         except Exception as e:
             st.error(f"Error loading {uploaded_file.name}: {e}")
@@ -2642,7 +2779,7 @@ def create_results_dashboard(results_df):
         return
     
     # Summary Statistics
-    st.subheader("📊 Batch Processing Summary")
+    section_title("Batch Processing Summary")
     
     col1, col2, col3, col4, col5 = st.columns(5)
     
@@ -2669,7 +2806,7 @@ def create_results_dashboard(results_df):
         st.metric("Avg Revenue", f"£{avg_revenue:,.0f}")
     
     # Score Distribution Charts
-    st.subheader("📈 Score Distributions")
+    section_title("Score Distributions")
     
     col1, col2 = st.columns(2)
     
@@ -2681,9 +2818,9 @@ def create_results_dashboard(results_df):
                 title="Subprime Score Distribution",
                 labels={'subprime_score': 'Subprime Score', 'count': 'Number of Applications'}
             )
-            fig_subprime.add_vline(x=60, line_dash="dash", line_color="red", 
+            fig_subprime.add_vline(x=60, line_dash="dash", line_color="#fbbf24",
                                   annotation_text="Approval Threshold (60)")
-            st.plotly_chart(fig_subprime, use_container_width=True)
+            plot_mca_chart(fig_subprime, key="batch_subprime_distribution")
     
     with col2:
         if 'mca_rule_score' in results_df.columns:
@@ -2693,13 +2830,13 @@ def create_results_dashboard(results_df):
                 title="MCA Rule Score Distribution",
                 labels={'mca_rule_score': 'MCA Rule Score', 'count': 'Number of Applications'}
             )
-            fig_mca.add_vline(x=70, line_dash="dash", line_color="red", 
+            fig_mca.add_vline(x=70, line_dash="dash", line_color="#fbbf24",
                               annotation_text="Typical Threshold (70)")
-            st.plotly_chart(fig_mca, use_container_width=True)
+            plot_mca_chart(fig_mca, key="batch_mca_distribution")
     
     # Risk Tier Analysis
     if 'subprime_tier' in results_df.columns:
-        st.subheader("🎯 Risk Tier Analysis")
+        section_title("Risk Tier Analysis")
         
         tier_counts = results_df['subprime_tier'].value_counts()
         
@@ -2718,13 +2855,13 @@ def create_results_dashboard(results_df):
                     'Decline': '#6b7280'
                 }
             )
-            st.plotly_chart(fig_tier, use_container_width=True)
+            plot_mca_chart(fig_tier, key="batch_tier_distribution")
         
         with col2:
             st.write("**Risk Tier Breakdown:**")
             for tier, count in tier_counts.items():
                 percentage = (count / len(results_df)) * 100
-                st.write(f"• **{tier}**: {count} applications ({percentage:.1f}%)")
+                st.write(f"- **{tier}**: {count} applications ({percentage:.1f}%)")
             
             # Approval rate calculation
             approval_tiers = ['Tier 1', 'Tier 2', 'Tier 3']
@@ -2736,7 +2873,7 @@ def create_results_dashboard(results_df):
     # ==========================
     # BP-5: MI Summary (On-screen)
     # ==========================
-    st.subheader("📊 MI Summary")
+    section_title("MI Summary")
 
     c1, c2 = st.columns(2)
 
@@ -2766,7 +2903,7 @@ def create_results_dashboard(results_df):
 
     # Cross-tab: MCA Rule vs Final Decision
     if "mca_rule_decision" in results_df.columns and "final_decision" in results_df.columns:
-        st.write("**MCA Rule → Final Decision (cross-tab)**")
+        st.write("**MCA Rule to Final Decision cross-tab**")
         ctab = pd.crosstab(
             results_df["mca_rule_decision"].fillna("UNKNOWN"),
             results_df["final_decision"].fillna("UNKNOWN"),
@@ -2775,7 +2912,7 @@ def create_results_dashboard(results_df):
         st.dataframe(ctab, use_container_width=True)
 
     # Detailed Results Table
-    st.subheader("📋 Detailed Results")
+    section_title("Detailed Results")
 
     # Prefer a curated set, but ALWAYS fall back to something visible
     preferred_columns = [
@@ -2835,7 +2972,7 @@ def create_results_dashboard(results_df):
 
     csv_data = export_df.to_csv(index=False)
     st.download_button(
-        label="📥 Download Full Results (CSV)",
+        label="Download Full Results (CSV)",
         data=csv_data,
         file_name=f"mcav2_batch_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
         mime="text/csv",
@@ -2845,28 +2982,38 @@ def create_results_dashboard(results_df):
 
 def main():
     """Main application"""
-    
-    st.title("🏦 MCA v2 Batch Processing Dashboard")
-    st.markdown("Process multiple loan applications through the MCA v2 scoring system")
-    
 
-    # Debug info about rapidfuzz
-    if RAPIDFUZZ_AVAILABLE:
-        st.info("🔧 **RapidFuzz Available**: Using advanced fuzzy matching algorithms")
+    if render_main_hero:
+        render_main_hero(
+            "MCA v2 Batch Processor",
+            "Score multiple applications, audit CSV-to-JSON matching, and export scorecard-ready results.",
+            eyebrow="Batch scoring workspace",
+        )
     else:
-        st.warning("⚠️ **RapidFuzz Not Available**: Using fallback exact matching only")
-    
+        st.title("MCA v2 Batch Processor")
+        st.markdown("Score multiple applications, audit CSV-to-JSON matching, and export scorecard-ready results.")
+    render_batch_workflow_rail()
+
     # Sidebar for parameters
-    st.sidebar.header("📋 Parameter Sources")
+    if sidebar_section:
+        sidebar_section("Parameter Sources")
+    else:
+        st.sidebar.header("Parameter Sources")
     st.sidebar.markdown("""
     **Parameter Priority:**
     1. **Individual JSON files** (if they contain application data)
     2. **CSV mapping file** (upload a CSV with company-specific parameters)
     3. **Fallback defaults** (only used when data is missing)
     """)
+    st.sidebar.caption(
+        "Matching mode: RapidFuzz" if RAPIDFUZZ_AVAILABLE else "Matching mode: exact fallback"
+    )
     
     # Option to upload parameter mapping
-    st.sidebar.subheader("📊 Upload Parameter Mapping (CSV)")
+    if sidebar_subsection:
+        sidebar_subsection("Upload Parameter Mapping")
+    else:
+        st.sidebar.subheader("Upload Parameter Mapping")
     parameter_file = st.sidebar.file_uploader(
         "Upload CSV with application parameters",
         type=['csv'],
@@ -2878,77 +3025,64 @@ def main():
     if parameter_file:
         try:
             param_df = pd.read_csv(parameter_file)
-            st.sidebar.success(f"✅ Loaded parameters for {len(param_df)} companies")
+            st.sidebar.success(f"Loaded parameters for {len(param_df)} companies")
             
             # Show available columns
             available_cols = list(param_df.columns)
-            expected_cols = ['company_name', 'industry', 'directors_score', 'requested_loan', 'company_age_months',
+            expected_cols = ['industry', 'directors_score', 'requested_loan', 'company_age_months',
                              'business_ccj', 'director_ccj', 'poor_or_no_online_presence', 'uses_generic_email']
             
             missing_cols = [col for col in expected_cols if col not in available_cols]
             if missing_cols:
-                st.sidebar.warning(f"⚠️ Missing columns: {', '.join(missing_cols)}")
+                st.sidebar.warning(f"Missing columns: {', '.join(missing_cols)}")
             
-            # Convert to dictionary - use 'company_name' column as key
-            if 'company_name' in param_df.columns:
+            identifier_candidates = [
+                'company_name',
+                'application_id',
+                'Company Name',
+                'company',
+                'business_name',
+                'Business Name',
+            ]
+            identifier_column = next((col for col in identifier_candidates if col in param_df.columns), None)
+
+            # Convert to dictionary using the best available company/application identifier.
+            if identifier_column:
                 for _, row in param_df.iterrows():
-                    company_name = row['company_name']
-                    parameter_mapping[company_name] = row.to_dict()
+                    company_name = row[identifier_column]
+                    if pd.isna(company_name) or not str(company_name).strip():
+                        continue
+
+                    row_dict = row.to_dict()
+                    row_dict['company_name'] = str(company_name).strip()
+                    parameter_mapping[str(company_name).strip()] = row_dict
                 
-                st.sidebar.info(f"📋 **CSV Company Examples**: {list(parameter_mapping.keys())[:3]}")
+                st.sidebar.caption(f"Using `{identifier_column}` as the matching column")
+                st.sidebar.info(f"CSV company examples: {list(parameter_mapping.keys())[:3]}")
             else:
-                st.sidebar.error("❌ CSV must have 'company_name' column")
+                st.sidebar.error("CSV must have a company identifier column such as 'company_name' or 'application_id'")
             
             # Show preview
             with st.sidebar.expander("Preview Parameter CSV"):
                 st.dataframe(param_df.head(), use_container_width=True)
                 
             # Add diagnostic button here
-                st.sidebar.markdown("---")
-                st.sidebar.subheader("🔧 Diagnostic Tools")
-                if st.sidebar.button("🔍 Diagnose Specific Cases"):
-                    st.session_state['show_diagnostic'] = True
+            st.sidebar.markdown("---")
+            if sidebar_subsection:
+                sidebar_subsection("Diagnostic Tools")
+            else:
+                st.sidebar.subheader("Diagnostic Tools")
+            if st.sidebar.button("Diagnose Specific Cases"):
+                st.session_state['show_diagnostic'] = True
                 
         except Exception as e:
             st.sidebar.error(f"Error reading parameter file: {e}")
             
-    # NEW: Show diagnostic section here (after parameter_mapping is loaded)
-    if st.session_state.get('show_diagnostic', False) and parameter_mapping:
-        st.subheader("🔧 Direct Matching Diagnostic")
-        st.markdown("Let's diagnose exactly what's happening with specific cases:")
-    
-        failing_cases = [("22LUSH LTD", "22Lush Limited Transaction Report_0,0.json")]
-    
-        processor = BatchProcessor()
-        csv_companies = list(parameter_mapping.keys())
-    
-        for csv_name, json_filename in failing_cases:
-            st.write(f"**CSV:** `{csv_name}` vs **JSON:** `{json_filename}`")
-            extracted_name, method = processor.extract_company_name_from_json({}, json_filename)
-            st.write(f"**Extracted:** `{extracted_name}`")
-        
-            # Test if simple_match_test function exists
-            if hasattr(processor, 'simple_match_test'):
-                st.success("✅ simple_match_test function exists")
-                debug_info = {}
-                matched_company, score, strategy, success = processor.simple_match_test(extracted_name, csv_companies, debug_info)
-                if success:
-                    st.success(f"✅ **FUNCTION WORKS!** Found: {matched_company}")
-                else:
-                    st.error("❌ Function exists but returned no match")
-            else:
-                st.error("❌ simple_match_test function missing from BatchProcessor class")
-        
-            break
-    
-        if st.button("❌ Close Diagnostic", key="close_diagnostic_1"):
-            st.session_state['show_diagnostic'] = False
-            st.experimental_rerun()
-    
-        st.markdown("---")
-    
     # Fallback defaults
-    st.sidebar.subheader("🔄 Fallback Defaults")
+    if sidebar_subsection:
+        sidebar_subsection("Fallback Defaults")
+    else:
+        st.sidebar.subheader("Fallback Defaults")
     st.sidebar.markdown("*Only used when data is missing from JSON or CSV*")
     
     default_industry = st.sidebar.selectbox(
@@ -2962,7 +3096,10 @@ def main():
     default_company_age = st.sidebar.number_input("Fallback Company Age (Months)", min_value=0, value=12, step=1)
 
     # Risk factors
-    st.sidebar.subheader("🚨 Default Risk Factors")
+    if sidebar_subsection:
+        sidebar_subsection("Default Risk Factors")
+    else:
+        st.sidebar.subheader("Default Risk Factors")
     default_business_ccj = st.sidebar.checkbox("Business CCJs", False)
     default_director_ccj = st.sidebar.checkbox("Director CCJs", False)
     default_poor_or_no_online = st.sidebar.checkbox("Poor/No Online Presence", False)
@@ -2981,8 +3118,7 @@ def main():
     
     # NEW: Show diagnostic section here (after parameter_mapping is loaded)
     if st.session_state.get('show_diagnostic', False) and parameter_mapping:
-        st.subheader("🔧 Direct Matching Diagnostic")
-        st.markdown("Let's diagnose exactly what's happening with specific cases:")
+        section_title("Direct Matching Diagnostic", "Inspect how a JSON filename is normalized against the CSV identifiers.")
     
         # Test the exact cases that are failing
         failing_cases = [
@@ -3005,21 +3141,26 @@ def main():
             st.write(f"**Extracted cleaned:** `{extracted_lower}`")
     
             if csv_lower == extracted_lower:
-                st.success("✅ **MATCH after simple cleaning**")
+                st.success("Match after simple cleaning")
             else:
-                st.error(f"❌ **NO MATCH** - '{csv_lower}' vs '{extracted_lower}'")
+                st.error(f"No match: '{csv_lower}' vs '{extracted_lower}'")
     
             break  # Just show first case for now
     
-        if st.button("❌ Close Diagnostic"):
+        if st.button("Close Diagnostic"):
             st.session_state['show_diagnostic'] = False
-            st.experimental_rerun()
+            st.rerun()
     
         st.markdown("---")
     
     # File upload section
-    st.header("📁 Upload Applications")
-    st.markdown("Upload individual JSON files or ZIP archives containing multiple JSON files:")
+    if render_intake_panel_intro:
+        render_intake_panel_intro(
+            title="Application batch",
+            description="Upload individual JSON files or a ZIP archive containing multiple JSON files. The optional CSV mapping controls company-specific parameters.",
+        )
+    else:
+        section_title("Application Batch", "Upload individual JSON files or a ZIP archive containing multiple JSON files.")
     
     uploaded_files = st.file_uploader(
         "Choose files",
@@ -3034,16 +3175,22 @@ def main():
             files_data = load_json_files(uploaded_files)
         
         if files_data:
-            st.success(f"✅ Loaded {len(files_data)} JSON files")
+            loaded_col, csv_col, ready_col = st.columns(3)
+            with loaded_col:
+                st.metric("JSON Files Loaded", len(files_data))
+            with csv_col:
+                st.metric("CSV Companies", len(parameter_mapping) if parameter_mapping else 0)
+            with ready_col:
+                st.metric("Ready to Process", "Yes")
             
             # Show file list
-            with st.expander("📋 Loaded Files", expanded=False):
+            with st.expander("Loaded Files", expanded=False):
                 for filename, _ in files_data:
-                    st.write(f"• {filename}")
+                    st.write(f"- {filename}")
             
             # Enhanced file matching analysis
             if parameter_mapping:
-                st.subheader("🔍 File Matching Analysis")
+                section_title("File Matching Analysis", "Preview how uploaded JSON filenames align with the CSV mapping before processing.")
                 
                 # Get list of uploaded JSON filenames (without .json extension)
                 uploaded_filenames = [filename.replace('.json', '') for filename, _ in files_data]
@@ -3104,9 +3251,9 @@ def main():
                 
                 # Show potential matches
                 if potential_matches:
-                    st.success(f"✅ **{len(potential_matches)} potential matches found**")
+                    st.success(f"{len(potential_matches)} potential matches found")
                     
-                    with st.expander(f"🎯 Potential Matches ({len(potential_matches)})", expanded=True):
+                    with st.expander(f"Potential Matches ({len(potential_matches)})", expanded=True):
                         match_df = pd.DataFrame(potential_matches)
                         match_df['score'] = match_df['score'].apply(lambda x: f"{x:.1f}%")
                         match_df.columns = ['CSV Company', 'JSON File', 'Match Score']
@@ -3114,9 +3261,9 @@ def main():
                 
                 # Show missing JSON files
                 if missing_jsons:
-                    st.warning(f"⚠️ **{len(missing_jsons)} companies from CSV don't have matching JSON files**")
+                    st.warning(f"{len(missing_jsons)} companies from CSV do not have matching JSON files")
                     
-                    with st.expander(f"📄 Missing JSON Files ({len(missing_jsons)})", expanded=False):
+                    with st.expander(f"Missing JSON Files ({len(missing_jsons)})", expanded=False):
                         missing_df = pd.DataFrame({
                             'Company Name (from CSV)': missing_jsons,
                             'Status': ['No matching JSON file found'] * len(missing_jsons)
@@ -3125,16 +3272,16 @@ def main():
                 
                 # Show extra JSON files
                 if extra_jsons:
-                    with st.expander(f"📁 Extra JSON Files ({len(extra_jsons)})", expanded=False):
+                    with st.expander(f"Extra JSON Files ({len(extra_jsons)})", expanded=False):
                         st.markdown("**JSON files uploaded but not in CSV (will use default parameters):**")
                         for filename in extra_jsons:
-                            st.write(f"• {filename}.json")
+                            st.write(f"- {filename}.json")
             
             else:
-                st.info("💡 Upload a CSV file to see file matching analysis.")
+                st.info("Upload a CSV file to see file matching analysis.")
             
             # Process button
-            if st.button("🚀 Process All Applications", type="primary"):
+            if st.button("Process All Applications", type="primary"):
                 
                 # Initialize processor
                 processor = BatchProcessor()
@@ -3152,16 +3299,16 @@ def main():
                 # Show processing summary
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    st.metric("✅ Processed Successfully", processor.processed_count)
+                    st.metric("Processed Successfully", processor.processed_count)
                 with col2:
-                    st.metric("❌ Processing Errors", processor.error_count)
+                    st.metric("Processing Errors", processor.error_count)
                 with col3:
                     success_rate = (processor.processed_count / len(files_data)) * 100
                     st.metric("Success Rate", f"{success_rate:.1f}%")
                 
                 # ENHANCED: Show fuzzy matching results
                 if not results_df.empty and 'fuzzy_match_success' in results_df.columns:
-                    st.subheader("🔍 Fuzzy Matching Results")
+                    section_title("Fuzzy Matching Results")
                     
                     # Calculate fuzzy matching stats
                     total_processed = len(results_df)
@@ -3183,12 +3330,12 @@ def main():
                     
                     # Show detailed matching results
                     if successful_matches > 0:
-                        with st.expander("🎯 Detailed Fuzzy Matching Results", expanded=False):
+                        with st.expander("Detailed Fuzzy Matching Results", expanded=False):
                             
                             # Successful matches
                             successful_df = results_df[results_df['fuzzy_match_success'] == True]
                             if not successful_df.empty:
-                                st.write("**✅ Successful Matches:**")
+                                st.write("**Successful Matches:**")
                                 match_details = successful_df[['original_filename', 'extracted_company_name', 'fuzzy_match_company', 'fuzzy_match_score', 'fuzzy_match_strategy', 'parameters_applied_from_csv']].copy()
                                 match_details['fuzzy_match_score'] = match_details['fuzzy_match_score'].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
                                 match_details.columns = ['JSON File', 'Extracted Name', 'CSV Matched Company', 'Match Score', 'Strategy', 'Params Applied']
@@ -3197,13 +3344,13 @@ def main():
                             # Failed matches
                             failed_df = results_df[results_df['fuzzy_match_success'] == False]
                             if not failed_df.empty:
-                                st.write("**❌ Failed Matches:**")
+                                st.write("**Failed Matches:**")
                                 failed_details = failed_df[['original_filename', 'extracted_company_name', 'fuzzy_match_debug']].copy()
                                 failed_details.columns = ['JSON File', 'Extracted Company Name', 'Debug Info']
                                 st.dataframe(failed_details, use_container_width=True, hide_index=True)
                     
                     # Show parameter source breakdown
-                    st.subheader("📊 Parameter Source Analysis")
+                    section_title("Parameter Source Analysis")
                     
                     param_source_data = []
                     for _, row in results_df.iterrows():
@@ -3228,7 +3375,7 @@ def main():
                 
                 # Show errors if any
                 if processor.error_log:
-                    st.subheader("❌ Processing Errors Analysis")
+                    section_title("Processing Errors Analysis")
                     
                     # Categorize errors
                     error_categories = {}
@@ -3259,24 +3406,24 @@ def main():
                     with col1:
                         st.write("**Error Categories:**")
                         for category, errors in error_categories.items():
-                            st.write(f"• **{category}**: {len(errors)} files")
+                            st.write(f"- **{category}**: {len(errors)} files")
                     
                     with col2:
                         st.write("**Most Common Errors:**")
                         sorted_categories = sorted(error_categories.items(), key=lambda x: len(x[1]), reverse=True)
                         for category, errors in sorted_categories[:3]:
                             percentage = (len(errors) / len(processor.error_log)) * 100
-                            st.write(f"• {category}: {percentage:.1f}%")
+                            st.write(f"- {category}: {percentage:.1f}%")
                     
                     # Detailed error breakdown
-                    with st.expander(f"📋 Detailed Error Breakdown ({len(processor.error_log)} errors)", expanded=False):
+                    with st.expander(f"Detailed Error Breakdown ({len(processor.error_log)} errors)", expanded=False):
                         error_df = pd.DataFrame(processor.error_log)
                         st.dataframe(error_df, use_container_width=True, hide_index=True)
                         
                         # Download error log
                         error_csv = error_df.to_csv(index=False)
                         st.download_button(
-                            label="📥 Download Error Log (CSV)",
+                            label="Download Error Log (CSV)",
                             data=error_csv,
                             file_name=f"processing_errors_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                             mime="text/csv"
@@ -3287,7 +3434,7 @@ def main():
                     st.markdown("---")
                     
                     # COMPREHENSIVE DEBUG SECTION - Show all debug information
-                    st.subheader("🔍 Comprehensive Debug Information")
+                    section_title("Comprehensive Debug Information")
                     
                     # Processing summary with debug info
                     debug_summary = []
@@ -3313,7 +3460,7 @@ def main():
                         # Debug download
                         debug_csv = debug_df.to_csv(index=False)
                         st.download_button(
-                            label="📥 Download Debug Log (CSV)",
+                            label="Download Debug Log (CSV)",
                             data=debug_csv,
                             file_name=f"debug_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                             mime="text/csv"
@@ -3321,7 +3468,7 @@ def main():
                     
                     # Quick debug stats
                     if debug_summary:
-                        st.write("**🔧 Quick Debug Stats:**")
+                        st.write("**Quick Debug Stats:**")
                         total_apps = len(debug_summary)
                         csv_available_count = sum(1 for d in debug_summary if d['CSV Available'])
                         fuzzy_success_count = sum(1 for d in debug_summary if d['Fuzzy Match Success'])
@@ -3346,10 +3493,10 @@ def main():
                             method = d['Extraction Method']
                             extraction_methods[method] = extraction_methods.get(method, 0) + 1
                         
-                        st.write("**📊 Company Name Extraction Methods:**")
+                        st.write("**Company Name Extraction Methods:**")
                         for method, count in extraction_methods.items():
                             percentage = (count / total_apps) * 100
-                            st.write(f"• **{method}**: {count} files ({percentage:.1f}%)")
+                            st.write(f"- **{method}**: {count} files ({percentage:.1f}%)")
                     
                     st.markdown("---")
                     
@@ -3359,13 +3506,13 @@ def main():
                     st.session_state['batch_results'] = results_df
                 
                 else:
-                    st.error("❌ No applications were processed successfully")
+                    st.error("No applications were processed successfully")
         
         else:
-            st.error("❌ No valid JSON files found in uploaded files")
+            st.error("No valid JSON files found in uploaded files")
     
     else:
-        st.info("👆 Upload JSON files or ZIP archives to begin batch processing")
+        render_batch_empty_state()
         
         
 if __name__ == "__main__":
