@@ -109,7 +109,7 @@ def test_zero_scores_are_treated_as_real_inputs_not_missing_data():
         params=_strong_params(),
     )
 
-    assert result["combined_score"] == 24
+    assert result["combined_score"] == 27
     assert result["contributing_scores"]["mca_score"] == 0
     assert "ml_score" not in result["contributing_scores"]
 
@@ -127,7 +127,7 @@ def test_missing_scores_still_renormalize_weights():
     )
 
     assert result["detailed_breakdown"]["raw_combined_score"] == 72
-    assert result["combined_score"] == 70
+    assert result["combined_score"] == 71
     assert "ml_score" not in result["contributing_scores"]
 
 

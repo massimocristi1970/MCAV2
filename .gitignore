@@ -9,11 +9,20 @@ MCAV2/
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.coverage*
+coverage.xml
+htmlcov/
 
 # ---- Virtual environments (if applicable) ----
 .venv/
 venv/
 env/
+
+# ---- Local environment / runtime output ----
+.env
+logs/
+MCAV2_BatchProcessor/saved_runs/
 
 # Persisted scorecard runs (local monitoring / modelling data)
 data/app_runs/*

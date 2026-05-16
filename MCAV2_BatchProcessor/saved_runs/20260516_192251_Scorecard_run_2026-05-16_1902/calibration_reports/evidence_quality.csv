@@ -1,8 +1,0 @@
-evidence,available,missing,coverage,note
-Bank JSON processed,604,0,1.0,Used for score confidence
-Application metadata matched,604,0,1.0,Used for score confidence
-Business PDF matched,418,186,0.6920529801324503,Used for score confidence
-Business CCJ extracted,604,0,1.0,Used for score confidence
-Business bureau score suppressed,0,604,0.0,Column not present
-Business bureau negative factors,0,604,0.0,Column not present
-Outcome label present,8,596,0.013245033112582781,Used for calibration

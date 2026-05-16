@@ -1,7 +1,0 @@
-score,score_band,applications,paid,not_paid,not_paid_rate,avg_score
-subprime_score,40-49,2,0,2,1.0,48.8
-subprime_score,50-59,2,2,0,0.0,55.2
-subprime_score,60-69,2,2,0,0.0,69.4
-subprime_score,80+,2,2,0,0.0,82.2
-mca_rule_score,30-39,4,2,2,0.5,30.0
-mca_rule_score,60-69,4,4,0,0.0,60.0
