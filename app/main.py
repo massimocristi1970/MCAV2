@@ -3503,6 +3503,38 @@ def build_score_impact_rows(params: dict, metrics: dict, scores: dict) -> list[d
     )
     return rows
 
+
+def build_open_banking_insight_rows(metrics: dict, params: dict) -> list[dict[str, object]]:
+    """Create a compact table of derived open-banking signals for review."""
+    requested = float(params.get("requested_loan") or 0)
+    monthly_revenue = float(metrics.get("Monthly Average Revenue") or 0)
+    weakest_revenue = float(metrics.get("OB Weakest Month Revenue") or 0)
+    rows = [
+        ("Scoring impact", metrics.get("Open Banking Insights Used In Score", "No - analysis/export only"), "New derived fields are displayed/exported only"),
+        ("History", f"{metrics.get('OB History Months', 0)} months / {metrics.get('OB Transaction Count', 0)} transactions", "Coverage and file depth"),
+        ("True revenue", f"£{float(metrics.get('OB True Revenue', metrics.get('Total Revenue', 0)) or 0):,.0f}", "Revenue after categorisation"),
+        ("Non-revenue inflows", f"{float(metrics.get('OB Non-Revenue Inflow Ratio', 0) or 0) * 100:.1f}%", "Transfers, funding injections, loans and other non-trading inflows"),
+        ("Revenue concentration", f"{float(metrics.get('OB Top Revenue Source Percentage', 0) or 0):.1f}%", "Largest payer or processor share of revenue"),
+        ("Card processor share", f"{float(metrics.get('OB Card Processor Revenue Share', 0) or 0) * 100:.1f}%", "Revenue from recognised card/payment processors"),
+        ("Weakest month revenue", f"£{weakest_revenue:,.0f}", "Lowest observed trading revenue month"),
+        ("Debt repayment burden", f"{float(metrics.get('OB Debt Repayment Burden', 0) or 0) * 100:.1f}%", "Debt repayments as share of trading revenue"),
+        ("Recent loan credits", f"£{float(metrics.get('OB Recent Loan Credits 30D', 0) or 0):,.0f}", "Funding credits in the latest 30 days"),
+        ("Low balance days", f"{int(metrics.get('OB Low Balance Days <1000', 0) or 0)} below £1k", "Daily balance pressure"),
+        ("Failed payments 30D", int(metrics.get("OB Recent Failed Payments 30D", 0) or 0), "Recent returned or failed payment markers"),
+    ]
+    if requested > 0:
+        rows.append(
+            (
+                "Requested amount cover",
+                f"{requested / monthly_revenue:.2f}x monthly / {requested / weakest_revenue:.2f}x weakest"
+                if monthly_revenue and weakest_revenue
+                else "N/A",
+                "Requested loan versus normal and weakest-month revenue",
+            )
+        )
+    return [{"signal": name, "value": value, "meaning": meaning} for name, value, meaning in rows]
+
+
 def render_full_financial_dashboard(
     company_name: str,
     analysis_period: str,
@@ -3623,6 +3655,11 @@ def render_full_financial_dashboard(
             with st.expander("Evidence quality", expanded=False):
                 evidence_df = pd.DataFrame(evidence_rows)
                 st.dataframe(evidence_df, use_container_width=True, hide_index=True)
+
+        ob_rows = build_open_banking_insight_rows(metrics, params)
+        with st.expander("Open banking derived insights", expanded=True):
+            st.caption("These additional transaction-derived signals are shown for underwriting review and exports. They do not change the current score unless explicitly added to the scorecard later.")
+            st.dataframe(pd.DataFrame(ob_rows), use_container_width=True, hide_index=True)
 
         # Pricing and details in expander
         with st.expander("Pricing guidance & risk analysis", expanded=False):

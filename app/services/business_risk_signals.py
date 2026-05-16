@@ -9,6 +9,7 @@ import pandas as pd
 
 from .advanced_metrics import calculate_advanced_metrics
 from .data_processor import TransactionCategorizer
+from .open_banking_insights import derive_open_banking_insights
 
 
 _CATEGORIZER = TransactionCategorizer()
@@ -222,6 +223,8 @@ def calculate_business_metrics(data: pd.DataFrame, company_age_months: int | flo
             "Advanced Risk Score": round(float(advanced_metrics.get("advanced_risk_score", 0) or 0), 1),
         }
     )
+
+    metrics.update(derive_open_banking_insights(df))
 
     if company_age_months is not None:
         metrics["Company Age (Months)"] = int(company_age_months)

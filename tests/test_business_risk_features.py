@@ -1,8 +1,9 @@
 import pandas as pd
 import pytest
 
-from app.services.business_risk_signals import calculate_business_metrics
+from app.services.business_risk_signals import calculate_business_metrics, categorize_business_transactions
 from app.services.data_processor import TransactionCategorizer
+from app.services.open_banking_insights import derive_open_banking_insights
 
 
 @pytest.fixture
@@ -76,3 +77,16 @@ def test_transaction_categorizer_classifies_business_specific_inflows_and_charge
     assert transfer_category == "Transfer In"
     assert bank_charge_category == "Bank Charge"
     assert loan_category == "Loans"
+
+
+@pytest.mark.unit
+def test_open_banking_insights_are_derived_without_scoring_flag(business_transactions):
+    categorized = categorize_business_transactions(business_transactions)
+    insights = derive_open_banking_insights(categorized, requested_loan=3000)
+
+    assert insights["Open Banking Insights Used In Score"] == "No - analysis/export only"
+    assert insights["OB True Revenue"] == 6000.0
+    assert insights["OB Non-Revenue Inflows"] >= 2000.0
+    assert insights["OB Debt Repayment Burden"] > 0
+    assert insights["OB Recent Loan Credits 30D"] >= 0.0
+    assert insights["OB Requested Loan To Monthly Revenue"] == 2.0

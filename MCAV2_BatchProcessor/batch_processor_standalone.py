@@ -19,6 +19,7 @@ import json
 import os
 import zipfile
 import tempfile
+import hashlib
 from datetime import datetime, timedelta
 import plotly.express as px
 import plotly.graph_objects as go
@@ -39,9 +40,11 @@ if str(REPO_ROOT) not in sys.path:
 
 try:
     from app.services.ensemble_scorer import get_ensemble_recommendation
+    from app.services.open_banking_insights import derive_open_banking_insights
     ENSEMBLE_SCORER_AVAILABLE = True
 except ImportError as e:
     get_ensemble_recommendation = None
+    derive_open_banking_insights = None
     ENSEMBLE_SCORER_AVAILABLE = False
     print(f"Ensemble scorer not available: {e}")
 
@@ -136,9 +139,24 @@ def normalize_upload_name(name: str) -> str:
     """Normalize uploaded file names for exact-ish set matching."""
     base = Path(str(name)).name.lower().strip()
     base = re.sub(r"\.(json|pdf)$", "", base)
+    base = re.sub(r"^\d+[_\s-]+", "", base)
+    base = base.replace("&", " and ")
+    base = re.sub(r"\bapp\s+(\d+)\b", r"app\1", base)
     base = re.sub(r"\s+", " ", base.replace("_", " "))
     base = re.sub(r"\s*\(\d+\)$", "", base)
+    base = re.sub(r"[^a-z0-9]+", " ", base)
+    base = re.sub(r"\b(app)\s+(\d+)\b", r"\1\2", base)
+    base = re.sub(r"\s+", " ", base)
     return base.strip()
+
+
+def stable_json_signature(json_data: Any) -> str:
+    """Return a stable content signature for matching JSONs with changed names."""
+    try:
+        payload = json.dumps(json_data, sort_keys=True, separators=(",", ":"), default=str)
+    except Exception:
+        payload = str(json_data)
+    return hashlib.sha256(payload.encode("utf-8", errors="ignore")).hexdigest()
 
 
 def read_tabular_upload(uploaded_file) -> pd.DataFrame:
@@ -876,6 +894,12 @@ def categorize_transactions(data):
     data['is_expense'] = data['subcategory'].isin(['Expenses', 'Special Outflow'])
     data['is_debt_repayment'] = data['subcategory'].isin(['Debt Repayments'])
     data['is_debt'] = data['subcategory'].isin(['Loans'])
+    data['is_failed_payment'] = data['subcategory'].isin(['Failed Payment'])
+    data['is_transfer_in'] = data['subcategory'].isin(['Transfer In'])
+    data['is_transfer_out'] = data['subcategory'].isin(['Transfer Out'])
+    data['is_funding_injection'] = data['subcategory'].isin(['Funding Inflow'])
+    data['is_bank_charge'] = data['subcategory'].isin(['Bank Charge'])
+    data['is_special_inflow'] = data['subcategory'].isin(['Special Inflow'])
 
     return data
 
@@ -1016,7 +1040,7 @@ def calculate_financial_metrics(data, company_age_months):
             f"  Avg Negative Days: {avg_negative_days}" if avg_negative_days is not None else "  Avg Negative Days: N/A")
         print(f"  Bounced Payments: {bounced_payments}" if bounced_payments is not None else "  Bounced Payments: N/A")
 
-        return {
+        metrics = {
             "Total Revenue": round(total_revenue, 2),
             "Monthly Average Revenue": round(monthly_avg_revenue, 2),
             "Total Expenses": round(total_expenses, 2),
@@ -1035,6 +1059,11 @@ def calculate_financial_metrics(data, company_age_months):
             "Number of Bounced Payments": bounced_payments,
             "monthly_summary": monthly_summary
         }
+        if derive_open_banking_insights is not None:
+            metrics.update(derive_open_banking_insights(data))
+        else:
+            metrics["Open Banking Insights Used In Score"] = "No - analysis/export only"
+        return metrics
 
     except Exception as e:
         st.error(f"Error calculating metrics: {e}")
@@ -2849,6 +2878,9 @@ class BatchProcessor:
             if not metrics:
                 raise ValueError("Could not calculate financial metrics from transaction data")
 
+            if derive_open_banking_insights is not None:
+                metrics.update(derive_open_banking_insights(categorize_transactions(df), params.get("requested_loan")))
+
             debug_info['metrics_calculation_successful'] = True
             debug_info['key_metrics'] = {
                 'Total Revenue': metrics.get('Total Revenue', 0),
@@ -3011,9 +3043,12 @@ def load_json_files(uploaded_files):
     return files_data
 
 
-def uploaded_json_name_set(uploaded_files) -> set[str]:
-    """Return normalized JSON names from direct JSON/ZIP uploads."""
+def uploaded_json_match_sets(uploaded_files) -> tuple[set[str], set[str], dict[str, set[str]], dict[str, set[str]]]:
+    """Return normalized names and content signatures from direct JSON/ZIP uploads."""
     names = set()
+    signatures = set()
+    name_to_signatures: dict[str, set[str]] = {}
+    signature_to_names: dict[str, set[str]] = {}
     for uploaded_file in uploaded_files or []:
         uploaded_name = uploaded_file.name
         if uploaded_name.lower().endswith(".zip"):
@@ -3022,25 +3057,64 @@ def uploaded_json_name_set(uploaded_files) -> set[str]:
                 with zipfile.ZipFile(uploaded_file, "r") as zip_ref:
                     for file_info in zip_ref.filelist:
                         if file_info.filename.lower().endswith(".json") and not file_info.is_dir():
-                            names.add(normalize_upload_name(file_info.filename))
+                            key = normalize_upload_name(file_info.filename)
+                            names.add(key)
+                            try:
+                                with zip_ref.open(file_info.filename) as json_file:
+                                    signature = stable_json_signature(json.load(json_file))
+                                    signatures.add(signature)
+                                    name_to_signatures.setdefault(key, set()).add(signature)
+                                    signature_to_names.setdefault(signature, set()).add(Path(file_info.filename).name)
+                            except Exception:
+                                pass
             except Exception:
                 names.add(normalize_upload_name(uploaded_name))
         elif uploaded_name.lower().endswith(".json"):
-            names.add(normalize_upload_name(uploaded_name))
-    return names
+            key = normalize_upload_name(uploaded_name)
+            names.add(key)
+            try:
+                uploaded_file.seek(0)
+                signature = stable_json_signature(json.load(uploaded_file))
+                signatures.add(signature)
+                name_to_signatures.setdefault(key, set()).add(signature)
+                signature_to_names.setdefault(signature, set()).add(uploaded_name)
+            except Exception:
+                pass
+    return names, signatures, name_to_signatures, signature_to_names
 
 
 def assign_outcomes(files_data, paid_files, not_paid_files) -> tuple[dict, pd.DataFrame]:
     """Build per-file outcome labels from paid and not-paid JSON uploads."""
-    paid_names = uploaded_json_name_set(paid_files)
-    not_paid_names = uploaded_json_name_set(not_paid_files)
+    paid_names, paid_signatures, paid_name_to_signatures, paid_signature_to_names = uploaded_json_match_sets(paid_files)
+    not_paid_names, not_paid_signatures, not_paid_name_to_signatures, not_paid_signature_to_names = uploaded_json_match_sets(not_paid_files)
     outcomes = {}
     audit_rows = []
+    all_names = set()
+    all_signatures = set()
+    matched_names = set()
+    matched_signatures = set()
 
-    for filename, _ in files_data:
+    for filename, json_data in files_data:
         key = normalize_upload_name(filename)
-        in_paid = key in paid_names
-        in_not_paid = key in not_paid_names
+        signature = stable_json_signature(json_data)
+        all_names.add(key)
+        all_signatures.add(signature)
+        paid_name_match = key in paid_names
+        paid_content_match = signature in paid_signatures
+        not_paid_name_match = key in not_paid_names
+        not_paid_content_match = signature in not_paid_signatures
+        in_paid = paid_name_match or paid_content_match
+        in_not_paid = not_paid_name_match or not_paid_content_match
+        if paid_name_match:
+            matched_names.add(key)
+            matched_signatures.update(paid_name_to_signatures.get(key, set()))
+        if not_paid_name_match:
+            matched_names.add(key)
+            matched_signatures.update(not_paid_name_to_signatures.get(key, set()))
+        if paid_content_match:
+            matched_signatures.add(signature)
+        if not_paid_content_match:
+            matched_signatures.add(signature)
         if in_paid and in_not_paid:
             outcome = "conflict"
         elif in_paid:
@@ -3063,17 +3137,24 @@ def assign_outcomes(files_data, paid_files, not_paid_files) -> tuple[dict, pd.Da
                 "outcome_label": outcome,
                 "in_paid_upload": in_paid,
                 "in_not_paid_upload": in_not_paid,
+                "match_method": (
+                    "name_and_content" if (paid_name_match or not_paid_name_match) and (paid_content_match or not_paid_content_match)
+                    else "content" if paid_content_match or not_paid_content_match
+                    else "name" if paid_name_match or not_paid_name_match
+                    else "none"
+                ),
             }
         )
 
-    all_names = {normalize_upload_name(filename) for filename, _ in files_data}
-    for key in sorted((paid_names | not_paid_names) - all_names):
+    for signature in sorted((paid_signatures | not_paid_signatures) - matched_signatures):
+        upload_names = sorted(paid_signature_to_names.get(signature, set()) | not_paid_signature_to_names.get(signature, set()))
         audit_rows.append(
             {
-                "json_file": key,
-                "outcome_label": "not_in_all_json_upload",
-                "in_paid_upload": key in paid_names,
-                "in_not_paid_upload": key in not_paid_names,
+                "json_file": ", ".join(upload_names) if upload_names else signature[:12],
+                "outcome_label": "content_not_in_all_json_upload",
+                "in_paid_upload": signature in paid_signatures,
+                "in_not_paid_upload": signature in not_paid_signatures,
+                "match_method": "content_missing_from_all_upload",
             }
         )
 
@@ -3419,6 +3500,19 @@ def build_scorecard_features(results_df: pd.DataFrame) -> pd.DataFrame:
         "Average Month-End Balance",
         "Average Negative Balance Days per Month",
         "Number of Bounced Payments",
+        "Open Banking Insights Used In Score",
+        "OB Transaction Count",
+        "OB History Months",
+        "OB True Revenue",
+        "OB Non-Revenue Inflow Ratio",
+        "OB Revenue Active Day Rate",
+        "OB Top Revenue Source Percentage",
+        "OB Card Processor Revenue Share",
+        "OB Weakest Month Revenue",
+        "OB Debt Repayment Burden",
+        "OB Recent Loan Credits 30D",
+        "OB Low Balance Days <1000",
+        "OB Recent Failed Payments 30D",
         "mca_rule_score",
         "mca_rule_decision",
         "subprime_score",
@@ -3524,6 +3618,17 @@ def _numeric_calibration_features(results_df: pd.DataFrame) -> list[str]:
         "Average Month-End Balance",
         "Average Negative Balance Days per Month",
         "Number of Bounced Payments",
+        "OB Non-Revenue Inflow Ratio",
+        "OB Revenue Active Day Rate",
+        "OB Top Revenue Source Percentage",
+        "OB Card Processor Revenue Share",
+        "OB Weakest Month Revenue",
+        "OB Debt Repayment Burden",
+        "OB Recent Loan Credits 30D",
+        "OB Low Balance Days <1000",
+        "OB Recent Failed Payments 30D",
+        "OB Requested Loan To Monthly Revenue",
+        "OB Requested Loan To Weakest Month Revenue",
     ]
     return [col for col in candidates if col in results_df.columns]
 
@@ -3536,6 +3641,80 @@ def _feature_direction(frame: pd.DataFrame, feature: str) -> tuple[str, float, f
     if bad_median <= paid_median:
         return "low_is_risk", paid_median, bad_median
     return "high_is_risk", paid_median, bad_median
+
+
+def classify_recommendation_quality(row: dict) -> tuple[str, str]:
+    """Classify threshold suggestions so weak/noisy signals do not look equally actionable."""
+    feature = str(row.get("feature", ""))
+    direction = row.get("direction")
+    flagged_cases = int(row.get("flagged_cases", 0) or 0)
+    flagged_paid = int(row.get("flagged_paid", 0) or 0)
+    bad_capture = float(row.get("bad_capture_rate", 0) or 0)
+    paid_capture = float(row.get("paid_capture_rate", 0) or 0)
+    lift = float(row.get("lift_vs_base", 0) or 0)
+    paid_median = row.get("paid_median")
+    not_paid_median = row.get("not_paid_median")
+
+    expected_low_risk = {
+        "subprime_score",
+        "mca_rule_score",
+        "directors_score",
+        "company_age_months",
+        "business_credit_score",
+        "business_credit_limit",
+        "business_max_recommended_credit",
+        "Total Revenue",
+        "Monthly Average Revenue",
+        "Net Income",
+        "Operating Margin",
+        "Debt Service Coverage Ratio",
+        "Average Month-End Balance",
+        "Revenue Growth Rate",
+        "OB Revenue Active Day Rate",
+        "OB Card Processor Revenue Share",
+        "OB Weakest Month Revenue",
+    }
+    expected_high_risk = {
+        "requested_loan",
+        "director_defaults_12m",
+        "director_defaults_36m",
+        "director_ccj_count",
+        "director_ccj_value",
+        "business_negative_impact_count",
+        "business_enquiries_3m",
+        "business_company_searches_12m",
+        "Total Debt",
+        "Debt-to-Income Ratio",
+        "Gross Burn Rate",
+        "Cash Flow Volatility",
+        "Average Negative Balance Days per Month",
+        "Number of Bounced Payments",
+        "OB Non-Revenue Inflow Ratio",
+        "OB Top Revenue Source Percentage",
+        "OB Debt Repayment Burden",
+        "OB Recent Loan Credits 30D",
+        "OB Low Balance Days <1000",
+        "OB Recent Failed Payments 30D",
+        "OB Requested Loan To Monthly Revenue",
+        "OB Requested Loan To Weakest Month Revenue",
+    }
+
+    if feature in expected_low_risk and direction != "low_is_risk":
+        return "Ignore for now", "Counterintuitive direction for this metric"
+    if feature in expected_high_risk and direction != "high_is_risk":
+        return "Ignore for now", "Counterintuitive direction for this metric"
+    if pd.notna(paid_median) and pd.notna(not_paid_median) and float(paid_median) == float(not_paid_median):
+        return "Ignore for now", "Paid and not-paid medians are the same"
+    if flagged_cases < 2 or lift < 1.5:
+        return "Ignore for now", "Weak lift or too few flagged cases"
+
+    clean_signal = flagged_paid == 0 and bad_capture >= 0.4 and lift >= 2.0
+    useful_signal = bad_capture >= 0.4 and paid_capture <= 0.35 and lift >= 1.8
+    if clean_signal:
+        return "Use as candidate rule", "Clean separation in this sample; validate before changing scorecard"
+    if useful_signal:
+        return "Review manually", "Useful separation, but it also catches some paid cases"
+    return "Review manually", "Exploratory signal; keep monitoring with more outcomes"
 
 
 def build_threshold_recommendations(results_df: pd.DataFrame) -> pd.DataFrame:
@@ -3623,19 +3802,24 @@ def build_threshold_recommendations(results_df: pd.DataFrame) -> pd.DataFrame:
                 action = "Weak separation; monitor before changing the scorecard"
 
             best["confidence"] = confidence
+            quality, quality_reason = classify_recommendation_quality(best)
+            best["recommendation_quality"] = quality
+            best["quality_reason"] = quality_reason
             best["suggested_action"] = action
             rows.append(best)
 
     if not rows:
         return pd.DataFrame()
-    recs = pd.DataFrame(rows).sort_values(
-        ["confidence", "recommendation_score"],
-        ascending=[True, False],
-    )
+    recs = pd.DataFrame(rows)
+    quality_order = {"Use as candidate rule": 0, "Review manually": 1, "Ignore for now": 2}
     confidence_order = {"Strong": 0, "Moderate": 1, "Weak": 2}
+    recs["_quality_order"] = recs["recommendation_quality"].map(quality_order).fillna(3)
     recs["_confidence_order"] = recs["confidence"].map(confidence_order).fillna(3)
-    recs = recs.sort_values(["_confidence_order", "recommendation_score"], ascending=[True, False])
-    return recs.drop(columns=["_confidence_order"]).reset_index(drop=True)
+    recs = recs.sort_values(
+        ["_quality_order", "_confidence_order", "recommendation_score"],
+        ascending=[True, True, False],
+    )
+    return recs.drop(columns=["_quality_order", "_confidence_order"]).reset_index(drop=True)
 
 
 def build_rule_signal_report(results_df: pd.DataFrame) -> pd.DataFrame:
@@ -4252,6 +4436,8 @@ def render_scorecard_calibration(results_df: pd.DataFrame) -> dict[str, pd.DataF
         else:
             display_cols = [
                 "feature",
+                "recommendation_quality",
+                "quality_reason",
                 "operator",
                 "suggested_threshold",
                 "confidence",
@@ -4269,7 +4455,8 @@ def render_scorecard_calibration(results_df: pd.DataFrame) -> dict[str, pd.DataF
             top = recs.iloc[0]
             st.info(
                 f"Top candidate: {top['feature']} {top['operator']} {top['suggested_threshold']:.2f}. "
-                f"Confidence is {top['confidence'].lower()} with {top['flagged_cases']} flagged cases."
+                f"{top.get('recommendation_quality', 'Review manually')} with {top['flagged_cases']} flagged cases. "
+                f"Confidence is {top['confidence'].lower()}."
             )
 
     with tabs[1]:
@@ -4519,6 +4706,33 @@ def create_results_dashboard(results_df):
         )
         st.dataframe(ctab, use_container_width=True)
 
+    ob_cols = [
+        "company_name",
+        "outcome_label",
+        "Open Banking Insights Used In Score",
+        "OB History Months",
+        "OB Transaction Count",
+        "OB True Revenue",
+        "OB Non-Revenue Inflow Ratio",
+        "OB Revenue Active Day Rate",
+        "OB Top Revenue Source Percentage",
+        "OB Card Processor Revenue Share",
+        "OB Weakest Month Revenue",
+        "OB Debt Repayment Burden",
+        "OB Recent Loan Credits 30D",
+        "OB Low Balance Days <1000",
+        "OB Recent Failed Payments 30D",
+        "final_decision",
+    ]
+    available_ob_cols = [col for col in ob_cols if col in results_df.columns]
+    if len(available_ob_cols) > 4:
+        section_title("Open Banking Derived Insights")
+        st.caption(
+            "These extra transaction-derived fields are displayed and exported for review/calibration. "
+            "They do not change scoring unless you later choose to add them to the scorecard."
+        )
+        st.dataframe(results_df[available_ob_cols].head(100), use_container_width=True, hide_index=True)
+
     # Detailed Results Table
     section_title("Detailed Results")
 
@@ -4535,6 +4749,7 @@ def create_results_dashboard(results_df):
         'business_max_recommended_credit', 'business_negative_impact_count', 'business_enquiries_3m',
         # key metrics
         'Total Revenue', 'Net Income', 'Operating Margin', 'Debt Service Coverage Ratio',
+        'OB Non-Revenue Inflow Ratio', 'OB Debt Repayment Burden', 'OB Low Balance Days <1000',
         # params
         'requested_loan'
     ]
