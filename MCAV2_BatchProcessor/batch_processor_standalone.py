@@ -27,6 +27,7 @@ import re
 from pathlib import Path
 import joblib
 import sys
+from io import BytesIO
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BATCH_PROCESSOR_DIR = Path(__file__).resolve().parent
@@ -91,9 +92,9 @@ def render_batch_workflow_rail() -> None:
     st.markdown(
         """
 <div class="mca-workflow" aria-label="Batch workflow">
-  <div class="mca-workflow-step"><span>1</span><span>Upload parameter CSV</span></div>
-  <div class="mca-workflow-step"><span>2</span><span>Upload JSON batch</span></div>
-  <div class="mca-workflow-step"><span>3</span><span>Process and export results</span></div>
+  <div class="mca-workflow-step"><span>1</span><span>Upload data and mapping</span></div>
+  <div class="mca-workflow-step"><span>2</span><span>Label paid and not-paid JSONs</span></div>
+  <div class="mca-workflow-step"><span>3</span><span>Process and export scorecard data</span></div>
 </div>
         """,
         unsafe_allow_html=True,
@@ -107,8 +108,8 @@ def render_batch_empty_state() -> None:
 <div class="mca-empty">
   <p class="mca-empty-title">Ready for a batch run</p>
   <p class="mca-empty-body">
-    Set fallback parameters in the sidebar, upload a CSV mapping if you have one,
-    then add JSON files or a ZIP archive to begin.
+    Upload the data file and mapping, add the full JSON pool, then add paid and not-paid
+    JSONs to label the outcomes automatically.
   </p>
 </div>
         """,
@@ -129,6 +130,208 @@ def plot_mca_chart(fig, key: str | None = None) -> None:
         show_mca_plotly(fig, key=key)
     else:
         st.plotly_chart(fig, use_container_width=True)
+
+
+def normalize_upload_name(name: str) -> str:
+    """Normalize uploaded file names for exact-ish set matching."""
+    base = Path(str(name)).name.lower().strip()
+    base = re.sub(r"\.(json|pdf)$", "", base)
+    base = re.sub(r"\s+", " ", base.replace("_", " "))
+    base = re.sub(r"\s*\(\d+\)$", "", base)
+    return base.strip()
+
+
+def read_tabular_upload(uploaded_file) -> pd.DataFrame:
+    """Read CSV/XLSX uploads without caring about the uploaded filename."""
+    suffix = Path(uploaded_file.name).suffix.lower()
+    uploaded_file.seek(0)
+    if suffix in [".xlsx", ".xls"]:
+        return pd.read_excel(uploaded_file)
+    if suffix == ".csv":
+        return pd.read_csv(uploaded_file)
+    raise ValueError("Upload must be CSV, XLS, or XLSX")
+
+
+def canonical_mapping_name(raw_column: str, mapped_name: str) -> str | None:
+    """Map source/mapping labels into the internal batch parameter names."""
+    raw = str(raw_column or "").strip().lower()
+    mapped = str(mapped_name or "").strip().lower()
+    text = f"{raw} {mapped}"
+
+    if mapped in ["ignore", "nan", "none", ""]:
+        return None
+    if raw == "appid" or mapped == "application_id":
+        return "application_id"
+    if raw == "customername" or mapped == "company_name":
+        return "company_name"
+    if raw == "requestedamount" or "loan amount" in mapped or "requested" in mapped:
+        return "requested_loan"
+    if raw == "starttraiding" or "started trading" in mapped or "trading" in text:
+        return "trading_start_date"
+    if raw == "annualturnover" or "annual turnover" in mapped:
+        return "annual_turnover"
+    if raw == "score" or "director credit" in mapped:
+        return "directors_score"
+    if raw == "dft12" or "defaults in the last 12" in mapped:
+        return "director_defaults_12m"
+    if raw == "dft36" or "defaults in the last 36" in mapped:
+        return "director_defaults_36m"
+    if raw == "ccjnum" or "number of ccjs" in mapped:
+        return "director_ccj_count"
+    if raw == "ccjvalue" or "value of ccjs" in mapped:
+        return "director_ccj_value"
+    if raw == "loanpurpose":
+        return "loan_purpose"
+    if raw == "declinereason":
+        return "decline_reason"
+    if raw == "residentalstatus" or "residential status" in mapped:
+        return "director_residential_status"
+    if raw == "dateofbirth":
+        return "director_date_of_birth"
+    if raw in ["industry", "sic", "sector"]:
+        return "industry"
+
+    return re.sub(r"\W+", "_", raw).strip("_") or None
+
+
+def read_mapping_upload(mapping_file) -> dict:
+    """Read the two-column Power BI mapping workbook into source->canonical map."""
+    suffix = Path(mapping_file.name).suffix.lower()
+    mapping_file.seek(0)
+    if suffix in [".xlsx", ".xls"]:
+        mapping_df = pd.read_excel(mapping_file, header=None)
+    elif suffix == ".csv":
+        mapping_df = pd.read_csv(mapping_file, header=None)
+    else:
+        raise ValueError("Mapping upload must be CSV, XLS, or XLSX")
+
+    if mapping_df.shape[1] < 2:
+        raise ValueError("Mapping file must have at least two columns: source column and mapped meaning")
+
+    mapping = {}
+    for _, row in mapping_df.iterrows():
+        source = row.iloc[0]
+        mapped = row.iloc[1]
+        if pd.isna(source):
+            continue
+        canonical = canonical_mapping_name(source, mapped)
+        if canonical:
+            mapping[str(source).strip()] = canonical
+    return mapping
+
+
+def coerce_bool_like(value) -> bool:
+    if pd.isna(value) or value is None:
+        return False
+    if isinstance(value, str):
+        text = value.strip().lower()
+        if text in ["", "{nd}", "nd", "none", "nan", "no", "false", "0", "n"]:
+            return False
+        if text in ["yes", "true", "1", "y"]:
+            return True
+    try:
+        return float(value) > 0
+    except (TypeError, ValueError):
+        return bool(value)
+
+
+def coerce_numeric(value, default=None):
+    if pd.isna(value) or value in ["", "{ND}", "{nd}"]:
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def calculate_company_age_months(start_value, as_of=None):
+    if pd.isna(start_value) or start_value is None:
+        return None
+    as_of = as_of or datetime.now()
+    start = pd.to_datetime(start_value, errors="coerce")
+    if pd.isna(start):
+        return None
+    months = (as_of.year - start.year) * 12 + (as_of.month - start.month)
+    if as_of.day < start.day:
+        months -= 1
+    return max(int(months), 0)
+
+
+def prepare_application_metadata(data_file, mapping_file, fallback_industry: str) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+    """Build deduped application metadata from the uploaded data + mapping files."""
+    raw_df = read_tabular_upload(data_file)
+    mapping = read_mapping_upload(mapping_file)
+    rename_map = {source: target for source, target in mapping.items() if source in raw_df.columns}
+    metadata = raw_df.rename(columns=rename_map).copy()
+
+    audit = {
+        "raw_rows": len(raw_df),
+        "mapped_columns": rename_map,
+        "unmapped_source_columns": [col for col in raw_df.columns if col not in rename_map],
+    }
+
+    if "application_id" not in metadata.columns:
+        raise ValueError("Mapping must identify an application_id column")
+    if "company_name" not in metadata.columns:
+        raise ValueError("Mapping must identify a company_name column")
+
+    metadata["application_id"] = metadata["application_id"].astype(str).str.strip()
+    metadata["company_name"] = metadata["company_name"].astype(str).str.strip()
+    metadata = metadata[(metadata["application_id"] != "") & (metadata["company_name"] != "")]
+
+    if "requested_loan" in metadata.columns:
+        metadata["requested_loan"] = metadata["requested_loan"].apply(coerce_numeric)
+    if "directors_score" in metadata.columns:
+        metadata["directors_score"] = metadata["directors_score"].apply(coerce_numeric)
+    if "trading_start_date" in metadata.columns:
+        metadata["company_age_months"] = metadata["trading_start_date"].apply(calculate_company_age_months)
+
+    metadata["industry"] = metadata.get("industry", fallback_industry)
+    metadata["industry"] = metadata["industry"].fillna(fallback_industry).replace("", fallback_industry)
+    metadata["business_ccj"] = False
+    metadata["poor_or_no_online_presence"] = False
+    metadata["uses_generic_email"] = False
+    metadata["director_ccj"] = False
+
+    if "director_defaults_12m" in metadata.columns:
+        metadata["director_defaults_12m"] = metadata["director_defaults_12m"].apply(coerce_numeric).fillna(0)
+        metadata["personal_default_12m"] = metadata["director_defaults_12m"] > 0
+    if "director_defaults_36m" in metadata.columns:
+        metadata["director_defaults_36m"] = metadata["director_defaults_36m"].apply(coerce_numeric).fillna(0)
+    if "director_ccj_count" in metadata.columns:
+        metadata["director_ccj_count"] = metadata["director_ccj_count"].apply(coerce_numeric).fillna(0)
+    if "director_ccj_value" in metadata.columns:
+        metadata["director_ccj_value"] = metadata["director_ccj_value"].apply(coerce_numeric).fillna(0)
+
+    duplicate_mask = metadata.duplicated("application_id", keep=False)
+    duplicates_df = metadata.loc[duplicate_mask].copy()
+    if not metadata.empty:
+        score_cols = [col for col in ["requested_loan", "directors_score", "company_age_months"] if col in metadata.columns]
+        metadata["_completeness_score"] = metadata.notna().sum(axis=1)
+        if score_cols:
+            metadata["_critical_score"] = metadata[score_cols].notna().sum(axis=1)
+        else:
+            metadata["_critical_score"] = 0
+        metadata = (
+            metadata.sort_values(["application_id", "_critical_score", "_completeness_score"], ascending=[True, False, False])
+            .drop_duplicates("application_id", keep="first")
+            .drop(columns=["_critical_score", "_completeness_score"], errors="ignore")
+        )
+
+    audit["deduped_rows"] = len(metadata)
+    audit["duplicate_rows_removed"] = int(len(raw_df) - len(metadata))
+    return metadata.reset_index(drop=True), duplicates_df.reset_index(drop=True), audit
+
+
+def build_metadata_mapping(metadata_df: pd.DataFrame) -> dict:
+    """Create company-keyed parameter mapping for the existing processor."""
+    mapping = {}
+    for _, row in metadata_df.iterrows():
+        company = str(row.get("company_name", "")).strip()
+        if not company:
+            continue
+        mapping[company] = {k: v for k, v in row.to_dict().items() if not k.startswith("_")}
+    return mapping
 
 # COMPLETE INDUSTRY THRESHOLDS
 INDUSTRY_THRESHOLDS = dict(sorted({
@@ -2703,7 +2906,7 @@ class BatchProcessor:
 
             return None
     
-    def process_batch(self, files_data, default_params, parameter_mapping=None, progress_bar=None):
+    def process_batch(self, files_data, default_params, parameter_mapping=None, progress_bar=None, outcome_mapping=None):
         """Process multiple applications with comprehensive tracking"""
         self.results = []
         self.processed_count = 0
@@ -2724,8 +2927,12 @@ class BatchProcessor:
                 progress_bar.progress((i + 1) / total_files, text=f"Processing {filename}...")
             
             print(f"\nProcessing {i+1}/{total_files}: {filename}")
-            
-            result = self.process_single_application(json_data, filename, default_params, parameter_mapping)
+
+            params_for_file = default_params.copy() if default_params else {}
+            if outcome_mapping and filename in outcome_mapping:
+                params_for_file.update(outcome_mapping[filename])
+
+            result = self.process_single_application(json_data, filename, params_for_file, parameter_mapping)
             
             if result:
                 self.results.append(result)
@@ -2770,6 +2977,259 @@ def load_json_files(uploaded_files):
             st.error(f"Error loading {uploaded_file.name}: {e}")
     
     return files_data
+
+
+def uploaded_json_name_set(uploaded_files) -> set[str]:
+    """Return normalized JSON names from direct JSON/ZIP uploads."""
+    names = set()
+    for uploaded_file in uploaded_files or []:
+        uploaded_name = uploaded_file.name
+        if uploaded_name.lower().endswith(".zip"):
+            try:
+                uploaded_file.seek(0)
+                with zipfile.ZipFile(uploaded_file, "r") as zip_ref:
+                    for file_info in zip_ref.filelist:
+                        if file_info.filename.lower().endswith(".json") and not file_info.is_dir():
+                            names.add(normalize_upload_name(file_info.filename))
+            except Exception:
+                names.add(normalize_upload_name(uploaded_name))
+        elif uploaded_name.lower().endswith(".json"):
+            names.add(normalize_upload_name(uploaded_name))
+    return names
+
+
+def assign_outcomes(files_data, paid_files, not_paid_files) -> tuple[dict, pd.DataFrame]:
+    """Build per-file outcome labels from paid and not-paid JSON uploads."""
+    paid_names = uploaded_json_name_set(paid_files)
+    not_paid_names = uploaded_json_name_set(not_paid_files)
+    outcomes = {}
+    audit_rows = []
+
+    for filename, _ in files_data:
+        key = normalize_upload_name(filename)
+        in_paid = key in paid_names
+        in_not_paid = key in not_paid_names
+        if in_paid and in_not_paid:
+            outcome = "conflict"
+        elif in_paid:
+            outcome = "paid"
+        elif in_not_paid:
+            outcome = "not_paid"
+        else:
+            outcome = "unlabelled"
+
+        outcomes[filename] = {
+            "outcome_label": outcome,
+            "paid_flag": outcome == "paid",
+            "not_paid_flag": outcome == "not_paid",
+            "defaulted_flag": outcome == "not_paid",
+            "outcome_conflict": outcome == "conflict",
+        }
+        audit_rows.append(
+            {
+                "json_file": filename,
+                "outcome_label": outcome,
+                "in_paid_upload": in_paid,
+                "in_not_paid_upload": in_not_paid,
+            }
+        )
+
+    all_names = {normalize_upload_name(filename) for filename, _ in files_data}
+    for key in sorted((paid_names | not_paid_names) - all_names):
+        audit_rows.append(
+            {
+                "json_file": key,
+                "outcome_label": "not_in_all_json_upload",
+                "in_paid_upload": key in paid_names,
+                "in_not_paid_upload": key in not_paid_names,
+            }
+        )
+
+    return outcomes, pd.DataFrame(audit_rows)
+
+
+def _extract_text_from_pdf_bytes(pdf_bytes: bytes) -> tuple[str, str, str]:
+    """Extract text from a company credit report PDF using available backends."""
+    if not pdf_bytes or not pdf_bytes[:4] == b"%PDF":
+        return "", "none", "Not a valid PDF header"
+
+    errors = []
+    try:
+        import pdfplumber
+
+        parts = []
+        with pdfplumber.open(BytesIO(pdf_bytes)) as pdf:
+            for page in pdf.pages:
+                parts.append(page.extract_text() or "")
+        text = "\n".join(parts).strip()
+        if text:
+            return text, "pdfplumber", ""
+        errors.append("pdfplumber extracted empty text")
+    except Exception as e:
+        errors.append(f"pdfplumber: {repr(e)}")
+
+    try:
+        import fitz
+
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        text = "\n".join((page.get_text("text") or "") for page in doc).strip()
+        if text:
+            return text, "pymupdf", ""
+        errors.append("pymupdf extracted empty text")
+    except Exception as e:
+        errors.append(f"pymupdf: {repr(e)}")
+
+    try:
+        import PyPDF2
+
+        reader = PyPDF2.PdfReader(BytesIO(pdf_bytes))
+        text = "\n".join((page.extract_text() or "") for page in reader.pages).strip()
+        if text:
+            return text, "pypdf2", ""
+        errors.append("pypdf2 extracted empty text")
+    except Exception as e:
+        errors.append(f"pypdf2: {repr(e)}")
+
+    return "", "none", " | ".join(errors)
+
+
+def _explicit_ccj_present(pdf_text: str) -> bool:
+    """Detect explicit business CCJ presence using the same policy as the main app."""
+    t = (pdf_text or "").lower()
+    negative_patterns = [
+        r"\bno\s+county\s+court\s+judg(e)?ment(s)?\b",
+        r"\bno\s+ccj\b",
+        r"\bccj\s*:\s*(none|no|0)\b",
+        r"\bnone\s+recorded\b.*\bccj\b",
+    ]
+    for pattern in negative_patterns:
+        if re.search(pattern, t, re.IGNORECASE):
+            return False
+
+    positive_patterns = [
+        r"county\s+court\s+judg(e)?ment\s+registered",
+        r"county\s+court\s+judg(e)?ments\s+registered",
+        r"county\s+court\s+judg(e)?ment\s+has\s+been\s+registered",
+        r"\bccj\s+registered\b",
+        r"\bat\s+least\s+one\s+county\s+court\s+judg(e)?ment\b",
+        r"\blegal\s+notices\b[\s\S]{0,300}county\s+court\s+judg(e)?ment",
+    ]
+    for pattern in positive_patterns:
+        if re.search(pattern, t, re.IGNORECASE):
+            return True
+
+    if re.search(r"county\s+court\s+judg(e)?ments?\b", t):
+        if re.search(r"£\s*\d", t) and re.search(r"\b\d{1,2}\s+[a-z]{3}\s+\d{4}\b", t):
+            return True
+    return False
+
+
+def build_pdf_risk_mapping(pdf_files, metadata_df: pd.DataFrame) -> tuple[dict, pd.DataFrame]:
+    """Match uploaded bureau PDFs to companies and derive business CCJ flags."""
+    if not pdf_files:
+        return {}, pd.DataFrame()
+
+    processor = BatchProcessor()
+    companies = metadata_df["company_name"].dropna().astype(str).tolist() if "company_name" in metadata_df else []
+    risk_mapping = {}
+    audit_rows = []
+
+    for pdf_file in pdf_files:
+        try:
+            pdf_file.seek(0)
+            text, backend, error = _extract_text_from_pdf_bytes(pdf_file.getvalue())
+            business_ccj = _explicit_ccj_present(text) if text else False
+            search_name = Path(pdf_file.name).stem
+            debug_info = {}
+            matched_company, score, strategy, success = processor.fuzzy_match_company(search_name, companies, debug_info)
+
+            if success and matched_company:
+                existing = risk_mapping.get(matched_company, {})
+                risk_mapping[matched_company] = {
+                    **existing,
+                    "business_ccj": bool(existing.get("business_ccj", False) or business_ccj),
+                    "bureau_pdf_file": pdf_file.name,
+                    "bureau_pdf_match_score": score,
+                    "bureau_pdf_match_strategy": strategy,
+                    "bureau_pdf_backend": backend,
+                }
+
+            audit_rows.append(
+                {
+                    "pdf_file": pdf_file.name,
+                    "matched_company": matched_company if success else None,
+                    "match_score": score,
+                    "match_strategy": strategy,
+                    "business_ccj": business_ccj,
+                    "text_backend": backend,
+                    "error": error,
+                }
+            )
+        except Exception as e:
+            audit_rows.append(
+                {
+                    "pdf_file": getattr(pdf_file, "name", "unknown"),
+                    "matched_company": None,
+                    "match_score": 0,
+                    "match_strategy": "error",
+                    "business_ccj": False,
+                    "text_backend": "none",
+                    "error": str(e),
+                }
+            )
+
+    return risk_mapping, pd.DataFrame(audit_rows)
+
+
+def apply_pdf_risk_to_mapping(parameter_mapping: dict, pdf_risk_mapping: dict) -> dict:
+    """Overlay PDF-derived risk factors onto the company parameter mapping."""
+    merged = {key: value.copy() for key, value in parameter_mapping.items()}
+    for company, risk_values in pdf_risk_mapping.items():
+        if company in merged:
+            merged[company].update(risk_values)
+    return merged
+
+
+def build_scorecard_features(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Create a modelling-friendly feature export from full processing results."""
+    preferred_columns = [
+        "application_id",
+        "company_name",
+        "original_filename",
+        "outcome_label",
+        "paid_flag",
+        "not_paid_flag",
+        "defaulted_flag",
+        "industry",
+        "requested_loan",
+        "company_age_months",
+        "directors_score",
+        "director_defaults_12m",
+        "director_defaults_36m",
+        "director_ccj_count",
+        "director_ccj_value",
+        "business_ccj",
+        "Total Revenue",
+        "Monthly Average Revenue",
+        "Total Expenses",
+        "Net Income",
+        "Total Debt",
+        "Debt-to-Income Ratio",
+        "Operating Margin",
+        "Debt Service Coverage Ratio",
+        "Gross Burn Rate",
+        "Cash Flow Volatility",
+        "Revenue Growth Rate",
+        "Average Month-End Balance",
+        "Average Negative Balance Days per Month",
+        "Number of Bounced Payments",
+        "mca_rule_score",
+        "mca_rule_decision",
+        "subprime_score",
+        "subprime_tier",
+        "final_decision",
+    ]
+    return results_df[[col for col in preferred_columns if col in results_df.columns]].copy()
 
 def create_results_dashboard(results_df):
     """Create comprehensive dashboard for batch results"""
@@ -2980,7 +3440,7 @@ def create_results_dashboard(results_df):
     )
 
 
-def main():
+def legacy_main():
     """Main application"""
 
     if render_main_hero:
@@ -3514,6 +3974,338 @@ def main():
     else:
         render_batch_empty_state()
         
-        
+
+def main():
+    """Simplified batch dataset builder."""
+
+    if render_main_hero:
+        render_main_hero(
+            "MCA v2 Batch Processor",
+            "Build paid/not-paid scorecard datasets from application data, transaction JSONs, and optional bureau PDFs.",
+            eyebrow="Batch scoring workspace",
+        )
+    else:
+        st.title("MCA v2 Batch Processor")
+        st.markdown("Build paid/not-paid scorecard datasets from application data, transaction JSONs, and optional bureau PDFs.")
+    render_batch_workflow_rail()
+
+    if sidebar_section:
+        sidebar_section("Fallbacks")
+    else:
+        st.sidebar.header("Fallbacks")
+    st.sidebar.caption("Only used where the uploaded data and mapping cannot supply a value.")
+    st.sidebar.caption("Matching mode: RapidFuzz" if RAPIDFUZZ_AVAILABLE else "Matching mode: exact fallback")
+
+    default_industry = st.sidebar.selectbox(
+        "Fallback Industry",
+        list(INDUSTRY_THRESHOLDS.keys()),
+        index=list(INDUSTRY_THRESHOLDS.keys()).index("Other"),
+    )
+    default_loan = st.sidebar.number_input("Fallback Requested Loan (£)", min_value=0.0, value=5000.0, step=1000.0)
+    default_directors_score = st.sidebar.slider("Fallback Director Credit Score", 0, 100, 75)
+    default_company_age = st.sidebar.number_input("Fallback Company Age (Months)", min_value=0, value=12, step=1)
+
+    default_params = {
+        "industry": default_industry,
+        "requested_loan": default_loan,
+        "directors_score": default_directors_score,
+        "company_age_months": default_company_age,
+        "business_ccj": False,
+        "director_ccj": False,
+        "poor_or_no_online_presence": False,
+        "uses_generic_email": False,
+    }
+
+    if render_intake_panel_intro:
+        render_intake_panel_intro(
+            title="Batch inputs",
+            description=(
+                "Upload the application data file, its mapping file, the full JSON pool, "
+                "then paid and not-paid JSON subsets for automatic outcome labels."
+            ),
+        )
+    else:
+        section_title("Batch Inputs", "Upload the data, mapping, JSON pool, and outcome JSON subsets.")
+
+    data_col, mapping_col = st.columns(2)
+    with data_col:
+        data_file = st.file_uploader(
+            "Application data file",
+            type=["csv", "xlsx", "xls"],
+            help="Example: data (6).xlsx. Filename does not matter.",
+            key="batch_data_file",
+        )
+    with mapping_col:
+        mapping_file = st.file_uploader(
+            "CSV mapping file",
+            type=["csv", "xlsx", "xls"],
+            help="Example: PBI_CSV_Mapping.xlsx.",
+            key="batch_mapping_file",
+        )
+
+    json_col, paid_col, not_paid_col = st.columns(3)
+    with json_col:
+        uploaded_files = st.file_uploader(
+            "All application JSONs",
+            type=["json", "zip"],
+            accept_multiple_files=True,
+            help="Full pool of transaction JSON files.",
+            key="batch_all_jsons",
+        )
+    with paid_col:
+        paid_files = st.file_uploader(
+            "Paid JSONs",
+            type=["json", "zip"],
+            accept_multiple_files=True,
+            help="Files uploaded here are labelled paid.",
+            key="batch_paid_jsons",
+        )
+    with not_paid_col:
+        not_paid_files = st.file_uploader(
+            "Not-paid JSONs",
+            type=["json", "zip"],
+            accept_multiple_files=True,
+            help="Files uploaded here are labelled not_paid/defaulted.",
+            key="batch_not_paid_jsons",
+        )
+
+    bureau_pdf_files = st.file_uploader(
+        "Company credit report PDFs (optional)",
+        type=["pdf"],
+        accept_multiple_files=True,
+        help="Optional bureau PDFs used to derive business CCJ flags.",
+        key="batch_bureau_pdfs",
+    )
+
+    metadata_df = pd.DataFrame()
+    duplicates_df = pd.DataFrame()
+    metadata_audit = {}
+    parameter_mapping = {}
+
+    if data_file and mapping_file:
+        try:
+            metadata_df, duplicates_df, metadata_audit = prepare_application_metadata(
+                data_file,
+                mapping_file,
+                default_industry,
+            )
+            parameter_mapping = build_metadata_mapping(metadata_df)
+
+            m1, m2, m3, m4 = st.columns(4)
+            with m1:
+                st.metric("Raw Data Rows", metadata_audit.get("raw_rows", 0))
+            with m2:
+                st.metric("Deduped Applications", len(metadata_df))
+            with m3:
+                st.metric("Duplicate Rows Removed", metadata_audit.get("duplicate_rows_removed", 0))
+            with m4:
+                st.metric("Mapped Companies", len(parameter_mapping))
+
+            with st.expander("Mapped Data Preview", expanded=False):
+                preview_cols = [
+                    c for c in [
+                        "application_id",
+                        "company_name",
+                        "requested_loan",
+                        "company_age_months",
+                        "directors_score",
+                        "director_defaults_12m",
+                        "director_ccj_count",
+                    ] if c in metadata_df.columns
+                ]
+                st.dataframe(metadata_df[preview_cols].head(20), use_container_width=True, hide_index=True)
+
+            if not duplicates_df.empty:
+                with st.expander(f"Duplicate AppID Rows Found ({len(duplicates_df)})", expanded=False):
+                    st.dataframe(duplicates_df.head(100), use_container_width=True, hide_index=True)
+        except Exception as e:
+            st.error(f"Could not read data/mapping files: {e}")
+
+    if not uploaded_files:
+        render_batch_empty_state()
+        return
+
+    with st.spinner("Loading JSON files..."):
+        files_data = load_json_files(uploaded_files)
+
+    if not files_data:
+        st.error("No valid JSON files found in uploaded files")
+        return
+
+    outcome_mapping, outcome_audit_df = assign_outcomes(files_data, paid_files, not_paid_files)
+
+    pdf_risk_mapping = {}
+    pdf_audit_df = pd.DataFrame()
+    if bureau_pdf_files and not metadata_df.empty:
+        with st.spinner("Reading company credit report PDFs..."):
+            pdf_risk_mapping, pdf_audit_df = build_pdf_risk_mapping(bureau_pdf_files, metadata_df)
+            parameter_mapping = apply_pdf_risk_to_mapping(parameter_mapping, pdf_risk_mapping)
+
+    loaded_col, csv_col, ready_col = st.columns(3)
+    with loaded_col:
+        st.metric("JSON Files Loaded", len(files_data))
+    with csv_col:
+        st.metric("CSV Companies", len(parameter_mapping))
+    with ready_col:
+        st.metric("Ready to Process", "Yes" if parameter_mapping else "Needs data/mapping")
+
+    if not outcome_audit_df.empty:
+        outcome_counts = outcome_audit_df["outcome_label"].value_counts().reset_index()
+        outcome_counts.columns = ["Outcome", "Files"]
+        st.dataframe(outcome_counts, use_container_width=True, hide_index=True)
+        if (outcome_audit_df["outcome_label"] == "conflict").any():
+            st.error("Some JSON files are present in both paid and not-paid uploads. Resolve these before using the outputs.")
+
+    with st.expander("Loaded Files", expanded=False):
+        for filename, _ in files_data:
+            st.write(f"- {filename}")
+
+    if parameter_mapping:
+        section_title("File Matching Analysis", "Preview how uploaded JSON filenames align with the mapped company data.")
+        uploaded_filenames = [filename.replace(".json", "") for filename, _ in files_data]
+        csv_companies = list(parameter_mapping.keys())
+        potential_matches = []
+        missing_jsons = []
+        extra_jsons = []
+
+        if RAPIDFUZZ_AVAILABLE:
+            for csv_company in csv_companies:
+                match_result = process.extractOne(
+                    csv_company,
+                    uploaded_filenames,
+                    scorer=fuzz.token_sort_ratio,
+                    score_cutoff=60,
+                )
+                if match_result:
+                    potential_matches.append(
+                        {"csv_company": csv_company, "json_file": match_result[0], "score": match_result[1]}
+                    )
+                else:
+                    missing_jsons.append(csv_company)
+            matched_json_files = [m["json_file"] for m in potential_matches]
+            extra_jsons = [f for f in uploaded_filenames if f not in matched_json_files]
+        else:
+            for csv_company in csv_companies:
+                if csv_company in uploaded_filenames:
+                    potential_matches.append({"csv_company": csv_company, "json_file": csv_company, "score": 100})
+                else:
+                    missing_jsons.append(csv_company)
+            matched_json_files = [m["json_file"] for m in potential_matches]
+            extra_jsons = [f for f in uploaded_filenames if f not in matched_json_files]
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Companies in Data", len(csv_companies))
+        with col2:
+            st.metric("JSON Files Uploaded", len(uploaded_filenames))
+        with col3:
+            st.metric("Expected Matches", len(potential_matches))
+
+        if potential_matches:
+            with st.expander(f"Potential Matches ({len(potential_matches)})", expanded=False):
+                match_df = pd.DataFrame(potential_matches)
+                match_df["score"] = match_df["score"].apply(lambda x: f"{x:.1f}%")
+                match_df.columns = ["CSV Company", "JSON File", "Match Score"]
+                st.dataframe(match_df, use_container_width=True, hide_index=True)
+
+        if missing_jsons:
+            with st.expander(f"Missing JSON Files ({len(missing_jsons)})", expanded=False):
+                st.dataframe(
+                    pd.DataFrame({"Company Name (from data)": missing_jsons}),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+        if extra_jsons:
+            with st.expander(f"Extra JSON Files ({len(extra_jsons)})", expanded=False):
+                st.dataframe(pd.DataFrame({"JSON File": extra_jsons}), use_container_width=True, hide_index=True)
+    else:
+        st.info("Upload the data and mapping files to enable metadata matching.")
+
+    if not pdf_audit_df.empty:
+        with st.expander("Company Credit Report PDF Audit", expanded=False):
+            st.dataframe(pdf_audit_df, use_container_width=True, hide_index=True)
+
+    if not st.button("Process All Applications", type="primary"):
+        return
+
+    processor = BatchProcessor()
+    progress_bar = st.progress(0, text="Starting batch processing...")
+    with st.spinner("Processing applications..."):
+        results_df = processor.process_batch(
+            files_data,
+            default_params,
+            parameter_mapping,
+            progress_bar,
+            outcome_mapping=outcome_mapping,
+        )
+    progress_bar.empty()
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Processed Successfully", processor.processed_count)
+    with col2:
+        st.metric("Processing Errors", processor.error_count)
+    with col3:
+        success_rate = (processor.processed_count / len(files_data)) * 100
+        st.metric("Success Rate", f"{success_rate:.1f}%")
+
+    if processor.error_log:
+        section_title("Processing Errors Analysis")
+        error_df = pd.DataFrame(processor.error_log)
+        st.dataframe(error_df, use_container_width=True, hide_index=True)
+        st.download_button(
+            label="Download Error Log (CSV)",
+            data=error_df.to_csv(index=False),
+            file_name=f"processing_errors_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+
+    if results_df.empty:
+        st.error("No applications were processed successfully")
+        return
+
+    scorecard_features_df = build_scorecard_features(results_df)
+    section_title("Scorecard Dataset Exports")
+    d1, d2, d3, d4 = st.columns(4)
+    with d1:
+        st.download_button(
+            "Download Case Scores",
+            data=results_df.to_csv(index=False),
+            file_name=f"case_scores_with_outcomes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            type="primary",
+        )
+    with d2:
+        st.download_button(
+            "Download Scorecard Features",
+            data=scorecard_features_df.to_csv(index=False),
+            file_name=f"scorecard_features_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with d3:
+        st.download_button(
+            "Download Matching Audit",
+            data=outcome_audit_df.to_csv(index=False),
+            file_name=f"matching_audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with d4:
+        if not pdf_audit_df.empty:
+            st.download_button(
+                "Download PDF Audit",
+                data=pdf_audit_df.to_csv(index=False),
+                file_name=f"bureau_pdf_audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+            )
+
+    if "outcome_label" in results_df.columns:
+        section_title("Outcome Summary")
+        st.dataframe(results_df["outcome_label"].value_counts().reset_index(), use_container_width=True, hide_index=True)
+
+    create_results_dashboard(results_df)
+    st.session_state["batch_results"] = results_df
+
+
 if __name__ == "__main__":
     main()
