@@ -1,4 +1,5 @@
 import sys
+import builtins
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]   # app/main.py -> repo_root
@@ -105,6 +106,7 @@ except ImportError as e:
 import re
 from io import BytesIO
 
+@st.cache_data(show_spinner=False)
 def _extract_text_from_pdf_bytes(pdf_bytes: bytes) -> tuple[str, str, str]:
     """
     Returns: (text, backend_used, error_msg)
@@ -158,6 +160,18 @@ def _extract_text_from_pdf_bytes(pdf_bytes: bytes) -> tuple[str, str, str]:
         errors.append(f"pypdf2: {repr(e)}")
 
     return "", "none", " | ".join(errors)
+
+
+@st.cache_data(show_spinner=False)
+def _score_tu_xml_bytes(xml_bytes: bytes, app_id: str) -> dict:
+    feats_obj = extract_features_from_xml_bytes(xml_bytes=xml_bytes, app_id=app_id)
+    sr = score_tu_features(feats_obj.features)
+    return {
+        "score": sr.score,
+        "decision": sr.decision,
+        "reasons": sr.reasons,
+        "flags": sr.recovery_flags,
+    }
 
 def _explicit_ccj_present(pdf_text: str) -> bool:
     """
@@ -221,8 +235,10 @@ def _norm_pdf_text(t: str) -> str:
         return ""
     # common ligatures
     t = t.replace("\ufb01", "fi").replace("\ufb02", "fl")
-    # common replacement char
+    # common replacement / extraction artefacts
     t = t.replace("�", "")
+    t = t.replace("\x00", "fi")
+    t = t.replace("Ł", "£")
     return t
 
 def _re_first(pattern: str, text: str, flags=re.IGNORECASE):
@@ -242,23 +258,66 @@ def _money_clean(s: str | None) -> str | None:
         return "£" + s[1:].strip()
     return s
 
+def _money_to_int(s: str | None) -> int | None:
+    if not s:
+        return None
+    digits = re.sub(r"[^\d]", "", str(s))
+    return int(digits) if digits else None
+
+def _parse_business_bureau_signals(full_text: str) -> dict[str, object]:
+    """Extract scoring-safe business bureau signals from Capital-style PDFs."""
+    t = _norm_pdf_text(full_text or "")
+    tl = t.lower()
+
+    credit_score = _re_first(r"\bcredit score\b\s*[\:\-]?\s*(\d{1,3})\b", t)
+    credit_limit = _re_first(r"\bcredit limit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
+    max_credit = _re_first(r"\bmax\.?\s*recommended\s*credit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
+    searches_12m = _re_first(r"\bin\s+the\s+last\s+12\s+months\s*\n?\s*(\d+)\b", t)
+    enquiries_3m = _re_first(r"\b(\d+)\s+enquiries\s+in\s+last\s+3\s+months\b", t)
+    negative_impact = _re_first(r"\bnegative impact:\s*(\d+)\b", t)
+    neutral_impact = _re_first(r"\bneutral impact:\s*(\d+)\b", t)
+    total_factors = _re_first(r"\btotal factors\s*\n?\s*(\d+)\b", t)
+
+    no_ccj = bool(re.search(r"\bno\s+county\s+court\s+judg(e)?ments?\s+recorded\b", tl))
+    no_legal_notices = "no legal notices registered" in tl
+    no_charges = "no registered mortgages or charges" in tl or "no mortgages or charges" in tl
+
+    return {
+        "credit_score": int(credit_score) if credit_score else None,
+        "credit_score_suppressed": "risk score suppressed" in tl or bool(re.search(r"\bcredit score\s*-\s*risk score suppressed\b", tl)),
+        "credit_limit": _money_to_int(credit_limit),
+        "max_recommended_credit": _money_to_int(max_credit),
+        "company_searches_12m": int(searches_12m) if searches_12m else None,
+        "enquiries_3m": int(enquiries_3m) if enquiries_3m else None,
+        "negative_impact_count": int(negative_impact) if negative_impact else 0,
+        "neutral_impact_count": int(neutral_impact) if neutral_impact else None,
+        "total_factor_count": int(total_factors) if total_factors else None,
+        "needs_attention": "needs attention" in tl,
+        "no_ccj_recorded": no_ccj,
+        "no_legal_notices_registered": no_legal_notices,
+        "no_registered_charges": no_charges,
+    }
+
 def _parse_credit_information(t: str) -> list[str]:
     bullets = []
     tl = t.lower()
+    signals = _parse_business_bureau_signals(t)
 
     # Credit score (often appears as "Credit score 65")
-    score = _re_first(r"\bcredit score\b\s*[\:\-]?\s*(\d{1,3})\b", t)
-    if score:
+    score = signals.get("credit_score")
+    if score is not None:
         bullets.append(f"Credit score: {score}")
+    elif signals.get("credit_score_suppressed"):
+        bullets.append("Credit score: Suppressed / unavailable")
 
     # Credit limit (often "Credit limit £0")
-    credit_limit = _re_first(r"\bcredit limit\b\s*[\:\-]?\s*(£\s*\d[\d,]*)", t)
-    if credit_limit:
-        bullets.append(f"Credit limit: {_money_clean(credit_limit)}")
+    credit_limit = signals.get("credit_limit")
+    if credit_limit is not None:
+        bullets.append(f"Credit limit: £{credit_limit:,}")
 
     # --- Max. recommended credit (current + from-date amount) ---
     # Current value usually appears near "Max. recommended credit" and may be £0.
-    mrc_current = _re_first(r"\bmax\.?\s*recommended\s*credit\b[\s\S]{0,60}?(£\s*\d[\d,]*)", t)
+    mrc_current = _re_first(r"\bmax\.?\s*recommended\s*credit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
 
     # "from Aug 2025 (£2,000)" style
     m_from = re.search(
@@ -282,13 +341,13 @@ def _parse_credit_information(t: str) -> list[str]:
             bullets.append(f"Max. recommended credit: {_money_clean(from_amt)} (from {from_date})")
 
     # Searches / enquiries
-    enquiries_3m = _re_first(r"\b(\d+)\s+enquiries\s+in\s+last\s+3\s+months\b", t)
+    enquiries_3m = signals.get("enquiries_3m")
     if enquiries_3m:
         bullets.append(f"Searches: {enquiries_3m} enquiries in last 3 months")
 
     # Needs attention + Negative impact count
     needs_attention = "needs attention" if "needs attention" in tl else None
-    neg_impact = _re_first(r"\bnegative impact:\s*(\d+)\b", t)
+    neg_impact = signals.get("negative_impact_count")
     if needs_attention:
         if neg_impact:
             bullets.append(f"Credit risk factors: Needs attention (Negative impact: {neg_impact})")
@@ -301,9 +360,13 @@ def _parse_payment_performance(t: str) -> list[str]:
     bullets = []
     tl = t.lower()
 
+    if "unable to get information" in tl and "payment average" in tl:
+        bullets.append("Payment average: Unavailable")
+        return bullets
+
     # Payment average Beyond terms / Within terms etc.
     if "payment average" in tl:
-        avg = _re_first(r"\bpayment average\b\s*([A-Za-z\s]+)", t)
+        avg = _re_first(r"\bpayment average\b\s*[\r\n ]+([A-Za-z][A-Za-z\s]+?)(?:\n|$)", t)
         if avg:
             bullets.append(f"Payment average: {avg.strip()}")
 
@@ -336,6 +399,10 @@ def _parse_legal_notices(t: str) -> list[str]:
     elif re.search(r"\bno\s+county\s+court\s+judg(e)?ment", tl):
         bullets.append("County Court Judgement registered: No")
 
+    if "no legal notices registered" in tl:
+        bullets.append("Legal notices registered: No")
+        return bullets
+
     # Registered: source (often appears after "Registered" line)
     # Example from your other report: "Registered" then "THE COUNTY COURT ONLINE"
     reg_source = _re_first(r"\bregistered\b\s*\n\s*([A-Z][A-Z\s]+)\n", t, flags=0)
@@ -349,12 +416,13 @@ def _parse_legal_notices(t: str) -> list[str]:
         bullets.append(f"Ref: {ref}")
 
     # Date: e.g. 31 Jul 2025
-    date = _re_first(r"\b(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})\b", t)
-    if date:
-        bullets.append(f"Date: {date}")
+    if ccj_yes:
+        date = _re_first(r"\b(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})\b", t)
+        if date:
+            bullets.append(f"Date: {date}")
 
     # Value: prefer the largest £ amount found in Legal notices block (avoids £0)
-    money_vals = re.findall(r"£\s*\d[\d,]*", t)
+    money_vals = re.findall(r"£\s*\d[\d,]*", t) if ccj_yes else []
     if money_vals:
         # convert to numeric, pick max
         def _to_int(m):
@@ -426,6 +494,26 @@ def _parse_public_record(t: str) -> list[str]:
                 break
         block = lines[start + 1:end]  # exclude the "Public Record" header line
 
+    # pdfplumber can collapse the company-details row into a single line:
+    # "FIRSTUNICORN 15064523 Active 11 Aug 2023" followed by "LTD".
+    combined_company_row = None
+    for idx, ln in enumerate(block):
+        m = re.match(
+            r"^(.+?)\s+(\d{6,10})\s+([A-Za-z]+)\s+(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})$",
+            ln,
+        )
+        if m:
+            name, number, status, inc_date = m.groups()
+            if idx + 1 < len(block) and re.match(r"^[A-Z]{2,5}$", block[idx + 1]):
+                name = f"{name} {block[idx + 1]}"
+            combined_company_row = {
+                "company_name": name.strip(),
+                "company_number": number,
+                "company_status": status,
+                "incorporation_date": inc_date,
+            }
+            break
+
     # Helpers to take value after label
     LABELS = {
         "company number": "Company number",
@@ -459,7 +547,7 @@ def _parse_public_record(t: str) -> list[str]:
         return None
 
     # Company number (prefer strict numeric)
-    company_number = None
+    company_number = combined_company_row.get("company_number") if combined_company_row else None
     # try line-based label extraction
     cand_num = next_value_after("Company number")
     if cand_num:
@@ -474,7 +562,8 @@ def _parse_public_record(t: str) -> list[str]:
             company_number = m.group(1)
 
     # Company status
-    company_status = next_value_after("Company Status") or next_value_after("Company status")
+    company_status = combined_company_row.get("company_status") if combined_company_row else None
+    company_status = company_status or next_value_after("Company Status") or next_value_after("Company status")
     if company_status:
         # guard against grabbing another label word like "Incorporation"
         if is_label_line(company_status):
@@ -484,9 +573,9 @@ def _parse_public_record(t: str) -> list[str]:
             company_status = company_status.strip()
 
     # Incorporation date (strict date pattern)
-    incorporation_date = None
+    incorporation_date = combined_company_row.get("incorporation_date") if combined_company_row else None
     cand_inc = next_value_after("Incorporation date")
-    if cand_inc:
+    if not incorporation_date and cand_inc:
         m = re.search(r"\b(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\b", cand_inc)
         if m:
             incorporation_date = m.group(1)
@@ -511,6 +600,9 @@ def _parse_public_record(t: str) -> list[str]:
     # -----------------------------
     # Output in the exact format you want
     # -----------------------------
+    if combined_company_row and combined_company_row.get("company_name"):
+        company_name = combined_company_row["company_name"]
+
     if company_name:
         bullets.append(f"Company name: {company_name}")
     if company_number:
@@ -561,11 +653,36 @@ def _bureau_band_from_pdf_text(pdf_text: str) -> tuple[str, list[str]]:
     """
     t = (pdf_text or "").lower()
     reasons: list[str] = []
+    signals = _parse_business_bureau_signals(pdf_text)
 
     # 1) Strong explicit signals
     if "maximum risk" in t:
         reasons.append("Report states: Maximum risk")
         return "D (Very High Risk)", reasons
+
+    if signals.get("credit_score_suppressed"):
+        reasons.append("Business bureau risk score is suppressed")
+
+    credit_limit = signals.get("credit_limit")
+    max_credit = signals.get("max_recommended_credit")
+    if credit_limit == 0 and max_credit == 0:
+        reasons.append("Credit limit and max recommended credit are £0")
+
+    neg_count = int(signals.get("negative_impact_count") or 0)
+    if neg_count:
+        reasons.append(f"Negative impact factors: {neg_count}")
+
+    enquiries_3m = signals.get("enquiries_3m")
+    if isinstance(enquiries_3m, int) and enquiries_3m >= 3:
+        reasons.append(f"Recent company searches: {enquiries_3m} enquiries in 3 months")
+
+    if signals.get("no_ccj_recorded"):
+        reasons.append("No CCJs recorded")
+
+    if signals.get("credit_score_suppressed") and credit_limit == 0 and max_credit == 0 and neg_count >= 4:
+        return "C (High Risk)", reasons
+    if signals.get("credit_score_suppressed") or (credit_limit == 0 and max_credit == 0) or neg_count >= 3:
+        return "B (Moderate Risk)", reasons
 
     # 2) Letter grade (A-F) — seen as 'F' in your report
     # Match patterns like: "Credit score ... F" or isolated grade near "credit score"
@@ -1403,6 +1520,7 @@ def calculate_financial_metrics(data, company_age_months):
 
 def calculate_all_scores_enhanced(metrics, params):
     """Enhanced scoring calculation with better debugging and subprime scoring"""
+    print = builtins.print if DEBUG_MODE else (lambda *args, **kwargs: None)
     industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
     sector_risk = industry_thresholds['Sector Risk']
     
@@ -1688,6 +1806,7 @@ def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
     """
     Adjust ML score for growth businesses that the traditional model undervalues.
     """
+    print = builtins.print if DEBUG_MODE else (lambda *args, **kwargs: None)
     
     if raw_ml_score is None:
         return None
@@ -3247,6 +3366,143 @@ def combine_mca_and_tu_decisions(mca_decision: str | None, tu_decision: str | No
 
     return "REFER"
 
+
+def build_evidence_quality(params: dict, scores: dict, df: pd.DataFrame | None = None) -> list[dict[str, str]]:
+    """Summarise whether the main evidence sources were present and usable."""
+    row_count = len(df) if df is not None else 0
+    tu_score = params.get("tu_director_score")
+    bureau_band = params.get("bureau_band")
+    evidence = [
+        {
+            "evidence": "Bank transactions",
+            "status": "Present" if row_count else "Missing",
+            "detail": f"{row_count:,} transaction rows" if row_count else "No transaction JSON processed",
+        },
+        {
+            "evidence": "MCA rule signals",
+            "status": "Present" if params.get("mca_rule_score") is not None else "Missing",
+            "detail": f"Score {params.get('mca_rule_score')} / {params.get('mca_rule_decision')}" if params.get("mca_rule_score") is not None else "No MCA rule output",
+        },
+        {
+            "evidence": "Director TU XML",
+            "status": "Present" if tu_score is not None else "Missing",
+            "detail": f"Score {tu_score} / {params.get('tu_director_decision')}" if tu_score is not None else "No director TU XML parsed",
+        },
+        {
+            "evidence": "Business credit PDF",
+            "status": "Present" if bureau_band else "Missing",
+            "detail": f"{bureau_band}" if bureau_band else "No business credit PDF parsed",
+        },
+        {
+            "evidence": "Business bureau score",
+            "status": "Suppressed" if params.get("business_credit_score_suppressed") else ("Present" if params.get("business_credit_score") is not None else "Missing"),
+            "detail": (
+                "Score suppressed by bureau"
+                if params.get("business_credit_score_suppressed")
+                else (f"Score {params.get('business_credit_score')}" if params.get("business_credit_score") is not None else "No usable bureau score")
+            ),
+        },
+    ]
+
+    if scores.get("ensemble"):
+        evidence.append(
+            {
+                "evidence": "Decision engine",
+                "status": "Present",
+                "detail": f"Confidence {scores['ensemble'].get('confidence', 0):.0f}%",
+            }
+        )
+    return evidence
+
+
+def build_score_impact_rows(params: dict, metrics: dict, scores: dict) -> list[dict[str, object]]:
+    """Create a plain-English score impact table for the underwriting UI."""
+    ensemble = scores.get("ensemble") or {}
+    detailed = ensemble.get("detailed_breakdown", {}) or {}
+    contributing = ensemble.get("contributing_scores", {}) or {}
+    rows = []
+
+    raw_combined = detailed.get("raw_combined_score")
+    combined = ensemble.get("combined_score")
+    if contributing:
+        rows.append(
+            {
+                "component": "MCA rule",
+                "value": contributing.get("mca_score", params.get("mca_rule_score")),
+                "impact": "60% weighted input",
+                "decision_effect": params.get("mca_rule_decision") or "N/A",
+            }
+        )
+        rows.append(
+            {
+                "component": "Subprime score",
+                "value": contributing.get("subprime_score", scores.get("subprime_score")),
+                "impact": "40% weighted input",
+                "decision_effect": scores.get("subprime_tier") or "N/A",
+            }
+        )
+    if raw_combined is not None:
+        rows.append(
+            {
+                "component": "Raw weighted score",
+                "value": round(float(raw_combined), 1),
+                "impact": "MCA/Subprime before disagreement penalty",
+                "decision_effect": ensemble.get("score_convergence", "N/A"),
+            }
+        )
+    if raw_combined is not None and combined is not None:
+        penalty = round(float(raw_combined) - float(combined), 1)
+        rows.append(
+            {
+                "component": "Convergence adjustment",
+                "value": -penalty,
+                "impact": "Penalty for score disagreement" if penalty else "No penalty",
+                "decision_effect": ensemble.get("score_convergence", "N/A"),
+            }
+        )
+
+    for penalty in params.get("_applied_risk_penalties", []) or []:
+        rows.append(
+            {
+                "component": "Risk penalty",
+                "value": "",
+                "impact": penalty,
+                "decision_effect": "Included in Subprime score",
+            }
+        )
+
+    tu_decision = params.get("tu_director_decision")
+    if tu_decision:
+        rows.append(
+            {
+                "component": "Director TU overlay",
+                "value": params.get("tu_director_score"),
+                "impact": f"TU decision {tu_decision}",
+                "decision_effect": "May cap approve to refer",
+            }
+        )
+
+    bureau_band = params.get("bureau_band")
+    if bureau_band:
+        rows.append(
+            {
+                "component": "Business credit PDF",
+                "value": bureau_band,
+                "impact": "; ".join((params.get("bureau_band_reasons") or [])[:3]),
+                "decision_effect": "Feeds bureau risk penalties",
+            }
+        )
+
+    rows.append(
+        {
+            "component": "Final decision",
+            "value": scores.get("final_decision") or ensemble.get("decision"),
+            "impact": "After MCA/Subprime decision and TU overlay",
+            "decision_effect": "Current displayed recommendation",
+        }
+    )
+    return rows
+
 def render_full_financial_dashboard(
     company_name: str,
     analysis_period: str,
@@ -3351,6 +3607,22 @@ def render_full_financial_dashboard(
             )
         else:
             st.error(f"**Score convergence:** {convergence} — significant disagreement")
+
+        impact_rows = build_score_impact_rows(params, metrics, scores)
+        if impact_rows:
+            with st.expander("Score impact", expanded=True):
+                st.dataframe(pd.DataFrame(impact_rows), use_container_width=True, hide_index=True)
+                final_reasons = scores.get("final_decision_reasons", []) or []
+                if final_reasons:
+                    st.markdown("**Decision path:**")
+                    for reason in final_reasons:
+                        st.write(f"• {reason}")
+
+        evidence_rows = build_evidence_quality(params, scores, filtered_df)
+        if evidence_rows:
+            with st.expander("Evidence quality", expanded=False):
+                evidence_df = pd.DataFrame(evidence_rows)
+                st.dataframe(evidence_df, use_container_width=True, hide_index=True)
 
         # Pricing and details in expander
         with st.expander("Pricing guidance & risk analysis", expanded=False):
@@ -3865,34 +4137,19 @@ def main():
                 xml_bytes = tu_xml_file.getvalue()
                 app_id = Path(tu_xml_file.name).stem
 
-                # EXACT same pattern as TU project
-                feats_obj = extract_features_from_xml_bytes(
-                    xml_bytes=xml_bytes,
-                    app_id=app_id
-                )
+                tu_result = _score_tu_xml_bytes(xml_bytes, app_id)
+                directors_score = tu_result["score"]
 
-                feats = feats_obj.features
-                sr = score_tu_features(feats)
+                st.sidebar.success(f"Director TU Score: {tu_result['score']}/100")
+                st.sidebar.write(f"Director TU Decision: **{tu_result['decision']}**")
 
-                directors_score = sr.score
-
-                tu_result = {
-                    "score": sr.score,
-                    "decision": sr.decision,
-                    "reasons": sr.reasons,
-                    "flags": sr.recovery_flags,
-                }
-
-                st.sidebar.success(f"Director TU Score: {sr.score}/100")
-                st.sidebar.write(f"Director TU Decision: **{sr.decision}**")
-
-                if sr.recovery_flags:
+                if tu_result["flags"]:
                     st.sidebar.caption("Recovery Flags")
-                    st.sidebar.write(sr.recovery_flags)
+                    st.sidebar.write(tu_result["flags"])
 
-                if sr.reasons:
+                if tu_result["reasons"]:
                     st.sidebar.caption("Reasons")
-                    st.sidebar.write(sr.reasons)
+                    st.sidebar.write(tu_result["reasons"])
 
             except Exception as e:
                 st.sidebar.error(f"TU XML scoring failed: {e}")
@@ -3916,6 +4173,7 @@ def main():
         business_ccj = False
         bureau_band = None
         bureau_band_reasons = []
+        bureau_signals = {}
 
         if bureau_pdf is not None:
             pdf_bytes = bureau_pdf.getvalue()
@@ -3932,9 +4190,8 @@ def main():
             business_ccj = _explicit_ccj_present(bureau_text)
 
             # Banding (UW display only)
+            bureau_signals = _parse_business_bureau_signals(bureau_text)
             bureau_band, bureau_band_reasons = _bureau_band_from_pdf_text(bureau_text)
-
-        report_info = build_report_information(bureau_text) if bureau_text else {}
 
         report_info = build_report_information(bureau_text) if bureau_text else {}
 
@@ -4001,6 +4258,15 @@ def main():
 
             "company_age_months": company_age_months,
             "business_ccj": business_ccj,  # now derived from PDF (not a checkbox)
+            "business_credit_score": bureau_signals.get("credit_score"),
+            "business_credit_score_suppressed": bool(bureau_signals.get("credit_score_suppressed", False)),
+            "business_credit_limit": bureau_signals.get("credit_limit"),
+            "business_max_recommended_credit": bureau_signals.get("max_recommended_credit"),
+            "business_negative_impact_count": bureau_signals.get("negative_impact_count", 0),
+            "business_enquiries_3m": bureau_signals.get("enquiries_3m"),
+            "business_company_searches_12m": bureau_signals.get("company_searches_12m"),
+            "business_bureau_needs_attention": bool(bureau_signals.get("needs_attention", False)),
+            "business_no_registered_charges": bool(bureau_signals.get("no_registered_charges", False)),
             "poor_or_no_online_presence": False,
             "uses_generic_email": False,
 
@@ -4028,9 +4294,15 @@ def main():
             key="card_terminal_statements_uploader",
             help="You can upload mixed providers/formats in one run.",
         )
+        process_clicked = st.button(
+            "Process analysis",
+            type="primary",
+            disabled=uploaded_file is None,
+            use_container_width=True,
+        )
         run_to_show = None  # set after processing or from last_run when returning from another page
 
-        if uploaded_file is not None:
+        if uploaded_file is not None and process_clicked:
             try:
                 # Read and process file
                 uploaded_file.seek(0)
@@ -4135,7 +4407,7 @@ def main():
                 scores["primary_account_assessment"] = primary_account_assessment
 
                 # -------------------------------
-                # FINAL DECISION RULES (NEW)
+                # FINAL DECISION RULES
                 # -------------------------------
                 def _base_decision_from_subprime(recommendation_text: str) -> str:
                     s = (recommendation_text or "").upper()
@@ -4148,24 +4420,6 @@ def main():
                         return "APPROVE"
                     return "DECLINE"
 
-                base_decision = _base_decision_from_subprime(scores.get("subprime_recommendation", ""))
-                mca_decision = (scores.get("mca_rule_decision") or "").upper().strip()
-
-                final_decision = base_decision
-                final_reasons = [f"Base decision from Subprime: {base_decision}"]
-
-                if mca_decision == "DECLINE":
-                    final_decision = "DECLINE"
-                    final_reasons.append("MCA Rule override: DECLINE (hard stop)")
-                elif mca_decision == "REFER" and base_decision != "DECLINE":
-                    final_decision = "REFER"
-                    final_reasons.append("MCA Rule override: REFER (manual review)")
-                elif mca_decision == "APPROVE":
-                    final_reasons.append("MCA Rule: APPROVE (no override)")
-
-                # -------------------------------
-                # ENSEMBLE OVERRIDE (TU-aware)
-                # -------------------------------
                 ensemble = scores.get("ensemble") or {}
                 ensemble_decision = ensemble.get("decision")
 
@@ -4173,18 +4427,26 @@ def main():
                 if ensemble_decision is not None:
                     ensemble_decision = str(ensemble_decision).upper().strip()
 
-                # Precedence:
-                # 1) MCA hard-decline always wins
-                # 2) Otherwise, if ensemble exists, use it (includes TU director hard stops)
-                if mca_decision != "DECLINE" and ensemble_decision in ("DECLINE", "REFER", "APPROVE", "SENIOR_REVIEW", "CONDITIONAL_APPROVE"):
+                if ensemble_decision in ("DECLINE", "REFER", "APPROVE", "SENIOR_REVIEW", "CONDITIONAL_APPROVE"):
                     final_decision = combine_mca_and_tu_decisions(
                         ensemble_decision,
                         params.get("tu_director_decision"),
                     )
-                    final_reasons.append(
-                        f"Ensemble override applied: {ensemble_decision} -> {final_decision} "
-                        f"(reason: {ensemble.get('primary_reason', 'n/a')})"
+                    final_reasons = [
+                        f"Decision from weighted MCA/Subprime engine: {ensemble_decision}",
+                        f"Final TU overlay: {ensemble_decision} -> {final_decision}",
+                        f"Reason: {ensemble.get('primary_reason', 'n/a')}",
+                    ]
+                else:
+                    base_decision = _base_decision_from_subprime(scores.get("subprime_recommendation", ""))
+                    final_decision = combine_mca_and_tu_decisions(
+                        base_decision,
+                        params.get("tu_director_decision"),
                     )
+                    final_reasons = [
+                        f"Fallback decision from Subprime: {base_decision}",
+                        f"Final TU overlay: {base_decision} -> {final_decision}",
+                    ]
 
                 # Persist for UI + exports
                 scores["final_decision"] = final_decision
@@ -4251,6 +4513,9 @@ def main():
                 st.code(full_traceback)
                 print(full_traceback)
         
+        elif uploaded_file is not None and not process_clicked and not st.session_state.get("last_run"):
+            st.info("Transaction file loaded. Press Process analysis to run the scorecard.")
+
         elif st.session_state.get("last_run"):
             run = st.session_state["last_run"]
             st.info(

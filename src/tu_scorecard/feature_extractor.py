@@ -61,6 +61,102 @@ def _month_key(dt: datetime) -> str:
     return f"{dt.year:04d}-{dt.month:02d}"
 
 
+def _extract_fixed_width_search07a_response(root: ET.Element, app_id: str) -> Optional[TUFeatures]:
+    """
+    Handle TU exports shaped as:
+        <rows><row><field name="Search07aResponse">...</field></row></rows>
+
+    The field payload is a fixed-width/plain-text Search07a response rather than
+    nested XML. We extract only stable non-PII summary signals for the scorecard.
+    """
+    if strip_ns(root.tag).lower() != "rows":
+        return None
+
+    field = None
+    for node in root.iter():
+        if strip_ns(node.tag).lower() == "field" and node.attrib.get("name") == "Search07aResponse":
+            field = node
+            break
+
+    if field is None or not (field.text or "").strip():
+        return None
+
+    payload = (field.text or "").strip()
+    anchor_date = None
+    first_dt = re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}", payload)
+    if first_dt:
+        anchor_date = _parse_dt(first_dt.group(0))
+
+    # Final score footer in this export appears as F###.... near the end.
+    bureau_score = 0
+    footer_score = re.search(r"F(\d{3})(?=\d{4}[A-Z]\d{4}\.\d{2}\s*$)", payload)
+    if footer_score:
+        bureau_score = to_int(footer_score.group(1))
+    else:
+        score_candidates = [int(m.group(1)) for m in re.finditer(r"F(\d{3})", payload) if 300 <= int(m.group(1)) <= 999]
+        if score_candidates:
+            bureau_score = score_candidates[-1]
+
+    summary_counts = re.search(r"(\d{2})(\d{2})(\d{2})UU", payload)
+    summary_accounts_total = None
+    summary_accounts_active = None
+    summary_accounts_settled = None
+    if summary_counts:
+        summary_accounts_total = to_int(summary_counts.group(1))
+        summary_accounts_active = to_int(summary_counts.group(2))
+        summary_accounts_settled = to_int(summary_counts.group(3))
+
+    account_records = []
+    for match in re.finditer(r"GBP(\d*)(?=\d{4}-\d{2}-\d{2})", payload):
+        amount_text = match.group(1)
+        balance = to_float(amount_text) if amount_text != "" else 0.0
+        opened_match = re.match(r"(\d{4}-\d{2}-\d{2})", payload[match.end():])
+        opened_date = _parse_dt(opened_match.group(1)) if opened_match else None
+        account_records.append({"balance": balance, "opened_date": opened_date})
+
+    accounts_total = summary_accounts_total if summary_accounts_total is not None else len(account_records)
+    accounts_active = summary_accounts_active if summary_accounts_active is not None else sum(1 for record in account_records if record["balance"] > 0)
+    accounts_settled = summary_accounts_settled if summary_accounts_settled is not None else sum(1 for record in account_records if record["balance"] <= 0)
+    opened_6m = 0
+    if anchor_date:
+        cutoff_6m = anchor_date - relativedelta(months=6)
+        opened_6m = sum(
+            1 for record in account_records
+            if record["opened_date"] is not None and record["opened_date"] >= cutoff_6m
+        )
+
+    feats: Dict[str, Any] = {
+        "searches_3m_total": 0,
+        "searches_12m_total": 0,
+        "homecredit_searches_3m_total": 0,
+        "ccj_active_total": 0,
+        "ccj_satisfied_total": 0,
+        "accounts_total": accounts_total,
+        "accounts_active_total": accounts_active,
+        "accounts_settled_total": accounts_settled,
+        "accounts_opened_6m_total": opened_6m,
+        "worst_pay_status_12m": 0,
+        "worst_pay_status_36m": 0,
+        "delinq_12m_total": 0,
+        "delinq_36m_total": 0,
+        "defaults_12m_total": 0,
+        "defaults_36m_total": 0,
+        "bureau_score": bureau_score,
+        "missed_months_3m": 0,
+        "missed_months_6m": 0,
+        "missed_months_12m": 0,
+        "worst_ah_pay_12m": 0,
+        "sum_balances": 0.0,
+        "sum_limits": 0.0,
+        "utilisation_pct": 0.0,
+        "searches_30d": 0,
+        "searches_90d": 0,
+        "tu_parser": "fixed_width_search07a_response",
+    }
+
+    return TUFeatures(app_id=app_id, anchor_date=anchor_date, features=feats)
+
+
 class XMLParseError(Exception):
     """Raised when XML parsing fails even after sanitization."""
     pass
@@ -104,6 +200,10 @@ def extract_features_from_xml_bytes(xml_bytes: bytes, app_id: str) -> TUFeatures
     
     if root is None:
         raise XMLParseError(f"Failed to parse XML for app_id={app_id}: root element is None")
+
+    fixed_width_features = _extract_fixed_width_search07a_response(root, app_id)
+    if fixed_width_features is not None:
+        return fixed_width_features
 
     # Anchor date = jobdetails/searchdate (date the bureau search was run)
     anchor_text = get_text(

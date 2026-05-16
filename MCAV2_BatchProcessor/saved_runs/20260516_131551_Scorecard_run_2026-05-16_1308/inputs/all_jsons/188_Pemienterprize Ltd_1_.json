@@ -1,0 +1,6316 @@
+{
+  "accounts": [
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "balances": {
+        "available": -2482.81,
+        "current": -2482.81,
+        "iso_currency_code": "GBP",
+        "limit": 2500,
+        "unofficial_currency_code": null
+      },
+      "mask": "9652",
+      "name": "CurrentAccount 9652",
+      "official_name": null,
+      "subtype": "checking",
+      "type": "depository"
+    }
+  ],
+  "item": {
+    "available_products": [
+      "assets"
+    ],
+    "billed_products": [
+      "transactions"
+    ],
+    "consent_expiration_time": "2024-06-20T14:37:57Z",
+    "error": null,
+    "institution_id": "ins_59",
+    "item_id": "P6vQ8BpKMPsg8oO9ER8xcpoKbxXaq9Fm7xoRX",
+    "products": [
+      "assets",
+      "transactions"
+    ],
+    "update_type": "background",
+    "webhook": "https://app.herondata.io/api/integrations/itg_KoCXD6P3bLDeaDQ7fqMQTm/webhooks"
+  },
+  "request_id": "xX82j1CUh5Pu6Mi",
+  "total_transactions": 1658,
+  "transactions": [
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -150,
+      "authorized_date": "2024-03-22",
+      "authorized_datetime": "2024-03-22T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-22",
+      "datetime": "2024-03-22T09:43:13Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "202020 83186393 FT 202020 83186393 FT",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "yDqdZOb4AxcyweqpY9wmimOe0d73pOtRMOzP1",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 19.08,
+      "authorized_date": "2024-03-22",
+      "authorized_datetime": "2024-03-22T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "A.e.burgess \u0026 S Lt",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-22",
+      "datetime": "2024-03-22T00:02:19Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "A.e.burgess \u0026 S Lt",
+      "name": "A.E.BURGESS \u0026 S LT AEB1850PE23 DDR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_OTHER_TRANSFER_OUT",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "AbYxqaX8DMiDqw1XrpqMiBnPVkaejnUw96pxd",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 221.38,
+      "authorized_date": "2024-03-22",
+      "authorized_datetime": "2024-03-22T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "E.f.g. House",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-22",
+      "datetime": "2024-03-22T11:13:34Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "E.f.g. House",
+      "name": "E.F.G. HOUSEWARES ON 21 MAR CLP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": null,
+      "transaction_id": "BgdJB9Xx1RFEBgjKrkB5cY7qnZrBN7tvL9Dqg",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -70.4,
+      "authorized_date": "2024-03-22",
+      "authorized_datetime": "2024-03-22T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-22",
+      "datetime": "2024-03-22T02:13:56Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6284267790 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "Kn3VrLYP6ws3rbY6OvrBT0mgobKnNmtyXQVKK",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 243.6,
+      "authorized_date": "2024-03-22",
+      "authorized_datetime": "2024-03-22T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Plasticboxc",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-22",
+      "datetime": "2024-03-22T11:13:34Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Plasticboxc",
+      "name": "PLASTICBOXC ON 20 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_MERCHANDISE_OTHER_GENERAL_MERCHANDISE",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "3kbPEQXn9eswo5xypYoRsYDnKO7QZDtPxKvZw",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": "2024-03-22",
+      "authorized_datetime": "2024-03-22T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-22",
+      "datetime": "2024-03-22T01:10:35Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PLG INTERNATIONAL PEMIENTERPRIZE LTD STO",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": null,
+      "transaction_id": "k9M53KOyDPC8prwjnkpesLR819mYaRtbjRPZx",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -190,
+      "authorized_date": "2024-03-21",
+      "authorized_datetime": "2024-03-21T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-21",
+      "datetime": "2024-03-21T17:03:53Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "209263 23498131 FT 209263 23498131 FT",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "j7nZByO3L1HJka8qjbk1UyDpo3Y91DcvwRzkq",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -20,
+      "authorized_date": "2024-03-21",
+      "authorized_datetime": "2024-03-21T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-21",
+      "datetime": "2024-03-21T17:58:24Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "03RLVaXnxMsDj9NqdojyiR6MXrwdm6t9jr7BO",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 20,
+      "authorized_date": "2024-03-21",
+      "authorized_datetime": "2024-03-21T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Optional",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-21",
+      "datetime": "2024-03-21T18:14:49Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Optional",
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "vwDQxabg7rHqznyrAkzwsKmQwxeZVmsp8myPx",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 154.83,
+      "authorized_date": "2024-03-21",
+      "authorized_datetime": "2024-03-21T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "E.f.g.",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-21",
+      "datetime": "2024-03-21T10:58:55Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "E.f.g.",
+      "name": "E.F.G. HOUSEWARES ON 20 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": null,
+      "transaction_id": "4AeqRbXnzMsDYdwKaoYniv4zoLBkj4UD7kLzL",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 69.35,
+      "authorized_date": "2024-03-21",
+      "authorized_datetime": "2024-03-21T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Super Deal Wholesa",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-21",
+      "datetime": "2024-03-21T10:58:55Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Super Deal Wholesa",
+      "name": "SUPER DEAL WHOLESA ON 20 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_MERCHANDISE_DISCOUNT_STORES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "rndOjgbrZmsLNe08mENvcnBypXzgVBtrgB9jQ",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -200,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-20",
+      "datetime": "2024-03-20T16:17:39Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "209263 23498131 FT 209263 23498131 FT",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "aa0vNwOdyZskrEpQPjrRhL7Ov3xq47tK5ZD3d",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -960,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-20",
+      "datetime": "2024-03-20T09:34:06Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "5vOBQRXn9MSxmwJkaYm3CxZK86wnrZfNABpma",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -40,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Payroll"
+      ],
+      "category_id": "21009000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-20",
+      "datetime": "2024-03-20T09:50:58Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "AKS EXPRESS T INV-113 FT",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "INCOME_WAGES",
+        "primary": "INCOME"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_INCOME.png",
+      "transaction_code": null,
+      "transaction_id": "ZkmqMPOXbjs19XZqbL97TNKOn1MovKC8LRZPm",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 158.36,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Shops",
+        "Supermarkets and Groceries"
+      ],
+      "category_id": "19047000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Bestway Wholesale",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-20",
+      "datetime": "2024-03-20T10:58:38Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Bestway Wholesale",
+      "name": "BESTWAY WHOLESALE ON 19 MAR CLP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_MERCHANDISE_DISCOUNT_STORES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "JQB9j6p1wdSJjenyO6jEUB7g6Q0Pk7U0vbL3Y",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 417.11,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "E.f.g. House",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-20",
+      "datetime": "2024-03-20T10:58:38Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "E.f.g. House",
+      "name": "E.F.G. HOUSEWARES ON 19 MAR CLP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": null,
+      "transaction_id": "xLPp8ObrVaS3dzw7YEdZTZM4Jx09OMfmQM6pz",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -110.79,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-20",
+      "datetime": "2024-03-20T05:36:40Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6282059670 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "oEX7AxNroyTMNnoOJ9NdcEBmk6pJ4BCrQBz0q",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 760,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Just Cash Flow",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-20",
+      "datetime": "2024-03-20T00:02:14Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Just Cash Flow",
+      "name": "JUST CASH FLOW 22B5E3Z DDR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "LOAN_PAYMENTS_PERSONAL_LOAN_PAYMENT",
+        "primary": "LOAN_PAYMENTS"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_LOAN_PAYMENTS.png",
+      "transaction_code": null,
+      "transaction_id": "go7x1qOPd6I4PzMd93PrsdqvjV7eJqU64qpEj",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 632.33,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Service",
+        "Shipping and Freight"
+      ],
+      "category_id": "18058000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Royal Mail",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-20",
+      "datetime": "2024-03-20T00:02:14Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Royal Mail",
+      "name": "ROYAL MAIL GROUP L 000414049000 DDR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "7j4ypaXxZzsXAzndqeAkFmY890ZA3Yt8kQ9Z6",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 100,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Techno Packaging",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-20",
+      "datetime": "2024-03-20T01:10:30Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Techno Packaging",
+      "name": "TECHNO PACKAGING L SI-044156 STO",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_OTHER_GENERAL_SERVICES",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "bxR0d6pwqmczBXg4K6BZIrqODwzV9qCPrqQae",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 212.2,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Techno Packaging",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-20",
+      "datetime": "2024-03-20T10:58:38Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Techno Packaging",
+      "name": "TECHNO PACKAGING ON 19 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_OTHER_GENERAL_SERVICES",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "8r5KXaexOMhVqJgwBYqPC7NBJqmkQNtYVy6kM",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 30,
+      "authorized_date": "2024-03-19",
+      "authorized_datetime": "2024-03-19T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Optional",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-19",
+      "datetime": "2024-03-19T04:54:29Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Optional",
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "MXKMa1pBDLSRaZp9PJaXF8pLk6ARPpH0RMNg4",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 30,
+      "authorized_date": "2024-03-19",
+      "authorized_datetime": "2024-03-19T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Optional",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-19",
+      "datetime": "2024-03-19T04:55:12Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Optional",
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "OwARJqpyM1HDJOp4LnJ7iEgJpdYR4gCp58APB",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -565.73,
+      "authorized_date": "2024-03-20",
+      "authorized_datetime": "2024-03-20T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "2gOwmq9qK56K60oDm3eLrREV2B2mVadkRn8MW",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/amazon_44.png",
+          "name": "Amazon",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "amazon.com"
+        }
+      ],
+      "date": "2024-03-19",
+      "datetime": "2024-03-19T23:59:58Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/amazon_44.png",
+      "merchant_entity_id": "2gOwmq9qK56K60oDm3eLrREV2B2mVadkRn8MW",
+      "merchant_name": "Amazon",
+      "name": "AMAZON PAYMENTS UK DASY4BQDJJBOI5U BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "94ekNbXxnMSorBL65Yr3cvqdmejkOqU68dMJm",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "amazon.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -135.28,
+      "authorized_date": "2024-03-19",
+      "authorized_datetime": "2024-03-19T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-19",
+      "datetime": "2024-03-19T03:26:42Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6280140486 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "EVL5KEpdYMs4Kj7QrAKesan4PerwEncdLpAqO",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 109.2,
+      "authorized_date": "2024-03-19",
+      "authorized_datetime": "2024-03-19T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Shahenterprize",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-19",
+      "datetime": "2024-03-19T10:02:49Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Shahenterprize",
+      "name": "SHAHENTERPRIZE65 124 BBP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "VBDL76pXbkcw7OZLAd7vsVjJYw39kjFn5rpJB",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 10,
+      "authorized_date": "2024-03-19",
+      "authorized_datetime": "2024-03-19T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Optional",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-18",
+      "datetime": "2024-03-18T21:23:46Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Optional",
+      "name": "202020 83186393 OPTIONAL FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "QL0nZ3pkMqSpZz83dbZQfo4qX6MKJ4U9dEKo5",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -943.52,
+      "authorized_date": "2024-03-19",
+      "authorized_datetime": "2024-03-19T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "2gOwmq9qK56K60oDm3eLrREV2B2mVadkRn8MW",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/amazon_44.png",
+          "name": "Amazon",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "amazon.com"
+        }
+      ],
+      "date": "2024-03-18",
+      "datetime": "2024-03-18T23:59:50Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/amazon_44.png",
+      "merchant_entity_id": "2gOwmq9qK56K60oDm3eLrREV2B2mVadkRn8MW",
+      "merchant_name": "Amazon",
+      "name": "AMAZON PAYMENTS UK DAS4YPHRGRHR3JB BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "RDdp5yXAMBco5RXjKq56cxqBQL5N1qf9BykrM",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "amazon.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -55.52,
+      "authorized_date": "2024-03-18",
+      "authorized_datetime": "2024-03-18T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-18",
+      "datetime": "2024-03-18T02:22:11Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6278501934 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "pR79vAbxOKcwLXYJDdLgs0JByLYQ3JtA6JdLe",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 132.83,
+      "authorized_date": "2024-03-18",
+      "authorized_datetime": "2024-03-18T00:00:00Z",
+      "category": [
+        "Service",
+        "Shipping and Freight"
+      ],
+      "category_id": "18058000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Royal Mailers",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-18",
+      "datetime": "2024-03-18T00:02:26Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": "1460 Park Ave",
+        "city": "Emeryville",
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": "94608",
+        "region": "CA",
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Royal Mailers",
+      "name": "ROYAL MAIL GROUP L 000PEM000801 DDR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "XyP1VmpXbvcLVYz1DMVqc4aJ8Lxk6aIzX4Vj4",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -5.17,
+      "authorized_date": "2024-03-18",
+      "authorized_datetime": "2024-03-18T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-18",
+      "datetime": "2024-03-18T14:17:42Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "STICHTING CUSTODIA 13082293-149796821 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "nM7gkvNAZ3HE0916Aq0Jc4APQaL7BAIjaAxX8",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 54.87,
+      "authorized_date": "2024-03-18",
+      "authorized_datetime": "2024-03-18T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Third Party"
+      ],
+      "category_id": "21010000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Asl Asl",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        },
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "zwkjrQbbDQqZJRk3egOAo0XB7jnygNDJk9Vjz",
+          "logo_url": "https://plaid-counterparty-logos.plaid.com/paypal_76.png",
+          "name": "PayPal",
+          "phone_number": null,
+          "type": "payment_app",
+          "website": "paypal.com"
+        }
+      ],
+      "date": "2024-03-17",
+      "datetime": "2024-03-17T11:06:32Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Asl Asl",
+      "name": "ASL ASL ON 14 MAR BDC",
+      "payment_channel": "online",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": "PayPal",
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "NdkExPp31Du8ezp51kexsxrgkVYb3rfydRXzo",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -45.67,
+      "authorized_date": "2024-03-18",
+      "authorized_datetime": "2024-03-18T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-17",
+      "datetime": "2024-03-17T02:02:19Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6277174134 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "eZ74L1ODBdsR1mN3yM1OFyd8mqKR0dc47dD94",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 145.89,
+      "authorized_date": "2024-03-18",
+      "authorized_datetime": "2024-03-18T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "E.f.g.",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-16",
+      "datetime": "2024-03-16T11:21:59Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "E.f.g.",
+      "name": "E.F.G. HOUSEWARES ON 15 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": null,
+      "transaction_id": "YKqmO1eXb0uDAnQmM9AoijAe7Dn39ACzdQa7q",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -115.4,
+      "authorized_date": "2024-03-15",
+      "authorized_datetime": "2024-03-15T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-15",
+      "datetime": "2024-03-15T05:33:08Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6274892526 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "94ekNbXxnMSorBL65Yr3cvqdmejkOqU68dMJr",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -270,
+      "authorized_date": "2024-03-15",
+      "authorized_datetime": "2024-03-15T00:00:00Z",
+      "category": null,
+      "category_id": null,
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Monzo",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-15",
+      "datetime": "2024-03-15T09:15:56Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Monzo",
+      "name": "PEMIENTERPRIZE LTD Sent from Monzo BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "7j4ypaXxZzsXAzndqeAkFmY890ZA3Yt8kQ9Z4",
+      "transaction_type": "unresolved",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": "2024-03-15",
+      "authorized_datetime": "2024-03-15T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-15",
+      "datetime": "2024-03-15T01:10:43Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PLG INTERNATIONAL PEMIENTERPRIZE LTD STO",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": null,
+      "transaction_id": "VBDL76pXbkcw7OZLAd7vsVjJYw39kjFn5rpJk",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 70.79,
+      "authorized_date": "2024-03-15",
+      "authorized_datetime": "2024-03-15T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Super Deal Wholesa",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-15",
+      "datetime": "2024-03-15T11:22:03Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Super Deal Wholesa",
+      "name": "SUPER DEAL WHOLESA ON 14 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_MERCHANDISE_DISCOUNT_STORES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "z1Bw5ObaZJiK6nVrYO6osoOaRXzmvOUMJOmkd",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -70.3,
+      "authorized_date": "2024-03-14",
+      "authorized_datetime": "2024-03-14T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-14",
+      "datetime": "2024-03-14T03:21:51Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6273505158 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "pR79vAbxOKcwLXYJDdLgs0JByLYQ3JtA6JdLN",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 668.64,
+      "authorized_date": "2024-03-14",
+      "authorized_datetime": "2024-03-14T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Gafbros Limited",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-14",
+      "datetime": "2024-03-14T10:02:45Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Gafbros Limited",
+      "name": "GAFBROS LIMITED SI065058 BBP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "EVL5KEpdYMs4Kj7QrAKesan4PerwEncdLpAqN",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 206.7,
+      "authorized_date": "2024-03-14",
+      "authorized_datetime": "2024-03-14T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Gafbros Limited",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-14",
+      "datetime": "2024-03-14T10:03:13Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Gafbros Limited",
+      "name": "GAFBROS LIMITED SI065197 BBP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "MXKMa1pBDLSRaZp9PJaXF8pLk6ARPpH0RMNgR",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 150.31,
+      "authorized_date": "2024-03-14",
+      "authorized_datetime": "2024-03-14T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Kd Wholesale",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-14",
+      "datetime": "2024-03-14T10:04:15Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Kd Wholesale",
+      "name": "KD WHOLESALE 52518 BBP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_MERCHANDISE_OTHER_GENERAL_MERCHANDISE",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "OwARJqpyM1HDJOp4LnJ7iEgJpdYR4gCp58APe",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -1200,
+      "authorized_date": "2024-03-14",
+      "authorized_datetime": "2024-03-14T00:00:00Z",
+      "category": null,
+      "category_id": null,
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Monzo",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-14",
+      "datetime": "2024-03-14T09:51:03Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Monzo",
+      "name": "PEMIENTERPRIZE LTD Sent from Monzo BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "nM7gkvNAZ3HE0916Aq0Jc4APQaL7BAIjaAxX4",
+      "transaction_type": "unresolved",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -30,
+      "authorized_date": "2024-03-14",
+      "authorized_datetime": "2024-03-14T00:00:00Z",
+      "category": null,
+      "category_id": null,
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Monzo",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-14",
+      "datetime": "2024-03-14T10:01:11Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Monzo",
+      "name": "PEMIENTERPRIZE LTD Sent from Monzo BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "QL0nZ3pkMqSpZz83dbZQfo4qX6MKJ4U9dEKoR",
+      "transaction_type": "unresolved",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 199.04,
+      "authorized_date": "2024-03-14",
+      "authorized_datetime": "2024-03-14T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-14",
+      "datetime": "2024-03-14T10:01:58Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "STONEYGATE TRADING MX73938 BBP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_OUT_INVESTMENT_AND_RETIREMENT_FUNDS",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "RDdp5yXAMBco5RXjKq56cxqBQL5N1qf9Bykr5",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -42.78,
+      "authorized_date": "2024-03-13",
+      "authorized_datetime": "2024-03-13T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-13",
+      "datetime": "2024-03-13T03:20:16Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6272142630 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "eZ74L1ODBdsR1mN3yM1OFyd8mqKR0dc47dDQ9",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 291.4,
+      "authorized_date": "2024-03-13",
+      "authorized_datetime": "2024-03-13T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Gafbros Limited",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-13",
+      "datetime": "2024-03-13T07:30:08Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Gafbros Limited",
+      "name": "GAFBROS LIMITED SI064571 BBP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "XyP1VmpXbvcLVYz1DMVqc4aJ8Lxk6aIzX4Vjx",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -1500,
+      "authorized_date": "2024-03-13",
+      "authorized_datetime": "2024-03-13T00:00:00Z",
+      "category": null,
+      "category_id": null,
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Monzo",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-13",
+      "datetime": "2024-03-13T07:09:04Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Monzo",
+      "name": "PEMIENTERPRIZE LTD Sent from Monzo BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "NdkExPp31Du8ezp51kexsxrgkVYb3rfydRXvJ",
+      "transaction_type": "unresolved",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 1127.02,
+      "authorized_date": "2024-03-13",
+      "authorized_datetime": "2024-03-13T00:00:00Z",
+      "category": [
+        "Service",
+        "Shipping and Freight"
+      ],
+      "category_id": "18058000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Royal Mail",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-13",
+      "datetime": "2024-03-13T00:02:09Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Royal Mail",
+      "name": "ROYAL MAIL GROUP L 000414049000 DDR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "z1Bw5ObaZJiK6nVrYO6osoOaRXzmvOUMJOmNV",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 100,
+      "authorized_date": "2024-03-13",
+      "authorized_datetime": "2024-03-13T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Techno Packaging",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-13",
+      "datetime": "2024-03-13T01:10:28Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Techno Packaging",
+      "name": "TECHNO PACKAGING L SI-044156 STO",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_OTHER_GENERAL_SERVICES",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "YKqmO1eXb0uDAnQmM9AoijAe7Dn39ACzdQa11",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 10,
+      "authorized_date": "2024-03-12",
+      "authorized_datetime": "2024-03-12T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-12",
+      "datetime": "2024-03-12T10:49:57Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "202020 83186393 FT 202020 83186393 FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "1yRDOQXn9McRXbABpYXeFDXqYx6QRXtY4mVRp",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 10,
+      "authorized_date": "2024-03-12",
+      "authorized_datetime": "2024-03-12T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-12",
+      "datetime": "2024-03-12T11:51:06Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "202020 83186393 FT 202020 83186393 FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "mO7bKANkXBs5oB9AwdoQhJM1NE6OBMC8eM0qg",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 10,
+      "authorized_date": "2024-03-12",
+      "authorized_datetime": "2024-03-12T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Optional",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-12",
+      "datetime": "2024-03-12T10:05:06Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Optional",
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "P6vQ8BpKMPsg8oO9ER8xcpAgRwzOJAtOKmynZ",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 51.85,
+      "authorized_date": "2024-03-12",
+      "authorized_datetime": "2024-03-12T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "CLR",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-12",
+      "datetime": "2024-03-12T11:02:47Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "CLR",
+      "name": "CLR*WWW.DIRECTPICK ON 11 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "PERSONAL_CARE_GYMS_AND_FITNESS_CENTERS",
+        "primary": "PERSONAL_CARE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_PERSONAL_CARE.png",
+      "transaction_code": null,
+      "transaction_id": "LpyO4DNqL6ij4ZNdxq4OFRB9xJ1O8BtJx0LAL",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 296.35,
+      "authorized_date": "2024-03-12",
+      "authorized_datetime": "2024-03-12T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "E.f.g.",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-12",
+      "datetime": "2024-03-12T11:02:47Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "E.f.g.",
+      "name": "E.F.G. HOUSEWARES ON 11 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": null,
+      "transaction_id": "6043nRXe9MhwMZ9nxYM4sqrkpbORMrfAjaev7",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -24.3,
+      "authorized_date": "2024-03-12",
+      "authorized_datetime": "2024-03-12T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-12",
+      "datetime": "2024-03-12T02:02:42Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6269966478 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "qQEV0XbrZkS6LaO8VjLmhjJ4kqRXDJC1kJjOQ",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 162.3,
+      "authorized_date": "2024-03-12",
+      "authorized_datetime": "2024-03-12T00:00:00Z",
+      "category": [
+        "Service",
+        "Shipping and Freight"
+      ],
+      "category_id": "18058000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Packaging Express",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-12",
+      "datetime": "2024-03-12T11:02:47Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Packaging Express",
+      "name": "PACKAGING EXPRESS ON 11 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_MERCHANDISE_SUPERSTORES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "w61nJAbRx4sBQ1RrKNQJfao3jgp7KocR3LE94",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 356.02,
+      "authorized_date": "2024-03-12",
+      "authorized_datetime": "2024-03-12T00:00:00Z",
+      "category": [
+        "Food and Drink",
+        "Restaurants"
+      ],
+      "category_id": "13005000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "The Plastic Box Co",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-12",
+      "datetime": "2024-03-12T10:58:53Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "The Plastic Box Co",
+      "name": "THE PLASTIC BOX CO W672582 BBP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_MERCHANDISE_OTHER_GENERAL_MERCHANDISE",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "D96ZyrpxKMCXyzpABKy7F4R7o9vdgRIX6ZNn1",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 78.34,
+      "authorized_date": "2024-03-12",
+      "authorized_datetime": "2024-03-12T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Vir Plastics Limit Pel",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-12",
+      "datetime": "2024-03-12T11:35:12Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Vir Plastics Limit Pel",
+      "name": "VIR PLASTICS LIMIT PEL05032024 BBP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_AUTOMOTIVE",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "d8mr6DOLqbiEVbZA3LV1czb8XaB7obUoNbqE7",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -30,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-11",
+      "datetime": "2024-03-11T10:08:38Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "202020 83186393 OPTIONAL FT",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "yDqdZOb4AxcyweqpY9wmimOe0d73pOtRMOzkZ",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 30,
+      "authorized_date": "2024-03-12",
+      "authorized_datetime": "2024-03-12T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Optional",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-11",
+      "datetime": "2024-03-11T19:09:34Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Optional",
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "BgdJB9Xx1RFEBgjKrkB5cY7qnZrBN7tvL9DMB",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 30,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Optional",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-11",
+      "datetime": "2024-03-11T10:02:49Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Optional",
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "Kn3VrLYP6ws3rbY6OvrBT0mgobKnNmtyXQV3o",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 150,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Optional",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-11",
+      "datetime": "2024-03-11T10:02:14Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Optional",
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "k9M53KOyDPC8prwjnkpesLR819mYaRtbjRPxX",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -25.8,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-11",
+      "datetime": "2024-03-11T04:27:24Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6268873278 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "AbYxqaX8DMiDqw1XrpqMiBnPVkaejnUw96p8P",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 60.39,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T00:00:00Z",
+      "category": [
+        "Service",
+        "Shipping and Freight"
+      ],
+      "category_id": "18058000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Royal Mailers",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-11",
+      "datetime": "2024-03-11T00:02:43Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": "1460 Park Ave",
+        "city": "Emeryville",
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": "94608",
+        "region": "CA",
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Royal Mailers",
+      "name": "ROYAL MAIL GROUP L 000PEM000801 DDR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "vwDQxabg7rHqznyrAkzwsKmQwxeZVmsp8myOd",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 140.54,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Vir Plastics Limit Pel",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-11",
+      "datetime": "2024-03-11T11:17:26Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Vir Plastics Limit Pel",
+      "name": "VIR PLASTICS LIMIT PEL050324 FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_AUTOMOTIVE",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "3kbPEQXn9eswo5xypYoRsYDnKO7QZDtPxKvYk",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -15.44,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-10",
+      "datetime": "2024-03-10T04:43:38Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6267763758 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "j7nZByO3L1HJka8qjbk1UyDpo3Y91DcvwRz8P",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 2000,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T00:00:00Z",
+      "category": [
+        "Payment",
+        "Rent"
+      ],
+      "category_id": "16002000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Pssons LTD Pemirent",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-10",
+      "datetime": "2024-03-10T19:02:32Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Pssons LTD Pemirent",
+      "name": "PS+SONS LTD PEMIRENT FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "RENT_AND_UTILITIES_RENT",
+        "primary": "RENT_AND_UTILITIES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_RENT_AND_UTILITIES.png",
+      "transaction_code": null,
+      "transaction_id": "03RLVaXnxMsDj9NqdojyiR6MXrwdm6t9jr7PQ",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -69.37,
+      "authorized_date": "2024-03-11",
+      "authorized_datetime": "2024-03-11T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-09",
+      "datetime": "2024-03-09T03:16:59Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6266151582 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "rndOjgbrZmsLNe08mENvcnBypXzgVBtrgB9dx",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -150,
+      "authorized_date": "2024-03-08",
+      "authorized_datetime": "2024-03-08T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-08",
+      "datetime": "2024-03-08T09:50:51Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "JQB9j6p1wdSJjenyO6jEUB7g6Q0Pk7U0vbLBg",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -49.72,
+      "authorized_date": "2024-03-08",
+      "authorized_datetime": "2024-03-08T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-08",
+      "datetime": "2024-03-08T04:15:15Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6265197630 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "8r5KXaexOMhVqJgwBYqPC7NBJqmkQNtYVy6R1",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 350.21,
+      "authorized_date": "2024-03-08",
+      "authorized_datetime": "2024-03-08T00:00:00Z",
+      "category": [
+        "Community",
+        "Government Departments and Agencies"
+      ],
+      "category_id": "12009000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Hmrc",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-08",
+      "datetime": "2024-03-08T11:20:59Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Hmrc",
+      "name": "HMRC ETMP ON 07 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "GOVERNMENT_AND_NON_PROFIT_TAX_PAYMENT",
+        "primary": "GOVERNMENT_AND_NON_PROFIT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GOVERNMENT_AND_NON_PROFIT.png",
+      "transaction_code": null,
+      "transaction_id": "xLPp8ObrVaS3dzw7YEdZTZM4Jx09OMfmQM6k5",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 938.36,
+      "authorized_date": "2024-03-08",
+      "authorized_datetime": "2024-03-08T00:00:00Z",
+      "category": [
+        "Community",
+        "Government Departments and Agencies"
+      ],
+      "category_id": "12009000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Hmrc",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-08",
+      "datetime": "2024-03-08T11:20:59Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Hmrc",
+      "name": "HMRC ETMP ON 07 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "GOVERNMENT_AND_NON_PROFIT_TAX_PAYMENT",
+        "primary": "GOVERNMENT_AND_NON_PROFIT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GOVERNMENT_AND_NON_PROFIT.png",
+      "transaction_code": null,
+      "transaction_id": "aa0vNwOdyZskrEpQPjrRhL7Ov3xq47tK5ZDwm",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": "2024-03-08",
+      "authorized_datetime": "2024-03-08T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-08",
+      "datetime": "2024-03-08T01:10:36Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PLG INTERNATIONAL PEMIENTERPRIZE LTD STO",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": null,
+      "transaction_id": "ZkmqMPOXbjs19XZqbL97TNKOn1MovKC8LRZ3R",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -3250,
+      "authorized_date": "2024-03-08",
+      "authorized_datetime": "2024-03-08T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-08",
+      "datetime": "2024-03-08T14:53:59Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "YL IV Limited YL60156814FND Fund BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "4AeqRbXnzMsDYdwKaoYniv4zoLBkj4UD7kLMa",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -630,
+      "authorized_date": "2024-03-08",
+      "authorized_datetime": "2024-03-08T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-07",
+      "datetime": "2024-03-07T21:09:02Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "202020 83186393 FT 202020 83186393 FT",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "5vOBQRXn9MSxmwJkaYm3CxZK86wnrZfNABpOw",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -930,
+      "authorized_date": "2024-03-07",
+      "authorized_datetime": "2024-03-07T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Credit"
+      ],
+      "category_id": "21005000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-07",
+      "datetime": "2024-03-07T10:35:00Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "202020 83186393 OPTIONAL FT",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_IN"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_IN.png",
+      "transaction_code": null,
+      "transaction_id": "bxR0d6pwqmczBXg4K6BZIrqODwzV9qCPrqQ8D",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 561.85,
+      "authorized_date": "2024-03-07",
+      "authorized_datetime": "2024-03-07T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Barclays",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-07",
+      "datetime": "2024-03-07T00:02:12Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Barclays",
+      "name": "BARCLAYS 0520A6538117237 DDR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "HIGH",
+        "detailed": "LOAN_PAYMENTS_CREDIT_CARD_PAYMENT",
+        "primary": "LOAN_PAYMENTS"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_LOAN_PAYMENTS.png",
+      "transaction_code": null,
+      "transaction_id": "94ekNbXxnMSorBL65Yr3cvqdmejkOqU68dMpr",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 164.12,
+      "authorized_date": "2024-03-07",
+      "authorized_datetime": "2024-03-07T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Bcard Commercial",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-07",
+      "datetime": "2024-03-07T00:02:12Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Bcard Commercial",
+      "name": "BCARD COMMERCIAL 5476761023409072 DDR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "7j4ypaXxZzsXAzndqeAkFmY890ZA3Yt8kQ9B4",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -39.54,
+      "authorized_date": "2024-03-07",
+      "authorized_datetime": "2024-03-07T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-07",
+      "datetime": "2024-03-07T04:24:51Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6263837742 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "go7x1qOPd6I4PzMd93PrsdqvjV7eJqU64qpx3",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 32.01,
+      "authorized_date": "2024-03-07",
+      "authorized_datetime": "2024-03-07T00:00:00Z",
+      "category": [
+        "Travel",
+        "Gas Stations"
+      ],
+      "category_id": "22009000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Motor Fuel Group",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-07",
+      "datetime": "2024-03-07T11:15:03Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Motor Fuel Group",
+      "name": "MFG OSIERS ON 06 MAR CLP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSPORTATION_GAS",
+        "primary": "TRANSPORTATION"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSPORTATION.png",
+      "transaction_code": null,
+      "transaction_id": "oEX7AxNroyTMNnoOJ9NdcEBmk6pJ4BCrQBz3r",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 20.58,
+      "authorized_date": "2024-03-06",
+      "authorized_datetime": "2024-03-06T00:00:00Z",
+      "category": [
+        "Bank Fees"
+      ],
+      "category_id": "10000000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-06",
+      "datetime": "2024-03-06T00:33:18Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "CHARGES COMMISSION FOR PERIOD 15JAN/12FEB **********************",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "BANK_FEES_OTHER_BANK_FEES",
+        "primary": "BANK_FEES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_BANK_FEES.png",
+      "transaction_code": null,
+      "transaction_id": "RDdp5yXAMBco5RXjKq56cxqBQL5N1qf9BykA5",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 238.28,
+      "authorized_date": "2024-03-06",
+      "authorized_datetime": "2024-03-06T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "E.f.g.",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-06",
+      "datetime": "2024-03-06T11:06:06Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "E.f.g.",
+      "name": "E.F.G. HOUSEWARES ON 05 MAR BDC",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "FOOD_AND_DRINK_RESTAURANT",
+        "primary": "FOOD_AND_DRINK"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_FOOD_AND_DRINK.png",
+      "transaction_code": null,
+      "transaction_id": "OwARJqpyM1HDJOp4LnJ7iEgJpdYR4gCp58AJe",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -77.11,
+      "authorized_date": "2024-03-06",
+      "authorized_datetime": "2024-03-06T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-06",
+      "datetime": "2024-03-06T02:11:21Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6261717198 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "MXKMa1pBDLSRaZp9PJaXF8pLk6ARPpH0RMNmR",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 39.42,
+      "authorized_date": "2024-03-06",
+      "authorized_datetime": "2024-03-06T00:00:00Z",
+      "category": [
+        "Interest",
+        "Interest Charged"
+      ],
+      "category_id": "15002000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-06",
+      "datetime": "2024-03-06T00:33:18Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "INTEREST CHARGED INTEREST CHARGED",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "BANK_FEES_INTEREST_CHARGE",
+        "primary": "BANK_FEES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_BANK_FEES.png",
+      "transaction_code": null,
+      "transaction_id": "QL0nZ3pkMqSpZz83dbZQfo4qX6MKJ4U9dEK0R",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 1156.14,
+      "authorized_date": "2024-03-06",
+      "authorized_datetime": "2024-03-06T00:00:00Z",
+      "category": [
+        "Service",
+        "Shipping and Freight"
+      ],
+      "category_id": "18058000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Royal Mail",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-06",
+      "datetime": "2024-03-06T00:02:17Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Royal Mail",
+      "name": "ROYAL MAIL GROUP L 000414049000 DDR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_SERVICES_POSTAGE_AND_SHIPPING",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "nM7gkvNAZ3HE0916Aq0Jc4APQaL7BAIjaAxL4",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 100,
+      "authorized_date": "2024-03-06",
+      "authorized_datetime": "2024-03-06T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Techno Packaging",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-06",
+      "datetime": "2024-03-06T01:10:28Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Techno Packaging",
+      "name": "TECHNO PACKAGING L SI-044156 STO",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_SERVICES_OTHER_GENERAL_SERVICES",
+        "primary": "GENERAL_SERVICES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_SERVICES.png",
+      "transaction_code": null,
+      "transaction_id": "EVL5KEpdYMs4Kj7QrAKesan4PerwEncdLpA1N",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 22.25,
+      "authorized_date": "2024-03-06",
+      "authorized_datetime": "2024-03-06T00:00:00Z",
+      "category": [
+        "Travel",
+        "Gas Stations"
+      ],
+      "category_id": "22009000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Welcome Break",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-06",
+      "datetime": "2024-03-06T11:06:06Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Welcome Break",
+      "name": "WELCOME BREAK ON 05 MAR CLP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSPORTATION_GAS",
+        "primary": "TRANSPORTATION"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSPORTATION.png",
+      "transaction_code": null,
+      "transaction_id": "VBDL76pXbkcw7OZLAd7vsVjJYw39kjFn5rp7k",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 10,
+      "authorized_date": "2024-03-05",
+      "authorized_datetime": "2024-03-05T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Optional",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-05",
+      "datetime": "2024-03-05T08:04:42Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Optional",
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "NdkExPp31Du8ezp51kexsxrgkVYb3rfydRXqJ",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 20,
+      "authorized_date": "2024-03-05",
+      "authorized_datetime": "2024-03-05T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Optional",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-05",
+      "datetime": "2024-03-05T04:46:11Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Optional",
+      "name": "209263 23498131 OPTIONAL FT",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "TRANSFER_OUT_ACCOUNT_TRANSFER",
+        "primary": "TRANSFER_OUT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_TRANSFER_OUT.png",
+      "transaction_code": null,
+      "transaction_id": "YKqmO1eXb0uDAnQmM9AoijAe7Dn39ACzdQaR1",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -1783.91,
+      "authorized_date": "2024-03-05",
+      "authorized_datetime": "2024-03-05T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "2gOwmq9qK56K60oDm3eLrREV2B2mVadkRn8MW",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/amazon_44.png",
+          "name": "Amazon",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "amazon.com"
+        }
+      ],
+      "date": "2024-03-05",
+      "datetime": "2024-03-05T00:00:19Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/amazon_44.png",
+      "merchant_entity_id": "2gOwmq9qK56K60oDm3eLrREV2B2mVadkRn8MW",
+      "merchant_name": "Amazon",
+      "name": "AMAZON PAYMENTS UK DASEMUVK3W2YPRM BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "z1Bw5ObaZJiK6nVrYO6osoOaRXzmvOUMJOmVV",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "amazon.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 122.65,
+      "authorized_date": "2024-03-05",
+      "authorized_datetime": "2024-03-05T00:00:00Z",
+      "category": [
+        "Shops",
+        "Supermarkets and Groceries"
+      ],
+      "category_id": "19047000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Bestway Wholesale",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-05",
+      "datetime": "2024-03-05T11:09:17Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Bestway Wholesale",
+      "name": "BESTWAY WHOLESALE ON 04 MAR CLP",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "GENERAL_MERCHANDISE_DISCOUNT_STORES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "XyP1VmpXbvcLVYz1DMVqc4aJ8Lxk6aIzX4Vqx",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 12.56,
+      "authorized_date": "2024-03-05",
+      "authorized_datetime": "2024-03-05T00:00:00Z",
+      "category": [
+        "Shops"
+      ],
+      "category_id": "19000000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "pBowAoZJMM9DKR37jvNmzM4yWBBXyMzV2rM3A",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/costco_235.png",
+          "name": "Costco",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "costco.com"
+        }
+      ],
+      "date": "2024-03-05",
+      "datetime": "2024-03-05T11:09:17Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/costco_235.png",
+      "merchant_entity_id": "pBowAoZJMM9DKR37jvNmzM4yWBBXyMzV2rM3A",
+      "merchant_name": "Costco",
+      "name": "Costco",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_SUPERSTORES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "pR79vAbxOKcwLXYJDdLgs0JByLYQ3JtA6JdzN",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": "costco.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -92.38,
+      "authorized_date": "2024-03-05",
+      "authorized_datetime": "2024-03-05T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-05",
+      "datetime": "2024-03-05T05:07:56Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6260489022 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "eZ74L1ODBdsR1mN3yM1OFyd8mqKR0dc47dDA9",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -129.25,
+      "authorized_date": "2024-03-04",
+      "authorized_datetime": "2024-03-04T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-04",
+      "datetime": "2024-03-04T03:38:29Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6258539670 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "mO7bKANkXBs5oB9AwdoQhJM1NE6OBMC8eM0zg",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -84.5,
+      "authorized_date": "2024-03-04",
+      "authorized_datetime": "2024-03-04T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-03",
+      "datetime": "2024-03-03T05:28:13Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6257343318 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "d8mr6DOLqbiEVbZA3LV1czb8XaB7obUoNbqM7",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -20.96,
+      "authorized_date": "2024-03-01",
+      "authorized_datetime": "2024-03-01T00:00:00Z",
+      "category": [
+        "Shops",
+        "Digital Purchase"
+      ],
+      "category_id": "19019000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "VERY_HIGH",
+          "entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+          "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+          "name": "eBay",
+          "phone_number": null,
+          "type": "merchant",
+          "website": "ebay.com"
+        }
+      ],
+      "date": "2024-03-01",
+      "datetime": "2024-03-01T02:27:32Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": "https://plaid-merchant-logos.plaid.com/ebay_310.png",
+      "merchant_entity_id": "o2b36aaRWwVwoD70pgje1ML938DADoJ2b9LnY",
+      "merchant_name": "eBay",
+      "name": "EBAY Commerce UK L P*6254402574 BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "VERY_HIGH",
+        "detailed": "GENERAL_MERCHANDISE_ONLINE_MARKETPLACES",
+        "primary": "GENERAL_MERCHANDISE"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_GENERAL_MERCHANDISE.png",
+      "transaction_code": null,
+      "transaction_id": "6043nRXe9MhwMZ9nxYM4sqrkpbORMrfAjaeM7",
+      "transaction_type": "digital",
+      "unofficial_currency_code": null,
+      "website": "ebay.com"
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 27.6,
+      "authorized_date": "2024-03-01",
+      "authorized_datetime": "2024-03-01T00:00:00Z",
+      "category": [
+        "Shops",
+        "Clothing and Accessories"
+      ],
+      "category_id": "19012000",
+      "check_number": null,
+      "counterparties": [
+        {
+          "confidence_level": "LOW",
+          "entity_id": null,
+          "logo_url": null,
+          "name": "Mountain Recy",
+          "phone_number": null,
+          "type": "merchant",
+          "website": null
+        }
+      ],
+      "date": "2024-03-01",
+      "datetime": "2024-03-01T00:05:01Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": "Mountain Recy",
+      "name": "MOUNTAIN RECY AC7RH2M DDR",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "RENT_AND_UTILITIES_GAS_AND_ELECTRICITY",
+        "primary": "RENT_AND_UTILITIES"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_RENT_AND_UTILITIES.png",
+      "transaction_code": null,
+      "transaction_id": "D96ZyrpxKMCXyzpABKy7F4R7o9vdgRIX6ZNJ1",
+      "transaction_type": "place",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": 200,
+      "authorized_date": "2024-03-01",
+      "authorized_datetime": "2024-03-01T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Debit"
+      ],
+      "category_id": "21006000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-01",
+      "datetime": "2024-03-01T01:11:50Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "PLG INTERNATIONAL PEMIENTERPRIZE LTD STO",
+      "payment_channel": "in store",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "ENTERTAINMENT_CASINOS_AND_GAMBLING",
+        "primary": "ENTERTAINMENT"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_ENTERTAINMENT.png",
+      "transaction_code": null,
+      "transaction_id": "LpyO4DNqL6ij4ZNdxq4OFRB9xJ1O8BtJx0L9L",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    },
+    {
+      "account_id": "8r5KXaexOMhVqJgwBYqPC7NEEybywYIJaz7Kj",
+      "account_owner": null,
+      "amount": -200,
+      "authorized_date": "2024-03-01",
+      "authorized_datetime": "2024-03-01T00:00:00Z",
+      "category": [
+        "Transfer",
+        "Payroll"
+      ],
+      "category_id": "21009000",
+      "check_number": null,
+      "counterparties": [],
+      "date": "2024-03-01",
+      "datetime": "2024-03-01T10:31:47Z",
+      "iso_currency_code": "GBP",
+      "location": {
+        "address": null,
+        "city": null,
+        "country": null,
+        "lat": null,
+        "lon": null,
+        "postal_code": null,
+        "region": null,
+        "store_number": null
+      },
+      "logo_url": null,
+      "merchant_entity_id": null,
+      "merchant_name": null,
+      "name": "Pemienterprize Ltd PEMIENTERPRIZE LTD BGC",
+      "payment_channel": "other",
+      "payment_meta": {
+        "by_order_of": null,
+        "payee": null,
+        "payer": null,
+        "payment_method": null,
+        "payment_processor": null,
+        "ppd_id": null,
+        "reason": null,
+        "reference_number": null
+      },
+      "pending": false,
+      "pending_transaction_id": null,
+      "personal_finance_category": {
+        "confidence_level": "LOW",
+        "detailed": "INCOME_WAGES",
+        "primary": "INCOME"
+      },
+      "personal_finance_category_icon_url": "https://plaid-category-icons.plaid.com/PFC_INCOME.png",
+      "transaction_code": null,
+      "transaction_id": "w61nJAbRx4sBQ1RrKNQJfao3jgp7KocR3LEP4",
+      "transaction_type": "special",
+      "unofficial_currency_code": null,
+      "website": null
+    }
+  ]
+}

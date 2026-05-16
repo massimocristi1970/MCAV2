@@ -1,0 +1,8 @@
+metric,value,note
+Processed applications,604,All JSONs processed successfully
+Labelled paid/not-paid cases,8,Used for calibration analysis
+Paid cases,6,Good outcome sample
+Not-paid cases,2,Bad outcome sample
+Unlabelled cases,596,"Useful for score distribution, not outcome calibration"
+Outcome conflicts,0,Must be resolved before trusting exports
+Calibration confidence,Weak,Conservative because outcome data is limited

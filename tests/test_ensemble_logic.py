@@ -152,7 +152,7 @@ def test_ml_score_is_informational_only_and_does_not_drive_decline():
     assert result["decision"] == "APPROVE"
     assert "ml_score" not in result["contributing_scores"]
     assert result["detailed_breakdown"]["informational_scores"]["ml_score"] == 0
-    assert result["primary_reason"].startswith("Combined 60/40 MCA/Subprime score")
+    assert result["primary_reason"].startswith("Weighted MCA/Subprime score")
     assert "High cash flow volatility" not in result["primary_reason"]
 
 

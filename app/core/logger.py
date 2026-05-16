@@ -115,7 +115,10 @@ def log_performance(logger: logging.Logger):
             try:
                 result = func(*args, **kwargs)
                 duration = time.time() - start_time
-                logger.info(f"{func.__name__} completed in {duration:.3f}s")
+                if duration >= 0.25:
+                    logger.info(f"{func.__name__} completed in {duration:.3f}s")
+                else:
+                    logger.debug(f"{func.__name__} completed in {duration:.3f}s")
                 return result
             except Exception as e:
                 duration = time.time() - start_time

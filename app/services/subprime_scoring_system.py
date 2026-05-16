@@ -359,6 +359,36 @@ class SubprimeScoring:
             total_penalty += penalty
             applied_penalties.append(f"Business CCJ: -{penalty}")
 
+        if params.get('business_credit_score_suppressed', False):
+            total_penalty += 2
+            applied_penalties.append("Business bureau score suppressed: -2")
+
+        credit_limit = params.get('business_credit_limit')
+        max_credit = params.get('business_max_recommended_credit')
+        if credit_limit == 0 and max_credit == 0:
+            total_penalty += 2
+            applied_penalties.append("Business bureau credit limit £0: -2")
+
+        negative_impact_count = params.get('business_negative_impact_count') or 0
+        try:
+            negative_impact_count = int(negative_impact_count)
+        except (TypeError, ValueError):
+            negative_impact_count = 0
+        if negative_impact_count >= 4:
+            total_penalty += 2
+            applied_penalties.append(f"Business bureau negative factors ({negative_impact_count}): -2")
+        elif negative_impact_count >= 2:
+            total_penalty += 1
+            applied_penalties.append(f"Business bureau negative factors ({negative_impact_count}): -1")
+
+        enquiries_3m = params.get('business_enquiries_3m') or 0
+        try:
+            enquiries_3m = int(enquiries_3m)
+        except (TypeError, ValueError):
+            enquiries_3m = 0
+        if enquiries_3m >= 3:
+            total_penalty += 1
+            applied_penalties.append(f"Recent business bureau enquiries ({enquiries_3m}): -1")
 
         # Cap maximum penalty to prevent "death by 1000 cuts"
         if total_penalty > self._max_penalty_cap:

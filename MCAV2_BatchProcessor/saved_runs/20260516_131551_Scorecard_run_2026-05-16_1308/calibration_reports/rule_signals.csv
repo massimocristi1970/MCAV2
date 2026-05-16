@@ -1,0 +1,11 @@
+reason_source,reason,not_paid,paid,total_mentions,not_paid_share
+mca_rule_reasons,Avg Negative Balance Days 10 > 6,2,0,2,1.0
+mca_rule_reasons,Cash Flow Volatility 1.01 > 0.35,2,0,2,1.0
+final_decision_reasons,Transaction consistency too poor for MCA lending (inflow pattern analysis),2,2,4,0.5
+final_decision_reasons,Ensemble decision: DECLINE,2,6,8,0.25
+final_decision_reasons,"Combined 60/40 MCA/Subprime score 63.9 is below the senior review threshold of 60 (MCA 60 / Subprime 82). Raw 60/40 score was 68.9, reduced by 5.0 for moderate convergence between MCA and Subprime.",0,2,2,0.0
+final_decision_reasons,Directors score critically low (<20),0,2,2,0.0
+mca_rule_reasons,Avg Negative Balance Days 7 > 6,0,2,2,0.0
+mca_rule_reasons,Cash Flow Volatility 0.38 > 0.35,0,2,2,0.0
+mca_rule_reasons,Cash Flow Volatility 0.55 > 0.35,0,2,2,0.0
+mca_rule_reasons,Cash Flow Volatility 0.73 > 0.35,0,2,2,0.0

@@ -1368,6 +1368,30 @@ class TightenedSubprimeScoring:
             if params.get(factor, False):
                 penalty += penalty_points
 
+        if params.get('business_credit_score_suppressed', False):
+            penalty += 2
+
+        if params.get('business_credit_limit') == 0 and params.get('business_max_recommended_credit') == 0:
+            penalty += 2
+
+        negative_impact_count = params.get('business_negative_impact_count') or 0
+        try:
+            negative_impact_count = int(negative_impact_count)
+        except (TypeError, ValueError):
+            negative_impact_count = 0
+        if negative_impact_count >= 4:
+            penalty += 2
+        elif negative_impact_count >= 2:
+            penalty += 1
+
+        enquiries_3m = params.get('business_enquiries_3m') or 0
+        try:
+            enquiries_3m = int(enquiries_3m)
+        except (TypeError, ValueError):
+            enquiries_3m = 0
+        if enquiries_3m >= 3:
+            penalty += 1
+
         # Cap maximum penalty to prevent excessive stacking - micro enterprise friendly
         max_penalty_cap = 12
         if penalty > max_penalty_cap:
@@ -2212,13 +2236,21 @@ def calculate_all_scores_tightened(metrics, params):
         final_reasons = [f"Base decision from Subprime: {base_decision}"]
 
         if mca_rule_decision == "DECLINE":
-            final_decision = "DECLINE"
-            final_reasons.append("MCA Rule override: DECLINE (hard stop)")
+            mca_score = float(mca_rule.get("mca_rule_score") or 0)
+            if mca_score <= 20:
+                final_decision = "DECLINE"
+                final_reasons.append("MCA Rule severe failure: DECLINE hard stop")
+            elif base_decision == "APPROVE":
+                final_decision = "REFER"
+                final_reasons.append("MCA Rule soft decline: capped APPROVE to REFER")
+            elif base_decision != "DECLINE":
+                final_decision = "REFER"
+                final_reasons.append("MCA Rule soft decline: manual review cap")
         elif mca_rule_decision == "REFER" and base_decision != "DECLINE":
             final_decision = "REFER"
-            final_reasons.append("MCA Rule override: REFER (manual review)")
+            final_reasons.append("MCA Rule cap: REFER (manual review)")
         elif mca_rule_decision == "APPROVE":
-            final_reasons.append("MCA Rule: APPROVE (no override)")
+            final_reasons.append("MCA Rule supports combined decision but does not approve by itself")
 
     return {
         'industry_score': industry_score,
@@ -3093,6 +3125,59 @@ def _extract_text_from_pdf_bytes(pdf_bytes: bytes) -> tuple[str, str, str]:
     return "", "none", " | ".join(errors)
 
 
+def _norm_pdf_text(t: str) -> str:
+    if not t:
+        return ""
+    return (
+        t.replace("\ufb01", "fi")
+        .replace("\ufb02", "fl")
+        .replace("�", "")
+        .replace("\x00", "fi")
+        .replace("Ł", "£")
+    )
+
+
+def _re_first(pattern: str, text: str, flags=re.IGNORECASE):
+    m = re.search(pattern, text, flags)
+    return m.group(1).strip() if m else None
+
+
+def _money_to_int(s: str | None) -> int | None:
+    if not s:
+        return None
+    digits = re.sub(r"[^\d]", "", str(s))
+    return int(digits) if digits else None
+
+
+def _parse_business_bureau_signals(full_text: str) -> dict[str, object]:
+    """Extract modelling-safe Capital report signals for batch scorecard outputs."""
+    t = _norm_pdf_text(full_text or "")
+    tl = t.lower()
+
+    credit_score = _re_first(r"\bcredit score\b\s*[\:\-]?\s*(\d{1,3})\b", t)
+    credit_limit = _re_first(r"\bcredit limit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
+    max_credit = _re_first(r"\bmax\.?\s*recommended\s*credit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
+    searches_12m = _re_first(r"\bin\s+the\s+last\s+12\s+months\s*\n?\s*(\d+)\b", t)
+    enquiries_3m = _re_first(r"\b(\d+)\s+enquiries\s+in\s+last\s+3\s+months\b", t)
+    negative_impact = _re_first(r"\bnegative impact:\s*(\d+)\b", t)
+    neutral_impact = _re_first(r"\bneutral impact:\s*(\d+)\b", t)
+    total_factors = _re_first(r"\btotal factors\s*\n?\s*(\d+)\b", t)
+
+    return {
+        "business_credit_score": int(credit_score) if credit_score else None,
+        "business_credit_score_suppressed": "risk score suppressed" in tl or bool(re.search(r"\bcredit score\s*-\s*risk score suppressed\b", tl)),
+        "business_credit_limit": _money_to_int(credit_limit),
+        "business_max_recommended_credit": _money_to_int(max_credit),
+        "business_company_searches_12m": int(searches_12m) if searches_12m else None,
+        "business_enquiries_3m": int(enquiries_3m) if enquiries_3m else None,
+        "business_negative_impact_count": int(negative_impact) if negative_impact else 0,
+        "business_neutral_impact_count": int(neutral_impact) if neutral_impact else None,
+        "business_total_factor_count": int(total_factors) if total_factors else None,
+        "business_bureau_needs_attention": "needs attention" in tl,
+        "business_no_registered_charges": "no registered mortgages or charges" in tl or "no mortgages or charges" in tl,
+    }
+
+
 def _explicit_ccj_present(pdf_text: str) -> bool:
     """Detect explicit business CCJ presence using the same policy as the main app."""
     t = (pdf_text or "").lower()
@@ -3139,14 +3224,31 @@ def build_pdf_risk_mapping(pdf_files, metadata_df: pd.DataFrame) -> tuple[dict, 
             pdf_file.seek(0)
             text, backend, error = _extract_text_from_pdf_bytes(pdf_file.getvalue())
             business_ccj = _explicit_ccj_present(text) if text else False
+            bureau_signals = _parse_business_bureau_signals(text) if text else {}
             search_name = Path(pdf_file.name).stem
             debug_info = {}
             matched_company, score, strategy, success = processor.fuzzy_match_company(search_name, companies, debug_info)
 
             if success and matched_company:
                 existing = risk_mapping.get(matched_company, {})
+                existing_score = float(existing.get("bureau_pdf_match_score", -1) or -1)
+                if existing and score < existing_score:
+                    audit_rows.append(
+                        {
+                            "pdf_file": pdf_file.name,
+                            "matched_company": matched_company,
+                            "match_score": score,
+                            "match_strategy": f"{strategy}_duplicate_lower_confidence",
+                            "business_ccj": business_ccj,
+                            **bureau_signals,
+                            "text_backend": backend,
+                            "error": "Matched company already has a higher-confidence PDF; not applied",
+                        }
+                    )
+                    continue
                 risk_mapping[matched_company] = {
                     **existing,
+                    **bureau_signals,
                     "business_ccj": bool(existing.get("business_ccj", False) or business_ccj),
                     "bureau_pdf_file": pdf_file.name,
                     "bureau_pdf_match_score": score,
@@ -3161,6 +3263,7 @@ def build_pdf_risk_mapping(pdf_files, metadata_df: pd.DataFrame) -> tuple[dict, 
                     "match_score": score,
                     "match_strategy": strategy,
                     "business_ccj": business_ccj,
+                    **bureau_signals,
                     "text_backend": backend,
                     "error": error,
                 }
@@ -3179,6 +3282,91 @@ def build_pdf_risk_mapping(pdf_files, metadata_df: pd.DataFrame) -> tuple[dict, 
             )
 
     return risk_mapping, pd.DataFrame(audit_rows)
+
+
+def add_pdf_match_review_flags(pdf_audit_df: pd.DataFrame) -> pd.DataFrame:
+    """Add user-facing confidence flags to the PDF matching audit."""
+    if pdf_audit_df is None or pdf_audit_df.empty:
+        return pd.DataFrame()
+
+    review_df = pdf_audit_df.copy()
+    review_df["match_score"] = pd.to_numeric(review_df.get("match_score", 0), errors="coerce").fillna(0)
+    review_df["pdf_match_status"] = "Strong"
+    review_df.loc[review_df["matched_company"].isna() | (review_df["matched_company"].astype(str).str.strip() == ""), "pdf_match_status"] = "No match"
+    review_df.loc[(review_df["match_score"] > 0) & (review_df["match_score"] < 75), "pdf_match_status"] = "Review"
+    review_df.loc[(review_df["match_score"] >= 75) & (review_df["match_score"] < 88), "pdf_match_status"] = "Check"
+    review_df.loc[review_df["text_backend"].fillna("none").eq("none"), "pdf_match_status"] = "Read failed"
+
+    signal_cols = [
+        "business_ccj",
+        "business_credit_score_suppressed",
+        "business_credit_limit",
+        "business_max_recommended_credit",
+        "business_negative_impact_count",
+        "business_enquiries_3m",
+        "business_bureau_needs_attention",
+    ]
+    available = [col for col in signal_cols if col in review_df.columns]
+    review_df["signals_found"] = 0
+    for col in available:
+        value = review_df[col]
+        if col in ["business_credit_limit", "business_max_recommended_credit"]:
+            review_df["signals_found"] += value.notna().astype(int)
+        else:
+            review_df["signals_found"] += value.fillna(False).infer_objects(copy=False).astype(bool).astype(int)
+
+    return review_df
+
+
+def render_pdf_match_review(pdf_audit_df: pd.DataFrame) -> None:
+    """Render a concise review table for company credit report PDF matching."""
+    review_df = add_pdf_match_review_flags(pdf_audit_df)
+    if review_df.empty:
+        return
+
+    section_title(
+        "Business PDF Match Review",
+        "Check that each uploaded business credit report matched the right company before trusting bureau calibration.",
+    )
+
+    status_counts = review_df["pdf_match_status"].value_counts()
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.metric("PDFs Uploaded", len(review_df))
+    with c2:
+        st.metric("Strong Matches", int(status_counts.get("Strong", 0)))
+    with c3:
+        review_count = int(status_counts.get("Check", 0) + status_counts.get("Review", 0))
+        st.metric("Needs Check", review_count)
+    with c4:
+        st.metric("No/Failed Match", int(status_counts.get("No match", 0) + status_counts.get("Read failed", 0)))
+
+    weak = review_df[review_df["pdf_match_status"].isin(["Check", "Review", "No match", "Read failed"])]
+    if not weak.empty:
+        st.warning("Some PDF matches need review. The batch can still run, but treat those bureau signals cautiously.")
+
+    display_cols = [
+        "pdf_match_status",
+        "pdf_file",
+        "matched_company",
+        "match_score",
+        "match_strategy",
+        "business_ccj",
+        "business_credit_score_suppressed",
+        "business_credit_limit",
+        "business_max_recommended_credit",
+        "business_negative_impact_count",
+        "business_enquiries_3m",
+        "signals_found",
+        "text_backend",
+        "error",
+    ]
+    display_cols = [col for col in display_cols if col in review_df.columns]
+    st.dataframe(
+        review_df[display_cols].sort_values(["pdf_match_status", "match_score"], ascending=[True, False]),
+        use_container_width=True,
+        hide_index=True,
+    )
 
 
 def apply_pdf_risk_to_mapping(parameter_mapping: dict, pdf_risk_mapping: dict) -> dict:
@@ -3209,6 +3397,14 @@ def build_scorecard_features(results_df: pd.DataFrame) -> pd.DataFrame:
         "director_ccj_count",
         "director_ccj_value",
         "business_ccj",
+        "business_credit_score",
+        "business_credit_score_suppressed",
+        "business_credit_limit",
+        "business_max_recommended_credit",
+        "business_negative_impact_count",
+        "business_enquiries_3m",
+        "business_company_searches_12m",
+        "business_bureau_needs_attention",
         "Total Revenue",
         "Monthly Average Revenue",
         "Total Expenses",
@@ -3230,6 +3426,958 @@ def build_scorecard_features(results_df: pd.DataFrame) -> pd.DataFrame:
         "final_decision",
     ]
     return results_df[[col for col in preferred_columns if col in results_df.columns]].copy()
+
+
+def _labelled_outcome_frame(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Return only paid/not-paid cases with a numeric bad outcome flag."""
+    if "outcome_label" not in results_df.columns:
+        return pd.DataFrame()
+    labelled = results_df[results_df["outcome_label"].isin(["paid", "not_paid"])].copy()
+    if labelled.empty:
+        return labelled
+    labelled["bad_outcome"] = (labelled["outcome_label"] == "not_paid").astype(int)
+    return labelled
+
+
+def calibration_confidence(labelled_n: int, bad_n: int, separation: float) -> str:
+    """Keep confidence conservative because the outcome sample is limited."""
+    if labelled_n < 30 or bad_n < 8:
+        return "Weak"
+    if labelled_n >= 100 and bad_n >= 20 and separation >= 0.25:
+        return "Strong"
+    if labelled_n >= 50 and bad_n >= 12 and separation >= 0.15:
+        return "Moderate"
+    return "Weak"
+
+
+def build_score_band_report(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Show paid/not-paid performance by broad score bands."""
+    labelled = _labelled_outcome_frame(results_df)
+    if labelled.empty:
+        return pd.DataFrame()
+
+    rows = []
+    band_edges = [0, 30, 40, 50, 60, 70, 80, 101]
+    band_labels = ["0-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80+"]
+    for score_col in ["subprime_score", "mca_rule_score"]:
+        if score_col not in labelled.columns:
+            continue
+        working = labelled[[score_col, "bad_outcome", "outcome_label"]].copy()
+        working[score_col] = pd.to_numeric(working[score_col], errors="coerce")
+        working = working.dropna(subset=[score_col])
+        if working.empty:
+            continue
+        working["score_band"] = pd.cut(
+            working[score_col].clip(lower=0, upper=100),
+            bins=band_edges,
+            labels=band_labels,
+            right=False,
+        )
+        grouped = working.groupby("score_band", observed=False)
+        for band, group in grouped:
+            total = len(group)
+            if total == 0:
+                continue
+            not_paid = int(group["bad_outcome"].sum())
+            paid = total - not_paid
+            rows.append(
+                {
+                    "score": score_col,
+                    "score_band": str(band),
+                    "applications": total,
+                    "paid": paid,
+                    "not_paid": not_paid,
+                    "not_paid_rate": not_paid / total,
+                    "avg_score": group[score_col].mean(),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def _numeric_calibration_features(results_df: pd.DataFrame) -> list[str]:
+    candidates = [
+        "subprime_score",
+        "mca_rule_score",
+        "directors_score",
+        "requested_loan",
+        "company_age_months",
+        "director_defaults_12m",
+        "director_defaults_36m",
+        "director_ccj_count",
+        "director_ccj_value",
+        "business_credit_score",
+        "business_credit_limit",
+        "business_max_recommended_credit",
+        "business_negative_impact_count",
+        "business_enquiries_3m",
+        "business_company_searches_12m",
+        "Total Revenue",
+        "Monthly Average Revenue",
+        "Net Income",
+        "Total Debt",
+        "Debt-to-Income Ratio",
+        "Operating Margin",
+        "Debt Service Coverage Ratio",
+        "Gross Burn Rate",
+        "Cash Flow Volatility",
+        "Revenue Growth Rate",
+        "Average Month-End Balance",
+        "Average Negative Balance Days per Month",
+        "Number of Bounced Payments",
+    ]
+    return [col for col in candidates if col in results_df.columns]
+
+
+def _feature_direction(frame: pd.DataFrame, feature: str) -> tuple[str, float, float]:
+    paid_median = frame.loc[frame["bad_outcome"] == 0, feature].median()
+    bad_median = frame.loc[frame["bad_outcome"] == 1, feature].median()
+    if pd.isna(paid_median) or pd.isna(bad_median):
+        return "unknown", paid_median, bad_median
+    if bad_median <= paid_median:
+        return "low_is_risk", paid_median, bad_median
+    return "high_is_risk", paid_median, bad_median
+
+
+def build_threshold_recommendations(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Test simple one-feature thresholds and rank practical scorecard candidates."""
+    labelled = _labelled_outcome_frame(results_df)
+    if labelled.empty:
+        return pd.DataFrame()
+
+    total_labelled = len(labelled)
+    total_bad = int(labelled["bad_outcome"].sum())
+    total_paid = total_labelled - total_bad
+    base_bad_rate = total_bad / total_labelled if total_labelled else 0
+    rows = []
+
+    for feature in _numeric_calibration_features(labelled):
+        working = labelled[[feature, "bad_outcome"]].copy()
+        working[feature] = pd.to_numeric(working[feature], errors="coerce")
+        working = working.dropna(subset=[feature])
+        if len(working) < 6 or working[feature].nunique() < 3:
+            continue
+
+        direction, paid_median, bad_median = _feature_direction(working, feature)
+        if direction == "unknown":
+            continue
+
+        quantiles = working[feature].quantile([0.1, 0.2, 0.25, 0.33, 0.4, 0.5, 0.6, 0.67, 0.75, 0.8, 0.9])
+        thresholds = sorted(set(float(v) for v in quantiles.dropna().tolist()))
+        min_bucket = max(2, int(round(len(working) * 0.08)))
+        best = None
+
+        for threshold in thresholds:
+            if direction == "low_is_risk":
+                flagged = working[feature] <= threshold
+                operator = "<="
+            else:
+                flagged = working[feature] >= threshold
+                operator = ">="
+
+            flagged_n = int(flagged.sum())
+            unflagged_n = int((~flagged).sum())
+            if flagged_n < min_bucket or unflagged_n < min_bucket:
+                continue
+
+            flagged_bad = int(working.loc[flagged, "bad_outcome"].sum())
+            flagged_paid = flagged_n - flagged_bad
+            bad_capture = flagged_bad / total_bad if total_bad else 0
+            paid_capture = flagged_paid / total_paid if total_paid else 0
+            flagged_bad_rate = flagged_bad / flagged_n if flagged_n else 0
+            lift = flagged_bad_rate / base_bad_rate if base_bad_rate else 0
+            separation = bad_capture - paid_capture
+            score = (separation * 0.55) + ((lift - 1) * 0.20) + (bad_capture * 0.25)
+
+            candidate = {
+                "feature": feature,
+                "direction": direction,
+                "operator": operator,
+                "suggested_threshold": threshold,
+                "labelled_cases": total_labelled,
+                "paid_cases": total_paid,
+                "not_paid_cases": total_bad,
+                "flagged_cases": flagged_n,
+                "flagged_not_paid": flagged_bad,
+                "flagged_paid": flagged_paid,
+                "flagged_not_paid_rate": flagged_bad_rate,
+                "bad_capture_rate": bad_capture,
+                "paid_capture_rate": paid_capture,
+                "lift_vs_base": lift,
+                "separation": separation,
+                "paid_median": paid_median,
+                "not_paid_median": bad_median,
+                "recommendation_score": score,
+            }
+            if best is None or candidate["recommendation_score"] > best["recommendation_score"]:
+                best = candidate
+
+        if best:
+            confidence = calibration_confidence(total_labelled, total_bad, best["separation"])
+            if best["feature"] in ["subprime_score", "mca_rule_score"]:
+                action = "Consider recalibrating the overall decision band"
+            else:
+                action = "Consider testing this individual threshold in the scorecard"
+            if total_labelled < 30 or total_bad < 8:
+                action = f"Exploratory only; based on {total_labelled} labelled cases and {total_bad} not-paid cases"
+            elif best["separation"] < 0.08:
+                action = "Weak separation; monitor before changing the scorecard"
+
+            best["confidence"] = confidence
+            best["suggested_action"] = action
+            rows.append(best)
+
+    if not rows:
+        return pd.DataFrame()
+    recs = pd.DataFrame(rows).sort_values(
+        ["confidence", "recommendation_score"],
+        ascending=[True, False],
+    )
+    confidence_order = {"Strong": 0, "Moderate": 1, "Weak": 2}
+    recs["_confidence_order"] = recs["confidence"].map(confidence_order).fillna(3)
+    recs = recs.sort_values(["_confidence_order", "recommendation_score"], ascending=[True, False])
+    return recs.drop(columns=["_confidence_order"]).reset_index(drop=True)
+
+
+def build_rule_signal_report(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Summarise text rule reasons by outcome to reveal repeated scorecard drivers."""
+    labelled = _labelled_outcome_frame(results_df)
+    if labelled.empty:
+        return pd.DataFrame()
+
+    reason_cols = [col for col in ["mca_rule_reasons", "final_decision_reasons"] if col in labelled.columns]
+    if not reason_cols:
+        return pd.DataFrame()
+
+    rows = []
+    for _, row in labelled.iterrows():
+        outcome = row["outcome_label"]
+        for col in reason_cols:
+            reasons = row.get(col)
+            if isinstance(reasons, str):
+                parts = [part.strip() for part in re.split(r"\s*\|\s*|\n", reasons) if part.strip()]
+            elif isinstance(reasons, list):
+                parts = [str(part).strip() for part in reasons if str(part).strip()]
+            else:
+                parts = []
+            for reason in parts:
+                rows.append({"reason_source": col, "reason": reason, "outcome_label": outcome})
+
+    if not rows:
+        return pd.DataFrame()
+
+    reason_df = pd.DataFrame(rows)
+    pivot = (
+        reason_df.assign(count=1)
+        .pivot_table(index=["reason_source", "reason"], columns="outcome_label", values="count", aggfunc="sum", fill_value=0)
+        .reset_index()
+    )
+    for col in ["paid", "not_paid"]:
+        if col not in pivot.columns:
+            pivot[col] = 0
+    pivot["total_mentions"] = pivot["paid"] + pivot["not_paid"]
+    pivot["not_paid_share"] = pivot["not_paid"] / pivot["total_mentions"].replace(0, np.nan)
+    return pivot.sort_values(["not_paid_share", "total_mentions"], ascending=[False, False]).reset_index(drop=True)
+
+
+def build_bureau_signal_report(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Compare business credit PDF signals across paid and not-paid outcomes."""
+    labelled = _labelled_outcome_frame(results_df)
+    if labelled.empty:
+        return pd.DataFrame()
+
+    signal_cols = [
+        "business_ccj",
+        "business_credit_score_suppressed",
+        "business_bureau_needs_attention",
+        "business_no_registered_charges",
+    ]
+    numeric_cols = [
+        "business_credit_score",
+        "business_credit_limit",
+        "business_max_recommended_credit",
+        "business_negative_impact_count",
+        "business_enquiries_3m",
+        "business_company_searches_12m",
+    ]
+
+    rows = []
+    for col in signal_cols:
+        if col not in labelled.columns:
+            continue
+        flag = labelled[col].fillna(False).astype(bool)
+        for flagged_value, group in labelled.groupby(flag):
+            total = len(group)
+            if total == 0:
+                continue
+            not_paid = int(group["bad_outcome"].sum())
+            rows.append(
+                {
+                    "signal": col,
+                    "signal_type": "boolean",
+                    "bucket": "Yes" if flagged_value else "No",
+                    "applications": total,
+                    "paid": total - not_paid,
+                    "not_paid": not_paid,
+                    "not_paid_rate": not_paid / total,
+                    "paid_median": None,
+                    "not_paid_median": None,
+                }
+            )
+
+    for col in numeric_cols:
+        if col not in labelled.columns:
+            continue
+        working = labelled[[col, "bad_outcome"]].copy()
+        working[col] = pd.to_numeric(working[col], errors="coerce")
+        working = working.dropna(subset=[col])
+        if working.empty:
+            continue
+        paid_median = working.loc[working["bad_outcome"] == 0, col].median()
+        not_paid_median = working.loc[working["bad_outcome"] == 1, col].median()
+        rows.append(
+            {
+                "signal": col,
+                "signal_type": "numeric",
+                "bucket": "median comparison",
+                "applications": len(working),
+                "paid": int((working["bad_outcome"] == 0).sum()),
+                "not_paid": int((working["bad_outcome"] == 1).sum()),
+                "not_paid_rate": working["bad_outcome"].mean(),
+                "paid_median": paid_median,
+                "not_paid_median": not_paid_median,
+            }
+        )
+
+    if not rows:
+        return pd.DataFrame()
+    return pd.DataFrame(rows).sort_values(["signal", "bucket"]).reset_index(drop=True)
+
+
+def build_evidence_quality_report(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Summarise which evidence sources were available in the processed batch."""
+    if results_df.empty:
+        return pd.DataFrame()
+
+    checks = [
+        ("Bank JSON processed", "processing_successful"),
+        ("Application metadata matched", "parameters_applied_from_csv"),
+        ("Business PDF matched", "bureau_pdf_file"),
+        ("Business CCJ extracted", "business_ccj"),
+        ("Business bureau score suppressed", "business_credit_score_suppressed"),
+        ("Business bureau negative factors", "business_negative_impact_count"),
+        ("Outcome label present", "outcome_label"),
+    ]
+    rows = []
+    total = len(results_df)
+    for label, col in checks:
+        if col not in results_df.columns:
+            rows.append({"evidence": label, "available": 0, "missing": total, "coverage": 0.0, "note": "Column not present"})
+            continue
+        series = results_df[col]
+        if col == "outcome_label":
+            available_mask = series.isin(["paid", "not_paid"])
+        elif series.dtype == bool:
+            available_mask = series.notna()
+        else:
+            available_mask = series.notna() & (series.astype(str).str.strip() != "")
+        available = int(available_mask.sum())
+        rows.append(
+            {
+                "evidence": label,
+                "available": available,
+                "missing": total - available,
+                "coverage": available / total if total else 0,
+                "note": "Used for calibration" if label == "Outcome label present" else "Used for score confidence",
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def build_paid_lookalike_report(results_df: pd.DataFrame) -> pd.DataFrame:
+    """Compare every application with the paid-case profile using robust numeric distance."""
+    if "outcome_label" not in results_df.columns:
+        return pd.DataFrame()
+
+    paid_df = results_df[results_df["outcome_label"] == "paid"].copy()
+    if len(paid_df) < 2:
+        return pd.DataFrame()
+
+    feature_cols = []
+    for feature in _numeric_calibration_features(results_df):
+        numeric = pd.to_numeric(results_df[feature], errors="coerce")
+        paid_numeric = pd.to_numeric(paid_df[feature], errors="coerce")
+        if numeric.notna().sum() >= 5 and paid_numeric.notna().sum() >= 2 and numeric.nunique(dropna=True) >= 2:
+            feature_cols.append(feature)
+
+    if not feature_cols:
+        return pd.DataFrame()
+
+    numeric_all = results_df[feature_cols].apply(pd.to_numeric, errors="coerce")
+    paid_numeric = paid_df[feature_cols].apply(pd.to_numeric, errors="coerce")
+    paid_profile = paid_numeric.median()
+    paid_iqr = paid_numeric.quantile(0.75) - paid_numeric.quantile(0.25)
+    overall_iqr = numeric_all.quantile(0.75) - numeric_all.quantile(0.25)
+    scale = paid_iqr.where(paid_iqr > 0, overall_iqr).replace(0, np.nan).fillna(numeric_all.std()).replace(0, 1).fillna(1)
+
+    rows = []
+    paid_reference = paid_df.reset_index(drop=True)
+    paid_matrix = paid_reference[feature_cols].apply(pd.to_numeric, errors="coerce")
+
+    for idx, row in results_df.iterrows():
+        values = pd.to_numeric(row[feature_cols], errors="coerce")
+        available = values.notna() & paid_profile.notna()
+        if int(available.sum()) < 3:
+            continue
+
+        z_distance = ((values[available] - paid_profile[available]).abs() / scale[available]).clip(upper=5)
+        avg_distance = float(z_distance.mean())
+        similarity = max(0, min(100, 100 / (1 + avg_distance)))
+
+        nearest_paid_name = None
+        nearest_paid_distance = None
+        nearest_paid_similarity = None
+        if not paid_matrix.empty:
+            distances = []
+            for paid_idx, paid_row in paid_matrix.iterrows():
+                common = values.notna() & paid_row.notna()
+                if int(common.sum()) < 3:
+                    continue
+                dist = float((((values[common] - paid_row[common]).abs() / scale[common]).clip(upper=5)).mean())
+                distances.append((paid_idx, dist))
+            if distances:
+                nearest_idx, nearest_paid_distance = min(distances, key=lambda item: item[1])
+                nearest_paid_name = paid_reference.loc[nearest_idx].get("company_name", paid_reference.loc[nearest_idx].get("original_filename"))
+                nearest_paid_similarity = max(0, min(100, 100 / (1 + nearest_paid_distance)))
+
+        if similarity >= 75:
+            band = "Strong paid lookalike"
+        elif similarity >= 60:
+            band = "Moderate paid lookalike"
+        elif similarity >= 45:
+            band = "Weak paid lookalike"
+        else:
+            band = "Not close to paid profile"
+
+        identifier = row.get("company_name") or row.get("original_filename") or idx
+        rows.append(
+            {
+                "application_id": row.get("application_id"),
+                "company_name": identifier,
+                "original_filename": row.get("original_filename"),
+                "outcome_label": row.get("outcome_label"),
+                "paid_profile_similarity": similarity,
+                "paid_lookalike_band": band,
+                "nearest_paid_case": nearest_paid_name,
+                "nearest_paid_similarity": nearest_paid_similarity,
+                "features_used": int(available.sum()),
+                "subprime_score": row.get("subprime_score"),
+                "mca_rule_score": row.get("mca_rule_score"),
+                "final_decision": row.get("final_decision"),
+            }
+        )
+
+    if not rows:
+        return pd.DataFrame()
+    return pd.DataFrame(rows).sort_values("paid_profile_similarity", ascending=False).reset_index(drop=True)
+
+
+def build_calibration_summary(results_df: pd.DataFrame) -> pd.DataFrame:
+    """High-level calibration health check for the processed batch."""
+    labelled = _labelled_outcome_frame(results_df)
+    total_processed = len(results_df)
+    labelled_n = len(labelled)
+    not_paid = int(labelled["bad_outcome"].sum()) if not labelled.empty else 0
+    paid = labelled_n - not_paid
+    unlabelled = int((results_df.get("outcome_label", pd.Series(dtype=str)) == "unlabelled").sum()) if "outcome_label" in results_df else total_processed
+    conflict = int((results_df.get("outcome_label", pd.Series(dtype=str)) == "conflict").sum()) if "outcome_label" in results_df else 0
+    confidence = calibration_confidence(labelled_n, not_paid, 0)
+
+    rows = [
+        {"metric": "Processed applications", "value": total_processed, "note": "All JSONs processed successfully"},
+        {"metric": "Labelled paid/not-paid cases", "value": labelled_n, "note": "Used for calibration analysis"},
+        {"metric": "Paid cases", "value": paid, "note": "Good outcome sample"},
+        {"metric": "Not-paid cases", "value": not_paid, "note": "Bad outcome sample"},
+        {"metric": "Unlabelled cases", "value": unlabelled, "note": "Useful for score distribution, not outcome calibration"},
+        {"metric": "Outcome conflicts", "value": conflict, "note": "Must be resolved before trusting exports"},
+        {"metric": "Calibration confidence", "value": confidence, "note": "Conservative because outcome data is limited"},
+    ]
+    return pd.DataFrame(rows)
+
+
+def build_calibration_reports(results_df: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """Build all calibration artefacts in one place for UI and exports."""
+    return {
+        "summary": build_calibration_summary(results_df),
+        "score_bands": build_score_band_report(results_df),
+        "threshold_recommendations": build_threshold_recommendations(results_df),
+        "rule_signals": build_rule_signal_report(results_df),
+        "bureau_signals": build_bureau_signal_report(results_df),
+        "evidence_quality": build_evidence_quality_report(results_df),
+        "paid_lookalikes": build_paid_lookalike_report(results_df),
+    }
+
+
+SAVED_RUNS_DIR = BATCH_PROCESSOR_DIR / "saved_runs"
+
+
+def slugify_run_name(name: str) -> str:
+    """Create a stable folder-safe run id from the user-facing run name."""
+    cleaned = re.sub(r"[^a-zA-Z0-9._ -]+", "", str(name or "").strip())
+    cleaned = re.sub(r"\s+", "_", cleaned).strip("._-")
+    return cleaned[:80] or datetime.now().strftime("batch_run_%Y%m%d_%H%M%S")
+
+
+def dataframe_to_csv_bytes(df: pd.DataFrame) -> bytes:
+    if df is None or df.empty:
+        return b""
+    export_df = df.copy()
+    for col in export_df.columns:
+        if export_df[col].apply(lambda value: isinstance(value, (list, dict))).any():
+            export_df[col] = export_df[col].apply(
+                lambda value: json.dumps(value, default=str) if isinstance(value, (list, dict)) else value
+            )
+    return export_df.to_csv(index=False).encode("utf-8")
+
+
+def json_safe(value):
+    if isinstance(value, dict):
+        return {str(k): json_safe(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return [json_safe(v) for v in value]
+    if isinstance(value, tuple):
+        return [json_safe(v) for v in value]
+    if isinstance(value, (np.integer, np.floating)):
+        return value.item()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, pd.Timestamp):
+        return value.isoformat()
+    if pd.isna(value) if not isinstance(value, (dict, list, tuple, np.ndarray)) else False:
+        return None
+    return value
+
+
+def save_uploaded_sources(run_dir: Path, uploads: dict[str, Any]) -> None:
+    """Save original uploaded files where practical so a run can be reproduced."""
+    input_dir = run_dir / "inputs"
+    input_dir.mkdir(parents=True, exist_ok=True)
+    for group, files in uploads.items():
+        if not files:
+            continue
+        group_dir = input_dir / group
+        group_dir.mkdir(parents=True, exist_ok=True)
+        file_list = files if isinstance(files, list) else [files]
+        for index, uploaded_file in enumerate(file_list, start=1):
+            try:
+                uploaded_file.seek(0)
+                safe_name = re.sub(r"[^a-zA-Z0-9._ -]+", "_", uploaded_file.name)
+                target = group_dir / f"{index:03d}_{safe_name}"
+                target.write_bytes(uploaded_file.getvalue())
+                uploaded_file.seek(0)
+            except Exception:
+                continue
+
+
+def save_named_run(
+    run_name: str,
+    results_df: pd.DataFrame,
+    scorecard_features_df: pd.DataFrame,
+    outcome_audit_df: pd.DataFrame,
+    pdf_audit_df: pd.DataFrame,
+    calibration_reports: dict[str, pd.DataFrame],
+    metadata: dict[str, Any],
+    uploads: dict[str, Any],
+) -> Path:
+    """Persist a processed batch run under MCAV2_BatchProcessor/saved_runs."""
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = f"{timestamp}_{slugify_run_name(run_name)}"
+    run_dir = SAVED_RUNS_DIR / run_id
+    suffix = 2
+    while run_dir.exists():
+        run_dir = SAVED_RUNS_DIR / f"{run_id}_{suffix}"
+        suffix += 1
+    run_dir.mkdir(parents=True, exist_ok=False)
+
+    (run_dir / "case_scores_with_outcomes.csv").write_bytes(dataframe_to_csv_bytes(results_df))
+    (run_dir / "scorecard_features.csv").write_bytes(dataframe_to_csv_bytes(scorecard_features_df))
+    (run_dir / "matching_audit.csv").write_bytes(dataframe_to_csv_bytes(outcome_audit_df))
+    if pdf_audit_df is not None and not pdf_audit_df.empty:
+        (run_dir / "bureau_pdf_audit.csv").write_bytes(dataframe_to_csv_bytes(pdf_audit_df))
+
+    reports_dir = run_dir / "calibration_reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    for report_name, report_df in calibration_reports.items():
+        (reports_dir / f"{report_name}.csv").write_bytes(dataframe_to_csv_bytes(report_df))
+
+    manifest = {
+        "run_name": run_name,
+        "run_id": run_id,
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "metadata": json_safe(metadata),
+        "files": {
+            "case_scores": "case_scores_with_outcomes.csv",
+            "scorecard_features": "scorecard_features.csv",
+            "matching_audit": "matching_audit.csv",
+            "pdf_audit": "bureau_pdf_audit.csv" if pdf_audit_df is not None and not pdf_audit_df.empty else None,
+            "calibration_reports": "calibration_reports",
+        },
+    }
+    (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    save_uploaded_sources(run_dir, uploads)
+    return run_dir
+
+
+def list_saved_runs() -> list[dict[str, Any]]:
+    """Return saved run manifests, newest first."""
+    if not SAVED_RUNS_DIR.exists():
+        return []
+    runs = []
+    for manifest_path in SAVED_RUNS_DIR.glob("*/manifest.json"):
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            manifest["path"] = str(manifest_path.parent)
+            runs.append(manifest)
+        except Exception:
+            continue
+    return sorted(runs, key=lambda item: item.get("created_at", ""), reverse=True)
+
+
+def _read_saved_csv(run_dir: Path, relative_path: str | None) -> pd.DataFrame:
+    if not relative_path:
+        return pd.DataFrame()
+    path = run_dir / relative_path
+    if not path.exists():
+        return pd.DataFrame()
+    try:
+        return pd.read_csv(path)
+    except Exception:
+        return pd.DataFrame()
+
+
+def load_saved_run(manifest: dict[str, Any]) -> dict[str, Any]:
+    """Load a saved run's output files back into memory for display."""
+    run_dir = Path(manifest.get("path", ""))
+    files = manifest.get("files", {})
+    reports_dir = run_dir / str(files.get("calibration_reports", "calibration_reports"))
+    reports = {}
+    for report_name in [
+        "summary",
+        "score_bands",
+        "threshold_recommendations",
+        "rule_signals",
+        "bureau_signals",
+        "evidence_quality",
+        "paid_lookalikes",
+    ]:
+        reports[report_name] = _read_saved_csv(reports_dir, f"{report_name}.csv")
+
+    return {
+        "manifest": manifest,
+        "run_dir": run_dir,
+        "results_df": _read_saved_csv(run_dir, files.get("case_scores")),
+        "scorecard_features_df": _read_saved_csv(run_dir, files.get("scorecard_features")),
+        "outcome_audit_df": _read_saved_csv(run_dir, files.get("matching_audit")),
+        "pdf_audit_df": _read_saved_csv(run_dir, files.get("pdf_audit")),
+        "calibration_reports": reports,
+    }
+
+
+def render_loaded_saved_run(saved_run: dict[str, Any]) -> None:
+    """Render a saved run without reprocessing the original inputs."""
+    manifest = saved_run["manifest"]
+    run_dir = saved_run["run_dir"]
+    results_df = saved_run["results_df"]
+    scorecard_features_df = saved_run["scorecard_features_df"]
+    outcome_audit_df = saved_run["outcome_audit_df"]
+    pdf_audit_df = saved_run["pdf_audit_df"]
+    saved_reports = saved_run["calibration_reports"]
+
+    section_title("Loaded Saved Run", "Viewing saved outputs without reprocessing the uploaded files.")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        st.metric("Run", manifest.get("run_name", manifest.get("run_id", "Saved run")))
+    with c2:
+        st.metric("Created", manifest.get("created_at", "Unknown"))
+    with c3:
+        st.metric("Cases", len(results_df))
+    st.caption(str(run_dir))
+
+    if results_df.empty:
+        st.warning("This saved run does not contain case score output.")
+        return
+
+    if "outcome_label" in results_df.columns:
+        section_title("Outcome Summary")
+        st.dataframe(results_df["outcome_label"].value_counts().reset_index(), use_container_width=True, hide_index=True)
+
+    if not outcome_audit_df.empty:
+        with st.expander("Matching Audit", expanded=False):
+            st.dataframe(outcome_audit_df, use_container_width=True, hide_index=True)
+
+    if not pdf_audit_df.empty:
+        with st.expander("Company Credit Report PDF Audit", expanded=False):
+            st.dataframe(pdf_audit_df, use_container_width=True, hide_index=True)
+
+    section_title("Saved Run Downloads")
+    d1, d2, d3, d4 = st.columns(4)
+    with d1:
+        st.download_button(
+            "Download Case Scores",
+            data=dataframe_to_csv_bytes(results_df),
+            file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_case_scores.csv",
+            mime="text/csv",
+            type="primary",
+        )
+    with d2:
+        st.download_button(
+            "Download Scorecard Features",
+            data=dataframe_to_csv_bytes(scorecard_features_df),
+            file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_scorecard_features.csv",
+            mime="text/csv",
+        )
+    with d3:
+        st.download_button(
+            "Download Matching Audit",
+            data=dataframe_to_csv_bytes(outcome_audit_df),
+            file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_matching_audit.csv",
+            mime="text/csv",
+        )
+    with d4:
+        if not pdf_audit_df.empty:
+            st.download_button(
+                "Download PDF Audit",
+                data=dataframe_to_csv_bytes(pdf_audit_df),
+                file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_pdf_audit.csv",
+                mime="text/csv",
+            )
+
+    calibration_reports = render_scorecard_calibration(results_df)
+    section_title("Calibration Report Exports")
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.download_button(
+            "Download Calibration Summary",
+            data=dataframe_to_csv_bytes(saved_reports.get("summary", calibration_reports["summary"])),
+            file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_calibration_summary.csv",
+            mime="text/csv",
+        )
+    with c2:
+        st.download_button(
+            "Download Threshold Recommendations",
+            data=dataframe_to_csv_bytes(saved_reports.get("threshold_recommendations", calibration_reports["threshold_recommendations"])),
+            file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_threshold_recommendations.csv",
+            mime="text/csv",
+        )
+    with c3:
+        st.download_button(
+            "Download Score Band Report",
+            data=dataframe_to_csv_bytes(saved_reports.get("score_bands", calibration_reports["score_bands"])),
+            file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_score_bands.csv",
+            mime="text/csv",
+        )
+    with c4:
+        st.download_button(
+            "Download Rule Signal Report",
+            data=dataframe_to_csv_bytes(saved_reports.get("rule_signals", calibration_reports["rule_signals"])),
+            file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_rule_signals.csv",
+            mime="text/csv",
+        )
+    st.download_button(
+        "Download Paid Lookalike Report",
+        data=dataframe_to_csv_bytes(saved_reports.get("paid_lookalikes", calibration_reports["paid_lookalikes"])),
+        file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_paid_lookalikes.csv",
+        mime="text/csv",
+    )
+    c5, c6 = st.columns(2)
+    with c5:
+        st.download_button(
+            "Download Bureau Signal Report",
+            data=dataframe_to_csv_bytes(saved_reports.get("bureau_signals", calibration_reports["bureau_signals"])),
+            file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_bureau_signals.csv",
+            mime="text/csv",
+        )
+    with c6:
+        st.download_button(
+            "Download Evidence Quality Report",
+            data=dataframe_to_csv_bytes(saved_reports.get("evidence_quality", calibration_reports["evidence_quality"])),
+            file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_evidence_quality.csv",
+            mime="text/csv",
+        )
+
+    create_results_dashboard(results_df)
+    st.session_state["batch_results"] = results_df
+
+
+def render_scorecard_calibration(results_df: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """Render scorecard calibration workbench and return exportable reports."""
+    reports = build_calibration_reports(results_df)
+    labelled = _labelled_outcome_frame(results_df)
+
+    section_title(
+        "Scorecard Calibration",
+        "Use labelled paid/not-paid outcomes to test score bands, individual thresholds, and recurring rule reasons.",
+    )
+
+    summary_df = reports["summary"]
+    if not summary_df.empty:
+        metric_lookup = dict(zip(summary_df["metric"], summary_df["value"]))
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            st.metric("Labelled Cases", metric_lookup.get("Labelled paid/not-paid cases", 0))
+        with c2:
+            st.metric("Paid", metric_lookup.get("Paid cases", 0))
+        with c3:
+            st.metric("Not Paid", metric_lookup.get("Not-paid cases", 0))
+        with c4:
+            st.metric("Confidence", metric_lookup.get("Calibration confidence", "Weak"))
+
+    if labelled.empty or labelled["bad_outcome"].sum() == 0:
+        st.warning("Calibration needs at least some paid and not-paid outcomes. Exports are still available, but recommendations will be limited.")
+        return reports
+
+    tabs = st.tabs([
+        "Recommendations",
+        "Paid Lookalikes",
+        "Score Bands",
+        "Bureau Signals",
+        "Rule Signals",
+        "Evidence Quality",
+        "Calibration Data",
+    ])
+
+    with tabs[0]:
+        recs = reports["threshold_recommendations"]
+        if recs.empty:
+            st.info("No threshold candidates were found in this run. Paid lookalikes may still identify applications that resemble good funded cases.")
+        else:
+            display_cols = [
+                "feature",
+                "operator",
+                "suggested_threshold",
+                "confidence",
+                "suggested_action",
+                "flagged_cases",
+                "flagged_not_paid_rate",
+                "bad_capture_rate",
+                "paid_capture_rate",
+                "lift_vs_base",
+                "paid_median",
+                "not_paid_median",
+            ]
+            st.dataframe(recs[[col for col in display_cols if col in recs.columns]].head(20), use_container_width=True, hide_index=True)
+
+            top = recs.iloc[0]
+            st.info(
+                f"Top candidate: {top['feature']} {top['operator']} {top['suggested_threshold']:.2f}. "
+                f"Confidence is {top['confidence'].lower()} with {top['flagged_cases']} flagged cases."
+            )
+
+    with tabs[1]:
+        lookalikes = reports["paid_lookalikes"]
+        if lookalikes.empty:
+            st.info("Paid lookalike analysis needs at least two paid cases and enough numeric features.")
+        else:
+            focus = lookalikes[lookalikes["outcome_label"].isin(["unlabelled", "not_paid", "conflict"])].copy()
+            if focus.empty:
+                focus = lookalikes.copy()
+            display_cols = [
+                "application_id",
+                "company_name",
+                "outcome_label",
+                "paid_profile_similarity",
+                "paid_lookalike_band",
+                "nearest_paid_case",
+                "nearest_paid_similarity",
+                "features_used",
+                "subprime_score",
+                "final_decision",
+            ]
+            st.dataframe(focus[[col for col in display_cols if col in focus.columns]].head(50), use_container_width=True, hide_index=True)
+
+            chart_df = focus.head(30).copy()
+            chart_df["label"] = chart_df["company_name"].astype(str).str.slice(0, 42)
+            fig = px.bar(
+                chart_df.sort_values("paid_profile_similarity", ascending=True),
+                x="paid_profile_similarity",
+                y="label",
+                color="outcome_label",
+                orientation="h",
+                title="Applications closest to the paid-case profile",
+                labels={"paid_profile_similarity": "Paid Profile Similarity", "label": "Application"},
+            )
+            fig.update_xaxes(range=[0, 100])
+            plot_mca_chart(fig, key="paid_lookalike_similarity")
+
+    with tabs[2]:
+        bands = reports["score_bands"]
+        if bands.empty:
+            st.info("Score band analysis is not available for this run.")
+        else:
+            st.dataframe(bands, use_container_width=True, hide_index=True)
+            for score_col in bands["score"].dropna().unique():
+                chart_df = bands[bands["score"] == score_col]
+                fig = px.bar(
+                    chart_df,
+                    x="score_band",
+                    y="not_paid_rate",
+                    text=chart_df["applications"],
+                    title=f"{score_col} not-paid rate by band",
+                    labels={"score_band": "Score Band", "not_paid_rate": "Not-paid Rate"},
+                )
+                fig.update_yaxes(tickformat=".0%")
+                plot_mca_chart(fig, key=f"calibration_{score_col}_bands")
+
+    with tabs[3]:
+        bureau = reports["bureau_signals"]
+        if bureau.empty:
+            st.info("No business bureau PDF signals were available for calibration in this run.")
+        else:
+            st.dataframe(bureau, use_container_width=True, hide_index=True)
+            bool_rows = bureau[bureau["signal_type"] == "boolean"].copy()
+            if not bool_rows.empty:
+                fig = px.bar(
+                    bool_rows,
+                    x="signal",
+                    y="not_paid_rate",
+                    color="bucket",
+                    barmode="group",
+                    text="applications",
+                    title="Business bureau signal not-paid rates",
+                    labels={"not_paid_rate": "Not-paid Rate", "signal": "Bureau Signal"},
+                )
+                fig.update_yaxes(tickformat=".0%")
+                plot_mca_chart(fig, key="bureau_signal_not_paid_rates")
+
+    with tabs[4]:
+        rules = reports["rule_signals"]
+        if rules.empty:
+            st.info("No rule reason signals were available in the processed results.")
+        else:
+            display_cols = ["reason_source", "reason", "paid", "not_paid", "total_mentions", "not_paid_share"]
+            st.dataframe(rules[display_cols].head(30), use_container_width=True, hide_index=True)
+
+    with tabs[5]:
+        evidence = reports["evidence_quality"]
+        if evidence.empty:
+            st.info("Evidence quality report is not available for this run.")
+        else:
+            st.dataframe(evidence, use_container_width=True, hide_index=True)
+            fig = px.bar(
+                evidence,
+                x="evidence",
+                y="coverage",
+                text="available",
+                title="Evidence coverage across processed applications",
+                labels={"coverage": "Coverage", "evidence": "Evidence Source"},
+            )
+            fig.update_yaxes(tickformat=".0%", range=[0, 1])
+            plot_mca_chart(fig, key="evidence_quality_coverage")
+
+    with tabs[6]:
+        st.dataframe(summary_df, use_container_width=True, hide_index=True)
+
+    return reports
+
 
 def create_results_dashboard(results_df):
     """Create comprehensive dashboard for batch results"""
@@ -3279,7 +4427,7 @@ def create_results_dashboard(results_df):
                 labels={'subprime_score': 'Subprime Score', 'count': 'Number of Applications'}
             )
             fig_subprime.add_vline(x=60, line_dash="dash", line_color="#fbbf24",
-                                  annotation_text="Approval Threshold (60)")
+                                  annotation_text="Configured Threshold (60)")
             plot_mca_chart(fig_subprime, key="batch_subprime_distribution")
     
     with col2:
@@ -3382,6 +4530,9 @@ def create_results_dashboard(results_df):
         'mca_rule_decision', 'mca_rule_score', 'final_decision',
         # scores
         'subprime_score', 'subprime_tier',
+        # bureau PDF signals
+        'business_ccj', 'business_credit_score_suppressed', 'business_credit_limit',
+        'business_max_recommended_credit', 'business_negative_impact_count', 'business_enquiries_3m',
         # key metrics
         'Total Revenue', 'Net Income', 'Operating Margin', 'Debt Service Coverage Ratio',
         # params
@@ -4140,6 +5291,7 @@ def main():
         with st.spinner("Reading company credit report PDFs..."):
             pdf_risk_mapping, pdf_audit_df = build_pdf_risk_mapping(bureau_pdf_files, metadata_df)
             parameter_mapping = apply_pdf_risk_to_mapping(parameter_mapping, pdf_risk_mapping)
+        render_pdf_match_review(pdf_audit_df)
 
     loaded_col, csv_col, ready_col = st.columns(3)
     with loaded_col:
@@ -4303,8 +5455,513 @@ def main():
         section_title("Outcome Summary")
         st.dataframe(results_df["outcome_label"].value_counts().reset_index(), use_container_width=True, hide_index=True)
 
+    calibration_reports = render_scorecard_calibration(results_df)
+    section_title("Calibration Report Exports")
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.download_button(
+            "Download Calibration Summary",
+            data=calibration_reports["summary"].to_csv(index=False),
+            file_name=f"calibration_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with c2:
+        st.download_button(
+            "Download Threshold Recommendations",
+            data=calibration_reports["threshold_recommendations"].to_csv(index=False),
+            file_name=f"threshold_recommendations_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with c3:
+        st.download_button(
+            "Download Score Band Report",
+            data=calibration_reports["score_bands"].to_csv(index=False),
+            file_name=f"score_band_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with c4:
+        st.download_button(
+            "Download Rule Signal Report",
+            data=calibration_reports["rule_signals"].to_csv(index=False),
+            file_name=f"rule_signal_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    st.download_button(
+        "Download Paid Lookalike Report",
+        data=calibration_reports["paid_lookalikes"].to_csv(index=False),
+        file_name=f"paid_lookalike_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+        mime="text/csv",
+    )
+
     create_results_dashboard(results_df)
     st.session_state["batch_results"] = results_df
+
+
+def main():
+    """Simplified batch dataset builder with submit-only processing and saved runs."""
+
+    if render_main_hero:
+        render_main_hero(
+            "MCA v2 Batch Processor",
+            "Build paid/not-paid scorecard datasets from application data, transaction JSONs, and optional bureau PDFs.",
+            eyebrow="Batch scoring workspace",
+        )
+    else:
+        st.title("MCA v2 Batch Processor")
+        st.markdown("Build paid/not-paid scorecard datasets from application data, transaction JSONs, and optional bureau PDFs.")
+    render_batch_workflow_rail()
+
+    if sidebar_section:
+        sidebar_section("Fallbacks")
+    else:
+        st.sidebar.header("Fallbacks")
+    st.sidebar.caption("Only used where the uploaded data and mapping cannot supply a value.")
+    st.sidebar.caption("Matching mode: RapidFuzz" if RAPIDFUZZ_AVAILABLE else "Matching mode: exact fallback")
+
+    default_industry = st.sidebar.selectbox(
+        "Fallback Industry",
+        list(INDUSTRY_THRESHOLDS.keys()),
+        index=list(INDUSTRY_THRESHOLDS.keys()).index("Other"),
+    )
+    default_loan = st.sidebar.number_input("Fallback Requested Loan (£)", min_value=0.0, value=5000.0, step=1000.0)
+    default_directors_score = st.sidebar.slider("Fallback Director Credit Score", 0, 100, 75)
+    default_company_age = st.sidebar.number_input("Fallback Company Age (Months)", min_value=0, value=12, step=1)
+
+    saved_runs = list_saved_runs()
+    if saved_runs:
+        if sidebar_section:
+            sidebar_section("Saved Runs")
+        else:
+            st.sidebar.header("Saved Runs")
+        selected_run = st.sidebar.selectbox(
+            "Recent saved runs",
+            saved_runs,
+            format_func=lambda run: f"{run.get('run_name', run.get('run_id', 'Run'))} - {run.get('created_at', '')}",
+        )
+        if selected_run:
+            st.sidebar.caption(selected_run.get("path", ""))
+            if st.sidebar.button("Load Selected Run", type="primary"):
+                st.session_state["loaded_saved_run"] = selected_run
+                st.rerun()
+    else:
+        selected_run = None
+
+    if st.session_state.get("loaded_saved_run"):
+        if st.button("Close Saved Run View"):
+            st.session_state.pop("loaded_saved_run", None)
+            st.rerun()
+        try:
+            render_loaded_saved_run(load_saved_run(st.session_state["loaded_saved_run"]))
+        except Exception as e:
+            st.error(f"Could not load saved run: {e}")
+        return
+
+    default_params = {
+        "industry": default_industry,
+        "requested_loan": default_loan,
+        "directors_score": default_directors_score,
+        "company_age_months": default_company_age,
+        "business_ccj": False,
+        "director_ccj": False,
+        "poor_or_no_online_presence": False,
+        "uses_generic_email": False,
+    }
+
+    if render_intake_panel_intro:
+        render_intake_panel_intro(
+            title="Batch run setup",
+            description=(
+                "Name the run, upload the application data and mapping, add the full JSON pool, "
+                "then add paid and not-paid JSON subsets. Processing starts only when you press the button."
+            ),
+        )
+    else:
+        section_title("Batch Run Setup", "Processing starts only when you press the button.")
+
+    with st.form("batch_run_form", clear_on_submit=False):
+        run_name = st.text_input(
+            "Run name",
+            value=datetime.now().strftime("Scorecard run %Y-%m-%d %H%M"),
+            help="Used as the saved run folder name and manifest label.",
+        )
+        save_run = st.checkbox("Save this run", value=True)
+
+        data_col, mapping_col = st.columns(2)
+        with data_col:
+            data_file = st.file_uploader(
+                "Application data file",
+                type=["csv", "xlsx", "xls"],
+                help="Example: data (6).xlsx. Filename does not matter.",
+                key="batch_data_file_form",
+            )
+        with mapping_col:
+            mapping_file = st.file_uploader(
+                "CSV mapping file",
+                type=["csv", "xlsx", "xls"],
+                help="Example: PBI_CSV_Mapping.xlsx.",
+                key="batch_mapping_file_form",
+            )
+
+        json_col, paid_col, not_paid_col = st.columns(3)
+        with json_col:
+            uploaded_files = st.file_uploader(
+                "All application JSONs",
+                type=["json", "zip"],
+                accept_multiple_files=True,
+                help="Full pool of transaction JSON files.",
+                key="batch_all_jsons_form",
+            )
+        with paid_col:
+            paid_files = st.file_uploader(
+                "Paid JSONs",
+                type=["json", "zip"],
+                accept_multiple_files=True,
+                help="Files uploaded here are labelled paid.",
+                key="batch_paid_jsons_form",
+            )
+        with not_paid_col:
+            not_paid_files = st.file_uploader(
+                "Not-paid JSONs",
+                type=["json", "zip"],
+                accept_multiple_files=True,
+                help="Files uploaded here are labelled not_paid/defaulted.",
+                key="batch_not_paid_jsons_form",
+            )
+
+        bureau_pdf_files = st.file_uploader(
+            "Company credit report PDFs (optional)",
+            type=["pdf"],
+            accept_multiple_files=True,
+            help="Optional bureau PDFs used to derive business CCJ flags.",
+            key="batch_bureau_pdfs_form",
+        )
+
+        submitted = st.form_submit_button("Process All Applications", type="primary")
+
+    if not submitted:
+        if selected_run:
+            st.caption("Saved run selected in the sidebar. Its files are available in the saved run folder.")
+        render_batch_empty_state()
+        return
+
+    if not run_name.strip():
+        st.error("Enter a run name before processing.")
+        return
+    if not data_file or not mapping_file:
+        st.error("Upload both the application data file and mapping file.")
+        return
+    if not uploaded_files:
+        st.error("Upload the full JSON pool before processing.")
+        return
+
+    metadata_df = pd.DataFrame()
+    duplicates_df = pd.DataFrame()
+    metadata_audit = {}
+    parameter_mapping = {}
+
+    with st.spinner("Reading data and mapping files..."):
+        try:
+            metadata_df, duplicates_df, metadata_audit = prepare_application_metadata(
+                data_file,
+                mapping_file,
+                default_industry,
+            )
+            parameter_mapping = build_metadata_mapping(metadata_df)
+        except Exception as e:
+            st.error(f"Could not read data/mapping files: {e}")
+            return
+
+    m1, m2, m3, m4 = st.columns(4)
+    with m1:
+        st.metric("Raw Data Rows", metadata_audit.get("raw_rows", 0))
+    with m2:
+        st.metric("Deduped Applications", len(metadata_df))
+    with m3:
+        st.metric("Duplicate Rows Removed", metadata_audit.get("duplicate_rows_removed", 0))
+    with m4:
+        st.metric("Mapped Companies", len(parameter_mapping))
+
+    with st.expander("Mapped Data Preview", expanded=False):
+        preview_cols = [
+            c for c in [
+                "application_id",
+                "company_name",
+                "requested_loan",
+                "company_age_months",
+                "directors_score",
+                "director_defaults_12m",
+                "director_ccj_count",
+            ] if c in metadata_df.columns
+        ]
+        st.dataframe(metadata_df[preview_cols].head(20), use_container_width=True, hide_index=True)
+
+    if not duplicates_df.empty:
+        with st.expander(f"Duplicate AppID Rows Found ({len(duplicates_df)})", expanded=False):
+            st.dataframe(duplicates_df.head(100), use_container_width=True, hide_index=True)
+
+    with st.spinner("Loading JSON files..."):
+        files_data = load_json_files(uploaded_files)
+
+    if not files_data:
+        st.error("No valid JSON files found in uploaded files")
+        return
+
+    outcome_mapping, outcome_audit_df = assign_outcomes(files_data, paid_files, not_paid_files)
+
+    pdf_risk_mapping = {}
+    pdf_audit_df = pd.DataFrame()
+    if bureau_pdf_files and not metadata_df.empty:
+        with st.spinner("Reading company credit report PDFs..."):
+            pdf_risk_mapping, pdf_audit_df = build_pdf_risk_mapping(bureau_pdf_files, metadata_df)
+            parameter_mapping = apply_pdf_risk_to_mapping(parameter_mapping, pdf_risk_mapping)
+
+    loaded_col, csv_col, ready_col = st.columns(3)
+    with loaded_col:
+        st.metric("JSON Files Loaded", len(files_data))
+    with csv_col:
+        st.metric("CSV Companies", len(parameter_mapping))
+    with ready_col:
+        st.metric("Ready to Process", "Yes" if parameter_mapping else "Needs data/mapping")
+
+    if not outcome_audit_df.empty:
+        outcome_counts = outcome_audit_df["outcome_label"].value_counts().reset_index()
+        outcome_counts.columns = ["Outcome", "Files"]
+        st.dataframe(outcome_counts, use_container_width=True, hide_index=True)
+        if (outcome_audit_df["outcome_label"] == "conflict").any():
+            st.error("Some JSON files are present in both paid and not-paid uploads. Resolve these before using the outputs.")
+
+    with st.expander("Loaded Files", expanded=False):
+        for filename, _ in files_data:
+            st.write(f"- {filename}")
+
+    if parameter_mapping:
+        section_title("File Matching Analysis", "Preview how uploaded JSON filenames align with the mapped company data.")
+        uploaded_filenames = [filename.replace(".json", "") for filename, _ in files_data]
+        csv_companies = list(parameter_mapping.keys())
+        potential_matches = []
+        missing_jsons = []
+        extra_jsons = []
+
+        if RAPIDFUZZ_AVAILABLE:
+            for csv_company in csv_companies:
+                match_result = process.extractOne(
+                    csv_company,
+                    uploaded_filenames,
+                    scorer=fuzz.token_sort_ratio,
+                    score_cutoff=60,
+                )
+                if match_result:
+                    potential_matches.append(
+                        {"csv_company": csv_company, "json_file": match_result[0], "score": match_result[1]}
+                    )
+                else:
+                    missing_jsons.append(csv_company)
+            matched_json_files = [m["json_file"] for m in potential_matches]
+            extra_jsons = [f for f in uploaded_filenames if f not in matched_json_files]
+        else:
+            for csv_company in csv_companies:
+                if csv_company in uploaded_filenames:
+                    potential_matches.append({"csv_company": csv_company, "json_file": csv_company, "score": 100})
+                else:
+                    missing_jsons.append(csv_company)
+            matched_json_files = [m["json_file"] for m in potential_matches]
+            extra_jsons = [f for f in uploaded_filenames if f not in matched_json_files]
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Companies in Data", len(csv_companies))
+        with col2:
+            st.metric("JSON Files Uploaded", len(uploaded_filenames))
+        with col3:
+            st.metric("Expected Matches", len(potential_matches))
+
+        if potential_matches:
+            with st.expander(f"Potential Matches ({len(potential_matches)})", expanded=False):
+                match_df = pd.DataFrame(potential_matches)
+                match_df["score"] = match_df["score"].apply(lambda x: f"{x:.1f}%")
+                match_df.columns = ["CSV Company", "JSON File", "Match Score"]
+                st.dataframe(match_df, use_container_width=True, hide_index=True)
+
+        if missing_jsons:
+            with st.expander(f"Missing JSON Files ({len(missing_jsons)})", expanded=False):
+                st.dataframe(
+                    pd.DataFrame({"Company Name (from data)": missing_jsons}),
+                    use_container_width=True,
+                    hide_index=True,
+                )
+
+        if extra_jsons:
+            with st.expander(f"Extra JSON Files ({len(extra_jsons)})", expanded=False):
+                st.dataframe(pd.DataFrame({"JSON File": extra_jsons}), use_container_width=True, hide_index=True)
+
+    if not pdf_audit_df.empty:
+        with st.expander("Company Credit Report PDF Audit", expanded=False):
+            st.dataframe(pdf_audit_df, use_container_width=True, hide_index=True)
+
+    processor = BatchProcessor()
+    progress_bar = st.progress(0, text="Starting batch processing...")
+    with st.spinner("Processing applications..."):
+        results_df = processor.process_batch(
+            files_data,
+            default_params,
+            parameter_mapping,
+            progress_bar,
+            outcome_mapping=outcome_mapping,
+        )
+    progress_bar.empty()
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Processed Successfully", processor.processed_count)
+    with col2:
+        st.metric("Processing Errors", processor.error_count)
+    with col3:
+        success_rate = (processor.processed_count / len(files_data)) * 100
+        st.metric("Success Rate", f"{success_rate:.1f}%")
+
+    error_df = pd.DataFrame(processor.error_log)
+    if processor.error_log:
+        section_title("Processing Errors Analysis")
+        st.dataframe(error_df, use_container_width=True, hide_index=True)
+        st.download_button(
+            label="Download Error Log (CSV)",
+            data=dataframe_to_csv_bytes(error_df),
+            file_name=f"processing_errors_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+
+    if results_df.empty:
+        st.error("No applications were processed successfully")
+        return
+
+    scorecard_features_df = build_scorecard_features(results_df)
+    calibration_reports = build_calibration_reports(results_df)
+
+    run_dir = None
+    if save_run:
+        try:
+            run_dir = save_named_run(
+                run_name=run_name,
+                results_df=results_df,
+                scorecard_features_df=scorecard_features_df,
+                outcome_audit_df=outcome_audit_df,
+                pdf_audit_df=pdf_audit_df,
+                calibration_reports=calibration_reports,
+                metadata={
+                    "default_params": default_params,
+                    "metadata_audit": metadata_audit,
+                    "processed_successfully": processor.processed_count,
+                    "processing_errors": processor.error_count,
+                    "json_files_loaded": len(files_data),
+                    "mapped_companies": len(parameter_mapping),
+                },
+                uploads={
+                    "data": data_file,
+                    "mapping": mapping_file,
+                    "all_jsons": uploaded_files,
+                    "paid_jsons": paid_files,
+                    "not_paid_jsons": not_paid_files,
+                    "bureau_pdfs": bureau_pdf_files,
+                },
+            )
+            st.success(f"Saved run: {run_dir}")
+        except Exception as e:
+            st.warning(f"Run processed, but saving failed: {e}")
+
+    section_title("Scorecard Dataset Exports")
+    d1, d2, d3, d4 = st.columns(4)
+    with d1:
+        st.download_button(
+            "Download Case Scores",
+            data=dataframe_to_csv_bytes(results_df),
+            file_name=f"case_scores_with_outcomes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            type="primary",
+        )
+    with d2:
+        st.download_button(
+            "Download Scorecard Features",
+            data=dataframe_to_csv_bytes(scorecard_features_df),
+            file_name=f"scorecard_features_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with d3:
+        st.download_button(
+            "Download Matching Audit",
+            data=dataframe_to_csv_bytes(outcome_audit_df),
+            file_name=f"matching_audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with d4:
+        if not pdf_audit_df.empty:
+            st.download_button(
+                "Download PDF Audit",
+                data=dataframe_to_csv_bytes(pdf_audit_df),
+                file_name=f"bureau_pdf_audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                mime="text/csv",
+            )
+
+    if "outcome_label" in results_df.columns:
+        section_title("Outcome Summary")
+        st.dataframe(results_df["outcome_label"].value_counts().reset_index(), use_container_width=True, hide_index=True)
+
+    calibration_reports = render_scorecard_calibration(results_df)
+    section_title("Calibration Report Exports")
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.download_button(
+            "Download Calibration Summary",
+            data=dataframe_to_csv_bytes(calibration_reports["summary"]),
+            file_name=f"calibration_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with c2:
+        st.download_button(
+            "Download Threshold Recommendations",
+            data=dataframe_to_csv_bytes(calibration_reports["threshold_recommendations"]),
+            file_name=f"threshold_recommendations_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with c3:
+        st.download_button(
+            "Download Score Band Report",
+            data=dataframe_to_csv_bytes(calibration_reports["score_bands"]),
+            file_name=f"score_band_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with c4:
+        st.download_button(
+            "Download Rule Signal Report",
+            data=dataframe_to_csv_bytes(calibration_reports["rule_signals"]),
+            file_name=f"rule_signal_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    st.download_button(
+        "Download Paid Lookalike Report",
+        data=dataframe_to_csv_bytes(calibration_reports["paid_lookalikes"]),
+        file_name=f"paid_lookalike_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+        mime="text/csv",
+    )
+    c5, c6 = st.columns(2)
+    with c5:
+        st.download_button(
+            "Download Bureau Signal Report",
+            data=dataframe_to_csv_bytes(calibration_reports["bureau_signals"]),
+            file_name=f"bureau_signal_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+    with c6:
+        st.download_button(
+            "Download Evidence Quality Report",
+            data=dataframe_to_csv_bytes(calibration_reports["evidence_quality"]),
+            file_name=f"evidence_quality_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+        )
+
+    create_results_dashboard(results_df)
+    st.session_state["batch_results"] = results_df
+    if run_dir:
+        st.session_state["last_saved_run"] = str(run_dir)
 
 
 if __name__ == "__main__":

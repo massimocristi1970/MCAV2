@@ -66,7 +66,8 @@ class EnsembleScorer:
     These transaction consistency metrics have been shown to be
     strong predictors of MCA repayment probability.
     
-    Hard stops can override the ensemble (e.g., MCA DECLINE).
+    Hard stops can override the ensemble, but ordinary MCA weakness is treated
+    as a decision cap rather than an automatic decline.
     """
     
     DEFAULT_WEIGHTS = {
@@ -83,9 +84,10 @@ class EnsembleScorer:
         'senior_review': 60
     }
     
-    # Hard stop conditions that override ensemble
-    # MCA DECLINE is a strong signal because it's based on empirically-validated
-    # transaction consistency metrics
+    # Hard stop conditions that override ensemble.
+    # MCA transaction weakness is only a hard stop when the underlying signal is
+    # severe. Softer MCA declines cap the maximum decision instead of killing the
+    # case outright.
     HARD_STOP_CONDITIONS = {
         'mca_decline': "Transaction consistency too poor for MCA lending (inflow pattern analysis)",
         'dscr_critical': "Debt service coverage ratio critically low (<0.5)",
@@ -171,6 +173,7 @@ class EnsembleScorer:
             convergence_penalty,
             convergence,
             contributing_scores,
+            scores,
             risk_factors,
             positive_factors,
         )
@@ -194,6 +197,10 @@ class EnsembleScorer:
                     if s.available and s.weight > 0
                 ]),
                 'weights_applied': self.weights,
+                'mca_decision_policy': (
+                    "MCA severe failures hard-stop; soft MCA decline caps the decision; "
+                    "MCA refer caps at conditional approval; MCA approve supports but does not approve alone."
+                ),
                 'informational_scores': {
                     name: round(result.score, 1)
                     for name, result in scoring_results.items()
@@ -212,13 +219,11 @@ class EnsembleScorer:
         
         hard_stop_reasons = []
         
-        # MCA rule decline - THIS IS IMPORTANT
-        # Based on empirically-validated transaction consistency metrics:
-        # - inflow_days_30d <= 8: Very sparse deposits
-        # - max_inflow_gap_days >= 21: Very long gaps between deposits
-        # - inflow_cv >= 1.3: Very high variability
+        # Severe MCA transaction consistency failure. A plain MCA DECLINE should
+        # not always be a hard stop; the decision layer handles softer MCA
+        # weakness as a cap after the combined score is calculated.
         mca_decision = scores.get('mca_decision') or params.get('mca_rule_decision')
-        if mca_decision and str(mca_decision).upper() == 'DECLINE':
+        if self._is_severe_mca_failure(scores, params):
             hard_stop_reasons.append(self.HARD_STOP_CONDITIONS['mca_decline'])
         
         # Critical DSCR
@@ -261,6 +266,52 @@ class EnsembleScorer:
             )
         
         return None
+
+    def _is_severe_mca_failure(self, scores: Dict[str, Any], params: Dict[str, Any]) -> bool:
+        """Return True only for MCA failures that should hard-stop a case."""
+        mca_decision = scores.get('mca_decision') or params.get('mca_rule_decision')
+        if not mca_decision or str(mca_decision).upper() != 'DECLINE':
+            return False
+
+        mca_score = scores.get('mca_score', params.get('mca_rule_score'))
+        try:
+            if mca_score is not None and float(mca_score) <= 20:
+                return True
+        except (TypeError, ValueError):
+            pass
+
+        signals = params.get('mca_rule_signals') or scores.get('mca_rule_signals') or {}
+        try:
+            inflow_days = signals.get('inflow_days_30d')
+            if inflow_days is not None and float(inflow_days) <= 8:
+                return True
+        except (TypeError, ValueError):
+            pass
+
+        try:
+            max_gap = signals.get('max_inflow_gap_days')
+            if max_gap is not None and float(max_gap) >= 21:
+                return True
+        except (TypeError, ValueError):
+            pass
+
+        try:
+            inflow_cv = signals.get('inflow_cv')
+            if inflow_cv is not None and float(inflow_cv) >= 1.3:
+                return True
+        except (TypeError, ValueError):
+            pass
+
+        reasons = scores.get('mca_reasons') or scores.get('mca_rule_reasons') or params.get('mca_rule_reasons') or []
+        reason_text = " | ".join(str(reason).lower() for reason in reasons)
+        severe_markers = [
+            "inflow_days_30d<=",
+            "max_inflow_gap_days>=",
+            "inflow_cv>=",
+            "all three mca",
+            "severe",
+        ]
+        return any(marker in reason_text for marker in severe_markers)
     
     def _collect_scores(self, scores: Dict[str, Any]) -> Dict[str, ScoringResult]:
         """Collect and normalize scores from different systems."""
@@ -350,11 +401,11 @@ class EnsembleScorer:
         if score_range <= 10:
             return "High Convergence", 0.0
         elif score_range <= 20:
-            return "Good Convergence", 2.0
+            return "Good Convergence", 1.0
         elif score_range <= 30:
-            return "Moderate Convergence", 5.0
+            return "Moderate Convergence", 3.0
         else:
-            return "Low Convergence", 8.0
+            return "Low Convergence", 5.0
     
     def _determine_decision(
         self,
@@ -368,9 +419,22 @@ class EnsembleScorer:
         mca_decision = scores.get('mca_decision') or params.get('mca_rule_decision')
         mca_decision = str(mca_decision).upper() if mca_decision else None
         
-        # MCA REFER means transaction consistency is borderline
-        # Even with a good score, we should be cautious -- but never
-        # override a DECLINE that the score thresholds demand
+        # MCA DECLINE is a hard stop only when _check_hard_stops has identified
+        # severe transaction weakness. Softer MCA declines cap the maximum
+        # decision at senior review while still allowing nuance from the
+        # combined score.
+        if mca_decision == 'DECLINE':
+            if score >= self.THRESHOLDS['conditional_approve']:
+                return Decision.SENIOR_REVIEW
+            elif score >= self.THRESHOLDS['refer']:
+                return Decision.REFER
+            elif score >= self.THRESHOLDS['senior_review']:
+                return Decision.SENIOR_REVIEW
+            else:
+                return Decision.DECLINE
+
+        # MCA REFER means transaction consistency is borderline. It caps the
+        # maximum decision at conditional approval but does not auto-decline.
         if mca_decision == 'REFER':
             if score >= self.THRESHOLDS['approve']:
                 return Decision.CONDITIONAL_APPROVE
@@ -381,7 +445,8 @@ class EnsembleScorer:
             else:
                 return Decision.DECLINE
         
-        # MCA APPROVE gives confidence boost -- but still respects thresholds
+        # MCA APPROVE supports the combined score, but it does not approve by
+        # itself. The weighted score must still meet the relevant band.
         if mca_decision == 'APPROVE':
             if score >= self.THRESHOLDS['approve']:
                 return Decision.APPROVE
@@ -463,6 +528,26 @@ class EnsembleScorer:
         # CCJs
         if params.get('business_ccj', False):
             risk_factors.append("Business CCJ on record")
+
+        bureau_band = params.get('bureau_band') or params.get('business_bureau_band')
+        if bureau_band and str(bureau_band).startswith(("C", "D")):
+            risk_factors.append(f"Business bureau band: {bureau_band}")
+
+        if params.get('business_credit_score_suppressed', False):
+            risk_factors.append("Business bureau score suppressed")
+
+        credit_limit = params.get('business_credit_limit')
+        max_credit = params.get('business_max_recommended_credit')
+        if credit_limit == 0 and max_credit == 0:
+            risk_factors.append("Business bureau credit limit £0")
+
+        negative_impact_count = params.get('business_negative_impact_count') or 0
+        try:
+            negative_impact_count = int(negative_impact_count)
+        except (TypeError, ValueError):
+            negative_impact_count = 0
+        if negative_impact_count >= 3:
+            risk_factors.append(f"Business bureau negative factors ({negative_impact_count})")
 
         # Company age
         age = params.get('company_age_months', 12)
@@ -681,6 +766,7 @@ class EnsembleScorer:
         convergence_penalty: float,
         convergence: str,
         contributing_scores: Dict[str, float],
+        scores: Dict[str, Any],
         risk_factors: List[str],
         positive_factors: List[str]
     ) -> str:
@@ -696,29 +782,43 @@ class EnsembleScorer:
         mca = contributing_scores.get('mca_score')
         subprime = contributing_scores.get('subprime_score')
         score_context = f"MCA {mca:.0f} / Subprime {subprime:.0f}" if mca is not None and subprime is not None else "available decision scores"
+        mca_decision = str(scores.get('mca_decision') or "").upper().strip()
 
         penalty_text = ""
         if convergence_penalty > 0:
             penalty_text = (
-                f" Raw 60/40 score was {raw_score:.1f}, reduced by {convergence_penalty:.1f} "
+                f" Raw weighted score was {raw_score:.1f}, reduced by {convergence_penalty:.1f} "
                 f"for {convergence.lower()} between MCA and Subprime."
+            )
+
+        if mca_decision == "DECLINE" and decision in (Decision.SENIOR_REVIEW, Decision.REFER):
+            return (
+                f"Weighted MCA/Subprime score {score:.1f} was not an automatic decline, "
+                f"but MCA transaction weakness caps the case at {decision.value.replace('_', ' ').title()} "
+                f"({score_context}).{penalty_text}"
+            )
+
+        if mca_decision == "REFER" and decision == Decision.CONDITIONAL_APPROVE:
+            return (
+                f"Weighted MCA/Subprime score {score:.1f} supports approval, but borderline MCA "
+                f"transaction consistency caps the decision at conditional approval ({score_context}).{penalty_text}"
             )
         
         if decision == Decision.APPROVE:
-            return f"Combined 60/40 MCA/Subprime score {score:.1f} meets approval threshold ({score_context})."
+            return f"Weighted MCA/Subprime score {score:.1f} meets approval threshold ({score_context})."
         
         elif decision == Decision.CONDITIONAL_APPROVE:
-            return f"Combined 60/40 MCA/Subprime score {score:.1f} supports conditional approval ({score_context})."
+            return f"Weighted MCA/Subprime score {score:.1f} supports conditional approval ({score_context})."
         
         elif decision == Decision.REFER:
-            return f"Combined 60/40 MCA/Subprime score {score:.1f} falls in the referral band ({score_context}).{penalty_text}"
+            return f"Weighted MCA/Subprime score {score:.1f} falls in the referral band ({score_context}).{penalty_text}"
         
         elif decision == Decision.SENIOR_REVIEW:
-            return f"Combined 60/40 MCA/Subprime score {score:.1f} falls in the senior-review band ({score_context}).{penalty_text}"
+            return f"Weighted MCA/Subprime score {score:.1f} falls in the senior-review band ({score_context}).{penalty_text}"
         
         else:  # DECLINE
             label, threshold = threshold_labels[Decision.DECLINE]
-            return f"Combined 60/40 MCA/Subprime score {score:.1f} is below the {label} threshold of {threshold} ({score_context}).{penalty_text}"
+            return f"Weighted MCA/Subprime score {score:.1f} is below the {label} threshold of {threshold} ({score_context}).{penalty_text}"
 
 
 def get_ensemble_recommendation(

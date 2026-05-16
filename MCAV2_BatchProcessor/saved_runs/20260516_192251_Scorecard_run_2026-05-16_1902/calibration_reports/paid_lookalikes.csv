@@ -1,0 +1,605 @@
+application_id,company_name,original_filename,outcome_label,paid_profile_similarity,paid_lookalike_band,nearest_paid_case,nearest_paid_similarity,features_used,subprime_score,mca_rule_score,final_decision
+101794,Creative Plus Media Ltd,Creative Plus Media Ltd.json,unlabelled,85.73151234888775,Strong paid lookalike,Apollo Supermarket(1),73.14051641294293,21,72.5,60,DECLINE
+101787,Rizpicks Travels Ltd,rizpicks travels ltd.json,unlabelled,83.83377448733603,Strong paid lookalike,Apollo Supermarket(1),70.76738720154536,21,74.4,60,DECLINE
+100016,Bistro Bites Ltd,Bistro bites ltd.json,unlabelled,81.38632439978313,Strong paid lookalike,D&C Couriers Limited(1),78.00996579515352,21,66.7,60,DECLINE
+101768,Mens Hair London,Mens Hair London.json,unlabelled,81.05557845433944,Strong paid lookalike,D&C Couriers Limited(1),72.94585494094991,21,69.1,60,DECLINE
+101619,The Nail Label Limited,The Nail Label Limited.json,unlabelled,80.87623986922533,Strong paid lookalike,D&C Couriers Limited(1),65.99368654643453,21,71.1,60,DECLINE
+101837,Auto Repairs Basingstoke Ltd,Auto Repairs Basingstoke Ltd.json,unlabelled,80.21837695063847,Strong paid lookalike,Apollo Supermarket(1),68.70806104984446,21,67.8,60,DECLINE
+101854,Ings Pet Store & Grooming Ltd,INGS PET STORE & GROOMING LTD.json,unlabelled,80.20391742068838,Strong paid lookalike,Apollo Supermarket(1),71.28680526464649,21,67.4,60,DECLINE
+101839,Aesthetic Precision,Aesthetic Precision.json,unlabelled,80.10915856374787,Strong paid lookalike,D&C Couriers Limited(1),71.56507590756634,21,78.3,60,SENIOR_REVIEW
+100390,Dar Hire London Ltd,DAR Hire London Ltd.json,unlabelled,80.05652564997453,Strong paid lookalike,Apollo Supermarket(1),67.78078980944366,21,70.5,60,DECLINE
+100398,Meli'S Landscaping Ltd(1),Meli's Landscaping Ltd(1).json,unlabelled,79.86115234978278,Strong paid lookalike,D&C Couriers Limited(1),67.80238043590126,21,77.4,60,SENIOR_REVIEW
+100398,Meli'S Landscaping Ltd,Meli's Landscaping Ltd.json,unlabelled,79.86115234978278,Strong paid lookalike,D&C Couriers Limited(1),67.80238043590126,21,77.4,60,SENIOR_REVIEW
+101765,Diva Hair Studio Ltd,Diva Hair Studio Ltd.json,unlabelled,79.12741316057587,Strong paid lookalike,D&C Couriers Limited(1),68.56202989095121,21,75.6,60,SENIOR_REVIEW
+101478,Besachkarma Limited,Besachkarma Limited.json,unlabelled,78.5549156579968,Strong paid lookalike,D&C Couriers Limited(1),70.28218702658425,21,67.5,60,DECLINE
+101478,Besachkarma Limited(1),Besachkarma Limited(1).json,unlabelled,78.5549156579968,Strong paid lookalike,D&C Couriers Limited(1),70.28218702658425,21,67.5,60,DECLINE
+101801,Joao Motorcyles Ltd,Joao motorcyles Ltd.json,unlabelled,77.87333747777393,Strong paid lookalike,Four Paws Walking And Training Ltd,66.98222334084403,21,74.9,60,DECLINE
+101856,Rb Market Limited,Rb market limited app 2.json,unlabelled,77.59938614925981,Strong paid lookalike,Apollo Supermarket(1),66.88207949791281,21,72.4,60,DECLINE
+101857,Habitat Music Studios Ltd,Habitat music studios ltd app 2.json,unlabelled,77.56212574714044,Strong paid lookalike,D&C Couriers Limited(1),72.75729581680929,21,65.8,60,DECLINE
+101857,Habitat Music Studios Ltd,Habitat music studios ltd.json,unlabelled,77.56212574714044,Strong paid lookalike,D&C Couriers Limited(1),72.75729581680929,21,65.8,60,DECLINE
+101849,Hidden Pretty Gifts Ltd(1),Hidden Pretty Gifts Ltd(1).json,unlabelled,77.34181130074073,Strong paid lookalike,D&C Couriers Limited(1),70.92681767736315,21,58.4,60,DECLINE
+101849,Hidden Pretty Gifts Ltd,Hidden Pretty Gifts Ltd.json,unlabelled,77.34181130074073,Strong paid lookalike,D&C Couriers Limited(1),70.92681767736315,21,58.4,60,DECLINE
+101854,Ings Pet Store & Grooming Ltd,Ings pet store & grooming ltd app 2.json,unlabelled,76.90358021442256,Strong paid lookalike,Apollo Supermarket(1),67.62838917784632,21,75.1,60,SENIOR_REVIEW
+101599,Bulgarian Food Pirin Ltd,Bulgarian Food Pirin Ltd.json,unlabelled,76.41534786846412,Strong paid lookalike,Apollo Supermarket(1),70.74391355449244,21,69.5,60,DECLINE
+101599,Bulgarian Food Pirin Ltd(1),Bulgarian Food Pirin Ltd(1).json,unlabelled,76.41534786846412,Strong paid lookalike,Apollo Supermarket(1),70.74391355449244,21,69.5,60,DECLINE
+101434,Deluxe Lounge(1),Deluxe Lounge(1).json,unlabelled,76.37303876623449,Strong paid lookalike,Apollo Supermarket(1),69.32248723029267,21,69.6,60,DECLINE
+101434,Deluxe Lounge,Deluxe Lounge.json,unlabelled,76.37303876623449,Strong paid lookalike,Apollo Supermarket(1),69.32248723029267,21,69.6,60,DECLINE
+100218,Post Production Sorted Ltd(1),Post Production Sorted Ltd(1).json,unlabelled,76.36310550913991,Strong paid lookalike,Apollo Supermarket(1),71.92990825808816,21,83.3,60,SENIOR_REVIEW
+100218,Post Production Sorted Ltd,Post Production Sorted Ltd.json,unlabelled,76.36310550913991,Strong paid lookalike,Apollo Supermarket(1),71.92990825808816,21,83.3,60,SENIOR_REVIEW
+101812,Solical Stadiums Ltd,SOLICAL STADIUMS LTD.json,unlabelled,76.2784426815141,Strong paid lookalike,Apollo Supermarket(1),73.20690514562148,21,72.2,60,DECLINE
+100143,Greensec Limited(1),GreenSec Limited(1).json,unlabelled,76.26116674469348,Strong paid lookalike,D&C Couriers Limited(1),73.84846576962232,21,60.5,60,DECLINE
+100143,Greensec Limited,GreenSec Limited.json,unlabelled,76.26116674469348,Strong paid lookalike,D&C Couriers Limited(1),73.84846576962232,21,60.5,60,DECLINE
+101810,Four Paws Walking And Training Ltd(1),Four Paws Walking and Training Ltd(1).json,unlabelled,75.85528242161087,Strong paid lookalike,Four Paws Walking And Training Ltd,86.31758962917081,21,81.1,60,SENIOR_REVIEW
+101810,Four Paws Walking And Training Ltd,Four Paws Walking and Training Ltd.json,unlabelled,75.85528242161087,Strong paid lookalike,Four Paws Walking And Training Ltd,86.31758962917081,21,81.1,60,SENIOR_REVIEW
+101771,Journeyman Barbers Ltd,JOURNEYMAN BARBERS LTD.json,unlabelled,75.6421672847609,Strong paid lookalike,Apollo Supermarket(1),70.7224172516523,21,75.5,60,SENIOR_REVIEW
+100251,Git Support Ltd Categorized,GIT Support LTD_categorized.json,unlabelled,75.37004375922791,Strong paid lookalike,Four Paws Walking And Training Ltd,66.34850750491513,21,69.3,60,DECLINE
+100251,Git Support Ltd Categorized(1),GIT Support LTD_categorized(1).json,unlabelled,75.37004375922791,Strong paid lookalike,Four Paws Walking And Training Ltd,66.34850750491513,21,69.3,60,DECLINE
+101468,Ceiling Suppliers,Ceiling Suppliers Transaction Report(1).json,unlabelled,75.33269293366206,Strong paid lookalike,D&C Couriers Limited(1),77.06141847777991,21,56.6,60,DECLINE
+101468,Ceiling Suppliers,Ceiling Suppliers Transaction Report.json,unlabelled,75.33269293366206,Strong paid lookalike,D&C Couriers Limited(1),77.06141847777991,21,56.6,60,DECLINE
+100016,Sloppy Coffee Ltd,Sloppy coffee ltd.json,unlabelled,75.16031565625872,Strong paid lookalike,D&C Couriers Limited(1),74.25567121588504,21,67.5,60,DECLINE
+101610,Allure Salon (Uk) Ltd(1),Allure Salon (UK) Ltd(1).json,unlabelled,74.99161857212059,Moderate paid lookalike,Apollo Supermarket(1),68.18867358037596,21,75.7,60,SENIOR_REVIEW
+101610,Allure Salon (Uk) Ltd,Allure Salon (UK) Ltd.json,unlabelled,74.99161857212059,Moderate paid lookalike,Apollo Supermarket(1),68.18867358037596,21,75.7,60,SENIOR_REVIEW
+101851,Canny Fast Car Solutions Ltd,Canny fast car solutions Ltd.json,unlabelled,74.87911347831657,Moderate paid lookalike,D&C Couriers Limited(1),72.90944771271654,21,79.3,60,SENIOR_REVIEW
+101539,The Body Fix Coach Limited (2),The Body Fix Coach Limited (2).json,unlabelled,74.7366294395457,Moderate paid lookalike,Apollo Supermarket(1),67.77795154193166,21,69.7,60,DECLINE
+101539,The Body Fix Coach Limited,The Body Fix Coach Limited.json,unlabelled,74.7366294395457,Moderate paid lookalike,Apollo Supermarket(1),67.77795154193166,21,69.7,60,DECLINE
+101539,The Body Fix Coach Limited(1),The Body Fix Coach Limited(1).json,unlabelled,74.7366294395457,Moderate paid lookalike,Apollo Supermarket(1),67.77795154193166,21,69.7,60,DECLINE
+101539,The Body Fix Coach Limited (2)(1),The Body Fix Coach Limited (2)(1).json,unlabelled,74.7366294395457,Moderate paid lookalike,Apollo Supermarket(1),67.77795154193166,21,69.7,60,DECLINE
+100388,Tradedesk Team Ltd,TradeDesk Team Ltd.json,unlabelled,74.69638253935588,Moderate paid lookalike,D&C Couriers Limited(1),72.76663908505523,21,73.9,60,DECLINE
+100388,Tradedesk Team Ltd(1),TradeDesk Team Ltd(1).json,unlabelled,74.69638253935588,Moderate paid lookalike,D&C Couriers Limited(1),72.76663908505523,21,73.9,60,DECLINE
+101815,Brazilian Cleaning Essential Ltd,Brazilian cleaning essential ltd.json,unlabelled,74.57677470158568,Moderate paid lookalike,Four Paws Walking And Training Ltd,68.49428060247554,21,68.0,60,DECLINE
+100394,Apollo Supermarket,Apollo Supermarket.json,paid,74.54209914249371,Moderate paid lookalike,Apollo Supermarket(1),100.0,21,69.4,30,DECLINE
+100394,Apollo Supermarket(1),Apollo Supermarket(1).json,paid,74.54209914249371,Moderate paid lookalike,Apollo Supermarket(1),100.0,21,69.4,30,DECLINE
+101835,Faith & Love Nursery Ltd,Faith & Love nursery Ltd.json,unlabelled,74.45950490234645,Moderate paid lookalike,Apollo Supermarket(1),74.60627808433748,21,67.3,30,DECLINE
+101852,Kgksurrey.Co.Uk,KGKSURREY.co.uk.json,unlabelled,74.37108364265038,Moderate paid lookalike,D&C Couriers Limited(1),68.48654373486623,21,79.3,60,SENIOR_REVIEW
+101761,Emp Motors Ltd,EMP MOTORS LTD.json,unlabelled,74.07706101249997,Moderate paid lookalike,Four Paws Walking And Training Ltd,70.86517826534013,21,80.1,60,SENIOR_REVIEW
+101810,Four Paws Training Ltd,Four Paws Training Ltd.json,unlabelled,74.03579043687861,Moderate paid lookalike,Four Paws Walking And Training Ltd,79.48480005562278,21,71.5,60,DECLINE
+101810,Four Paws Training Ltd(1),Four Paws Training Ltd(1).json,unlabelled,74.03579043687861,Moderate paid lookalike,Four Paws Walking And Training Ltd,79.48480005562278,21,71.5,60,DECLINE
+101865,Plumbsussex Ltd,PlumbSussex Ltd.json,unlabelled,73.88037321674366,Moderate paid lookalike,Four Paws Walking And Training Ltd,63.93011269287415,21,77.6,100,APPROVE
+101577,Vagemanfish Ltd(1),Vagemanfish Ltd(1).json,unlabelled,73.60320656436849,Moderate paid lookalike,Apollo Supermarket(1),74.68917690361359,21,70.2,30,DECLINE
+101577,Vagemanfish Ltd,Vagemanfish Ltd.json,unlabelled,73.60320656436849,Moderate paid lookalike,Apollo Supermarket(1),74.68917690361359,21,70.2,30,DECLINE
+101810,Four Paws Walking And Training Limited,Four Paws Walking and Training Limited app 4.json,unlabelled,73.33554444554301,Moderate paid lookalike,Four Paws Walking And Training Ltd,78.33707557615521,21,70.4,60,DECLINE
+101579,Zainobu Limited(1),Zainobu Limited(1).json,unlabelled,73.09831482328462,Moderate paid lookalike,Apollo Supermarket(1),71.21068709042407,21,67.4,30,DECLINE
+101579,Zainobu Ltd,Zainobu Ltd.json,unlabelled,73.09831482328462,Moderate paid lookalike,Apollo Supermarket(1),71.21068709042407,21,67.4,30,DECLINE
+101579,Zainobu Limited,Zainobu Limited.json,unlabelled,73.09831482328462,Moderate paid lookalike,Apollo Supermarket(1),71.21068709042407,21,67.4,30,DECLINE
+101579,Zainobu Ltd(1),Zainobu Ltd(1).json,unlabelled,73.09831482328462,Moderate paid lookalike,Apollo Supermarket(1),71.21068709042407,21,67.4,30,DECLINE
+100408,Green Future Search Lab,Green Future Search Lab.json,unlabelled,73.04144553781312,Moderate paid lookalike,Apollo Supermarket(1),71.2693549234843,21,72.0,60,DECLINE
+100408,Green Future Search Lab(1),Green Future Search Lab(1).json,unlabelled,73.04144553781312,Moderate paid lookalike,Apollo Supermarket(1),71.2693549234843,21,72.0,60,DECLINE
+100247,Vageman Fish Limited(1),Vageman Fish Limited(1).json,unlabelled,72.83405979826169,Moderate paid lookalike,Apollo Supermarket(1),76.40673281716802,21,70.2,30,DECLINE
+100247,Vageman Fish Limited,Vageman Fish Limited.json,unlabelled,72.83405979826169,Moderate paid lookalike,Apollo Supermarket(1),76.40673281716802,21,70.2,30,DECLINE
+100016,As Derby Restaurants Ltd,As Derby restaurants ltd.json,unlabelled,72.83104361756509,Moderate paid lookalike,D&C Couriers Limited(1),69.59590793286701,21,59.3,60,DECLINE
+100139,Master Brewer Ltd,Master Brewer Ltd.json,unlabelled,72.7236130539599,Moderate paid lookalike,D&C Couriers Limited(1),81.90898735699399,21,51.8,60,DECLINE
+100139,Master Brewer Ltd(1),Master Brewer Ltd(1).json,unlabelled,72.7236130539599,Moderate paid lookalike,D&C Couriers Limited(1),81.90898735699399,21,51.8,60,DECLINE
+101449,Future Analytics Ltd,Future Analytics Ltd.json,unlabelled,72.66985358451655,Moderate paid lookalike,Apollo Supermarket(1),69.35184271943164,21,64.9,60,DECLINE
+101449,Future Analytics Ltd(1),Future Analytics Ltd(1).json,unlabelled,72.66985358451655,Moderate paid lookalike,Apollo Supermarket(1),69.35184271943164,21,64.9,60,DECLINE
+100346,Equinim,Equinim.json,unlabelled,72.61269949150652,Moderate paid lookalike,D&C Couriers Limited(1),65.37337151876257,21,72.1,60,DECLINE
+101462,White Canvas Bridal Ltd Transactions(1),White Canvas Bridal Ltd Transactions(1).json,unlabelled,72.60771529217348,Moderate paid lookalike,Apollo Supermarket(1),68.4711862767109,21,79.9,60,SENIOR_REVIEW
+101462,White Canvas Bridal Ltd Transactions,White Canvas Bridal Ltd Transactions.json,unlabelled,72.60771529217348,Moderate paid lookalike,Apollo Supermarket(1),68.4711862767109,21,79.9,60,SENIOR_REVIEW
+100344,Car Connect Rentals,Car Connect Rentals.json,unlabelled,72.51407848335042,Moderate paid lookalike,D&C Couriers Limited(1),75.9742169277893,21,49.4,60,DECLINE
+101565,London Recruiting,London Recruiting.json,unlabelled,72.39943230332378,Moderate paid lookalike,D&C Couriers Limited(1),67.24557747716824,21,71.3,60,DECLINE
+101565,London Recruiting(1),London Recruiting(1).json,unlabelled,72.39943230332378,Moderate paid lookalike,D&C Couriers Limited(1),67.24557747716824,21,71.3,60,DECLINE
+101840,Havelock Group Ltd Ta New Longcar,Havelock Group Ltd TA New Longcar.json,unlabelled,72.34263025889017,Moderate paid lookalike,D&C Couriers Limited(1),69.30960903920291,21,63.2,60,DECLINE
+101435,Sady Cs Ltd,Sady cs Ltd .json,unlabelled,72.1745442026,Moderate paid lookalike,Apollo Supermarket(1),77.0273729106405,21,67.5,30,DECLINE
+101435,Sady Cs Ltd (1),Sady cs Ltd (1).json,unlabelled,72.1745442026,Moderate paid lookalike,Apollo Supermarket(1),77.0273729106405,21,67.5,30,DECLINE
+100016,Funk Up Events Limited,Funk up Events limited.json,unlabelled,71.98779825398752,Moderate paid lookalike,Apollo Supermarket(1),73.86754926119107,21,59.5,30,DECLINE
+101807,D&C Couriers Ltd Original(1),D&C Couriers Ltd Original(1).json,unlabelled,71.85263297370527,Moderate paid lookalike,D&C Couriers Limited(1),79.41640575443824,21,53.2,60,DECLINE
+101807,D&C Couriers Ltd Original,D&C Couriers Ltd Original.json,unlabelled,71.85263297370527,Moderate paid lookalike,D&C Couriers Limited(1),79.41640575443824,21,53.2,60,DECLINE
+101500,Good Geezers Welling Ltd Transaction Limited,Good Geezers Welling Ltd Transaction Limited.json,unlabelled,71.74227741542654,Moderate paid lookalike,Apollo Supermarket(1),63.621097009789175,21,68.7,60,DECLINE
+101500,Good Geezers Welling Ltd Transaction Limited(1),Good Geezers Welling Ltd Transaction Limited(1).json,unlabelled,71.74227741542654,Moderate paid lookalike,Apollo Supermarket(1),63.621097009789175,21,68.7,60,DECLINE
+100196,Kimbo And Sons Ltd,Kimbo and Sons Ltd Transaction Report.json,unlabelled,71.60851096941286,Moderate paid lookalike,Apollo Supermarket(1),65.61331798532599,21,72.4,60,DECLINE
+100196,Kimbo And Sons Ltd,Kimbo and Sons Ltd Transaction Report(1).json,unlabelled,71.60851096941286,Moderate paid lookalike,Apollo Supermarket(1),65.61331798532599,21,72.4,60,DECLINE
+100196,Ps & Sons Ltd(1),ps & sons ltd(1).json,unlabelled,71.58490020960633,Moderate paid lookalike,D&C Couriers Limited(1),65.77339314366337,21,83.7,60,SENIOR_REVIEW
+100196,Ps & Sons Ltd,ps & sons ltd.json,unlabelled,71.58490020960633,Moderate paid lookalike,D&C Couriers Limited(1),65.77339314366337,21,83.7,60,SENIOR_REVIEW
+101543,Oxford Driveways And Roofing Limited(1),Oxford Driveways and Roofing Limited(1).json,unlabelled,71.37346999733003,Moderate paid lookalike,D&C Couriers Limited(1),71.32060262475936,21,68.4,60,DECLINE
+101543,Oxford Driveways And Roofing Limited,Oxford Driveways and Roofing Limited.json,unlabelled,71.37346999733003,Moderate paid lookalike,D&C Couriers Limited(1),71.32060262475936,21,68.4,60,DECLINE
+101738,Solaire Tanning Co Limited,Solaire tanning co limited.json,unlabelled,71.24076573129092,Moderate paid lookalike,Apollo Supermarket(1),73.18220787251018,21,64.2,30,DECLINE
+101856,Rb Market Limited,Rb market limited.json,unlabelled,70.89991699272343,Moderate paid lookalike,Apollo Supermarket(1),76.98830693357979,21,60.9,30,DECLINE
+101774,Cds Wholesale Limited,CDS Wholesale Limited.json,unlabelled,70.89937025030295,Moderate paid lookalike,Apollo Supermarket(1),68.47294658443303,21,76.6,60,SENIOR_REVIEW
+101465,Befirst Constructions Ltd,Befirst Constructions Ltd - Transaction Report(1).json,unlabelled,70.82797414028627,Moderate paid lookalike,Apollo Supermarket(1),71.64165504706389,21,71.1,30,DECLINE
+101465,Befirst Constructions Ltd,Befirst Constructions Ltd - Transaction Report.json,unlabelled,70.82797414028627,Moderate paid lookalike,Apollo Supermarket(1),71.64165504706389,21,71.1,30,DECLINE
+101448,Deli Ice Limited,Deli Ice Limited.json,unlabelled,70.81728307513134,Moderate paid lookalike,D&C Couriers Limited(1),79.19549398446198,21,63.6,60,DECLINE
+101448,Deli Ice Limited(1),Deli Ice Limited(1).json,unlabelled,70.81728307513134,Moderate paid lookalike,D&C Couriers Limited(1),79.19549398446198,21,63.6,60,DECLINE
+101540,Mikaiel Limited,Mikaiel Limited.json,unlabelled,70.62450760912469,Moderate paid lookalike,Apollo Supermarket(1),75.92999816783164,21,78.0,30,DECLINE
+101540,Mikaiel Limited Categorized,Mikaiel Limited_categorized.json,unlabelled,70.62450760912469,Moderate paid lookalike,Apollo Supermarket(1),75.92999816783164,21,78.0,30,DECLINE
+101540,Mikaiel Limited Categorized(1),Mikaiel Limited_categorized(1).json,unlabelled,70.62450760912469,Moderate paid lookalike,Apollo Supermarket(1),75.92999816783164,21,78.0,30,DECLINE
+101540,Mikaiel Limited(1),Mikaiel Limited(1).json,unlabelled,70.62450760912469,Moderate paid lookalike,Apollo Supermarket(1),75.92999816783164,21,78.0,30,DECLINE
+101628,Elar One Ltd,Elar One Ltd.json,unlabelled,70.60816446319156,Moderate paid lookalike,Apollo Supermarket(1),72.03543932369624,21,60.0,30,DECLINE
+100405,Fylde Conservation Ltd,Fylde Conservation Ltd.json,unlabelled,70.59842864762619,Moderate paid lookalike,Apollo Supermarket(1),69.35158357969193,21,70.9,30,DECLINE
+100405,Fylde Conservation Ltd(1),Fylde Conservation Ltd(1).json,unlabelled,70.59842864762619,Moderate paid lookalike,Apollo Supermarket(1),69.35158357969193,21,70.9,30,DECLINE
+101797,Pamzo Mart Limited,Pamzo Mart Limited.json,unlabelled,70.58358284261699,Moderate paid lookalike,Apollo Supermarket(1),76.06666027298388,21,73.0,30,DECLINE
+101598,Akar Food Ltd(1),Akar Food Ltd(1).json,unlabelled,70.23091233270142,Moderate paid lookalike,Apollo Supermarket(1),63.58386539830781,21,70.8,100,APPROVE
+101598,Akar Food Ltd,Akar Food Ltd.json,unlabelled,70.23091233270142,Moderate paid lookalike,Apollo Supermarket(1),63.58386539830781,21,70.8,100,APPROVE
+101744,Mc Building & Interiors Ltd,Mc building & interiors ltd.json,unlabelled,70.19883629306517,Moderate paid lookalike,Apollo Supermarket(1),69.29253009563875,21,64.2,60,DECLINE
+101807,D&C Couriers Limited,D&C Couriers Limited.json,paid,70.15968785507374,Moderate paid lookalike,D&C Couriers Limited(1),100.0,21,55.2,60,DECLINE
+101807,D&C Couriers Limited(1),D&C Couriers Limited(1).json,paid,70.15968785507374,Moderate paid lookalike,D&C Couriers Limited(1),100.0,21,55.2,60,DECLINE
+101818,Rb Allsort Limited,Rb Allsort limited.json,unlabelled,69.80438297888662,Moderate paid lookalike,Apollo Supermarket(1),63.71004991713551,21,71.8,60,DECLINE
+101514,Made This For You Ltd,Made this for you Ltd Transaction Report.json,unlabelled,69.7070799654441,Moderate paid lookalike,Apollo Supermarket(1),70.41002987429539,21,69.1,30,DECLINE
+101514,Made This For You Ltd,Made this for you Ltd Transaction Report(1).json,unlabelled,69.7070799654441,Moderate paid lookalike,Apollo Supermarket(1),70.41002987429539,21,69.1,30,DECLINE
+100151,Rothwell Local Store Ltd(1),rothwell local store ltd(1).json,unlabelled,69.67894151475558,Moderate paid lookalike,Apollo Supermarket(1),78.24516243978758,21,64.6,30,DECLINE
+100151,Rothwell Local Store Ltd,rothwell local store ltd.json,unlabelled,69.67894151475558,Moderate paid lookalike,Apollo Supermarket(1),78.24516243978758,21,64.6,30,DECLINE
+101453,Standout Aesthetics Limited(1),Standout Aesthetics Limited(1).json,unlabelled,69.55478579404623,Moderate paid lookalike,Four Paws Walking And Training Ltd,67.43749277360764,21,77.0,60,SENIOR_REVIEW
+101453,Standout Aesthetics Limited,Standout Aesthetics Limited.json,unlabelled,69.55478579404623,Moderate paid lookalike,Four Paws Walking And Training Ltd,67.43749277360764,21,77.0,60,SENIOR_REVIEW
+101842,Momokakkoii Ltd,Momokakkoii Ltd.json,unlabelled,69.47600453972908,Moderate paid lookalike,Apollo Supermarket(1),68.51825601555784,21,64.2,60,DECLINE
+101810,Four Paws Walking And Training Ltd,Four Paws Walking and Training Ltd App2(1).json,paid,69.46830017633798,Moderate paid lookalike,Four Paws Walking And Training Ltd,100.0,21,82.2,60,SENIOR_REVIEW
+101810,Four Paws Walking And Training Ltd,Four Paws Walking and Training Ltd App2.json,paid,69.46830017633798,Moderate paid lookalike,Four Paws Walking And Training Ltd,100.0,21,82.2,60,SENIOR_REVIEW
+101784,R&K Brickwork Ltd,R&K BRICKWORK LTD 2.json,unlabelled,69.44758553638775,Moderate paid lookalike,Apollo Supermarket(1),65.86620397227531,21,73.3,60,DECLINE
+101551,Bramble And Willow Ltd(1),Bramble and Willow Ltd(1).json,unlabelled,69.36770499349564,Moderate paid lookalike,Apollo Supermarket(1),65.30106319404425,21,61.5,60,DECLINE
+101551,Bramble And Willow Ltd,Bramble and Willow Ltd.json,unlabelled,69.36770499349564,Moderate paid lookalike,Apollo Supermarket(1),65.30106319404425,21,61.5,60,DECLINE
+101807,D&C Couriers Ltd,D&C Couriers Ltd app 2(1).json,unlabelled,69.24500442498278,Moderate paid lookalike,D&C Couriers Limited(1),73.9711441654943,21,66.4,100,DECLINE
+101807,D&C Couriers Ltd,D&C Couriers Ltd app 2.json,unlabelled,69.24500442498278,Moderate paid lookalike,D&C Couriers Limited(1),73.9711441654943,21,66.4,100,DECLINE
+100251,Cs Sport,CS Sport.json,unlabelled,69.15824716765991,Moderate paid lookalike,Apollo Supermarket(1),63.322209544582776,21,75.5,60,SENIOR_REVIEW
+100251,Cs Sport(1),CS Sport(1).json,unlabelled,69.15824716765991,Moderate paid lookalike,Apollo Supermarket(1),63.322209544582776,21,75.5,60,SENIOR_REVIEW
+101467,Starks Flooring Ltd,Starks Flooring Ltd Transaction Report(1).json,unlabelled,69.02283847429685,Moderate paid lookalike,D&C Couriers Limited(1),60.38166530866069,21,74.0,100,APPROVE
+101467,Starks Flooring Ltd,Starks Flooring Ltd Transaction Report.json,unlabelled,69.02283847429685,Moderate paid lookalike,D&C Couriers Limited(1),60.38166530866069,21,74.0,100,APPROVE
+100016,Madestays Limited(1),Madestays Limited(1).json,unlabelled,68.9351266572398,Moderate paid lookalike,Four Paws Walking And Training Ltd,66.16989268040712,21,72.6,60,DECLINE
+100224,Retail 24 Ltd(1),Retail 24 Ltd(1).json,unlabelled,68.92836590260038,Moderate paid lookalike,D&C Couriers Limited(1),69.18475326893392,21,55.5,60,DECLINE
+100224,Retail 24 Ltd,Retail 24 Ltd.json,unlabelled,68.92836590260038,Moderate paid lookalike,D&C Couriers Limited(1),69.18475326893392,21,55.5,60,DECLINE
+101564,Phone Expert Services Ltd,Phone Expert Services Ltd 2.json,unlabelled,68.85256021333608,Moderate paid lookalike,Apollo Supermarket(1),62.10614236451676,21,74.3,60,DECLINE
+101564,Phone Expert Services Ltd 2(1),Phone Expert Services Ltd 2(1).json,unlabelled,68.85256021333608,Moderate paid lookalike,Apollo Supermarket(1),62.10614236451676,21,74.3,60,DECLINE
+101817,The Spirits Corner Hull Ltd,The spirits corner hull Ltd.json,unlabelled,68.58982579797944,Moderate paid lookalike,Apollo Supermarket(1),59.512685338883216,21,76.1,100,APPROVE
+101807,D&C Couriers Orginal Bank Acc,D&C Couriers Orginal Bank acc.json,unlabelled,68.5282160208755,Moderate paid lookalike,D&C Couriers Limited(1),74.45401065909074,21,63.0,100,DECLINE
+101807,D&C Couriers Orginal Bank Acc(1),D&C Couriers Orginal Bank acc(1).json,unlabelled,68.5282160208755,Moderate paid lookalike,D&C Couriers Limited(1),74.45401065909074,21,63.0,100,DECLINE
+101843,Davaro Limited,Davaro limited.json,unlabelled,68.32675294636887,Moderate paid lookalike,Apollo Supermarket(1),67.27990285908255,21,49.0,60,DECLINE
+100220,Kids Tech Company Ltd,Kids Tech Company Ltd.json,unlabelled,68.26153787927429,Moderate paid lookalike,Apollo Supermarket(1),68.32924675286066,21,72.8,30,DECLINE
+100220,Kids Tech Company Ltd(1),Kids Tech Company Ltd(1).json,unlabelled,68.26153787927429,Moderate paid lookalike,Apollo Supermarket(1),68.32924675286066,21,72.8,30,DECLINE
+101564,Phone Expert Services Ltd,Phone Expert Services Ltd.json,unlabelled,68.17645595432337,Moderate paid lookalike,Apollo Supermarket(1),61.75488742208671,21,74.3,60,DECLINE
+101564,Phone Expert Services Ltd(1),Phone Expert Services Ltd(1).json,unlabelled,68.17645595432337,Moderate paid lookalike,Apollo Supermarket(1),61.75488742208671,21,74.3,60,DECLINE
+101816,Trim Fadeys Limited,Trim fadeys limited.json,unlabelled,67.74258725757461,Moderate paid lookalike,D&C Couriers Limited(1),62.72225882690634,21,72.9,100,APPROVE
+101784,R&K Brickwork Ltd,R&K BRICKWORK LTD.json,unlabelled,67.61997822725172,Moderate paid lookalike,Apollo Supermarket(1),63.214091986948425,21,82.4,60,SENIOR_REVIEW
+101509,22Lush Limited,22Lush Limited Transaction Report_categorized(1).json,unlabelled,67.56954704153398,Moderate paid lookalike,D&C Couriers Limited(1),77.6902877717961,21,58.9,100,DECLINE
+101509,22Lush Limited,22Lush Limited Transaction Report_categorized.json,unlabelled,67.56954704153398,Moderate paid lookalike,D&C Couriers Limited(1),77.6902877717961,21,58.9,100,DECLINE
+101509,22Lush Limited,22Lush Limited Transaction Report.json,unlabelled,67.56954704153398,Moderate paid lookalike,D&C Couriers Limited(1),77.6902877717961,21,58.9,100,DECLINE
+101509,22Lush Limited,22Lush Limited Transaction Report(1).json,unlabelled,67.56954704153398,Moderate paid lookalike,D&C Couriers Limited(1),77.6902877717961,21,58.9,100,DECLINE
+100198,Gwynne And Hhyde Plumbing And Heating Ltd,Gwynne and HHyde Plumbing and Heating Ltd.json,unlabelled,67.44151786821267,Moderate paid lookalike,Apollo Supermarket(1),62.56271287502064,21,70.6,60,DECLINE
+100198,Gwynne And Hhyde Plumbing And Heating Ltd(1),Gwynne and HHyde Plumbing and Heating Ltd(1).json,unlabelled,67.44151786821267,Moderate paid lookalike,Apollo Supermarket(1),62.56271287502064,21,70.6,60,DECLINE
+100170,Harley Street Hair Transplants(1),Harley Street Hair Transplants(1).json,unlabelled,67.42928345637742,Moderate paid lookalike,D&C Couriers Limited(1),69.82318597137052,21,56.0,30,DECLINE
+100170,Harley Street Hair Transplants,Harley Street Hair Transplants.json,unlabelled,67.42928345637742,Moderate paid lookalike,D&C Couriers Limited(1),69.82318597137052,21,56.0,30,DECLINE
+101758,Hardman Fitness Ltd,Hardman Fitness LTD.json,unlabelled,67.40403754414186,Moderate paid lookalike,D&C Couriers Limited(1),65.77715922023123,21,77.0,100,APPROVE
+101612,Michel Reynolds Agency Ltd(1),Michel-Reynolds Agency Ltd(1).json,unlabelled,67.34288605908014,Moderate paid lookalike,D&C Couriers Limited(1),63.381823930169865,21,75.4,60,SENIOR_REVIEW
+101612,Michel Reynolds Agency Ltd,Michel-Reynolds Agency Ltd.json,unlabelled,67.34288605908014,Moderate paid lookalike,D&C Couriers Limited(1),63.381823930169865,21,75.4,60,SENIOR_REVIEW
+101756,Km Luxury Enterprises,Km luxury enterprises.json,unlabelled,67.22455030817,Moderate paid lookalike,Apollo Supermarket(1),62.47437373290448,21,76.1,60,SENIOR_REVIEW
+101589,Beyond Social Media (Uk) Ltd,Beyond Social Media (UK) Ltd.json,unlabelled,67.07736872362457,Moderate paid lookalike,D&C Couriers Limited(1),69.60624128790997,21,59.7,30,DECLINE
+101589,Beyond Social Media (Uk) Ltd(1),Beyond Social Media (UK) Ltd(1).json,unlabelled,67.07736872362457,Moderate paid lookalike,D&C Couriers Limited(1),69.60624128790997,21,59.7,30,DECLINE
+100201,Kurkland Ltd,Kurkland Ltd.json,unlabelled,67.0719466045782,Moderate paid lookalike,D&C Couriers Limited(1),60.696256552391226,21,71.4,100,APPROVE
+100201,Kurkland Ltd(1),Kurkland Ltd(1).json,unlabelled,67.0719466045782,Moderate paid lookalike,D&C Couriers Limited(1),60.696256552391226,21,71.4,100,APPROVE
+101755,Greenlight Digital,greenlight digital.json,unlabelled,67.06419225819447,Moderate paid lookalike,Apollo Supermarket(1),62.303756494148644,21,74.0,60,DECLINE
+100383,Plh Services Ltd,PLH Services Ltd.json,unlabelled,66.92042468247062,Moderate paid lookalike,Apollo Supermarket(1),63.4911981280972,21,79.1,100,APPROVE
+100383,Plh Services Ltd(1),PLH Services Ltd(1).json,unlabelled,66.92042468247062,Moderate paid lookalike,Apollo Supermarket(1),63.4911981280972,21,79.1,100,APPROVE
+100236,Staplehurst Coffee Ltd (1),Staplehurst Coffee Ltd (1).json,unlabelled,66.67748101315578,Moderate paid lookalike,D&C Couriers Limited(1),62.677047808500056,21,76.3,100,APPROVE
+100236,Staplehurst Coffee Ltd,Staplehurst Coffee Ltd .json,unlabelled,66.67748101315578,Moderate paid lookalike,D&C Couriers Limited(1),62.677047808500056,21,76.3,100,APPROVE
+101737,Shreeji Mobile Repair Limited,SHREEJI MOBILE REPAIR LIMITED.json,unlabelled,66.48918799487798,Moderate paid lookalike,Apollo Supermarket(1),72.56545779393578,21,66.9,30,DECLINE
+101419,Beforethefall(1),Beforethefall(1).json,unlabelled,66.42933616989389,Moderate paid lookalike,Apollo Supermarket(1),66.73281323559736,21,67.4,60,DECLINE
+101419,Beforethefall,Beforethefall.json,unlabelled,66.42933616989389,Moderate paid lookalike,Apollo Supermarket(1),66.73281323559736,21,67.4,60,DECLINE
+100422,Dlc Lighting Ltd,DLC Lighting Ltd.json,unlabelled,66.41599083064729,Moderate paid lookalike,D&C Couriers Limited(1),61.67211044568506,21,69.1,60,DECLINE
+100422,Dlc Lighting Ltd(1),DLC Lighting Ltd(1).json,unlabelled,66.41599083064729,Moderate paid lookalike,D&C Couriers Limited(1),61.67211044568506,21,69.1,60,DECLINE
+100114,Kam Marketing Group Limited,Kam marketing Group Limited.json,unlabelled,66.34973595508754,Moderate paid lookalike,D&C Couriers Limited(1),61.55958490511048,21,69.3,100,APPROVE
+100114,Kam Marketing Group Limited(1),Kam marketing Group Limited(1).json,unlabelled,66.34973595508754,Moderate paid lookalike,D&C Couriers Limited(1),61.55958490511048,21,69.3,100,APPROVE
+101833,Ayaz Tyres & Wheels Ltd,Ayaz Tyres & Wheels ltd.json,unlabelled,66.22687529706626,Moderate paid lookalike,D&C Couriers Limited(1),62.99177215002663,21,80.9,100,APPROVE
+101814,Noble Parking Ltd,Noble parking ltd.json,unlabelled,65.98195930548995,Moderate paid lookalike,Apollo Supermarket(1),72.23366181197225,21,65.8,30,DECLINE
+101733,Mym Suppliers Ltd,MYM SUPPLIERS LTD.json,unlabelled,65.89762897056332,Moderate paid lookalike,Apollo Supermarket(1),66.93099921256007,21,71.5,30,DECLINE
+100371,T44J Ltd(1),T44J Ltd(1).json,unlabelled,65.85548779612688,Moderate paid lookalike,Apollo Supermarket(1),71.7328792328179,21,60.3,30,DECLINE
+100371,T44J Ltd,T44J Ltd.json,unlabelled,65.85548779612688,Moderate paid lookalike,Apollo Supermarket(1),71.7328792328179,21,60.3,30,DECLINE
+100419,Lopez Plant Hire Ltd,Lopez Plant Hire Ltd.json,unlabelled,65.77284799664679,Moderate paid lookalike,D&C Couriers Limited(1),63.18164492733467,21,62.2,60,DECLINE
+100419,Lopez Plant Hire Ltd(1),Lopez Plant Hire Ltd(1).json,unlabelled,65.77284799664679,Moderate paid lookalike,D&C Couriers Limited(1),63.18164492733467,21,62.2,60,DECLINE
+101430,Moviescape Ltd,Moviescape Ltd.json,unlabelled,65.76743256837217,Moderate paid lookalike,Four Paws Walking And Training Ltd,60.22908539109696,21,72.7,100,APPROVE
+101430,Moviescape Ltd(1),Moviescape Ltd(1).json,unlabelled,65.76743256837217,Moderate paid lookalike,Four Paws Walking And Training Ltd,60.22908539109696,21,72.7,100,APPROVE
+100154,Victory And Joel Ltd,Victory and Joel Ltd .json,unlabelled,65.75561710791911,Moderate paid lookalike,Apollo Supermarket(1),68.36589576610662,21,78.0,30,DECLINE
+100154,Victory And Joel Ltd (1),Victory and Joel Ltd (1).json,unlabelled,65.75561710791911,Moderate paid lookalike,Apollo Supermarket(1),68.36589576610662,21,78.0,30,DECLINE
+100409,Saffron Private Limited,Saffron Private Limited.json,unlabelled,65.73544748046467,Moderate paid lookalike,Four Paws Walking And Training Ltd,62.32258153285457,21,82.5,60,SENIOR_REVIEW
+100409,Saffron Private Limited(1),Saffron Private Limited(1).json,unlabelled,65.73544748046467,Moderate paid lookalike,Four Paws Walking And Training Ltd,62.32258153285457,21,82.5,60,SENIOR_REVIEW
+101791,Cellor Shades,Cellor Shades.json,unlabelled,65.7143726354613,Moderate paid lookalike,Apollo Supermarket(1),67.93525335084645,21,62.0,30,DECLINE
+101427,Weird Inc Ltd,Weird Inc Ltd .json,unlabelled,65.69704561626729,Moderate paid lookalike,D&C Couriers Limited(1),68.24436743670132,21,43.1,60,DECLINE
+101427,Weird Inc Ltd (1),Weird Inc Ltd (1).json,unlabelled,65.69704561626729,Moderate paid lookalike,D&C Couriers Limited(1),68.24436743670132,21,43.1,60,DECLINE
+100148,R W Waste Ltd(1),R W Waste Ltd(1).json,unlabelled,65.51284794250704,Moderate paid lookalike,Apollo Supermarket(1),66.13337413838822,21,55.1,30,DECLINE
+100148,R W Waste Ltd,R W Waste Ltd.json,unlabelled,65.51284794250704,Moderate paid lookalike,Apollo Supermarket(1),66.13337413838822,21,55.1,30,DECLINE
+101777,Class Barber Sw Ltd,Class barber sw Ltd.json,unlabelled,65.20630257750521,Moderate paid lookalike,Four Paws Walking And Training Ltd,62.72820808183352,21,85.3,100,APPROVE
+101614,Cakes By Aleina Ltd,Cakes by Aleina Ltd.json,unlabelled,65.0027904026219,Moderate paid lookalike,Apollo Supermarket(1),60.743589003584354,21,71.8,60,DECLINE
+100110,The Thirsty Turtle Limited,THE_THIRSTY_TURTLE_LIMITED.json,unlabelled,64.9981656316282,Moderate paid lookalike,Four Paws Walking And Training Ltd,62.02573085504887,21,77.2,100,APPROVE
+100110,The Thirsty Turtle Limited(1),THE_THIRSTY_TURTLE_LIMITED(1).json,unlabelled,64.9981656316282,Moderate paid lookalike,Four Paws Walking And Training Ltd,62.02573085504887,21,77.2,100,APPROVE
+101632,Patina House Limited,Patina House Limited.json,unlabelled,64.97750740994799,Moderate paid lookalike,Apollo Supermarket(1),63.74849182105611,21,70.3,60,DECLINE
+100390,London21 Ltd,London21 Ltd.json,unlabelled,64.97014375548007,Moderate paid lookalike,Apollo Supermarket(1),68.4421809260948,21,60.6,30,DECLINE
+100390,London21 Ltd(1),London21 Ltd(1).json,unlabelled,64.97014375548007,Moderate paid lookalike,Apollo Supermarket(1),68.4421809260948,21,60.6,30,DECLINE
+101629,Erfan Carpet,Erfan Carpet.json,unlabelled,64.96621491530048,Moderate paid lookalike,D&C Couriers Limited(1),66.27868295929767,21,56.2,30,DECLINE
+101571,House Of Mystery(1),House of Mystery(1).json,unlabelled,64.8720482000189,Moderate paid lookalike,D&C Couriers Limited(1),57.90368606618982,21,70.6,100,APPROVE
+101571,House Of Mystery,House of Mystery.json,unlabelled,64.8720482000189,Moderate paid lookalike,D&C Couriers Limited(1),57.90368606618982,21,70.6,100,APPROVE
+101776,Premium Halal Butcher Uk Ltd,Premium halal butcher UK ltd.json,unlabelled,64.80041868339626,Moderate paid lookalike,Four Paws Walking And Training Ltd,65.67147481017906,21,66.9,60,DECLINE
+101860,Cleaner Than Ever Norbury Ltd,Cleaner Than Ever Norbury Ltd.json,unlabelled,64.7913963119379,Moderate paid lookalike,Four Paws Walking And Training Ltd,65.92518024240582,21,76.4,60,SENIOR_REVIEW
+100233,Nikolov 92 Ltd(1),Nikolov 92 Ltd(1).json,unlabelled,64.73499183166483,Moderate paid lookalike,Apollo Supermarket(1),65.32599429144032,21,68.4,30,DECLINE
+100233,Nikolov 92 Ltd,Nikolov 92 Ltd.json,unlabelled,64.73499183166483,Moderate paid lookalike,Apollo Supermarket(1),65.32599429144032,21,68.4,30,DECLINE
+101498,Uteachmi Ltd,Uteachmi Ltd Transaction Report(1).json,unlabelled,64.67722959184339,Moderate paid lookalike,Apollo Supermarket(1),67.2724982191509,21,68.3,30,DECLINE
+101498,Uteachmi Ltd,Uteachmi Ltd Transaction Report.json,unlabelled,64.67722959184339,Moderate paid lookalike,Apollo Supermarket(1),67.2724982191509,21,68.3,30,DECLINE
+101816,Madestays Limited,Madestays Limited.json,unlabelled,64.62760832470485,Moderate paid lookalike,Four Paws Walking And Training Ltd,62.78008559647867,21,71.6,60,DECLINE
+101783,Cetin Barber Beauty Ltd,Cetin barber beauty ltd.json,unlabelled,64.51135461113535,Moderate paid lookalike,Four Paws Walking And Training Ltd,63.54488065025756,21,70.0,60,DECLINE
+100397,Fs Fashionista Ltd(1),FS Fashionista Ltd(1).json,unlabelled,64.44643625055856,Moderate paid lookalike,Apollo Supermarket(1),63.86000652514205,21,55.1,30,DECLINE
+100397,Fs Fashionista Ltd,FS Fashionista Ltd.json,unlabelled,64.44643625055856,Moderate paid lookalike,Apollo Supermarket(1),63.86000652514205,21,55.1,30,DECLINE
+101503,Ttnd Ltd,TTND Ltd Transaction Report(1).json,unlabelled,64.44314828682265,Moderate paid lookalike,Apollo Supermarket(1),58.45596863985389,21,74.3,60,DECLINE
+101503,Ttnd Ltd,TTND Ltd Transaction Report.json,unlabelled,64.44314828682265,Moderate paid lookalike,Apollo Supermarket(1),58.45596863985389,21,74.3,60,DECLINE
+100109,Msfmart Uk Ltd(1),MSFMart UK Ltd(1).json,unlabelled,64.36435681277138,Moderate paid lookalike,Apollo Supermarket(1),57.39339724187195,21,83.4,100,APPROVE
+100109,Msfmart Uk Ltd,MSFMart UK Ltd.json,unlabelled,64.36435681277138,Moderate paid lookalike,Apollo Supermarket(1),57.39339724187195,21,83.4,100,APPROVE
+101675,Gc Bike Repairs Ltd,GC Bike Repairs Ltd 2.json,unlabelled,64.27719127047177,Moderate paid lookalike,Four Paws Walking And Training Ltd,67.17028959912598,21,80.1,60,SENIOR_REVIEW
+101675,Gc Bike Repairs Ltd 2(1),GC Bike Repairs Ltd 2(1).json,unlabelled,64.27719127047177,Moderate paid lookalike,Four Paws Walking And Training Ltd,67.17028959912598,21,80.1,60,SENIOR_REVIEW
+101525,Voltanic Ltd(1),Voltanic Ltd(1).json,unlabelled,64.10732137462044,Moderate paid lookalike,Apollo Supermarket(1),66.00222552417623,21,67.6,30,DECLINE
+101525,Voltanic Ltd,Voltanic Ltd.json,unlabelled,64.10732137462044,Moderate paid lookalike,Apollo Supermarket(1),66.00222552417623,21,67.6,30,DECLINE
+101590,Spencers Group Ltd(1),Spencers Group Ltd(1).json,unlabelled,63.90059178579372,Moderate paid lookalike,Apollo Supermarket(1),69.15737608715125,21,50.4,30,DECLINE
+101590,Spencers Group Ltd,Spencers Group Ltd.json,unlabelled,63.90059178579372,Moderate paid lookalike,Apollo Supermarket(1),69.15737608715125,21,50.4,30,DECLINE
+101735,Forty3 Media,Forty3 Media.json,unlabelled,63.76814750389252,Moderate paid lookalike,Apollo Supermarket(1),63.06450808686667,21,85.3,60,SENIOR_REVIEW
+101675,Gc Bike Repairs Ltd,GC Bike Repairs Ltd.json,unlabelled,63.69575228258449,Moderate paid lookalike,Four Paws Walking And Training Ltd,68.05785504945062,21,80.1,60,SENIOR_REVIEW
+101675,Gc Bike Repairs Ltd(1),GC Bike Repairs Ltd(1).json,unlabelled,63.69575228258449,Moderate paid lookalike,Four Paws Walking And Training Ltd,68.05785504945062,21,80.1,60,SENIOR_REVIEW
+101445,T & L Hurley Ltd(1),T & L Hurley Ltd(1).json,unlabelled,63.610602623799416,Moderate paid lookalike,Apollo Supermarket(1),63.28007243327186,21,67.7,30,DECLINE
+101445,T & L Hurley Ltd,T & L Hurley Ltd.json,unlabelled,63.610602623799416,Moderate paid lookalike,Apollo Supermarket(1),63.28007243327186,21,67.7,30,DECLINE
+101845,Rj Elite Property Management,RJ ELITE PROPERTY MANAGEMENT app 3.json,unlabelled,63.605554662855084,Moderate paid lookalike,Four Paws Walking And Training Ltd,59.035984012222,21,81.9,60,SENIOR_REVIEW
+101821,Blossom Salon Ltd,BLOSSOM SALON LTD.json,unlabelled,63.54533834565687,Moderate paid lookalike,Apollo Supermarket(1),64.54227369271588,21,67.6,30,DECLINE
+101606,The Comfy Clothing Wardrobe Ltd,The Comfy Clothing Wardrobe Ltd.json,unlabelled,63.50742042189216,Moderate paid lookalike,D&C Couriers Limited(1),61.38543646320948,21,55.1,60,DECLINE
+101606,The Comfy Clothing Wardrobe Ltd(1),The Comfy Clothing Wardrobe Ltd(1).json,unlabelled,63.50742042189216,Moderate paid lookalike,D&C Couriers Limited(1),61.38543646320948,21,55.1,60,DECLINE
+101537,Peekzoon Ltd(1),Peekzoon Ltd(1).json,unlabelled,63.50652632802684,Moderate paid lookalike,Apollo Supermarket(1),65.50534268815952,21,63.7,30,DECLINE
+101537,Peekzoon Ltd,Peekzoon Ltd.json,unlabelled,63.50652632802684,Moderate paid lookalike,Apollo Supermarket(1),65.50534268815952,21,63.7,30,DECLINE
+101845,Rj Elite Property Management,RJ elite property management.json,unlabelled,63.32634594959999,Moderate paid lookalike,D&C Couriers Limited(1),56.807826719116896,21,88.3,60,SENIOR_REVIEW
+101564,Phone Expert Services Categorized(1),Phone Expert Services_categorized(1).json,unlabelled,63.24452453784126,Moderate paid lookalike,Apollo Supermarket(1),58.004179917288106,21,75.0,100,APPROVE
+101564,Phone Expert Services Categorized,Phone Expert Services_categorized.json,unlabelled,63.24452453784126,Moderate paid lookalike,Apollo Supermarket(1),58.004179917288106,21,75.0,100,APPROVE
+101564,Phone Expert Services(1),Phone Expert Services(1).json,unlabelled,63.24452453784126,Moderate paid lookalike,Apollo Supermarket(1),58.004179917288106,21,75.0,100,APPROVE
+101564,Phone Expert Services,Phone Expert Services.json,unlabelled,63.24452453784126,Moderate paid lookalike,Apollo Supermarket(1),58.004179917288106,21,75.0,100,APPROVE
+101739,Baig Halal Butcher Ltd,Baig halal butcher ltd.json,unlabelled,63.111005336805945,Moderate paid lookalike,Apollo Supermarket(1),64.59757977993344,21,62.4,60,DECLINE
+100182,Flight Training Essex Ltd(1),Flight Training Essex ltd(1).json,unlabelled,63.060717318326134,Moderate paid lookalike,Apollo Supermarket(1),67.5824318709499,21,61.1,30,DECLINE
+100182,Flight Training Essex Ltd,Flight Training Essex ltd.json,unlabelled,63.060717318326134,Moderate paid lookalike,Apollo Supermarket(1),67.5824318709499,21,61.1,30,DECLINE
+101458,Smithstrade Ltd(1),Smithstrade Ltd(1).json,unlabelled,62.86236026188217,Moderate paid lookalike,D&C Couriers Limited(1),66.32182500754675,21,54.2,30,DECLINE
+101458,Smithstrade Ltd,Smithstrade Ltd.json,unlabelled,62.86236026188217,Moderate paid lookalike,D&C Couriers Limited(1),66.32182500754675,21,54.2,30,DECLINE
+101845,Rj Elite Property Management,RJ ELITE PROPERTY MANAGEMENT app 4.json,unlabelled,62.78463516278922,Moderate paid lookalike,Four Paws Walking And Training Ltd,59.46198293621078,21,81.9,60,SENIOR_REVIEW
+101813,Party2Perfection Ltd,Party2perfection LTD.json,unlabelled,62.62304010093222,Moderate paid lookalike,Four Paws Walking And Training Ltd,63.16851139296227,21,75.2,100,APPROVE
+100016,Matches Talent Ltd,Matches Talent Ltd.json,unlabelled,62.356491048703646,Moderate paid lookalike,Apollo Supermarket(1),64.46969447337221,21,53.7,30,DECLINE
+100016,Kc Group Of Companies Ltd,KC Group Of Companies Ltd.json,unlabelled,62.34131206317993,Moderate paid lookalike,Apollo Supermarket(1),68.22568932514795,21,60.6,30,DECLINE
+101677,As Cladding And Roofing Ltd,AS Cladding and Roofing Ltd.json,unlabelled,62.14044918856517,Moderate paid lookalike,D&C Couriers Limited(1),67.29216356529358,21,47.6,30,DECLINE
+101677,As Cladding And Roofing Ltd(1),AS Cladding and Roofing Ltd(1).json,unlabelled,62.14044918856517,Moderate paid lookalike,D&C Couriers Limited(1),67.29216356529358,21,47.6,30,DECLINE
+101675,Gc Bike Repairs Ltd,GC Bike Repairs Ltd 3.json,unlabelled,62.11221793881471,Moderate paid lookalike,Four Paws Walking And Training Ltd,67.31950854530952,21,81.1,60,SENIOR_REVIEW
+101675,Gc Bike Repairs Ltd 3(1),GC Bike Repairs Ltd 3(1).json,unlabelled,62.11221793881471,Moderate paid lookalike,Four Paws Walking And Training Ltd,67.31950854530952,21,81.1,60,SENIOR_REVIEW
+100091,Ketco Direct Limited(1),Ketco Direct Limited(1).json,unlabelled,61.98768116926311,Moderate paid lookalike,D&C Couriers Limited(1),65.13830440849684,21,43.9,30,DECLINE
+100091,Ketco Direct Limited,Ketco Direct Limited.json,unlabelled,61.98768116926311,Moderate paid lookalike,D&C Couriers Limited(1),65.13830440849684,21,43.9,30,DECLINE
+100231,Scrandiggity Ltd,Scrandiggity LTD.json,unlabelled,61.8086499542197,Moderate paid lookalike,Apollo Supermarket(1),59.537340932285105,21,80.2,100,APPROVE
+100231,Scrandiggity Ltd(1),Scrandiggity LTD(1).json,unlabelled,61.8086499542197,Moderate paid lookalike,Apollo Supermarket(1),59.537340932285105,21,80.2,100,APPROVE
+101822,Grazka Limited,GRAZKA LIMITED.json,unlabelled,61.6129608793219,Moderate paid lookalike,Apollo Supermarket(1),58.25419593234599,21,64.2,60,DECLINE
+101576,Brookhouse Hypnotherapy Ltd(1),Brookhouse Hypnotherapy Ltd(1).json,unlabelled,61.48095377745404,Moderate paid lookalike,Four Paws Walking And Training Ltd,54.91781003990225,21,80.9,100,APPROVE
+101576,Brookhouse Hypnotherapy Ltd,Brookhouse Hypnotherapy Ltd.json,unlabelled,61.48095377745404,Moderate paid lookalike,Four Paws Walking And Training Ltd,54.91781003990225,21,80.9,100,APPROVE
+101838,Peak Platform Websites Ltd,Peak Platform websites ltd.json,unlabelled,61.468221328710754,Moderate paid lookalike,Apollo Supermarket(1),67.53575187735633,21,43.1,30,DECLINE
+101696,Matches Talent Ltd(1),Matches Talent Ltd(1).json,unlabelled,61.46330083821649,Moderate paid lookalike,Apollo Supermarket(1),63.643731731164216,21,46.7,30,DECLINE
+101836,Madinska & Co Ltd,MADINSKA & CO LTD app 5.json,unlabelled,61.33924185747432,Moderate paid lookalike,D&C Couriers Limited(1),66.4590217472624,21,53.8,30,DECLINE
+101789,Pak Euro Cash And Carry,PAK euro cash and carry.json,unlabelled,61.29847566549652,Moderate paid lookalike,Four Paws Walking And Training Ltd,59.059121303735495,21,85.9,60,SENIOR_REVIEW
+101440,Strikeclub Ltd,STRIKECLUB_LTD-.json,unlabelled,61.169067886690506,Moderate paid lookalike,Apollo Supermarket(1),62.99842690031828,21,58.8,30,DECLINE
+101440,Strikeclub Ltd (1),STRIKECLUB_LTD-(1).json,unlabelled,61.169067886690506,Moderate paid lookalike,Apollo Supermarket(1),62.99842690031828,21,58.8,30,DECLINE
+100392,Xtc Clothing(1),XTC Clothing(1).json,unlabelled,60.97938498274079,Moderate paid lookalike,D&C Couriers Limited(1),59.83967044230953,21,68.5,60,DECLINE
+100392,Xtc Clothing,XTC Clothing.json,unlabelled,60.97938498274079,Moderate paid lookalike,D&C Couriers Limited(1),59.83967044230953,21,68.5,60,DECLINE
+101848,Dottie Dances Ltd,Dottie dances ltd.json,unlabelled,60.73847364091075,Moderate paid lookalike,Apollo Supermarket(1),57.55722810281991,21,64.1,60,DECLINE
+100234,Four The Willows Ltd,Four the Willows Ltd.json,unlabelled,60.63788584248869,Moderate paid lookalike,Apollo Supermarket(1),63.05633283346938,21,69.5,30,DECLINE
+100234,Four The Willows Ltd(1),Four the Willows Ltd(1).json,unlabelled,60.63788584248869,Moderate paid lookalike,Apollo Supermarket(1),63.05633283346938,21,69.5,30,DECLINE
+101853,Mundy Grooming Ltd,Mundy Grooming Ltd.json,unlabelled,60.6127408201182,Moderate paid lookalike,Apollo Supermarket(1),62.28491624926951,21,49.2,30,DECLINE
+101792,Muscle Makers Gym Limited(1),Muscle Makers Gym Limited(1).json,unlabelled,60.60375774006965,Moderate paid lookalike,Apollo Supermarket(1),55.80751073251961,21,78.8,60,SENIOR_REVIEW
+101792,Muscle Makers Gym Limited,Muscle Makers Gym Limited.json,unlabelled,60.60375774006965,Moderate paid lookalike,Apollo Supermarket(1),55.80751073251961,21,78.8,60,SENIOR_REVIEW
+101792,Muscle Makers Gym Limited Categorized(1),Muscle Makers Gym Limited_categorized(1).json,unlabelled,60.60375774006965,Moderate paid lookalike,Apollo Supermarket(1),55.80751073251961,21,78.8,60,SENIOR_REVIEW
+101792,Muscle Makers Gym Limited Categorized Categorized(1),Muscle Makers Gym Limited_categorized_categorized(1).json,unlabelled,60.60375774006965,Moderate paid lookalike,Apollo Supermarket(1),55.80751073251961,21,78.8,60,SENIOR_REVIEW
+101792,Muscle Makers Gym Limited Categorized Categorized,Muscle Makers Gym Limited_categorized_categorized.json,unlabelled,60.60375774006965,Moderate paid lookalike,Apollo Supermarket(1),55.80751073251961,21,78.8,60,SENIOR_REVIEW
+101792,Muscle Makers Gym Limited Data Analysis(1),Muscle Makers Gym Limited Data Analysis(1).json,unlabelled,60.60375774006965,Moderate paid lookalike,Apollo Supermarket(1),55.80751073251961,21,78.8,60,SENIOR_REVIEW
+101792,Muscle Makers Gym Limited Categorized,Muscle Makers Gym Limited_categorized.json,unlabelled,60.60375774006965,Moderate paid lookalike,Apollo Supermarket(1),55.80751073251961,21,78.8,60,SENIOR_REVIEW
+101792,Muscle Makers Gym Limited Data Analysis,Muscle Makers Gym Limited Data Analysis.json,unlabelled,60.60375774006965,Moderate paid lookalike,Apollo Supermarket(1),55.80751073251961,21,78.8,60,SENIOR_REVIEW
+100402,The Coven Ltd,The Coven Ltd.json,unlabelled,60.29699389472428,Moderate paid lookalike,Apollo Supermarket(1),56.404989221031144,21,70.6,60,DECLINE
+100402,The Coven Ltd(1),The Coven Ltd(1).json,unlabelled,60.29699389472428,Moderate paid lookalike,Apollo Supermarket(1),56.404989221031144,21,70.6,60,DECLINE
+101555,Els Management Ltd Categorized(1),Els Management Ltd_categorized(1).json,unlabelled,60.288391859685994,Moderate paid lookalike,Four Paws Walking And Training Ltd,62.93775686971416,21,75.6,60,SENIOR_REVIEW
+101555,Els Management Ltd Categorized,Els Management Ltd_categorized.json,unlabelled,60.288391859685994,Moderate paid lookalike,Four Paws Walking And Training Ltd,62.93775686971416,21,75.6,60,SENIOR_REVIEW
+101555,Els Management Ltd(1),Els Management Ltd(1).json,unlabelled,60.288391859685994,Moderate paid lookalike,Four Paws Walking And Training Ltd,62.93775686971416,21,75.6,60,SENIOR_REVIEW
+101555,Els Management Ltd,Els Management Ltd.json,unlabelled,60.288391859685994,Moderate paid lookalike,Four Paws Walking And Training Ltd,62.93775686971416,21,75.6,60,SENIOR_REVIEW
+101808,Haus Of Sass Limited By Stephanie Limited,Haus of sass limited by Stephanie limited.json,unlabelled,60.25215779371652,Moderate paid lookalike,Four Paws Walking And Training Ltd,61.95754586084344,21,82.4,100,APPROVE
+101689,Git Support Ltd(1),GIT Support LTD(1).json,unlabelled,60.248120701303485,Moderate paid lookalike,Apollo Supermarket(1),60.4895474330306,21,69.3,60,DECLINE
+101689,Git Support Ltd,GIT Support LTD.json,unlabelled,60.248120701303485,Moderate paid lookalike,Apollo Supermarket(1),60.4895474330306,21,69.3,60,DECLINE
+,Differencesnotdisabilities,Differencesnotdisabilities.json,unlabelled,60.15816931880747,Moderate paid lookalike,Apollo Supermarket(1),58.2717686679953,17,64.2,60,DECLINE
+100162,Platform 10 Ltd,Platform 10 Ltd.json,unlabelled,59.96913042919149,Weak paid lookalike,D&C Couriers Limited(1),57.26154974271404,21,43.9,60,DECLINE
+100162,Platform 10 Ltd(1),Platform 10 Ltd(1).json,unlabelled,59.96913042919149,Weak paid lookalike,D&C Couriers Limited(1),57.26154974271404,21,43.9,60,DECLINE
+101801,Joao Motorcycles Ltd,Joao motorcycles Ltd app 2.json,unlabelled,59.94060759821668,Weak paid lookalike,Four Paws Walking And Training Ltd,59.96081611261211,21,71.1,60,DECLINE
+100275,Dkc Menswear Ltd,DKC Menswear Ltd.json,unlabelled,59.888809773023716,Weak paid lookalike,Apollo Supermarket(1),63.46888892033876,21,65.1,30,DECLINE
+101736,Heart Of The Home Interiors,Heart of the home interiors.json,unlabelled,59.85454962280548,Weak paid lookalike,Four Paws Walking And Training Ltd,60.649095923080594,21,64.2,60,DECLINE
+100127,Hewitt And Hyland Leisure Ltd(1),Hewitt and Hyland Leisure Ltd(1).json,unlabelled,59.506799347232764,Weak paid lookalike,D&C Couriers Limited(1),62.91900652149022,21,37.2,30,DECLINE
+100127,Hewitt And Hyland Leisure Ltd,Hewitt and Hyland Leisure Ltd.json,unlabelled,59.506799347232764,Weak paid lookalike,D&C Couriers Limited(1),62.91900652149022,21,37.2,30,DECLINE
+101452,Suede Hosting Ltd(1),Suede Hosting Ltd(1).json,unlabelled,59.488418604317324,Weak paid lookalike,Apollo Supermarket(1),63.67060091677808,21,62.2,30,DECLINE
+101452,Suede Hosting Ltd,Suede Hosting Ltd.json,unlabelled,59.488418604317324,Weak paid lookalike,Apollo Supermarket(1),63.67060091677808,21,62.2,30,DECLINE
+101831,Herne Hill Dry Cleaners Limited,HERNE HILL DRY CLEANERS LIMITED.json,unlabelled,59.35963506300765,Weak paid lookalike,D&C Couriers Limited(1),63.75044010726679,21,73.7,100,DECLINE
+101800,Gem Drycleaning & Tailoring Services Ltd,Gem drycleaning & tailoring services ltd.json,unlabelled,59.31948450174911,Weak paid lookalike,Apollo Supermarket(1),59.22042512154833,21,66.5,60,DECLINE
+100153,Mr Eats Group Ltd,Mr Eats Group Ltd.json,unlabelled,59.27296126509842,Weak paid lookalike,Apollo Supermarket(1),65.56848964889913,21,60.0,30,DECLINE
+100153,Mr Eats Group Ltd(1),Mr Eats Group Ltd(1).json,unlabelled,59.27296126509842,Weak paid lookalike,Apollo Supermarket(1),65.56848964889913,21,60.0,30,DECLINE
+100168,Jay Heath Ltd(1),Jay Heath Ltd(1).json,unlabelled,59.208677363705746,Weak paid lookalike,Apollo Supermarket(1),55.7301835782537,21,65.0,60,DECLINE
+100168,Jay Heath Ltd,Jay Heath Ltd.json,unlabelled,59.208677363705746,Weak paid lookalike,Apollo Supermarket(1),55.7301835782537,21,65.0,60,DECLINE
+101792,Muscle Makers Gym Limited,Muscle makers gym limited app 3.json,unlabelled,59.15179563421687,Weak paid lookalike,Apollo Supermarket(1),60.17357695691614,21,70.4,60,DECLINE
+101647,King Of Steel Media Ltd(1),King of Steel Media Ltd(1).json,unlabelled,59.015688235257315,Weak paid lookalike,D&C Couriers Limited(1),64.21652135894745,21,54.5,30,DECLINE
+101647,King Of Steel Media Ltd,King of Steel Media Ltd.json,unlabelled,59.015688235257315,Weak paid lookalike,D&C Couriers Limited(1),64.21652135894745,21,54.5,30,DECLINE
+100186,Mh Home Renovations Ltd(1),Mh Home Renovations Ltd(1).json,unlabelled,58.97319899270962,Weak paid lookalike,Apollo Supermarket(1),55.244929622390984,21,76.4,100,APPROVE
+100186,Mh Home Renovations Ltd,Mh Home Renovations Ltd.json,unlabelled,58.97319899270962,Weak paid lookalike,Apollo Supermarket(1),55.244929622390984,21,76.4,100,APPROVE
+100416,Alex Sounthhampton(1),Alex Sounthhampton(1).json,unlabelled,58.831885803857105,Weak paid lookalike,Four Paws Walking And Training Ltd,62.47987013860687,21,73.0,60,DECLINE
+100416,Alex Sounthhampton,Alex Sounthhampton.json,unlabelled,58.831885803857105,Weak paid lookalike,Four Paws Walking And Training Ltd,62.47987013860687,21,73.0,60,DECLINE
+101557,Hussains Leicester Ltd(1),Hussains Leicester Ltd(1).json,unlabelled,58.704921997304815,Weak paid lookalike,Apollo Supermarket(1),59.6511376953043,21,57.3,30,DECLINE
+101557,Hussains Leicester Ltd,Hussains Leicester Ltd.json,unlabelled,58.704921997304815,Weak paid lookalike,Apollo Supermarket(1),59.6511376953043,21,57.3,30,DECLINE
+100382,Elsco Private Limited,Elsco Private Limited.json,unlabelled,58.57662243580235,Weak paid lookalike,D&C Couriers Limited(1),60.00782062846834,21,58.3,100,APPROVE
+100382,Elsco Private Limited(1),Elsco Private Limited(1).json,unlabelled,58.57662243580235,Weak paid lookalike,D&C Couriers Limited(1),60.00782062846834,21,58.3,100,APPROVE
+100158,Ylk Group Ltd,YLK GROUP LTD.json,unlabelled,58.558655675486605,Weak paid lookalike,D&C Couriers Limited(1),58.646383309678974,21,61.5,60,DECLINE
+100158,Ylk Group Ltd(1),YLK GROUP LTD(1).json,unlabelled,58.558655675486605,Weak paid lookalike,D&C Couriers Limited(1),58.646383309678974,21,61.5,60,DECLINE
+101528,Noble Executive Limited,Noble Executive Limited.json,unlabelled,58.53540940619364,Weak paid lookalike,Apollo Supermarket(1),61.2839747161289,21,55.1,30,DECLINE
+101528,Noble Executive Limited(1),Noble Executive Limited(1).json,unlabelled,58.53540940619364,Weak paid lookalike,Apollo Supermarket(1),61.2839747161289,21,55.1,30,DECLINE
+101457,Star Marketing Solutions Ltd(1),Star Marketing Solutions Ltd(1).json,unlabelled,58.50101071694604,Weak paid lookalike,Four Paws Walking And Training Ltd,57.83954274740938,21,82.4,100,APPROVE
+101457,Star Marketing Solutions Ltd,Star Marketing Solutions Ltd.json,unlabelled,58.50101071694604,Weak paid lookalike,Four Paws Walking And Training Ltd,57.83954274740938,21,82.4,100,APPROVE
+101436,Get Outside Events Limited,Get Outside Events Limited.json,unlabelled,58.252837318270565,Weak paid lookalike,Apollo Supermarket(1),60.59347691150729,21,71.1,30,DECLINE
+101436,Get Outside Events Limited(1),Get Outside Events Limited(1).json,unlabelled,58.252837318270565,Weak paid lookalike,Apollo Supermarket(1),60.59347691150729,21,71.1,30,DECLINE
+101807,D&C Couriers Ltd,D&C Couriers Ltd app 3.json,unlabelled,58.25085540815672,Weak paid lookalike,D&C Couriers Limited(1),64.62394008045098,21,66.4,100,DECLINE
+100124,Verve Gb,Verve GB.json,unlabelled,57.912486626087826,Weak paid lookalike,D&C Couriers Limited(1),58.79720967850343,21,45.8,100,DECLINE
+100124,Verve Gb(1),Verve GB(1).json,unlabelled,57.912486626087826,Weak paid lookalike,D&C Couriers Limited(1),58.79720967850343,21,45.8,100,DECLINE
+100275,Jemark Ltd,Jemark Ltd.json,unlabelled,57.867940113403485,Weak paid lookalike,D&C Couriers Limited(1),67.25956992932595,21,60.0,30,DECLINE
+100275,Jemark Ltd(1),Jemark Ltd(1).json,unlabelled,57.867940113403485,Weak paid lookalike,D&C Couriers Limited(1),67.25956992932595,21,60.0,30,DECLINE
+101866,Quantome Commerce,Quantome Commerce.json,unlabelled,57.84652422270499,Weak paid lookalike,Apollo Supermarket(1),61.82565227305363,21,58.6,30,DECLINE
+101618,Them Paint Guys Limited,Them Paint Guys Limited.json,unlabelled,57.66088959298867,Weak paid lookalike,Apollo Supermarket(1),61.91136835015923,21,79.7,30,DECLINE
+101810,Four Paws Walking And Training Ltd,Four Paws Walking And Training Ltd app 4.json,unlabelled,57.58777454865377,Weak paid lookalike,Four Paws Walking And Training Ltd,61.27740025292747,21,70.5,60,DECLINE
+101548,We Design It Ltd(1),We Design it Ltd(1).json,unlabelled,57.47742590889498,Weak paid lookalike,Apollo Supermarket(1),62.00859280959289,21,71.5,30,DECLINE
+101548,We Design It Ltd Categorized(1),We Design it Ltd_categorized(1).json,unlabelled,57.47742590889498,Weak paid lookalike,Apollo Supermarket(1),62.00859280959289,21,71.5,30,DECLINE
+101548,We Design It Ltd Categorized,We Design it Ltd_categorized.json,unlabelled,57.47742590889498,Weak paid lookalike,Apollo Supermarket(1),62.00859280959289,21,71.5,30,DECLINE
+101548,We Design It Ltd,We Design it Ltd.json,unlabelled,57.47742590889498,Weak paid lookalike,Apollo Supermarket(1),62.00859280959289,21,71.5,30,DECLINE
+100133,Manzil Property Management(1),Manzil Property Management(1).json,unlabelled,57.442703934408044,Weak paid lookalike,D&C Couriers Limited(1),54.02283584594126,21,73.3,100,APPROVE
+100133,Manzil Property Management,Manzil Property Management.json,unlabelled,57.442703934408044,Weak paid lookalike,D&C Couriers Limited(1),54.02283584594126,21,73.3,100,APPROVE
+100161,Lumi Skn Ltd(1),Lumi SKN Ltd(1).json,unlabelled,57.43764633603476,Weak paid lookalike,Apollo Supermarket(1),59.0764807435064,21,52.0,30,DECLINE
+100161,Lumi Skn Ltd,Lumi SKN Ltd.json,unlabelled,57.43764633603476,Weak paid lookalike,Apollo Supermarket(1),59.0764807435064,21,52.0,30,DECLINE
+100149,Ivy Aesthetic Clinic Academy Ltd,Ivy Aesthetic Clinic Academy Ltd.json,unlabelled,57.43143733913721,Weak paid lookalike,Apollo Supermarket(1),52.78109907719525,21,49.0,100,CONDITIONAL_APPROVE
+100149,Ivy Aesthetic Clinic Academy Ltd(1),Ivy Aesthetic Clinic Academy Ltd(1).json,unlabelled,57.43143733913721,Weak paid lookalike,Apollo Supermarket(1),52.78109907719525,21,49.0,100,CONDITIONAL_APPROVE
+101792,Muscle Makers Gym Limited,Muscle Makers Gym Limited app 2(1).json,unlabelled,57.33904761034607,Weak paid lookalike,Four Paws Walking And Training Ltd,56.6804249256058,21,75.4,60,SENIOR_REVIEW
+101792,Muscle Makers Gym Limited,Muscle Makers Gym Limited app 2.json,unlabelled,57.33904761034607,Weak paid lookalike,Four Paws Walking And Training Ltd,56.6804249256058,21,75.4,60,SENIOR_REVIEW
+100193,Krafty Designs 4 You Limited,Krafty Designs 4 You Limited.json,unlabelled,57.28196129140625,Weak paid lookalike,D&C Couriers Limited(1),61.13923182472613,21,49.6,100,DECLINE
+100193,Krafty Designs 4 You Limited(1),Krafty Designs 4 You Limited(1).json,unlabelled,57.28196129140625,Weak paid lookalike,D&C Couriers Limited(1),61.13923182472613,21,49.6,100,DECLINE
+100128,Humbleegg Ltd,HumbleEgg Ltd.json,unlabelled,57.178776341523424,Weak paid lookalike,Apollo Supermarket(1),58.07605820836192,21,47.2,30,DECLINE
+100128,Humbleegg Ltd(1),HumbleEgg Ltd(1).json,unlabelled,57.178776341523424,Weak paid lookalike,Apollo Supermarket(1),58.07605820836192,21,47.2,30,DECLINE
+101639,A&A Building Construction Ltd,A&A Building Construction Ltd.json,unlabelled,57.06585487019153,Weak paid lookalike,D&C Couriers Limited(1),63.7947233511055,21,44.0,30,DECLINE
+101829,Due Auto Motive Ltd,Due Auto Motive LTD.json,unlabelled,56.94062100223816,Weak paid lookalike,Apollo Supermarket(1),52.783414107305624,21,75.9,60,SENIOR_REVIEW
+101795,Farm To Fridge Ltd,Farm to Fridge Ltd.json,unlabelled,56.90217687540581,Weak paid lookalike,Apollo Supermarket(1),63.93135672961575,21,71.7,30,DECLINE
+101726,Serenix Ltd,Serenix Ltd Transaction Report.json,unlabelled,56.8772065430246,Weak paid lookalike,Apollo Supermarket(1),60.62307881580689,21,66.8,30,DECLINE
+101726,Serenix Ltd,Serenix Ltd Transaction Report(1).json,unlabelled,56.8772065430246,Weak paid lookalike,Apollo Supermarket(1),60.62307881580689,21,66.8,30,DECLINE
+101773,Custom Car Paint Ltd,Custom Car Paint LTD.json,unlabelled,56.51458727321015,Weak paid lookalike,Apollo Supermarket(1),56.06312035023655,21,56.6,30,DECLINE
+101542,Gas Records,Gas Records.json,unlabelled,56.46691964392565,Weak paid lookalike,Apollo Supermarket(1),69.95822034895836,21,65.0,30,DECLINE
+101542,Gas Records(1),Gas Records(1).json,unlabelled,56.46691964392565,Weak paid lookalike,Apollo Supermarket(1),69.95822034895836,21,65.0,30,DECLINE
+101762,Ljr Group Services Limited,LJR Group Services Limited.json,unlabelled,56.447385879276695,Weak paid lookalike,Apollo Supermarket(1),63.48565014552802,21,58.9,30,DECLINE
+100160,South Coast Categorized(1),South Coast_categorized(1).json,not_paid,56.44259189096012,Weak paid lookalike,D&C Couriers Limited(1),57.04383843018189,21,48.8,30,DECLINE
+100160,South Coast(1),South Coast(1).json,unlabelled,56.44259189096012,Weak paid lookalike,D&C Couriers Limited(1),57.04383843018189,21,48.8,30,DECLINE
+100160,South Coast Categorized,South Coast_categorized.json,not_paid,56.44259189096012,Weak paid lookalike,D&C Couriers Limited(1),57.04383843018189,21,48.8,30,DECLINE
+100160,South Coast,South Coast.json,unlabelled,56.44259189096012,Weak paid lookalike,D&C Couriers Limited(1),57.04383843018189,21,48.8,30,DECLINE
+101836,Madinska & Co Ltd,Madinska & Co Ltd.json,unlabelled,56.43411351872184,Weak paid lookalike,D&C Couriers Limited(1),63.2996574365414,21,35.4,30,DECLINE
+101836,Madinska & Co Ltd(1),Madinska & Co Ltd(1).json,unlabelled,56.43411351872184,Weak paid lookalike,D&C Couriers Limited(1),63.2996574365414,21,35.4,30,DECLINE
+101760,Dybo Travel Limited,Dybo Travel Limited.json,unlabelled,56.23255823021431,Weak paid lookalike,Apollo Supermarket(1),63.36405685359291,21,56.5,30,DECLINE
+101424,Accounted Ltd(1),Accounted Ltd(1).json,unlabelled,55.94515997084145,Weak paid lookalike,Apollo Supermarket(1),57.39313568291155,21,53.0,30,DECLINE
+101424,Accounted Ltd,Accounted Ltd.json,unlabelled,55.94515997084145,Weak paid lookalike,Apollo Supermarket(1),57.39313568291155,21,53.0,30,DECLINE
+101866,Quantome Commerce Ltd,Quantome Commerce LTd.json,unlabelled,55.93533278824859,Weak paid lookalike,Apollo Supermarket(1),59.64743511133689,21,57.8,30,DECLINE
+101495,Mitz Traders Ltd,Mitz Traders Ltd Transaction Report.json,unlabelled,55.91675460359972,Weak paid lookalike,D&C Couriers Limited(1),61.40431136140288,21,31.5,30,DECLINE
+101495,Mitz Traders Ltd,Mitz Traders Ltd Transaction Report(1).json,unlabelled,55.91675460359972,Weak paid lookalike,D&C Couriers Limited(1),61.40431136140288,21,31.5,30,DECLINE
+100399,Drillskillz Consults Limited,Drillskillz Consults Limited.json,unlabelled,55.86085965233405,Weak paid lookalike,Apollo Supermarket(1),53.58238571556151,21,54.0,60,DECLINE
+100399,Drillskillz Consults Limited(1),Drillskillz Consults Limited(1).json,unlabelled,55.86085965233405,Weak paid lookalike,Apollo Supermarket(1),53.58238571556151,21,54.0,60,DECLINE
+100315,Steerlux,Steerlux.json,unlabelled,55.81226317778828,Weak paid lookalike,D&C Couriers Limited(1),63.44324890228629,21,42.1,30,DECLINE
+100387,The Boot Country Pub Ltd(1),The Boot Country Pub Ltd(1).json,unlabelled,55.745268730543316,Weak paid lookalike,D&C Couriers Limited(1),52.22424629454935,21,53.3,60,DECLINE
+100387,The Boot Country Pub Ltd,The Boot Country Pub Ltd.json,unlabelled,55.745268730543316,Weak paid lookalike,D&C Couriers Limited(1),52.22424629454935,21,53.3,60,DECLINE
+101528,Noble Executive Limited P,Noble Executive Limited P1.json,unlabelled,55.59478147469668,Weak paid lookalike,Apollo Supermarket(1),58.06829076716183,21,58.4,30,DECLINE
+101528,Noble Executive Limited P1(1),Noble Executive Limited P1(1).json,unlabelled,55.59478147469668,Weak paid lookalike,Apollo Supermarket(1),58.06829076716183,21,58.4,30,DECLINE
+100147,Moonlight Smc Ltd,Moonlight SMC Ltd.json,unlabelled,55.50596795816593,Weak paid lookalike,Apollo Supermarket(1),53.952225941003654,21,81.3,60,SENIOR_REVIEW
+100147,Moonlight Smc Ltd(1),Moonlight SMC Ltd(1).json,unlabelled,55.50596795816593,Weak paid lookalike,Apollo Supermarket(1),53.952225941003654,21,81.3,60,SENIOR_REVIEW
+100194,Northwest Cleaning Experts,Northwest cleaning experts.json,unlabelled,55.48017445191143,Weak paid lookalike,Apollo Supermarket(1),63.976520370810896,21,68.9,30,DECLINE
+101560,Coreerp Solutions,CoreERP Solutions.json,unlabelled,55.44731564899996,Weak paid lookalike,Apollo Supermarket(1),59.950161663686714,21,63.4,30,DECLINE
+101560,Coreerp Solutions(1),CoreERP Solutions(1).json,unlabelled,55.44731564899996,Weak paid lookalike,Apollo Supermarket(1),59.950161663686714,21,63.4,30,DECLINE
+101799,Stormhold Hospitality Ltd,Stormhold hospitality Ltd app 2.json,unlabelled,55.39064186490378,Weak paid lookalike,Four Paws Walking And Training Ltd,55.7197665684541,21,69.1,60,DECLINE
+101799,Stormhold Hospitality Ltd,Stormhold hospitality Ltd.json,unlabelled,55.39064186490378,Weak paid lookalike,Four Paws Walking And Training Ltd,55.7197665684541,21,69.1,60,DECLINE
+100406,Btwbtw Ltd,BTWBTW Ltd.json,unlabelled,55.28526771970931,Weak paid lookalike,Apollo Supermarket(1),54.856287392803914,21,67.7,60,DECLINE
+100406,Btwbtw Ltd(1),BTWBTW Ltd(1).json,unlabelled,55.28526771970931,Weak paid lookalike,Apollo Supermarket(1),54.856287392803914,21,67.7,60,DECLINE
+101836,Echo & Ink,Echo & Ink.json,unlabelled,55.278754129765204,Weak paid lookalike,D&C Couriers Limited(1),56.615802927295015,21,41.0,30,DECLINE
+101846,Nadia Miah Hair And Skin Ltd,Nadia miah hair and skin ltd.json,unlabelled,55.24708258382985,Weak paid lookalike,Apollo Supermarket(1),59.0727452827216,21,56.9,30,DECLINE
+101512,Silk Route Import & Export Ltd,silk route import & export ltd.json,unlabelled,55.209344630602885,Weak paid lookalike,Four Paws Walking And Training Ltd,61.0725290121954,21,75.7,100,APPROVE
+101512,Silk Route Import & Export Ltd(1),silk route import & export ltd(1).json,unlabelled,55.209344630602885,Weak paid lookalike,Four Paws Walking And Training Ltd,61.0725290121954,21,75.7,100,APPROVE
+101461,Neu Hair,Neu Hair.json,unlabelled,55.043895093294275,Weak paid lookalike,Four Paws Walking And Training Ltd,54.13451658006862,21,78.5,60,SENIOR_REVIEW
+101461,Neu Hair(1),Neu Hair(1).json,unlabelled,55.043895093294275,Weak paid lookalike,Four Paws Walking And Training Ltd,54.13451658006862,21,78.5,60,SENIOR_REVIEW
+101862,Beddoes Removals And Stotage,Beddoes removals and stotage.json,unlabelled,54.99730273226865,Weak paid lookalike,Apollo Supermarket(1),49.46811188533591,21,76.6,100,APPROVE
+100337,Evopure Ltd,Evopure Ltd.json,unlabelled,54.961448536295926,Weak paid lookalike,Four Paws Walking And Training Ltd,55.61902681220369,21,67.3,100,DECLINE
+101861,Mar Carpio Ltd,Mar carpio ltd.json,unlabelled,54.90042297384959,Weak paid lookalike,Apollo Supermarket(1),61.930964516120156,21,46.8,30,DECLINE
+101601,Something A Bit Different Ltd,Something a bit different Ltd.json,unlabelled,54.827244509194,Weak paid lookalike,Four Paws Walking And Training Ltd,58.24128791148321,21,89.7,60,SENIOR_REVIEW
+101601,Something A Bit Different Ltd(1),Something a bit different Ltd(1).json,unlabelled,54.827244509194,Weak paid lookalike,Four Paws Walking And Training Ltd,58.24128791148321,21,89.7,60,SENIOR_REVIEW
+101592,Smart Alloys South West Limited(1),Smart Alloys South West Limited(1).json,unlabelled,54.74198654521848,Weak paid lookalike,Four Paws Walking And Training Ltd,50.983152369297805,21,86.7,100,APPROVE
+101592,Smart Alloys South West Limited,Smart Alloys South West Limited.json,unlabelled,54.74198654521848,Weak paid lookalike,Four Paws Walking And Training Ltd,50.983152369297805,21,86.7,100,APPROVE
+101845,Rj Elite Property Management,RJ ELITE PROPERTY MANAGEMENT app 2.json,unlabelled,54.63319200994293,Weak paid lookalike,Four Paws Walking And Training Ltd,52.927223507997496,21,79.0,60,SENIOR_REVIEW
+100084,Maj Trade Ltd(1),Maj Trade Ltd(1).json,unlabelled,54.59587452871507,Weak paid lookalike,Apollo Supermarket(1),57.00692767589269,21,67.3,30,DECLINE
+100084,Maj Trade Ltd,Maj Trade Ltd.json,unlabelled,54.59587452871507,Weak paid lookalike,Apollo Supermarket(1),57.00692767589269,21,67.3,30,DECLINE
+100131,Rosethorn Studio Ltd(1),Rosethorn Studio Ltd(1).json,unlabelled,54.551607073205204,Weak paid lookalike,D&C Couriers Limited(1),57.59406260048804,21,39.9,30,DECLINE
+100131,Rosethorn Studio Ltd,Rosethorn Studio Ltd.json,unlabelled,54.551607073205204,Weak paid lookalike,D&C Couriers Limited(1),57.59406260048804,21,39.9,30,DECLINE
+101462,White Canvas(1),White_canvas(1).json,unlabelled,54.48128876528887,Weak paid lookalike,Apollo Supermarket(1),57.268047097178794,21,41.0,30,DECLINE
+101462,White Canvas Categorized,White_canvas_categorized.json,unlabelled,54.48128876528887,Weak paid lookalike,Apollo Supermarket(1),57.268047097178794,21,41.0,30,DECLINE
+101462,White Canvas,White_canvas.json,unlabelled,54.48128876528887,Weak paid lookalike,Apollo Supermarket(1),57.268047097178794,21,41.0,30,DECLINE
+101462,White Canvas Categorized(1),White_canvas_categorized(1).json,unlabelled,54.48128876528887,Weak paid lookalike,Apollo Supermarket(1),57.268047097178794,21,41.0,30,DECLINE
+101637,Yoga Management Ltd,Yoga Management Ltd.json,unlabelled,54.43505588769057,Weak paid lookalike,D&C Couriers Limited(1),56.65122973244012,21,33.4,60,DECLINE
+100155,Data4Est Ltd,Data4est Ltd.json,unlabelled,54.432258486070666,Weak paid lookalike,Apollo Supermarket(1),54.43426553843957,21,54.4,100,APPROVE
+100155,Data4Est Ltd(1),Data4est Ltd(1).json,unlabelled,54.432258486070666,Weak paid lookalike,Apollo Supermarket(1),54.43426553843957,21,54.4,100,APPROVE
+100140,Jb Bars Ltd(1),JB Bars Ltd(1).json,unlabelled,54.424806315759376,Weak paid lookalike,Apollo Supermarket(1),51.90933000775733,21,70.9,100,APPROVE
+100140,Jb Bars Ltd,JB Bars Ltd.json,unlabelled,54.424806315759376,Weak paid lookalike,Apollo Supermarket(1),51.90933000775733,21,70.9,100,APPROVE
+101770,Kahras Keighley Ltd,KAHRAS KEIGHLEY LTD.json,unlabelled,54.3780104766866,Weak paid lookalike,Four Paws Walking And Training Ltd,55.196209267813174,21,68.3,100,APPROVE
+101458,Smiths Trades Limited(1),Smiths Trades Limited(1).json,unlabelled,54.3343967753294,Weak paid lookalike,Four Paws Walking And Training Ltd,55.96360528557634,21,81.8,60,SENIOR_REVIEW
+101458,Smiths Trades Limited,Smiths Trades Limited.json,unlabelled,54.3343967753294,Weak paid lookalike,Four Paws Walking And Training Ltd,55.96360528557634,21,81.8,60,SENIOR_REVIEW
+101562,Bottom Line Consultants Ltd(1),Bottom Line Consultants Ltd(1).json,unlabelled,54.15871701951714,Weak paid lookalike,Apollo Supermarket(1),57.13159675402796,21,48.7,30,DECLINE
+101562,Bottom Line Consultants Ltd,Bottom Line Consultants Ltd.json,unlabelled,54.15871701951714,Weak paid lookalike,Apollo Supermarket(1),57.13159675402796,21,48.7,30,DECLINE
+100395,Pj Photography Liverpool Limited,PJ PHOTOGRAPHY LIVERPOOL LIMITED.json,unlabelled,54.10328543452999,Weak paid lookalike,Four Paws Walking And Training Ltd,51.029373339727,21,89.2,100,APPROVE
+100395,Pj Photography Liverpool Limited(1),PJ PHOTOGRAPHY LIVERPOOL LIMITED(1).json,unlabelled,54.10328543452999,Weak paid lookalike,Four Paws Walking And Training Ltd,51.029373339727,21,89.2,100,APPROVE
+100089,Hemming Logistics Ltd(1),Hemming Logistics Ltd(1).json,unlabelled,54.03993465238532,Weak paid lookalike,Apollo Supermarket(1),56.65704225993563,21,52.7,30,DECLINE
+100089,Hemming Logistics Ltd,Hemming Logistics Ltd.json,unlabelled,54.03993465238532,Weak paid lookalike,Apollo Supermarket(1),56.65704225993563,21,52.7,30,DECLINE
+101654,Bedew Skin Ltd,Bedew Skin Ltd.json,unlabelled,53.951355683001765,Weak paid lookalike,Apollo Supermarket(1),53.58619680856541,21,67.3,60,DECLINE
+101654,Bedew Skin Ltd(1),Bedew Skin Ltd(1).json,unlabelled,53.951355683001765,Weak paid lookalike,Apollo Supermarket(1),53.58619680856541,21,67.3,60,DECLINE
+100098,Saint Giovanni De La Mode Ltd,SAINT_GIOVANNI_DE_LA_MODE_LTD.json,unlabelled,53.8989787277652,Weak paid lookalike,D&C Couriers Limited(1),57.520101747243864,21,45.3,30,DECLINE
+100098,Saint Giovanni De La Mode Ltd(1),SAINT_GIOVANNI_DE_LA_MODE_LTD(1).json,unlabelled,53.8989787277652,Weak paid lookalike,D&C Couriers Limited(1),57.520101747243864,21,45.3,30,DECLINE
+101864,Aurina Ltd,Aurina Ltd.json,unlabelled,53.75205793401442,Weak paid lookalike,D&C Couriers Limited(1),53.57276010359258,21,57.7,60,DECLINE
+100046,Nova Pubs Ltd,Nova pubs Ltd.json,unlabelled,53.66007518379891,Weak paid lookalike,D&C Couriers Limited(1),55.40998185034915,21,59.7,30,DECLINE
+101446,Furfamilyfair Ltd(1),Furfamilyfair Ltd(1).json,unlabelled,53.61401940355599,Weak paid lookalike,D&C Couriers Limited(1),55.517109903943684,21,50.1,30,DECLINE
+101446,Furfamilyfair Ltd,Furfamilyfair Ltd.json,unlabelled,53.61401940355599,Weak paid lookalike,D&C Couriers Limited(1),55.517109903943684,21,50.1,30,DECLINE
+101778,London Kizomba Festival,London Kizomba Festival.json,unlabelled,53.57740862970768,Weak paid lookalike,Apollo Supermarket(1),58.03442617685154,21,55.6,30,DECLINE
+101604,Snaan Limited,Snaan Limited.json,unlabelled,53.31598016967064,Weak paid lookalike,Apollo Supermarket(1),53.7262379146552,21,57.8,30,DECLINE
+101807,D & C Couriers Ltd,D & C Couriers Ltd app 3.json,unlabelled,53.10893800914457,Weak paid lookalike,D&C Couriers Limited(1),58.71971214523398,21,70.7,100,DECLINE
+101582,Foolgood Salons Ltd,Foolgood Salons Ltd.json,unlabelled,53.06018712181981,Weak paid lookalike,Apollo Supermarket(1),56.75669190828288,21,41.6,30,DECLINE
+101582,Foolgood Salons Ltd(1),Foolgood Salons Ltd(1).json,unlabelled,53.06018712181981,Weak paid lookalike,Apollo Supermarket(1),56.75669190828288,21,41.6,30,DECLINE
+100029,White Rock Trading Limited,WHITE ROCK TRADING LIMITED.json,unlabelled,53.04502688481362,Weak paid lookalike,Apollo Supermarket(1),56.23345965427937,21,51.0,30,DECLINE
+101845,Rj Elite Property Management,RJ elite property management 2.json,unlabelled,52.99156018941795,Weak paid lookalike,Apollo Supermarket(1),57.3922821999536,21,57.4,30,DECLINE
+101422,Advanced Automotive Performance Ltd,Advanced Automotive Performance Ltd.json,unlabelled,52.771186625107205,Weak paid lookalike,Apollo Supermarket(1),54.18725326216025,21,70.8,60,DECLINE
+101422,Advanced Automotive Performance Ltd(1),Advanced Automotive Performance Ltd(1).json,unlabelled,52.771186625107205,Weak paid lookalike,Apollo Supermarket(1),54.18725326216025,21,70.8,60,DECLINE
+100093,Dts Materials Ltd(1),DTS Materials Ltd(1).json,unlabelled,52.75192678717059,Weak paid lookalike,Apollo Supermarket(1),55.88841590167977,21,37.9,30,DECLINE
+100093,Dts Materials Ltd,DTS Materials Ltd.json,unlabelled,52.75192678717059,Weak paid lookalike,Apollo Supermarket(1),55.88841590167977,21,37.9,30,DECLINE
+101507,Mbrb Limited,MBRB Limited Transaction Report(1).json,unlabelled,52.750871673750815,Weak paid lookalike,Four Paws Walking And Training Ltd,50.36811501852466,21,79.2,100,APPROVE
+101507,Mbrb Limited,MBRB Limited Transaction Report.json,unlabelled,52.750871673750815,Weak paid lookalike,Four Paws Walking And Training Ltd,50.36811501852466,21,79.2,100,APPROVE
+100204,Wild Bru And Lavers Ltd,Wild Bru and Lavers Ltd.json,unlabelled,52.647879947564995,Weak paid lookalike,Four Paws Walking And Training Ltd,54.040860036422536,21,91.2,100,APPROVE
+100204,Wild Bru And Lavers Ltd(1),Wild Bru and Lavers Ltd(1).json,unlabelled,52.647879947564995,Weak paid lookalike,Four Paws Walking And Training Ltd,54.040860036422536,21,91.2,100,APPROVE
+100391,Scs Facilities Services Ltd,SCS Facilities Services Ltd.json,unlabelled,52.3231869553771,Weak paid lookalike,D&C Couriers Limited(1),50.319174345825054,21,78.3,100,APPROVE
+100391,Scs Facilities Services Ltd(1),SCS Facilities Services Ltd(1).json,unlabelled,52.3231869553771,Weak paid lookalike,D&C Couriers Limited(1),50.319174345825054,21,78.3,100,APPROVE
+101607,Hair And Beauty Palace Ventures Limited(1),Hair and Beauty Palace Ventures Limited(1).json,unlabelled,52.301141397101546,Weak paid lookalike,Four Paws Walking And Training Ltd,51.10635023228677,21,82.4,100,APPROVE
+101607,Hair And Beauty Palace Ventures Limited,Hair and Beauty Palace Ventures Limited.json,unlabelled,52.301141397101546,Weak paid lookalike,Four Paws Walking And Training Ltd,51.10635023228677,21,82.4,100,APPROVE
+100195,Pemienterprize Ltd(1),Pemienterprize Ltd(1).json,unlabelled,52.17062372151719,Weak paid lookalike,Apollo Supermarket(1),49.038978627208905,21,61.4,100,APPROVE
+100195,Pemienterprize Ltd,Pemienterprize Ltd.json,unlabelled,52.17062372151719,Weak paid lookalike,Apollo Supermarket(1),49.038978627208905,21,61.4,100,APPROVE
+101516,Crunch Group Ltd,Crunch Group Ltd Transaction Report(1).json,unlabelled,52.082689780467106,Weak paid lookalike,Apollo Supermarket(1),52.44124255644902,21,64.8,30,DECLINE
+101516,Crunch Group Ltd,Crunch Group Ltd Transaction Report.json,unlabelled,52.082689780467106,Weak paid lookalike,Apollo Supermarket(1),52.44124255644902,21,64.8,30,DECLINE
+101734,Quest Makkah Tours Limited,Quest Makkah Tours Limited.json,unlabelled,51.902751900257336,Weak paid lookalike,Four Paws Walking And Training Ltd,58.515587475702624,21,72.8,30,DECLINE
+100083,Porkies Ltd(1),Porkies Ltd(1).json,unlabelled,51.896328831089384,Weak paid lookalike,D&C Couriers Limited(1),55.551963830538526,21,53.2,30,DECLINE
+100083,Porkies Ltd,Porkies Ltd.json,unlabelled,51.896328831089384,Weak paid lookalike,D&C Couriers Limited(1),55.551963830538526,21,53.2,30,DECLINE
+101782,Shivay Traders Ltd,shivay traders ltd.json,unlabelled,51.76324404833143,Weak paid lookalike,Apollo Supermarket(1),49.424816021715614,21,63.4,60,DECLINE
+101641,Om Clinic Limited,OM Clinic Limited.json,unlabelled,51.58866252168519,Weak paid lookalike,Apollo Supermarket(1),49.55585299405541,21,66.9,60,DECLINE
+101764,Witham Pizza Ltd,WItham pizza ltd.json,unlabelled,51.09779612138018,Weak paid lookalike,Four Paws Walking And Training Ltd,51.549466875181125,21,66.0,100,APPROVE
+101454,Ratz Vintage Clothing Ltd(1),Ratz Vintage Clothing Ltd(1).json,unlabelled,51.0947227899383,Weak paid lookalike,Apollo Supermarket(1),51.94496305448387,21,54.5,30,DECLINE
+101454,Ratz Vintage Clothing Ltd,Ratz Vintage Clothing Ltd.json,unlabelled,51.0947227899383,Weak paid lookalike,Apollo Supermarket(1),51.94496305448387,21,54.5,30,DECLINE
+101574,Hans Lec Design(1),Hans Lec Design(1).json,unlabelled,51.09228805553133,Weak paid lookalike,Four Paws Walking And Training Ltd,49.86145201292265,21,66.9,60,DECLINE
+101574,Hans Lec Design,Hans Lec Design.json,unlabelled,51.09228805553133,Weak paid lookalike,Four Paws Walking And Training Ltd,49.86145201292265,21,66.9,60,DECLINE
+101634,R A F Chilamena Limited(1),R A F Chilamena Limited(1).json,unlabelled,51.05020021866634,Weak paid lookalike,Apollo Supermarket(1),48.94897182680731,21,56.5,60,DECLINE
+101767,The Daisy Patch,The Daisy Patch.json,unlabelled,51.00462162124106,Weak paid lookalike,Apollo Supermarket(1),54.11631300853395,21,54.3,30,DECLINE
+101572,We Style Any Dog Limited(1),We Style Any Dog Limited(1).json,unlabelled,50.99446362791474,Weak paid lookalike,D&C Couriers Limited(1),48.9441659367425,21,73.9,100,APPROVE
+101572,We Style Any Dog Limited,We Style Any Dog Limited.json,unlabelled,50.99446362791474,Weak paid lookalike,D&C Couriers Limited(1),48.9441659367425,21,73.9,100,APPROVE
+101574,Hans Lec,Hans-Lec Transaction Report.json,unlabelled,50.940592700233616,Weak paid lookalike,Apollo Supermarket(1),53.77590909122275,21,57.3,30,DECLINE
+101574,Hans Lec,Hans-Lec Transaction Report(1).json,unlabelled,50.940592700233616,Weak paid lookalike,Apollo Supermarket(1),53.77590909122275,21,57.3,30,DECLINE
+101561,Elija Limited,ELIJA LIMITED.json,unlabelled,50.927197988921144,Weak paid lookalike,Apollo Supermarket(1),53.37235765225241,21,64.6,30,DECLINE
+101545,Milton Fire Safety,Milton Fire Safety.json,unlabelled,50.76814788361019,Weak paid lookalike,Apollo Supermarket(1),52.50382811952985,21,61.0,30,DECLINE
+101545,Milton Fire Safety(1),Milton Fire Safety(1).json,unlabelled,50.76814788361019,Weak paid lookalike,Apollo Supermarket(1),52.50382811952985,21,61.0,30,DECLINE
+100036,Harbour Galley,Harbour_galley.json,unlabelled,50.65211135378093,Weak paid lookalike,Apollo Supermarket(1),48.13221915122618,21,54.6,100,APPROVE
+100036,Harbour Galley(1),Harbour_galley(1).json,unlabelled,50.65211135378093,Weak paid lookalike,Apollo Supermarket(1),48.13221915122618,21,54.6,100,APPROVE
+101437,Techara Limited,TECHARA_LIMITED.json,unlabelled,50.62530460221011,Weak paid lookalike,Apollo Supermarket(1),56.39621994754965,21,52.1,30,DECLINE
+101437,Techara Limited(1),TECHARA_LIMITED(1).json,unlabelled,50.62530460221011,Weak paid lookalike,Apollo Supermarket(1),56.39621994754965,21,52.1,30,DECLINE
+101759,Sn Star Services Ltd,SN Star Services Ltd.json,unlabelled,50.44308898571661,Weak paid lookalike,Apollo Supermarket(1),50.36062347358971,21,69.1,60,DECLINE
+101591,Rockaway Toys Ltd,Rockaway Toys Ltd.json,unlabelled,50.42270853510506,Weak paid lookalike,Apollo Supermarket(1),53.510329398163435,21,69.2,30,DECLINE
+101591,Rockaway Toys Ltd(1),Rockaway Toys Ltd(1).json,unlabelled,50.42270853510506,Weak paid lookalike,Apollo Supermarket(1),53.510329398163435,21,69.2,30,DECLINE
+101847,Wmj Group Limited,WMJ group limited.json,unlabelled,50.34265134025955,Weak paid lookalike,Four Paws Walking And Training Ltd,55.25424986767777,21,76.3,100,APPROVE
+100183,Phoenix Group Services Ltd(1),Phoenix Group Services Ltd(1).json,unlabelled,50.189115841203474,Weak paid lookalike,Apollo Supermarket(1),52.93125358099534,21,61.5,30,DECLINE
+100183,Phoenix Group Services Ltd,Phoenix Group Services Ltd.json,unlabelled,50.189115841203474,Weak paid lookalike,Apollo Supermarket(1),52.93125358099534,21,61.5,30,DECLINE
+100418,Regulatory Consultantcy Services Ltd (1),Regulatory Consultantcy Services Ltd (1).json,unlabelled,50.145253384610534,Weak paid lookalike,D&C Couriers Limited(1),50.92022036808516,21,81.5,60,SENIOR_REVIEW
+100418,Regulatory Consultantcy Services Ltd,Regulatory Consultantcy Services Ltd .json,unlabelled,50.145253384610534,Weak paid lookalike,D&C Couriers Limited(1),50.92022036808516,21,81.5,60,SENIOR_REVIEW
+100219,R A F Chilamena Limited,R A F Chilamena Limited.json,unlabelled,49.95950940306325,Weak paid lookalike,D&C Couriers Limited(1),48.67034187811405,21,44.1,60,DECLINE
+101580,White Sea Technologies Limited,White Sea Technologies Limited.json,unlabelled,49.86288679037376,Weak paid lookalike,Apollo Supermarket(1),52.73632385928327,21,0.0,30,DECLINE
+101580,White Sea Technologies Limited(1),White Sea Technologies Limited(1).json,unlabelled,49.86288679037376,Weak paid lookalike,Apollo Supermarket(1),52.73632385928327,21,0.0,30,DECLINE
+100303,Richer Education,Richer Education.json,unlabelled,49.749177073049886,Weak paid lookalike,D&C Couriers Limited(1),49.65379531266217,21,93.6,100,APPROVE
+100303,Richer Education(1),Richer Education(1).json,unlabelled,49.749177073049886,Weak paid lookalike,D&C Couriers Limited(1),49.65379531266217,21,93.6,100,APPROVE
+100344,Taylor Floristry Ltd,Taylor Floristry LTD.json,unlabelled,49.73653500485734,Weak paid lookalike,D&C Couriers Limited(1),48.44418506776876,21,58.2,60,DECLINE
+101763,White Oak Design Studio Ltd,White Oak Design Studio LTD.json,unlabelled,49.727229586730985,Weak paid lookalike,Apollo Supermarket(1),53.06704932043864,21,58.9,30,DECLINE
+101524,Lime Service Group Ltd(1),Lime Service Group Ltd(1).json,unlabelled,49.67363414330346,Weak paid lookalike,Apollo Supermarket(1),58.231309276850475,21,55.7,30,DECLINE
+101524,Lime Service Group Ltd,Lime Service Group Ltd.json,unlabelled,49.67363414330346,Weak paid lookalike,Apollo Supermarket(1),58.231309276850475,21,55.7,30,DECLINE
+100393,Bunker Publishing,Bunker Publishing.json,unlabelled,49.664943609409306,Weak paid lookalike,D&C Couriers Limited(1),46.79960921930899,21,52.8,60,DECLINE
+100393,Bunker Publishing(1),Bunker Publishing(1).json,unlabelled,49.664943609409306,Weak paid lookalike,D&C Couriers Limited(1),46.79960921930899,21,52.8,60,DECLINE
+100400,Shakespeares Shepherd Huts Ltd,Shakespeares Shepherd Huts Ltd.json,unlabelled,49.521767351098,Weak paid lookalike,Apollo Supermarket(1),50.790422501625095,21,65.3,30,DECLINE
+100400,Shakespeares Shepherd Huts Ltd(1),Shakespeares Shepherd Huts Ltd(1).json,unlabelled,49.521767351098,Weak paid lookalike,Apollo Supermarket(1),50.790422501625095,21,65.3,30,DECLINE
+101805,Sf Elections Hub Limited,SF elections Hub limited.json,unlabelled,49.299508170478695,Weak paid lookalike,Apollo Supermarket(1),50.65586689307023,21,70.1,100,APPROVE
+101587,Palmcoco Ltd,Palmcoco Ltd Transaction Report(1).json,unlabelled,49.26621867434413,Weak paid lookalike,D&C Couriers Limited(1),47.77442459612873,21,39.8,60,DECLINE
+101587,Palmcoco Ltd,Palmcoco Ltd Transaction Report.json,unlabelled,49.26621867434413,Weak paid lookalike,D&C Couriers Limited(1),47.77442459612873,21,39.8,60,DECLINE
+100232,Mecn Marketing Ltd(1),Mecn Marketing Ltd(1).json,unlabelled,49.23878941995751,Weak paid lookalike,Apollo Supermarket(1),50.50357737302582,21,56.6,100,APPROVE
+100232,Mecn Marketing Ltd,Mecn Marketing Ltd.json,unlabelled,49.23878941995751,Weak paid lookalike,Apollo Supermarket(1),50.50357737302582,21,56.6,100,APPROVE
+101830,Peter G Ltd,Peter G ltd.json,unlabelled,49.01486121551303,Weak paid lookalike,Apollo Supermarket(1),58.69929042358364,21,63.0,30,DECLINE
+101464,Hashmis And Bukharis Ltd,Hashmis and Bukharis Ltd.json,unlabelled,48.94524061435836,Weak paid lookalike,Apollo Supermarket(1),53.23612003276667,21,57.8,30,DECLINE
+101464,Hashmis And Bukharis Ltd(1),Hashmis and Bukharis Ltd(1).json,unlabelled,48.94524061435836,Weak paid lookalike,Apollo Supermarket(1),53.23612003276667,21,57.8,30,DECLINE
+101605,Ashby Street Motors Ltd(1),Ashby Street Motors Ltd(1).json,unlabelled,48.94438185320396,Weak paid lookalike,Four Paws Walking And Training Ltd,55.66101389642661,21,80.3,60,SENIOR_REVIEW
+101605,Ashby Street Motors Ltd,Ashby Street Motors Ltd.json,unlabelled,48.94438185320396,Weak paid lookalike,Four Paws Walking And Training Ltd,55.66101389642661,21,80.3,60,SENIOR_REVIEW
+101772,Blackfen Food Ltd,BLACKFEN FOOD LTD.json,unlabelled,48.80493924198679,Weak paid lookalike,Four Paws Walking And Training Ltd,50.52167941244667,21,72.3,100,DECLINE
+100016,Sorin&George Ltd,Sorin&George Ltd.json,unlabelled,48.58157525237013,Weak paid lookalike,D&C Couriers Limited(1),46.6270327605778,21,50.3,60,DECLINE
+101786,Ft Fitness Ltd,FT Fitness LTD.json,unlabelled,48.261664862159755,Weak paid lookalike,Four Paws Walking And Training Ltd,49.39010042684901,21,71.6,60,DECLINE
+101832,Taste Of Bengal Broadway Ltd,TASTE OF BENGAL BROADWAY LTD.json,unlabelled,48.1286749023524,Weak paid lookalike,Apollo Supermarket(1),49.34504061835656,21,67.4,100,APPROVE
+101584,Wigporium Ltd,Wigporium Ltd.json,unlabelled,47.915538917945284,Weak paid lookalike,Apollo Supermarket(1),53.77016050066052,21,63.7,30,DECLINE
+101584,Wigporium Ltd(1),Wigporium Ltd(1).json,unlabelled,47.915538917945284,Weak paid lookalike,Apollo Supermarket(1),53.77016050066052,21,63.7,30,DECLINE
+101732,Fusionprint Uk Ltd,FusionPrint UK Ltd.json,unlabelled,47.80991219218753,Weak paid lookalike,Apollo Supermarket(1),45.16664611793617,21,60.9,60,DECLINE
+101604,Aryaancompany Ltd,ARYAANCOMPANY LtD.json,unlabelled,47.80124394692347,Weak paid lookalike,Apollo Supermarket(1),45.794902577066985,21,64.6,100,APPROVE
+101425,Hursley Childcare Ltd,Hursley Childcare Ltd.json,unlabelled,47.54998064854819,Weak paid lookalike,Four Paws Walking And Training Ltd,47.54750394101664,21,66.9,60,DECLINE
+101425,Hursley Childcare Ltd(1),Hursley Childcare Ltd(1).json,unlabelled,47.54998064854819,Weak paid lookalike,Four Paws Walking And Training Ltd,47.54750394101664,21,66.9,60,DECLINE
+101536,Simpli Print Group Ltd,Simpli Print Group Ltd.json,unlabelled,47.51935513443989,Weak paid lookalike,Apollo Supermarket(1),45.87883284578417,21,54.1,60,DECLINE
+100185,The Hop House Ltd,THE_HOP_HOUSE_LTD.json,unlabelled,47.240662152794386,Weak paid lookalike,Apollo Supermarket(1),46.750056702036886,21,62.1,100,APPROVE
+100185,The Hop House Ltd(1),THE_HOP_HOUSE_LTD(1).json,unlabelled,47.240662152794386,Weak paid lookalike,Apollo Supermarket(1),46.750056702036886,21,62.1,100,APPROVE
+101613,Ys Traders Limited,YS Traders Limited.json,unlabelled,46.99191822466105,Weak paid lookalike,Apollo Supermarket(1),53.54160978003716,21,50.7,30,DECLINE
+101781,Wye Valley Catering,Wye Valley Catering.json,unlabelled,46.914922172043575,Weak paid lookalike,Four Paws Walking And Training Ltd,50.17063333965888,21,77.1,100,APPROVE
+101781,Wye Valley Catering(1),Wye Valley Catering(1).json,unlabelled,46.914922172043575,Weak paid lookalike,Four Paws Walking And Training Ltd,50.17063333965888,21,77.1,100,APPROVE
+101549,The Gluten Free World Ltd(1),The Gluten Free World Ltd(1).json,unlabelled,46.80937230632013,Weak paid lookalike,Apollo Supermarket(1),45.22611379713192,21,49.9,60,DECLINE
+101549,The Gluten Free World Ltd,The Gluten Free World Ltd.json,unlabelled,46.80937230632013,Weak paid lookalike,Apollo Supermarket(1),45.22611379713192,21,49.9,60,DECLINE
+101587,Thor Ltd,Thor Ltd.json,unlabelled,46.69227818581024,Weak paid lookalike,Apollo Supermarket(1),49.74786371374553,21,32.0,30,DECLINE
+101587,Thor Ltd(1),Thor Ltd(1).json,unlabelled,46.69227818581024,Weak paid lookalike,Apollo Supermarket(1),49.74786371374553,21,32.0,30,DECLINE
+101459,The Gangway Sheringham Limited(1),The Gangway Sheringham Limited(1).json,unlabelled,46.528240009834846,Weak paid lookalike,Four Paws Walking And Training Ltd,49.88033130113232,21,78.4,100,APPROVE
+101459,The Gangway Sheringham Limited,The Gangway Sheringham Limited.json,unlabelled,46.528240009834846,Weak paid lookalike,Four Paws Walking And Training Ltd,49.88033130113232,21,78.4,100,APPROVE
+101844,Cheers&Chill Limited,CHEERS&CHILL LIMITED.json,unlabelled,46.456371758667075,Weak paid lookalike,Four Paws Walking And Training Ltd,50.4175697888992,21,84.0,60,SENIOR_REVIEW
+101757,Totes Luxe Uk Ltd,Totes Luxe UK LTD.json,unlabelled,46.304773386090694,Weak paid lookalike,Four Paws Walking And Training Ltd,46.45715386139072,21,66.0,60,DECLINE
+100178,Prudent Healthcare Services Ltd(1),Prudent Healthcare Services Ltd(1).json,unlabelled,45.85546518829606,Weak paid lookalike,Four Paws Walking And Training Ltd,47.389345430854,21,84.6,100,APPROVE
+100178,Prudent Healthcare Services Ltd,Prudent Healthcare Services Ltd.json,unlabelled,45.85546518829606,Weak paid lookalike,Four Paws Walking And Training Ltd,47.389345430854,21,84.6,100,APPROVE
+101621,French Sole Ltd,French Sole Ltd.json,unlabelled,45.76497780764429,Weak paid lookalike,D&C Couriers Limited(1),49.130201004661245,21,0.0,30,DECLINE
+101621,French Sole Ltd(1),French Sole Ltd(1).json,unlabelled,45.76497780764429,Weak paid lookalike,D&C Couriers Limited(1),49.130201004661245,21,0.0,30,DECLINE
+100202,Gozone Care Ltd,Gozone Care Ltd.json,unlabelled,45.73798060089354,Weak paid lookalike,Four Paws Walking And Training Ltd,46.992763517106134,21,91.2,100,APPROVE
+100202,Gozone Care Ltd(1),Gozone Care Ltd(1).json,unlabelled,45.73798060089354,Weak paid lookalike,Four Paws Walking And Training Ltd,46.992763517106134,21,91.2,100,APPROVE
+101781,Wyevalleycatering Ltd,Wyevalleycatering ltd.json,unlabelled,45.734463624187605,Weak paid lookalike,Four Paws Walking And Training Ltd,49.014334300516644,21,78.8,100,APPROVE
+101802,The Ceo Lounge Ltd,The CEO Lounge Ltd.json,unlabelled,45.58884857752557,Weak paid lookalike,Four Paws Walking And Training Ltd,45.810864738330714,21,59.7,60,DECLINE
+101793,Champagne One Ltd,champagne one ltd.json,unlabelled,45.44794387969156,Weak paid lookalike,Apollo Supermarket(1),48.622979385964044,21,43.4,30,DECLINE
+101675,Gc Bike Repairs Ltd,GC Bike Repairs Ltd 6.json,unlabelled,45.37025115585795,Weak paid lookalike,Four Paws Walking And Training Ltd,47.29273191598676,21,88.3,60,SENIOR_REVIEW
+100121,Marvellous Glow Ltd(1),Marvellous Glow Ltd(1).json,unlabelled,45.31106624242753,Weak paid lookalike,Apollo Supermarket(1),45.405240950473186,21,61.4,100,APPROVE
+100389,Anthony Healthcare Ltd,Anthony Healthcare Ltd.json,unlabelled,45.27452328140529,Weak paid lookalike,Apollo Supermarket(1),48.53828641884076,21,41.0,30,DECLINE
+100389,Anthony Healthcare Ltd(1),Anthony Healthcare Ltd(1).json,unlabelled,45.27452328140529,Weak paid lookalike,Apollo Supermarket(1),48.53828641884076,21,41.0,30,DECLINE
+101624,Vision Et Consilium Ltd(1),Vision ET Consilium Ltd(1).json,unlabelled,45.209789515686616,Weak paid lookalike,Apollo Supermarket(1),48.66114045806093,21,46.5,30,DECLINE
+101624,Vision Et Consilium Ltd,Vision ET Consilium Ltd.json,unlabelled,45.209789515686616,Weak paid lookalike,Apollo Supermarket(1),48.66114045806093,21,46.5,30,DECLINE
+101526,The Fuel Agency (Uk) Ltd,The Fuel Agency (UK) Ltd.json,unlabelled,45.06133119114867,Weak paid lookalike,Four Paws Walking And Training Ltd,48.61806546967953,21,75.0,60,SENIOR_REVIEW
+101526,The Fuel Agency (Uk) Ltd Categorized(1),The Fuel Agency (UK) Ltd_categorized(1).json,unlabelled,45.06133119114867,Weak paid lookalike,Four Paws Walking And Training Ltd,48.61806546967953,21,75.0,60,SENIOR_REVIEW
+101526,The Fuel Agency (Uk) Ltd Categorized,The Fuel Agency (UK) Ltd_categorized.json,unlabelled,45.06133119114867,Weak paid lookalike,Four Paws Walking And Training Ltd,48.61806546967953,21,75.0,60,SENIOR_REVIEW
+101526,The Fuel Agency (Uk) Ltd(1),The Fuel Agency (UK) Ltd(1).json,unlabelled,45.06133119114867,Weak paid lookalike,Four Paws Walking And Training Ltd,48.61806546967953,21,75.0,60,SENIOR_REVIEW
+nan,Golden Triangle Financial Services Ltd(1),Golden Triangle Financial Services Ltd(1).json,unlabelled,44.970695296113085,Not close to paid profile,Four Paws Walking And Training Ltd,47.16558602821488,21,73.9,100,APPROVE
+nan,Golden Triangle Financial Services Ltd,Golden Triangle Financial Services Ltd.json,unlabelled,44.970695296113085,Not close to paid profile,Four Paws Walking And Training Ltd,47.16558602821488,21,73.9,100,APPROVE
+101573,Recognised London Limited(1),Recognised London Limited(1).json,unlabelled,44.965090725145444,Not close to paid profile,D&C Couriers Limited(1),45.1097251958822,21,66.9,60,DECLINE
+101573,Recognised London Limited,Recognised London Limited.json,unlabelled,44.965090725145444,Not close to paid profile,D&C Couriers Limited(1),45.1097251958822,21,66.9,60,DECLINE
+101780,Chilli Too Limited,chilli too limited.json,unlabelled,44.89281557029872,Not close to paid profile,Four Paws Walking And Training Ltd,47.675537686353096,21,93.0,60,SENIOR_REVIEW
+101796,Baby Ultrasound Clinic Limited,Baby ultrasound clinic limited.json,unlabelled,44.57324115448194,Not close to paid profile,Four Paws Walking And Training Ltd,52.51702977314909,21,89.8,60,SENIOR_REVIEW
+101858,Sag Hussain Retail Ltd,Sag Hussain Retail Ltd.json,unlabelled,44.554892581556054,Not close to paid profile,Four Paws Walking And Training Ltd,46.21021084808528,21,78.4,60,SENIOR_REVIEW
+100174,Punchard Group Ltd(1),Punchard Group Ltd(1).json,unlabelled,44.43379918551834,Not close to paid profile,Four Paws Walking And Training Ltd,46.582667950817005,21,75.7,100,DECLINE
+100174,Punchard Group Ltd,Punchard Group Ltd.json,unlabelled,44.43379918551834,Not close to paid profile,Four Paws Walking And Training Ltd,46.582667950817005,21,75.7,100,DECLINE
+101819,Gc Couture Ltd,GC COUTURE LTD.json,unlabelled,44.18735478986678,Not close to paid profile,Four Paws Walking And Training Ltd,52.22095655085503,21,86.4,100,APPROVE
+101675,Gc Bike Repairs Ltd 4(1),GC Bike Repairs Ltd 4(1).json,unlabelled,44.13853886437766,Not close to paid profile,Four Paws Walking And Training Ltd,47.67784346345231,21,92.7,60,SENIOR_REVIEW
+101675,Gc Bike Repairs Ltd,GC Bike Repairs Ltd 4.json,unlabelled,44.13853886437766,Not close to paid profile,Four Paws Walking And Training Ltd,47.67784346345231,21,92.7,60,SENIOR_REVIEW
+101675,Gc Bike Repairs Ltd,GC Bike Repairs Ltd 5.json,unlabelled,44.13853886437766,Not close to paid profile,Four Paws Walking And Training Ltd,47.67784346345231,21,92.7,60,SENIOR_REVIEW
+101600,Stockport Jungle Ltd,Stockport Jungle Ltd.json,unlabelled,43.833817752080854,Not close to paid profile,Four Paws Walking And Training Ltd,47.273318619076264,21,82.0,100,APPROVE
+101600,Stockport Jungle Ltd(1),Stockport Jungle Ltd(1).json,unlabelled,43.833817752080854,Not close to paid profile,Four Paws Walking And Training Ltd,47.273318619076264,21,82.0,100,APPROVE
+101647,Ibbmedialtd,IBBmedialtd.json,unlabelled,43.81240794512773,Not close to paid profile,Apollo Supermarket(1),46.53060090539477,21,53.4,30,DECLINE
+100137,Elpromotions Limited(1),Elpromotions Limited(1).json,unlabelled,43.25756204550052,Not close to paid profile,D&C Couriers Limited(1),46.0104980222913,21,41.0,30,DECLINE
+100137,Elpromotions Limited,Elpromotions Limited.json,unlabelled,43.25756204550052,Not close to paid profile,D&C Couriers Limited(1),46.0104980222913,21,41.0,30,DECLINE
+100385,All In The Wrap Limited(1),All in the wrap Limited(1).json,unlabelled,43.146787008945104,Not close to paid profile,D&C Couriers Limited(1),45.00341901422797,21,54.5,30,DECLINE
+100385,All In The Wrap Limited,All in the wrap Limited.json,unlabelled,43.146787008945104,Not close to paid profile,D&C Couriers Limited(1),45.00341901422797,21,54.5,30,DECLINE
+101546,Elm Pub Group Ltd Ta As The Bull Inn,Elm Pub Group Ltd TA As The Bull Inn.json,unlabelled,43.141423231746636,Not close to paid profile,Apollo Supermarket(1),45.46218423994032,21,42.4,30,DECLINE
+101546,Elm Pub Group Ltd Ta As The Bull Inn(1),Elm Pub Group Ltd TA As The Bull Inn(1).json,unlabelled,43.141423231746636,Not close to paid profile,Apollo Supermarket(1),45.46218423994032,21,42.4,30,DECLINE
+101779,Hsids,HSIDS.json,unlabelled,42.97278872137702,Not close to paid profile,Four Paws Walking And Training Ltd,51.042649775141186,21,88.8,100,APPROVE
+101559,Blisshealth Concepts Limited,Blisshealth Concepts Limited.json,unlabelled,42.80066678665008,Not close to paid profile,Apollo Supermarket(1),45.45656014930575,21,30.5,30,DECLINE
+101559,Blisshealth Concepts Limited(1),Blisshealth Concepts Limited(1).json,unlabelled,42.80066678665008,Not close to paid profile,Apollo Supermarket(1),45.45656014930575,21,30.5,30,DECLINE
+100200,Stevnson Property Services Ltd,Stevnson Property Services Ltd.json,unlabelled,42.6980660160973,Not close to paid profile,Apollo Supermarket(1),47.56934256491799,21,62.8,30,DECLINE
+100200,Stevnson Property Services Ltd(1),Stevnson Property Services Ltd(1).json,unlabelled,42.6980660160973,Not close to paid profile,Apollo Supermarket(1),47.56934256491799,21,62.8,30,DECLINE
+101450,Go Commercial Finance Ltd(1),Go Commercial Finance Ltd(1).json,unlabelled,42.4814669342624,Not close to paid profile,Apollo Supermarket(1),46.815203651859015,21,70.5,30,DECLINE
+101450,Go Commercial Finance Ltd,Go Commercial Finance Ltd.json,unlabelled,42.4814669342624,Not close to paid profile,Apollo Supermarket(1),46.815203651859015,21,70.5,30,DECLINE
+101455,Marvellous Glow Ltd,Marvellous Glow Ltd.json,unlabelled,42.40505966290436,Not close to paid profile,Apollo Supermarket(1),42.48753102914147,21,51.3,100,APPROVE
+101760,Happy Travel Limited Categorized(1),Happy Travel Limited_categorized(1).json,unlabelled,41.50242768274266,Not close to paid profile,Apollo Supermarket(1),47.51528170807115,21,50.1,30,DECLINE
+101760,Happy Travel Limited(1),Happy Travel Limited(1).json,unlabelled,41.50242768274266,Not close to paid profile,Apollo Supermarket(1),47.51528170807115,21,50.1,30,DECLINE
+101760,Happy Travel Limited,Happy Travel Limited.json,unlabelled,41.50242768274266,Not close to paid profile,Apollo Supermarket(1),47.51528170807115,21,50.1,30,DECLINE
+101760,Happy Travel Limited Categorized,Happy Travel Limited_categorized.json,unlabelled,41.50242768274266,Not close to paid profile,Apollo Supermarket(1),47.51528170807115,21,50.1,30,DECLINE
+100187,Simpli Print Group Ltd(1),Simpli Print Group Ltd(1).json,unlabelled,41.45848840908624,Not close to paid profile,Apollo Supermarket(1),40.671426832805935,21,50.2,60,DECLINE
+101620,Ultimate 2020 Group Ta Trade Glaze,Ultimate 2020 Group TA Trade Glaze.json,unlabelled,41.37204844994877,Not close to paid profile,Four Paws Walking And Training Ltd,48.002337914107585,21,98.1,100,APPROVE
+101756,Risk Enterprise Limited,Risk-Enterprise Limited.json,unlabelled,41.01586138935586,Not close to paid profile,Apollo Supermarket(1),43.571571930067684,21,55.5,30,DECLINE
+101775,Sld Personnel Ltd,SLD Personnel Ltd.json,unlabelled,40.90812567865124,Not close to paid profile,Apollo Supermarket(1),42.57175556701291,21,40.0,30,DECLINE
+101694,Simply Local Richmond Ltd(1),SIMPLY_LOCAL_RICHMOND_LTD(1).json,unlabelled,40.351775256795946,Not close to paid profile,Apollo Supermarket(1),44.50952526718765,21,42.4,30,DECLINE
+101694,Simply Local Richmond Ltd,SIMPLY_LOCAL_RICHMOND_LTD.json,unlabelled,40.351775256795946,Not close to paid profile,Apollo Supermarket(1),44.50952526718765,21,42.4,30,DECLINE
+100141,Sercasa Ltd(1),Sercasa Ltd(1).json,unlabelled,40.22442684000251,Not close to paid profile,Apollo Supermarket(1),41.22954175457016,21,41.0,30,DECLINE
+100141,Sercasa Ltd,Sercasa Ltd.json,unlabelled,40.22442684000251,Not close to paid profile,Apollo Supermarket(1),41.22954175457016,21,41.0,30,DECLINE
+101811,Rowley Dunleavy Services Limited,rowley dunleavy services limited.json,unlabelled,40.034972841960084,Not close to paid profile,Four Paws Walking And Training Ltd,44.25089893710599,21,89.4,60,SENIOR_REVIEW
+101550,E Gener8.Com(1),E-gener8.com(1).json,unlabelled,39.40956007667359,Not close to paid profile,D&C Couriers Limited(1),40.23796684502276,21,46.3,60,DECLINE
+101550,E Gener8.Com,E-gener8.com.json,unlabelled,39.40956007667359,Not close to paid profile,D&C Couriers Limited(1),40.23796684502276,21,46.3,60,DECLINE
+101823,Rlk Technologies Limited,RLK Technologies Limited.json,unlabelled,38.51604158102613,Not close to paid profile,Apollo Supermarket(1),40.390675019826546,21,37.9,30,DECLINE
+101506,Bbd Services Ltd,BBD Services Ltd Transaction Report(1).json,unlabelled,36.045441632256505,Not close to paid profile,Apollo Supermarket(1),36.46881574961131,21,75.7,30,DECLINE
+101506,Bbd Services Ltd,BBD Services Ltd Transaction Report.json,unlabelled,36.045441632256505,Not close to paid profile,Apollo Supermarket(1),36.46881574961131,21,75.7,30,DECLINE
+101493,Apprintable Limited,Apprintable Limited Transaction Report_cleaned(1).json,unlabelled,35.75196291788617,Not close to paid profile,Four Paws Walking And Training Ltd,39.66249777234433,21,84.9,100,APPROVE
+101493,Apprintable Limited,Apprintable Limited Transaction Report.json,unlabelled,35.75196291788617,Not close to paid profile,Four Paws Walking And Training Ltd,39.66249777234433,21,84.9,100,APPROVE
+101493,Apprintable Limited,Apprintable Limited Transaction Report_cleaned.json,unlabelled,35.75196291788617,Not close to paid profile,Four Paws Walking And Training Ltd,39.66249777234433,21,84.9,100,APPROVE
+101493,Apprintable Limited,Apprintable Limited Transaction Report(1).json,unlabelled,35.75196291788617,Not close to paid profile,Four Paws Walking And Training Ltd,39.66249777234433,21,84.9,100,APPROVE
+101502,By Old Ltd,By Old Ltd Transaction Report.json,unlabelled,35.434734359157325,Not close to paid profile,Apollo Supermarket(1),36.70367545439962,21,59.3,30,DECLINE
+101502,By Old Ltd,By Old Ltd Transaction Report(1).json,unlabelled,35.434734359157325,Not close to paid profile,Apollo Supermarket(1),36.70367545439962,21,59.3,30,DECLINE
+101442,Marvel Heating & Renewable Energy Ltd,Marvel Heating & REnewable Energy Ltd.json,unlabelled,33.159647462025696,Not close to paid profile,Four Paws Walking And Training Ltd,32.77879273014686,21,57.3,100,APPROVE
+101442,Marvel Heating & Renewable Energy Ltd(1),Marvel Heating & REnewable Energy Ltd(1).json,unlabelled,33.159647462025696,Not close to paid profile,Four Paws Walking And Training Ltd,32.77879273014686,21,57.3,100,APPROVE
+101623,Optimum Vehicles Limited,Optimum Vehicles Limited.json,unlabelled,33.08213262083124,Not close to paid profile,Four Paws Walking And Training Ltd,34.19700951172398,21,86.3,60,SENIOR_REVIEW
