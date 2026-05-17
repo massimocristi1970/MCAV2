@@ -6,6 +6,7 @@ import logging.config
 import logging.handlers
 import os
 import sys
+import tempfile
 from pathlib import Path
 from typing import Dict, Any
 from ..config.settings import settings
@@ -17,13 +18,38 @@ try:
 except ImportError:
     JSON_LOGGING_AVAILABLE = False
 
+
+def get_log_dir() -> Path:
+    """Return a writable log directory for local runs and hosted deployments."""
+    configured_dir = os.getenv("MCAV2_LOG_DIR", "").strip()
+    candidates = [
+        Path(configured_dir).expanduser() if configured_dir else None,
+        settings.BASE_DIR / "logs",
+        Path.cwd() / "logs",
+        Path(tempfile.gettempdir()) / "mcav2_logs",
+    ]
+
+    for candidate in candidates:
+        if candidate is None:
+            continue
+        try:
+            candidate.mkdir(parents=True, exist_ok=True)
+            test_file = candidate / ".write_test"
+            test_file.write_text("", encoding="utf-8")
+            test_file.unlink(missing_ok=True)
+            return candidate
+        except OSError:
+            continue
+
+    return Path(tempfile.gettempdir())
+
+
+LOG_DIR = get_log_dir()
+
+
 def setup_logging() -> None:
     """Set up logging configuration."""
-    
-    # Create logs directory if it doesn't exist
-    log_dir = Path("logs")
-    log_dir.mkdir(exist_ok=True)
-    
+
     # Build formatters dict
     formatters: Dict[str, Any] = {
         "standard": {
@@ -59,7 +85,7 @@ def setup_logging() -> None:
                 "class": "logging.handlers.RotatingFileHandler",
                 "level": "DEBUG",
                 "formatter": "detailed",
-                "filename": "logs/app.log",
+                "filename": str(LOG_DIR / "app.log"),
                 "maxBytes": 10485760,  # 10MB
                 "backupCount": 5
             },
@@ -67,7 +93,7 @@ def setup_logging() -> None:
                 "class": "logging.handlers.RotatingFileHandler",
                 "level": "ERROR",
                 "formatter": "detailed",
-                "filename": "logs/errors.log",
+                "filename": str(LOG_DIR / "errors.log"),
                 "maxBytes": 10485760,  # 10MB
                 "backupCount": 5
             }
@@ -133,10 +159,13 @@ class AuditLogger:
     
     def __init__(self):
         self.logger = logging.getLogger("app.audit")
-        
+
+        if any(getattr(handler, "baseFilename", None) == str(LOG_DIR / "audit.log") for handler in self.logger.handlers):
+            return
+
         # Create audit-specific handler
         handler = logging.handlers.RotatingFileHandler(
-            "logs/audit.log",
+            str(LOG_DIR / "audit.log"),
             maxBytes=10485760,
             backupCount=10
         )
@@ -162,8 +191,8 @@ class AuditLogger:
         """Log application errors."""
         self.logger.error(f"Error: {error_type} - {details}")
 
-# Global audit logger instance
-audit_logger = AuditLogger()
-
 # Initialize logging when module is imported
 setup_logging()
+
+# Global audit logger instance
+audit_logger = AuditLogger()
