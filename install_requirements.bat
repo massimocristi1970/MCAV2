@@ -63,8 +63,8 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo Installing requirements.txt...
-"%VENV_PYTHON%" -m pip install -r requirements.txt
+echo Installing/upgrading requirements.txt...
+"%VENV_PYTHON%" -m pip install --upgrade -r requirements.txt
 if errorlevel 1 (
     echo Failed to install requirements.txt.
     pause

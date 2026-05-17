@@ -63,7 +63,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-call "%PYTHON_EXE%" -m pip install -r requirements.txt
+call "%PYTHON_EXE%" -m pip install --upgrade -r requirements.txt
 if errorlevel 1 (
     echo Failed to install requirements.txt.
     pause

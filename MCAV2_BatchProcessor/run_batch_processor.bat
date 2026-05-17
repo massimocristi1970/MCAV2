@@ -31,15 +31,11 @@ if not defined PYTHON_EXE (
 )
 
 echo Using Python: %PYTHON_EXE%
-echo Checking required Python modules...
-%PYTHON_EXE% -c "import streamlit, pandas, numpy, sklearn, joblib, plotly, openpyxl, rapidfuzz, dotenv" >nul 2>&1
+echo Installing/upgrading batch processor requirements...
+%PYTHON_EXE% -m pip install --upgrade -r requirements.txt
 if errorlevel 1 (
-    echo One or more required modules are missing. Installing batch processor requirements...
-    %PYTHON_EXE% -m pip install -r requirements.txt
-    if errorlevel 1 (
-        echo ERROR: Requirement installation failed.
-        goto :end
-    )
+    echo ERROR: Requirement installation failed.
+    goto :end
 )
 
 set "PORT="
