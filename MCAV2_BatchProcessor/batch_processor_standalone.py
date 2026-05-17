@@ -4111,12 +4111,44 @@ def build_calibration_reports(results_df: pd.DataFrame) -> dict[str, pd.DataFram
 
 
 SHARED_SAVED_RUNS_RELATIVE_PATH = Path(
-    "OneDrive - Savvy Loan Products Ltd",
     "Merchant Cash Advance (MCA)",
     "Scorecard",
     "Scorecard Development",
     "Saved_batch_processor_runs",
 )
+SAVVY_ONEDRIVE_FOLDER_NAME = "OneDrive - Savvy Loan Products Ltd"
+
+
+def _saved_run_candidates() -> list[Path]:
+    """Return likely shared saved-run folders for different OneDrive layouts."""
+    candidates: list[Path] = []
+
+    for env_name in ("OneDriveCommercial", "OneDrive", "ONEDRIVE", "OneDriveConsumer"):
+        env_path = os.getenv(env_name)
+        if env_path:
+            candidates.append(Path(env_path).expanduser() / SHARED_SAVED_RUNS_RELATIVE_PATH)
+
+    user_profile = os.getenv("USERPROFILE")
+    if user_profile:
+        candidates.append(Path(user_profile) / SAVVY_ONEDRIVE_FOLDER_NAME / SHARED_SAVED_RUNS_RELATIVE_PATH)
+
+    for drive in ("C:", "D:"):
+        users_root = Path(drive) / "Users"
+        if users_root.exists():
+            try:
+                for user_dir in users_root.iterdir():
+                    candidates.append(user_dir / SAVVY_ONEDRIVE_FOLDER_NAME / SHARED_SAVED_RUNS_RELATIVE_PATH)
+            except OSError:
+                continue
+
+    seen: set[str] = set()
+    unique_candidates = []
+    for candidate in candidates:
+        key = str(candidate).lower()
+        if key not in seen:
+            seen.add(key)
+            unique_candidates.append(candidate)
+    return unique_candidates
 
 
 def resolve_saved_runs_dir() -> Path:
@@ -4124,8 +4156,7 @@ def resolve_saved_runs_dir() -> Path:
     configured_path = os.getenv("MCAV2_BATCH_SAVED_RUNS_DIR", "").strip().strip('"')
     if configured_path:
         return Path(configured_path).expanduser()
-    for drive in ("C:", "D:"):
-        candidate = Path(drive) / "Users" / "Massimo Cristi" / SHARED_SAVED_RUNS_RELATIVE_PATH
+    for candidate in _saved_run_candidates():
         if candidate.exists():
             return candidate
     return BATCH_PROCESSOR_DIR / "saved_runs"
@@ -5847,6 +5878,15 @@ def main():
             "Using the local saved-runs folder. Set MCAV2_BATCH_SAVED_RUNS_DIR to a OneDrive/shared folder "
             "to see the same runs on every machine."
         )
+        with st.sidebar.expander("Shared folder help", expanded=True):
+            st.code(
+                "MCAV2_BATCH_SAVED_RUNS_DIR="
+                r"C:\Users\Massimo Cristi\OneDrive - Savvy Loan Products Ltd"
+                r"\Merchant Cash Advance (MCA)\Scorecard\Scorecard Development"
+                r"\Saved_batch_processor_runs",
+                language="text",
+            )
+            st.caption("Add this line to the repo .env file on that machine if auto-detect cannot find OneDrive.")
 
     imported_run_package = st.sidebar.file_uploader(
         "Import saved run package",
