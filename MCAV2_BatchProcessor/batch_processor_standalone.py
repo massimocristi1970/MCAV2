@@ -4342,6 +4342,29 @@ def list_saved_runs() -> list[dict[str, Any]]:
     return sorted(runs, key=lambda item: item.get("created_at", ""), reverse=True)
 
 
+def resolve_saved_run_dir(manifest: dict[str, Any]) -> Path:
+    """Resolve a saved run against the current machine, ignoring stale absolute paths."""
+    run_id = str(manifest.get("run_id", "")).strip()
+    candidates = []
+    if run_id:
+        candidates.append(SAVED_RUNS_DIR / run_id)
+    manifest_path = manifest.get("path")
+    if manifest_path:
+        candidates.append(Path(str(manifest_path)))
+
+    for candidate in candidates:
+        if candidate.exists() and (candidate / "manifest.json").exists():
+            return candidate
+
+    if run_id and SAVED_RUNS_DIR.exists():
+        matches = list(SAVED_RUNS_DIR.glob(f"*{run_id}*"))
+        for match in matches:
+            if match.is_dir() and (match / "manifest.json").exists():
+                return match
+
+    return candidates[0] if candidates else SAVED_RUNS_DIR
+
+
 def _read_saved_csv(run_dir: Path, relative_path: str | None) -> pd.DataFrame:
     if not relative_path:
         return pd.DataFrame()
@@ -4356,7 +4379,11 @@ def _read_saved_csv(run_dir: Path, relative_path: str | None) -> pd.DataFrame:
 
 def load_saved_run(manifest: dict[str, Any]) -> dict[str, Any]:
     """Load a saved run's output files back into memory for display."""
-    run_dir = Path(manifest.get("path", ""))
+    run_dir = resolve_saved_run_dir(manifest)
+    manifest_path = run_dir / "manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["path"] = str(run_dir)
     files = manifest.get("files", {})
     reports_dir = run_dir / str(files.get("calibration_reports", "calibration_reports"))
     reports = {}
@@ -4401,12 +4428,25 @@ def render_loaded_saved_run(saved_run: dict[str, Any]) -> None:
     with c3:
         st.metric("Cases", len(results_df))
     st.caption(str(run_dir))
-    st.download_button(
-        "Download Portable Saved Run",
-        data=build_saved_run_package(run_dir),
-        file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_saved_run.zip",
-        mime="application/zip",
-    )
+    with st.expander("Portable saved run package", expanded=False):
+        st.caption("Only needed if you want to move this run without the shared OneDrive folder.")
+        if st.button("Prepare Portable Saved Run", key=f"prepare_saved_run_{manifest.get('run_id', 'run')}"):
+            try:
+                st.session_state["prepared_saved_run_package"] = {
+                    "run_id": manifest.get("run_id", ""),
+                    "data": build_saved_run_package(run_dir),
+                    "name": f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_saved_run.zip",
+                }
+            except OSError as e:
+                st.error(f"Could not prepare portable package from {run_dir}: {e}")
+        prepared_package = st.session_state.get("prepared_saved_run_package")
+        if prepared_package and prepared_package.get("run_id") == manifest.get("run_id", ""):
+            st.download_button(
+                "Download Portable Saved Run",
+                data=prepared_package["data"],
+                file_name=prepared_package["name"],
+                mime="application/zip",
+            )
 
     if results_df.empty:
         st.warning("This saved run does not contain case score output.")
