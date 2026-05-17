@@ -12,6 +12,36 @@ cd /d "%~dp0"
 echo Current directory: %CD%
 echo.
 
+set "PYTHON_EXE="
+if exist "..\.venv\Scripts\python.exe" set "PYTHON_EXE=..\.venv\Scripts\python.exe"
+if not defined PYTHON_EXE if exist ".venv\Scripts\python.exe" set "PYTHON_EXE=.venv\Scripts\python.exe"
+if not defined PYTHON_EXE (
+    py -3 --version >nul 2>&1
+    if not errorlevel 1 set "PYTHON_EXE=py -3"
+)
+if not defined PYTHON_EXE (
+    python --version >nul 2>&1
+    if not errorlevel 1 set "PYTHON_EXE=python"
+)
+
+if not defined PYTHON_EXE (
+    echo ERROR: Python was not found.
+    echo Install Python 3.10 or newer, then run this launcher again.
+    goto :end
+)
+
+echo Using Python: %PYTHON_EXE%
+echo Checking required Python modules...
+%PYTHON_EXE% -c "import streamlit, pandas, numpy, sklearn, joblib, plotly, openpyxl, rapidfuzz, dotenv" >nul 2>&1
+if errorlevel 1 (
+    echo One or more required modules are missing. Installing batch processor requirements...
+    %PYTHON_EXE% -m pip install -r requirements.txt
+    if errorlevel 1 (
+        echo ERROR: Requirement installation failed.
+        goto :end
+    )
+)
+
 set "PORT="
 for %%P in (8502 8503 8504 8505 8506 8507 8508 8509 8510) do (
     if not defined PORT (
@@ -35,7 +65,7 @@ if exist "batch_processor_standalone.py" (
     echo Found batch_processor_standalone.py
     echo Starting Streamlit application on port %PORT%...
     echo URL: http://localhost:%PORT%
-    streamlit run batch_processor_standalone.py --server.port %PORT% --server.headless false
+    %PYTHON_EXE% -m streamlit run batch_processor_standalone.py --server.port %PORT% --server.headless false
 ) else (
     echo ERROR: batch_processor_standalone.py not found in current directory
     echo Please make sure this batch file is in the same folder as the Python files

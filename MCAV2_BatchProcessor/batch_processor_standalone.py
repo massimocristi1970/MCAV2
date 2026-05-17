@@ -30,10 +30,19 @@ import joblib
 import sys
 from io import BytesIO
 
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BATCH_PROCESSOR_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BATCH_PROCESSOR_DIR / "model.pkl"
 SCALER_PATH = BATCH_PROCESSOR_DIR / "scaler.pkl"
+
+if load_dotenv:
+    load_dotenv(REPO_ROOT / ".env")
+    load_dotenv(BATCH_PROCESSOR_DIR / ".env")
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -4101,7 +4110,28 @@ def build_calibration_reports(results_df: pd.DataFrame) -> dict[str, pd.DataFram
     }
 
 
-SAVED_RUNS_DIR = BATCH_PROCESSOR_DIR / "saved_runs"
+SHARED_SAVED_RUNS_RELATIVE_PATH = Path(
+    "OneDrive - Savvy Loan Products Ltd",
+    "Merchant Cash Advance (MCA)",
+    "Scorecard",
+    "Scorecard Development",
+    "Saved_batch_processor_runs",
+)
+
+
+def resolve_saved_runs_dir() -> Path:
+    """Resolve the saved-runs folder, allowing a shared path across machines."""
+    configured_path = os.getenv("MCAV2_BATCH_SAVED_RUNS_DIR", "").strip().strip('"')
+    if configured_path:
+        return Path(configured_path).expanduser()
+    for drive in ("C:", "D:"):
+        candidate = Path(drive) / "Users" / "Massimo Cristi" / SHARED_SAVED_RUNS_RELATIVE_PATH
+        if candidate.exists():
+            return candidate
+    return BATCH_PROCESSOR_DIR / "saved_runs"
+
+
+SAVED_RUNS_DIR = resolve_saved_runs_dir()
 
 
 def slugify_run_name(name: str) -> str:
@@ -4172,7 +4202,7 @@ def save_named_run(
     metadata: dict[str, Any],
     uploads: dict[str, Any],
 ) -> Path:
-    """Persist a processed batch run under MCAV2_BatchProcessor/saved_runs."""
+    """Persist a processed batch run under the configured saved-runs folder."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_id = f"{timestamp}_{slugify_run_name(run_name)}"
     run_dir = SAVED_RUNS_DIR / run_id
@@ -4209,6 +4239,61 @@ def save_named_run(
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     save_uploaded_sources(run_dir, uploads)
     return run_dir
+
+
+def build_saved_run_package(run_dir: Path) -> bytes:
+    """Create a portable zip package for a saved run folder."""
+    run_dir = Path(run_dir)
+    buffer = BytesIO()
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for path in run_dir.rglob("*"):
+            if path.is_file():
+                archive.write(path, arcname=str(Path(run_dir.name) / path.relative_to(run_dir)))
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+def import_saved_run_package(uploaded_file: Any) -> dict[str, Any]:
+    """Import a portable saved-run zip package into the configured saved-runs folder."""
+    SAVED_RUNS_DIR.mkdir(parents=True, exist_ok=True)
+    package_bytes = uploaded_file.getvalue()
+    with zipfile.ZipFile(BytesIO(package_bytes), "r") as archive:
+        manifest_entries = [
+            name for name in archive.namelist()
+            if Path(name).name == "manifest.json" and not name.endswith("/")
+        ]
+        if not manifest_entries:
+            raise ValueError("No manifest.json was found in the saved run package.")
+
+        manifest_entry = manifest_entries[0]
+        package_root = str(Path(manifest_entry).parent).replace("\\", "/")
+        manifest = json.loads(archive.read(manifest_entry).decode("utf-8"))
+        base_run_id = slugify_run_name(manifest.get("run_id") or manifest.get("run_name") or Path(package_root).name)
+        target_dir = SAVED_RUNS_DIR / base_run_id
+        suffix = 2
+        while target_dir.exists():
+            target_dir = SAVED_RUNS_DIR / f"{base_run_id}_{suffix}"
+            suffix += 1
+        target_dir.mkdir(parents=True, exist_ok=False)
+
+        for member in archive.infolist():
+            if member.is_dir():
+                continue
+            member_name = member.filename.replace("\\", "/")
+            if package_root and not member_name.startswith(f"{package_root}/"):
+                continue
+            relative_name = member_name[len(package_root):].lstrip("/") if package_root else member_name
+            relative_path = Path(relative_name)
+            if relative_path.is_absolute() or ".." in relative_path.parts:
+                continue
+            target_path = target_dir / relative_path
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            target_path.write_bytes(archive.read(member))
+
+    imported_manifest_path = target_dir / "manifest.json"
+    imported_manifest = json.loads(imported_manifest_path.read_text(encoding="utf-8"))
+    imported_manifest["path"] = str(target_dir)
+    return imported_manifest
 
 
 def list_saved_runs() -> list[dict[str, Any]]:
@@ -4285,6 +4370,12 @@ def render_loaded_saved_run(saved_run: dict[str, Any]) -> None:
     with c3:
         st.metric("Cases", len(results_df))
     st.caption(str(run_dir))
+    st.download_button(
+        "Download Portable Saved Run",
+        data=build_saved_run_package(run_dir),
+        file_name=f"{slugify_run_name(manifest.get('run_name', 'saved_run'))}_saved_run.zip",
+        mime="application/zip",
+    )
 
     if results_df.empty:
         st.warning("This saved run does not contain case score output.")
@@ -5742,12 +5833,41 @@ def main():
     default_directors_score = st.sidebar.slider("Fallback Director Credit Score", 0, 100, 75)
     default_company_age = st.sidebar.number_input("Fallback Company Age (Months)", min_value=0, value=12, step=1)
 
+    if sidebar_section:
+        sidebar_section("Saved Runs")
+    else:
+        st.sidebar.header("Saved Runs")
+    st.sidebar.caption(f"Folder: {SAVED_RUNS_DIR}")
+    if os.getenv("MCAV2_BATCH_SAVED_RUNS_DIR"):
+        st.sidebar.caption("Shared saved-runs folder is enabled. Runs saved on another synced machine will appear here.")
+    elif SAVED_RUNS_DIR.name == "Saved_batch_processor_runs":
+        st.sidebar.caption("Using the shared Savvy OneDrive saved-runs folder. Runs synced from another machine will appear here.")
+    else:
+        st.sidebar.caption(
+            "Using the local saved-runs folder. Set MCAV2_BATCH_SAVED_RUNS_DIR to a OneDrive/shared folder "
+            "to see the same runs on every machine."
+        )
+
+    imported_run_package = st.sidebar.file_uploader(
+        "Import saved run package",
+        type=["zip"],
+        key="saved_run_import_package",
+        help="Upload a saved-run zip exported from another machine.",
+    )
+    if imported_run_package is not None:
+        import_key = f"{imported_run_package.name}:{getattr(imported_run_package, 'size', 0)}"
+        if st.session_state.get("last_imported_saved_run_package") != import_key:
+            try:
+                imported_manifest = import_saved_run_package(imported_run_package)
+                st.session_state["last_imported_saved_run_package"] = import_key
+                st.session_state["loaded_saved_run"] = imported_manifest
+                st.sidebar.success("Saved run imported.")
+                st.rerun()
+            except Exception as e:
+                st.sidebar.error(f"Could not import saved run: {e}")
+
     saved_runs = list_saved_runs()
     if saved_runs:
-        if sidebar_section:
-            sidebar_section("Saved Runs")
-        else:
-            st.sidebar.header("Saved Runs")
         selected_run = st.sidebar.selectbox(
             "Recent saved runs",
             saved_runs,
@@ -5760,6 +5880,7 @@ def main():
                 st.rerun()
     else:
         selected_run = None
+        st.sidebar.info("No saved runs on this machine yet. Import a saved-run package or process and save a new run.")
 
     if st.session_state.get("loaded_saved_run"):
         if st.button("Close Saved Run View"):
@@ -6080,6 +6201,13 @@ def main():
                 },
             )
             st.success(f"Saved run: {run_dir}")
+            st.download_button(
+                "Download Portable Saved Run",
+                data=build_saved_run_package(run_dir),
+                file_name=f"{slugify_run_name(run_name)}_saved_run.zip",
+                mime="application/zip",
+                help="Use this zip to load the saved run on another machine without reprocessing.",
+            )
         except Exception as e:
             st.warning(f"Run processed, but saving failed: {e}")
 
