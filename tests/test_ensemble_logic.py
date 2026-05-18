@@ -73,7 +73,7 @@ def test_senior_review_band_is_reachable():
         params=_strong_params(),
     )
 
-    assert result["decision"] == "SENIOR_REVIEW"
+    assert result["decision"] == "REFER"
     assert result["combined_score"] == 62
 
 
@@ -157,6 +157,42 @@ def test_ml_score_is_informational_only_and_does_not_drive_decline():
 
 
 @pytest.mark.unit
+def test_mca_approve_cannot_override_weak_subprime_score():
+    result = get_ensemble_recommendation(
+        scores={
+            "mca_score": 100,
+            "mca_decision": "APPROVE",
+            "subprime_score": 62,
+            "ml_score": None,
+        },
+        metrics=_strong_metrics(),
+        params=_strong_params(),
+    )
+
+    assert result["combined_score"] == 79.8
+    assert result["decision"] == "REFER"
+    assert "MCA score alone is not enough" in result["primary_reason"]
+
+
+@pytest.mark.unit
+def test_full_approval_requires_subprime_gate_even_with_perfect_mca():
+    result = get_ensemble_recommendation(
+        scores={
+            "mca_score": 100,
+            "mca_decision": "APPROVE",
+            "subprime_score": 64,
+            "ml_score": None,
+        },
+        metrics=_strong_metrics(),
+        params=_strong_params(),
+    )
+
+    assert result["combined_score"] == 80.6
+    assert result["decision"] == "REFER"
+    assert "caps the case at referral" in result["primary_reason"]
+
+
+@pytest.mark.unit
 def test_primary_reason_explains_threshold_not_first_risk_factor():
     result = get_ensemble_recommendation(
         scores={
@@ -174,7 +210,7 @@ def test_primary_reason_explains_threshold_not_first_risk_factor():
 
     assert result["decision"] == "DECLINE"
     assert result["combined_score"] == 55
-    assert "below the senior review threshold" in result["primary_reason"]
+    assert "below the referral threshold" in result["primary_reason"]
     assert any("High cash flow volatility" in r for r in result["risk_factors"])
     assert "High cash flow volatility" not in result["primary_reason"]
 

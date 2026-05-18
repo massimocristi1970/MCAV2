@@ -83,6 +83,13 @@ class EnsembleScorer:
         'refer': 65,
         'senior_review': 60
     }
+
+    # MCA consistency can support an approval, but it cannot override a weak
+    # comprehensive business/director profile.
+    SUBPRIME_DECISION_GATES = {
+        'approve_min': 65,
+        'refer_min': 60,
+    }
     
     # Hard stop conditions that override ensemble.
     # MCA transaction weakness is only a hard stop when the underlying signal is
@@ -199,8 +206,10 @@ class EnsembleScorer:
                 'weights_applied': self.weights,
                 'mca_decision_policy': (
                     "MCA severe failures hard-stop; soft MCA decline caps the decision; "
-                    "MCA refer caps at conditional approval; MCA approve supports but does not approve alone."
+                    "MCA refer caps at referral; MCA approve supports but does not approve alone. "
+                    "Subprime gates cap approvals when the comprehensive profile is weak."
                 ),
+                'subprime_decision_gates': self.SUBPRIME_DECISION_GATES,
                 'informational_scores': {
                     name: round(result.score, 1)
                     for name, result in scoring_results.items()
@@ -418,30 +427,37 @@ class EnsembleScorer:
         # Get MCA rule decision (important - based on transaction consistency)
         mca_decision = scores.get('mca_decision') or params.get('mca_rule_decision')
         mca_decision = str(mca_decision).upper() if mca_decision else None
+
+        subprime_score = scores.get('subprime_score')
+        try:
+            subprime_score = float(subprime_score)
+        except (TypeError, ValueError):
+            subprime_score = None
+
+        if subprime_score is not None:
+            if subprime_score < self.SUBPRIME_DECISION_GATES['refer_min']:
+                return Decision.DECLINE
+
+            if subprime_score < self.SUBPRIME_DECISION_GATES['approve_min']:
+                if score >= self.THRESHOLDS['senior_review']:
+                    return Decision.REFER
+                return Decision.DECLINE
         
         # MCA DECLINE is a hard stop only when _check_hard_stops has identified
         # severe transaction weakness. Softer MCA declines cap the maximum
-        # decision at senior review while still allowing nuance from the
-        # combined score.
+        # decision at referral while still allowing nuance from the combined
+        # score.
         if mca_decision == 'DECLINE':
-            if score >= self.THRESHOLDS['conditional_approve']:
-                return Decision.SENIOR_REVIEW
-            elif score >= self.THRESHOLDS['refer']:
+            if score >= self.THRESHOLDS['senior_review']:
                 return Decision.REFER
-            elif score >= self.THRESHOLDS['senior_review']:
-                return Decision.SENIOR_REVIEW
             else:
                 return Decision.DECLINE
 
         # MCA REFER means transaction consistency is borderline. It caps the
-        # maximum decision at conditional approval but does not auto-decline.
+        # maximum decision at referral but does not auto-decline.
         if mca_decision == 'REFER':
-            if score >= self.THRESHOLDS['approve']:
-                return Decision.CONDITIONAL_APPROVE
-            elif score >= self.THRESHOLDS['conditional_approve']:
+            if score >= self.THRESHOLDS['senior_review']:
                 return Decision.REFER
-            elif score >= self.THRESHOLDS['refer']:
-                return Decision.SENIOR_REVIEW
             else:
                 return Decision.DECLINE
         
@@ -450,24 +466,16 @@ class EnsembleScorer:
         if mca_decision == 'APPROVE':
             if score >= self.THRESHOLDS['approve']:
                 return Decision.APPROVE
-            elif score >= self.THRESHOLDS['conditional_approve']:
-                return Decision.CONDITIONAL_APPROVE
-            elif score >= self.THRESHOLDS['refer']:
-                return Decision.REFER
             elif score >= self.THRESHOLDS['senior_review']:
-                return Decision.SENIOR_REVIEW
+                return Decision.REFER
             else:
                 return Decision.DECLINE
         
         # Standard threshold-based decision (no MCA decision or unknown)
         if score >= self.THRESHOLDS['approve']:
             return Decision.APPROVE
-        elif score >= self.THRESHOLDS['conditional_approve']:
-            return Decision.CONDITIONAL_APPROVE
-        elif score >= self.THRESHOLDS['refer']:
-            return Decision.REFER
         elif score >= self.THRESHOLDS['senior_review']:
-            return Decision.SENIOR_REVIEW
+            return Decision.REFER
         else:
             return Decision.DECLINE
     
@@ -673,15 +681,6 @@ class EnsembleScorer:
                 "Standard documentation package"
             ])
         
-        elif decision == Decision.CONDITIONAL_APPROVE:
-            recommendations.extend([
-                "Approve with enhanced monitoring",
-                "Consider bi-weekly payment collection",
-                "Request additional documentation"
-            ])
-            if params.get('business_ccj'):
-                recommendations.append("Obtain personal guarantee")
-        
         elif decision == Decision.REFER:
             recommendations.extend([
                 "Manual underwriter review required",
@@ -690,13 +689,6 @@ class EnsembleScorer:
             ])
             if len(risk_factors) > 3:
                 recommendations.append("Consider reduced loan amount")
-        
-        elif decision == Decision.SENIOR_REVIEW:
-            recommendations.extend([
-                "Senior underwriter approval required",
-                "Full due diligence package needed",
-                "Consider alternative product structure"
-            ])
         
         else:  # DECLINE
             recommendations.extend([
@@ -773,10 +765,8 @@ class EnsembleScorer:
         """Generate a decision-mechanics-first primary reason."""
         threshold_labels = {
             Decision.APPROVE: ("approval", self.THRESHOLDS['approve']),
-            Decision.CONDITIONAL_APPROVE: ("conditional approval", self.THRESHOLDS['conditional_approve']),
             Decision.REFER: ("referral", self.THRESHOLDS['refer']),
-            Decision.SENIOR_REVIEW: ("senior review", self.THRESHOLDS['senior_review']),
-            Decision.DECLINE: ("senior review", self.THRESHOLDS['senior_review']),
+            Decision.DECLINE: ("referral", self.THRESHOLDS['senior_review']),
         }
 
         mca = contributing_scores.get('mca_score')
@@ -791,30 +781,36 @@ class EnsembleScorer:
                 f"for {convergence.lower()} between MCA and Subprime."
             )
 
-        if mca_decision == "DECLINE" and decision in (Decision.SENIOR_REVIEW, Decision.REFER):
+        if mca_decision == "DECLINE" and decision == Decision.REFER:
             return (
                 f"Weighted MCA/Subprime score {score:.1f} was not an automatic decline, "
                 f"but MCA transaction weakness caps the case at {decision.value.replace('_', ' ').title()} "
                 f"({score_context}).{penalty_text}"
             )
 
-        if mca_decision == "REFER" and decision == Decision.CONDITIONAL_APPROVE:
+        if mca_decision == "REFER" and decision == Decision.REFER:
             return (
                 f"Weighted MCA/Subprime score {score:.1f} supports approval, but borderline MCA "
-                f"transaction consistency caps the decision at conditional approval ({score_context}).{penalty_text}"
+                f"transaction consistency caps the decision at referral ({score_context}).{penalty_text}"
             )
+
+        if subprime is not None:
+            if subprime < self.SUBPRIME_DECISION_GATES['refer_min']:
+                return (
+                    f"Subprime score {subprime:.1f} is below the minimum referral gate, so the case is declined "
+                    f"even though the weighted score is {score:.1f} ({score_context}).{penalty_text}"
+                )
+            if subprime < self.SUBPRIME_DECISION_GATES['approve_min'] and decision == Decision.REFER:
+                return (
+                    f"Subprime score {subprime:.1f} caps the case at referral; MCA score alone is not enough "
+                    f"to approve ({score_context}).{penalty_text}"
+                )
         
         if decision == Decision.APPROVE:
             return f"Weighted MCA/Subprime score {score:.1f} meets approval threshold ({score_context})."
         
-        elif decision == Decision.CONDITIONAL_APPROVE:
-            return f"Weighted MCA/Subprime score {score:.1f} supports conditional approval ({score_context})."
-        
         elif decision == Decision.REFER:
             return f"Weighted MCA/Subprime score {score:.1f} falls in the referral band ({score_context}).{penalty_text}"
-        
-        elif decision == Decision.SENIOR_REVIEW:
-            return f"Weighted MCA/Subprime score {score:.1f} falls in the senior-review band ({score_context}).{penalty_text}"
         
         else:  # DECLINE
             label, threshold = threshold_labels[Decision.DECLINE]
