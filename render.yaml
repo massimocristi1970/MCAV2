@@ -3,6 +3,7 @@ services:
     name: mcav2-main
     runtime: docker
     plan: free
+    region: frankfurt
     healthCheckPath: /_stcore/health
     envVars:
       - key: APP_ENTRYPOINT
@@ -22,6 +23,7 @@ services:
     name: mcav2-batch-processor
     runtime: docker
     plan: free
+    region: frankfurt
     healthCheckPath: /_stcore/health
     envVars:
       - key: APP_ENTRYPOINT
