@@ -13,6 +13,9 @@ def safe_get_metric(metrics, key, default=0):
     """Safely get a metric value with a default fallback"""
     return metrics.get(key, default)
 
+from app.config.industry_config import DIRECTOR_SCORE_PASS_THRESHOLD
+
+
 def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thresholds, company_age_months, 
                                     personal_default_12m=False, business_ccj=False,
                                     website_or_social_outdated=False, uses_generic_email=False, 
@@ -59,7 +62,7 @@ def calculate_adaptive_weighted_score(metrics, directors_score, sector_risk, thr
     scoring_details.append(f"DSCR: {dscr:.2f} vs {threshold:.2f} → {score:.1f} pts")
     
     # 2. DIRECTORS SCORE (18 points) - Continuous scoring
-    dir_threshold = thresholds.get("Directors Score", 60)
+    dir_threshold = thresholds.get("Directors Score", DIRECTOR_SCORE_PASS_THRESHOLD)
     if directors_score >= dir_threshold:
         score = continuous_weights['Directors Score']
     elif directors_score >= dir_threshold * 0.9:
@@ -356,7 +359,7 @@ def test_module():
         'Revenue Growth Rate': 0.04,
         'Cash Flow Volatility': 0.2,
         'Gross Burn Rate': 12000,
-        'Directors Score': 75,
+        'Directors Score': DIRECTOR_SCORE_PASS_THRESHOLD,
         'Sector Risk': 0,
         'Average Month-End Balance': 1000,
         'Average Negative Balance Days per Month': 2,

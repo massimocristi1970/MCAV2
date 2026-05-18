@@ -37,6 +37,11 @@ from build_training_dataset import (
     build_mca_features,
     derive_ml_features,
 )
+from app.config.industry_config import (
+    DIRECTOR_SCORE_PASS_THRESHOLD,
+    INDUSTRY_THRESHOLDS,
+    get_sector_risk,
+)
 
 # Synthetic rule-based PD (transparent benchmark)
 try:
@@ -69,7 +74,7 @@ def _get_features_from_last_run(run):
     metrics = run.get("metrics", {})
     params = run.get("params", {})
     industry = params.get("industry", "Other")
-    sector_risk = 1 if industry in {"Restaurants and Cafes", "Bars and Pubs", "Construction Firms"} else 0
+    sector_risk = get_sector_risk(industry)
     return {
         "Directors Score": params.get("directors_score", 50),
         "Total Revenue": metrics.get("Total Revenue", 0),
@@ -180,11 +185,18 @@ else:
             json_data = None
         if json_data is not None:
             sidebar_subsection("Parameters for uploaded file")
-            directors_score = st.sidebar.number_input("Directors Score", 0, 100, 50, key="dc_ds")
+            directors_score = st.sidebar.number_input(
+                "Assumed Director TU Score",
+                0,
+                100,
+                DIRECTOR_SCORE_PASS_THRESHOLD,
+                key="dc_ds",
+            )
             company_age_months = st.sidebar.number_input("Company Age (Months)", 0, 600, 12, key="dc_age")
             industry = st.sidebar.selectbox(
                 "Industry",
-                ["Other", "Restaurants and Cafes", "Bars and Pubs", "Construction Firms"],
+                list(INDUSTRY_THRESHOLDS.keys()),
+                index=list(INDUSTRY_THRESHOLDS.keys()).index("Other"),
                 key="dc_ind",
             )
             features = _get_features_from_json(json_data, directors_score, company_age_months, industry)

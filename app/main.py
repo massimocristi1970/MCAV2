@@ -41,6 +41,12 @@ from dataclasses import asdict
 
 from mca_scorecard_rules import decide_application, Thresholds
 from build_training_dataset import _flatten_transactions, build_mca_features
+from app.config.industry_config import (
+    DIRECTOR_SCORE_PASS_THRESHOLD,
+    INDUSTRY_THRESHOLDS as CANONICAL_INDUSTRY_THRESHOLDS,
+    get_industry_thresholds,
+    get_sector_risk,
+)
 
 # --- TU XML Scorecard (Director) ---
 from src.tu_scorecard.feature_extractor import extract_features_from_xml_bytes
@@ -842,7 +848,7 @@ class MLScalerInsights:
                 'Average Negative Balance Days per Month': metrics.get("Average Negative Balance Days per Month", 0),
                 'Number of Bounced Payments': metrics.get("Number of Bounced Payments", 0),
                 'Company Age (Months)': params.get('company_age_months', 0),
-                'Sector_Risk': 1 if params.get('industry', '') in ['Restaurants and Cafes', 'Bars and Pubs', 'Other'] else 0
+                'Sector_Risk': get_sector_risk(params.get('industry', 'Other'))
             }
             
             # Calculate z-scores and identify issues
@@ -1136,184 +1142,186 @@ INDUSTRY_THRESHOLDS = dict(sorted({
     'Medical Practices (GPs, Clinics, Dentists)': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 1000, 'Operating Margin': 0.10,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 16000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 900,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 900,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'Pharmacies (Independent or Small Chains)': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 500, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 15000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 750,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'Business Consultants': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 1000, 'Operating Margin': 0.09,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.08, 'Gross Burn Rate': 14000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 750,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'IT Services and Support Companies': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 500, 'Operating Margin': 0.12,
         'Revenue Growth Rate': 0.07, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'Courier Services (Independent and Regional Operators)': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 500, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 12000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 600,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'Grocery Stores and Mini-Markets': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 500, 'Operating Margin': 0.07,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 10000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 600,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Education': {
         'Debt Service Coverage Ratio': 1.45, 'Net Income': 1500, 'Operating Margin': 0.10,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.09, 'Gross Burn Rate': 11500,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Engineering': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 7000, 'Operating Margin': 0.07,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Estate Agent': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 4500, 'Operating Margin': 0.09,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 0, 'Number of Bounced Payments': 0,
     },
     'Food Service': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 2500, 'Operating Margin': 0.06,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 11000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Import / Export': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 3000, 'Operating Margin': 0.07,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.15, 'Gross Burn Rate': 11000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Manufacturing': {
         'Debt Service Coverage Ratio': 1.60, 'Net Income': 1500, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 13500,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 750,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Marketing / Advertising / Design': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 5000, 'Operating Margin': 0.11,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 13500,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 750,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 750,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Off-Licence Business': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 4500, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.11, 'Gross Burn Rate': 14000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 650,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Telecommunications': {
         'Debt Service Coverage Ratio': 1.55, 'Net Income': 5000, 'Operating Margin': 0.11,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 13000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Tradesman': {
         'Debt Service Coverage Ratio': 1.40, 'Net Income': 4000, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.15, 'Gross Burn Rate': 11500,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
     'Wholesaler / Distributor': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 3500, 'Operating Margin': 0.10,
         'Revenue Growth Rate': 0.06, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 13000,
-        'Directors Score': 60, 'Sector Risk': 0, 'Average Month-End Balance': 700,
+        'Directors Score': 68, 'Sector Risk': 0, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Other': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 3000, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.13, 'Gross Burn Rate': 11000,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 700,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Personal Services': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 2000, 'Operating Margin': 0.09,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 12000,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 700,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Restaurants and Cafes': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 0, 'Operating Margin': 0.05,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 11000,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
     'Bars and Pubs': {
         'Debt Service Coverage Ratio': 1.25, 'Net Income': 0, 'Operating Margin': 0.04,
         'Revenue Growth Rate': 0.03, 'Cash Flow Volatility': 0.18, 'Gross Burn Rate': 10000,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
     'Beauty Salons and Spas': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 500, 'Operating Margin': 0.06,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 9500,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 550,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 550,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
     'E-Commerce Retailers': {
         'Debt Service Coverage Ratio': 1.35, 'Net Income': 1000, 'Operating Margin': 0.07,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 10000,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Event Planning and Management Firms': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 500, 'Operating Margin': 0.05,
         'Revenue Growth Rate': 0.03, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 10000,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Auto Repair Shops': {
         'Debt Service Coverage Ratio': 1.40, 'Net Income': 1000, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.12, 'Gross Burn Rate': 9500,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 650,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Fitness Centres and Gyms': {
         'Debt Service Coverage Ratio': 1.35, 'Net Income': 500, 'Operating Margin': 0.06,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.18, 'Gross Burn Rate': 10000,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Construction Firms': {
         'Debt Service Coverage Ratio': 1.30, 'Net Income': 1000, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.16, 'Gross Burn Rate': 12500,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 700,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 700,
         'Average Negative Balance Days per Month': 2, 'Number of Bounced Payments': 0,
     },
     'Printing / Publishing': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 2500, 'Operating Margin': 0.08,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11000,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 650,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 650,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Recruitment': {
         'Debt Service Coverage Ratio': 1.50, 'Net Income': 2000, 'Operating Margin': 0.09,
         'Revenue Growth Rate': 0.05, 'Cash Flow Volatility': 0.10, 'Gross Burn Rate': 13000,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 600,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 600,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
     'Retail': {
         'Debt Service Coverage Ratio': 1.40, 'Net Income': 2500, 'Operating Margin': 0.09,
         'Revenue Growth Rate': 0.04, 'Cash Flow Volatility': 0.14, 'Gross Burn Rate': 11500,
-        'Directors Score': 60, 'Sector Risk': 1, 'Average Month-End Balance': 620,
+        'Directors Score': 68, 'Sector Risk': 1, 'Average Month-End Balance': 620,
         'Average Negative Balance Days per Month': 1, 'Number of Bounced Payments': 0,
     },
 }.items()))
+
+INDUSTRY_THRESHOLDS = CANONICAL_INDUSTRY_THRESHOLDS
 
 # Scoring weights
 WEIGHTS = {
@@ -1521,8 +1529,8 @@ def calculate_financial_metrics(data, company_age_months):
 def calculate_all_scores_enhanced(metrics, params):
     """Enhanced scoring calculation with better debugging and subprime scoring"""
     print = builtins.print if DEBUG_MODE else (lambda *args, **kwargs: None)
-    industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
-    sector_risk = industry_thresholds['Sector Risk']
+    industry_thresholds = get_industry_thresholds(params['industry'])
+    sector_risk = get_sector_risk(params['industry'])
     
     print(f"\n🎯 DEBUG - Scoring Calculation:")
     print(f"  Industry: {params['industry']}")
@@ -3891,7 +3899,7 @@ def render_full_financial_dashboard(
 
     # Create metrics table
     metrics_data = []
-    industry_thresholds = INDUSTRY_THRESHOLDS[params['industry']]
+    industry_thresholds = get_industry_thresholds(params['industry'])
 
     for metric, value in metrics.items():
         if metric in industry_thresholds and metric != 'monthly_summary':

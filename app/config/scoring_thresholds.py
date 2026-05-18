@@ -14,6 +14,8 @@ Changes to thresholds should only be made in this file.
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple, Any
 
+from app.config.industry_config import DIRECTOR_SCORE_PASS_THRESHOLD
+
 
 @dataclass(frozen=True)
 class MetricThreshold:
@@ -78,7 +80,7 @@ class ScoringThresholds:
     # Directors Score (higher is better)
     # Personal creditworthiness
     DIRECTORS: MetricThreshold = field(default_factory=lambda: MetricThreshold(
-        full_points=78,
+        full_points=DIRECTOR_SCORE_PASS_THRESHOLD,
         tiers=(
             (60, 0.80),
             (50, 0.55),

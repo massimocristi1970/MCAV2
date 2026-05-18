@@ -5,6 +5,8 @@ import numpy as np
 import joblib
 from typing import Dict, Any, Tuple, List, Optional
 
+from ..config.industry_config import DIRECTOR_SCORE_PASS_THRESHOLD, get_sector_risk
+
 # Import the subprime scoring system
 try:
     from ..services.subprime_scoring_system import SubprimeScoring
@@ -141,7 +143,7 @@ def calculate_weighted_scores(
                     
         elif metric == 'Directors Score':
             directors = params.get('directors_score', 0)
-            threshold = industry_thresholds.get('Directors Score', 75)
+            threshold = industry_thresholds.get('Directors Score', DIRECTOR_SCORE_PASS_THRESHOLD)
             if use_continuous:
                 weighted_score += _score_continuous(directors, threshold, weight, lower_is_better=False)
             else:
@@ -240,7 +242,7 @@ def calculate_weighted_scores_detailed(
                 
         elif metric == 'Directors Score':
             directors = params.get('directors_score', 0)
-            threshold = industry_thresholds.get('Directors Score', 75)
+            threshold = industry_thresholds.get('Directors Score', DIRECTOR_SCORE_PASS_THRESHOLD)
             entry['value'] = directors
             entry['threshold'] = threshold
             
@@ -363,7 +365,7 @@ def calculate_ml_score(
             'Average Negative Balance Days per Month': metrics.get("Average Negative Balance Days per Month", 0),
             'Number of Bounced Payments': metrics.get("Number of Bounced Payments", 0),
             'Company Age (Months)': params.get('company_age_months', 0),
-            'Sector_Risk': 1 if params.get('industry', '') in ['Restaurants and Cafes', 'Bars and Pubs', 'Other'] else 0
+            'Sector_Risk': get_sector_risk(params.get('industry', 'Other'))
         }
         
         features_df = pd.DataFrame([features])

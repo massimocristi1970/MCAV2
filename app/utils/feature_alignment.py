@@ -16,6 +16,8 @@ import pandas as pd
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 
+from app.config.industry_config import get_sector_risk
+
 
 class FeatureAligner:
     """
@@ -257,9 +259,7 @@ class FeatureAligner:
         if 'company_age_months' in params:
             aligned['Company Age (Months)'] = params['company_age_months']
         if 'industry' in params:
-            # Simple sector risk mapping
-            high_risk_industries = ['Restaurants and Cafes', 'Bars and Pubs', 'Construction Firms']
-            aligned['Sector_Risk'] = 1 if params['industry'] in high_risk_industries else 0
+            aligned['Sector_Risk'] = get_sector_risk(params['industry'])
             aligned['Sector Risk'] = aligned['Sector_Risk']
         
         return aligned
