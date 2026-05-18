@@ -6,7 +6,9 @@ WORKDIR /app
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
-ENV STREAMLIT_SERVER_PORT=8501
+ENV APP_ENTRYPOINT=app/main.py
+ENV PORT=8501
+ENV STREAMLIT_SERVER_PORT=${PORT}
 ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
 
 # Install system dependencies
@@ -35,10 +37,10 @@ USER app
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+    CMD curl -f "http://localhost:${PORT}/_stcore/health" || exit 1
 
 # Expose port
 EXPOSE 8501
 
-# Run the application
-CMD ["streamlit", "run", "app/main.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# Run the selected Streamlit application. Render provides PORT at runtime.
+CMD ["sh", "-c", "streamlit run \"$APP_ENTRYPOINT\" --server.port=\"${PORT:-8501}\" --server.address=0.0.0.0 --server.headless=true"]

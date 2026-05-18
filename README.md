@@ -154,6 +154,30 @@ make dev        # Run in development mode
 make stop       # Stop all services
 ```
 
+### Render Deployment
+
+This repo includes a `render.yaml` blueprint for running the two Streamlit apps as
+separate Render web services from the same Dockerfile:
+
+| Service | Entrypoint |
+|---------|------------|
+| `mcav2-main` | `app/main.py` |
+| `mcav2-batch-processor` | `MCAV2_BatchProcessor/batch_processor_standalone.py` |
+
+To deploy:
+
+1. Push the repo to GitHub.
+2. In Render, create a new Blueprint from the repo.
+3. Review the two services and deploy them.
+4. Add any required secrets in Render service environment variables, such as
+   `PLAID_CLIENT_ID`, `PLAID_SECRET`, or `SECRET_KEY`.
+
+Render provides the runtime `PORT`, and the Dockerfile starts Streamlit with that
+port automatically. Free web services are suitable for demos and internal testing,
+but they use an ephemeral filesystem and may spin down when idle. Download batch
+outputs from the UI, or move saved runs to durable storage before relying on them
+as production records.
+
 ---
 
 ## Usage

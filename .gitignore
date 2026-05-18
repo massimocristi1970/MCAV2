@@ -23,6 +23,7 @@ env/
 .env
 logs/
 MCAV2_BatchProcessor/saved_runs/
+.codex-tools/
 
 # Persisted scorecard runs (local monitoring / modelling data)
 data/app_runs/*

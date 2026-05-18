@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: mcav2-main
+    runtime: docker
+    plan: free
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: APP_ENTRYPOINT
+        value: app/main.py
+      - key: APP_NAME
+        value: Business Finance Scorecard
+      - key: APP_VERSION
+        value: 2.0.0
+      - key: DEBUG
+        value: "False"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: SAVE_APP_RUNS
+        value: "false"
+
+  - type: web
+    name: mcav2-batch-processor
+    runtime: docker
+    plan: free
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: APP_ENTRYPOINT
+        value: MCAV2_BatchProcessor/batch_processor_standalone.py
+      - key: APP_NAME
+        value: MCA v2 Batch Processor
+      - key: APP_VERSION
+        value: 2.0.0
+      - key: DEBUG
+        value: "False"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: MCAV2_BATCH_SAVED_RUNS_DIR
+        value: /tmp/mcav2-batch-saved-runs

@@ -133,11 +133,13 @@ Thumbs.db
 docs/_build/
 *.md
 
-# Model files (should be explicitly mounted)
-*.pkl
+# Large model formats that are not used by the Streamlit deployments.
 *.joblib
 *.h5
 *.pb
+
+# Local batch run history can be huge and is recreated at runtime when needed.
+MCAV2_BatchProcessor/saved_runs/
 
 # Temporary files
 tmp/
