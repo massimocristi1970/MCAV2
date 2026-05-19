@@ -262,6 +262,8 @@ class CardTerminalIngestionService:
                 return self._parse_stripe_balance_report_pdf(filename, text)
             if self._is_paypal_merchant_statement_pdf(text):
                 return self._parse_paypal_merchant_statement_pdf(filename, text)
+            if self._is_zempler_business_statement_pdf(text, filename):
+                return self._parse_zempler_business_statement_pdf(filename, text)
             provider_hint = self._detect_provider_hint(f"{filename} {text[:8000]}")
             if provider_hint:
                 prof = get_provider_profile(provider_hint)
@@ -490,6 +492,139 @@ class CardTerminalIngestionService:
             raw_summary={"text_length": len(text)},
             extraction_diagnostics={
                 "profile": "PayPal",
+                "fields": {
+                    "gross_card_sales": gross > 0,
+                    "fees_total": fees > 0,
+                    "period_end": period_end is not None,
+                    "merchant_id": merchant_id is not None,
+                },
+                "fallback_used": gross <= 0,
+            },
+        )
+
+    _zempler_statement_row_re = re.compile(
+        r"^(\d{2}/\d{2}/\d{4})\s+(\d{4})\s+(.+?)\s+(-?£[\d,]+\.?\d*)\s+(-?£[\d,]+\.?\d*)\s*$",
+        re.MULTILINE,
+    )
+
+    def _is_zempler_business_statement_pdf(self, text: str, filename: str = "") -> bool:
+        """Zempler (formerly Cashplus) business account PDF with card settlement lines."""
+        t = text or ""
+        fn = (filename or "").lower()
+        if "zempler" in fn or "zemplar" in fn:
+            if re.search(r"From\s+\d{2}/\d{2}/\d{4}\s+to\s+\d{2}/\d{2}/\d{4}", t, re.IGNORECASE):
+                return True
+        has_header = bool(
+            re.search(r"Date\s+Card\s+ending\s+in\s+Description\s+Amount\s+Balance", t, re.IGNORECASE)
+        )
+        has_period = bool(re.search(r"From\s+\d{2}/\d{2}/\d{4}\s+to\s+\d{2}/\d{2}/\d{4}", t, re.IGNORECASE))
+        has_account = bool(re.search(r"Business\s+Account", t, re.IGNORECASE))
+        has_sort = "08-71-99" in t or "087199" in re.sub(r"\s+", "", t)
+        return has_header and has_period and has_account and has_sort
+
+    @staticmethod
+    def _is_zempler_card_settlement_credit(description: str, amount: float) -> bool:
+        """Positive credits that represent card/acquirer remittances on a Zempler business account."""
+        if amount <= 0:
+            return False
+        d = description or ""
+        if re.search(r"YL\s*III\s+Limited.*FND", d, re.IGNORECASE):
+            return False
+        if re.search(r"US\s+Bank\s+Europe", d, re.IGNORECASE):
+            return True
+        if re.search(r"YouLend\s+Limited.*\bEMS\d", d, re.IGNORECASE):
+            return True
+        if re.search(r"YouLend\s+Limited\s+YL\d+OUT", d, re.IGNORECASE):
+            return True
+        if re.search(r"YouLend\s+Limited.*SumUp\s+payment", d, re.IGNORECASE):
+            return True
+        if re.search(r"Sent\s+from\s+SumUp", d, re.IGNORECASE):
+            return True
+        return False
+
+    @staticmethod
+    def _is_zempler_card_fee(description: str, amount: float) -> bool:
+        if amount >= 0:
+            return False
+        if "Electronic Payment Fee" in (description or ""):
+            return True
+        return (description or "").strip() == "Annual Fee"
+
+    def _parse_zempler_transaction_rows(self, text: str) -> List[tuple[str, float]]:
+        rows: List[tuple[str, float]] = []
+        for m in self._zempler_statement_row_re.finditer(text or ""):
+            rows.append((m.group(3).strip(), self._to_float(m.group(4))))
+        return rows
+
+    def _parse_zempler_business_statement_pdf(self, filename: str, text: str) -> ParseResult:
+        """Zempler business account PDF: aggregate card settlement/remittance credits and payment fees."""
+        warnings: List[str] = []
+        period_start: Optional[date] = None
+        period_end: Optional[date] = None
+
+        m_per = re.search(
+            r"From\s+(\d{2}/\d{2}/\d{4})\s+to\s+(\d{2}/\d{2}/\d{4})",
+            text,
+            re.IGNORECASE,
+        )
+        if m_per:
+            s = pd.to_datetime(m_per.group(1), dayfirst=True, errors="coerce")
+            e = pd.to_datetime(m_per.group(2), dayfirst=True, errors="coerce")
+            period_start = s.date() if pd.notna(s) else None
+            period_end = e.date() if pd.notna(e) else None
+        if period_end is None:
+            warnings.append("Could not parse Zempler statement period (From … to …).")
+
+        merchant_id = None
+        m_acct = re.search(r"Account\s+number:\s*(\d+)", text, re.IGNORECASE)
+        if m_acct:
+            merchant_id = m_acct.group(1).strip()
+        m_co = re.search(r"Account\s+held\s+under\s+company\s+name:\s*(.+)", text, re.IGNORECASE)
+        company_name = m_co.group(1).strip() if m_co else None
+
+        rows = self._parse_zempler_transaction_rows(text)
+        gross = 0.0
+        fees = 0.0
+        txn_count = 0
+        for desc, amt in rows:
+            if self._is_zempler_card_settlement_credit(desc, amt):
+                gross += amt
+                txn_count += 1
+            elif self._is_zempler_card_fee(desc, amt):
+                fees += abs(amt)
+
+        currency = "GBP"
+        if gross <= 0 and txn_count == 0:
+            warnings.append("No card settlement credits found (EMS / YouLend OUT / SumUp remittance lines).")
+        warnings.append(
+            "Parsed as Zempler business account PDF (native): gross is the sum of card "
+            "settlement/remittance credits; Kal Pay and internal transfers are excluded."
+        )
+
+        confidence = 0.9 if gross > 0 and period_end is not None else 0.65
+
+        return ParseResult(
+            filename=filename,
+            provider="Zempler",
+            parser="zempler_business_account_pdf_v1",
+            merchant_id=merchant_id,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency=currency,
+            gross_card_sales=float(gross),
+            refunds_amount=0.0,
+            chargebacks_amount=0.0,
+            fees_total=float(fees),
+            transaction_count=int(txn_count),
+            confidence=confidence,
+            warnings=warnings,
+            raw_summary={
+                "text_length": len(text),
+                "company_name": company_name,
+                "transaction_rows_parsed": len(rows),
+            },
+            extraction_diagnostics={
+                "profile": "Zempler",
                 "fields": {
                     "gross_card_sales": gross > 0,
                     "fees_total": fees > 0,
