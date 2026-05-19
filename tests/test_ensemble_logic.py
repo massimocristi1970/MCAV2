@@ -214,3 +214,71 @@ def test_primary_reason_explains_threshold_not_first_risk_factor():
     assert any("High cash flow volatility" in r for r in result["risk_factors"])
     assert "High cash flow volatility" not in result["primary_reason"]
 
+
+@pytest.mark.unit
+def test_calibrated_overlay_caps_approval_to_referral():
+    result = get_ensemble_recommendation(
+        scores={
+            "mca_score": 86,
+            "mca_decision": "APPROVE",
+            "subprime_score": 82,
+            "ml_score": None,
+        },
+        metrics={
+            **_strong_metrics(),
+            "Net Income": -2500,
+            "Operating Margin": 0.08,
+        },
+        params=_strong_params(),
+    )
+
+    assert result["decision"] == "REFER"
+    assert result["combined_score"] >= 75
+    assert "calibrated risk overlays cap" in result["primary_reason"].lower()
+    assert result["detailed_breakdown"]["calibration_risk_overlays"]["severe_count"] == 1
+
+
+@pytest.mark.unit
+def test_stacked_calibrated_overlays_decline():
+    result = get_ensemble_recommendation(
+        scores={
+            "mca_score": 88,
+            "mca_decision": "APPROVE",
+            "subprime_score": 84,
+            "ml_score": None,
+        },
+        metrics={
+            **_strong_metrics(),
+            "Net Income": -2500,
+            "Operating Margin": -0.05,
+        },
+        params=_strong_params(),
+    )
+
+    assert result["decision"] == "DECLINE"
+    assert "Calibrated risk overlays trigger decline" in result["primary_reason"]
+    assert result["detailed_breakdown"]["calibration_risk_overlays"]["decline_overlay"] is True
+
+
+@pytest.mark.unit
+def test_single_mca_serious_signal_is_not_hard_stop():
+    result = get_ensemble_recommendation(
+        scores={
+            "mca_score": 75,
+            "mca_decision": "REFER",
+            "mca_rule_signals": {
+                "inflow_days_30d": 6,
+                "max_inflow_gap_days": 4,
+                "inflow_cv": 0.4,
+            },
+            "subprime_score": 82,
+            "ml_score": None,
+        },
+        metrics=_strong_metrics(),
+        params=_strong_params(),
+    )
+
+    assert result["decision"] == "REFER"
+    assert result["combined_score"] > 75
+    assert result["score_convergence"] != "N/A - Hard Stop"
+

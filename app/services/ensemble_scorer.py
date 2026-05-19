@@ -90,6 +90,19 @@ class EnsembleScorer:
         'approve_min': 65,
         'refer_min': 60,
     }
+
+    # Exploratory overlays from the 2026-05-19 saved batch run. They are used
+    # as decision caps/decline overlays, not as permanent scorecard truth.
+    CALIBRATION_RISK_THRESHOLDS = {
+        'net_income_critical_max': -1700.19,
+        'operating_margin_critical_max': -0.019,
+        'director_defaults_36m_min': 3,
+        'ob_revenue_active_day_rate_max': 0.463,
+        'company_age_months_young_max': 33,
+        'ob_weakest_month_revenue_max': 616.91,
+        'debt_to_income_ratio_max': 0.23925,
+        'ob_non_revenue_inflow_ratio_min': 0.3265,
+    }
     
     # Hard stop conditions that override ensemble.
     # MCA transaction weakness is only a hard stop when the underlying signal is
@@ -153,7 +166,7 @@ class EnsembleScorer:
         adjusted_score = combined_score - convergence_penalty
         
         # Determine decision
-        decision = self._determine_decision(adjusted_score, scores, params)
+        decision = self._determine_decision(adjusted_score, scores, metrics, params)
         
         # Calculate confidence
         confidence = self._calculate_confidence(scoring_results, convergence)
@@ -210,6 +223,8 @@ class EnsembleScorer:
                     "Subprime gates cap approvals when the comprehensive profile is weak."
                 ),
                 'subprime_decision_gates': self.SUBPRIME_DECISION_GATES,
+                'calibration_risk_overlays': self._get_calibration_risk_overlays(metrics, params),
+                'calibration_risk_thresholds': self.CALIBRATION_RISK_THRESHOLDS,
                 'informational_scores': {
                     name: round(result.score, 1)
                     for name, result in scoring_results.items()
@@ -282,45 +297,179 @@ class EnsembleScorer:
         if not mca_decision or str(mca_decision).upper() != 'DECLINE':
             return False
 
-        mca_score = scores.get('mca_score', params.get('mca_rule_score'))
-        try:
-            if mca_score is not None and float(mca_score) <= 20:
-                return True
-        except (TypeError, ValueError):
-            pass
-
         signals = params.get('mca_rule_signals') or scores.get('mca_rule_signals') or {}
+        serious_count = 0
         try:
             inflow_days = signals.get('inflow_days_30d')
             if inflow_days is not None and float(inflow_days) <= 8:
-                return True
+                serious_count += 1
         except (TypeError, ValueError):
             pass
 
         try:
             max_gap = signals.get('max_inflow_gap_days')
             if max_gap is not None and float(max_gap) >= 21:
-                return True
+                serious_count += 1
         except (TypeError, ValueError):
             pass
 
         try:
             inflow_cv = signals.get('inflow_cv')
             if inflow_cv is not None and float(inflow_cv) >= 1.3:
+                serious_count += 1
+        except (TypeError, ValueError):
+            pass
+
+        if serious_count >= 2:
+            return True
+
+        mca_score = scores.get('mca_score', params.get('mca_rule_score'))
+        try:
+            if serious_count >= 1 and mca_score is not None and float(mca_score) < 50:
                 return True
         except (TypeError, ValueError):
             pass
 
         reasons = scores.get('mca_reasons') or scores.get('mca_rule_reasons') or params.get('mca_rule_reasons') or []
         reason_text = " | ".join(str(reason).lower() for reason in reasons)
-        severe_markers = [
-            "inflow_days_30d<=",
-            "max_inflow_gap_days>=",
-            "inflow_cv>=",
-            "all three mca",
-            "severe",
-        ]
-        return any(marker in reason_text for marker in severe_markers)
+        return "mca decline:" in reason_text and serious_count >= 2
+
+    def _metric_value(self, metrics: Dict[str, Any], params: Dict[str, Any], *names: str) -> Any:
+        for name in names:
+            if name in metrics and metrics.get(name) is not None:
+                return metrics.get(name)
+            if name in params and params.get(name) is not None:
+                return params.get(name)
+        return None
+
+    def _as_float(self, value: Any) -> Optional[float]:
+        try:
+            if value is None or value == "":
+                return None
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    def _get_calibration_risk_overlays(
+        self,
+        metrics: Dict[str, Any],
+        params: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Return threshold overlays found in the latest labelled-run analysis."""
+        t = self.CALIBRATION_RISK_THRESHOLDS
+        overlays: List[Dict[str, Any]] = []
+
+        def add_if(condition: bool, severity: str, label: str, value: Any, threshold: Any) -> None:
+            if condition:
+                overlays.append({
+                    'severity': severity,
+                    'label': label,
+                    'value': value,
+                    'threshold': threshold,
+                })
+
+        net_income = self._as_float(self._metric_value(metrics, params, 'Net Income', 'net_income'))
+        add_if(
+            net_income is not None and net_income <= t['net_income_critical_max'],
+            'severe',
+            'Net income below calibrated risk threshold',
+            net_income,
+            t['net_income_critical_max'],
+        )
+
+        operating_margin = self._as_float(self._metric_value(metrics, params, 'Operating Margin', 'operating_margin'))
+        add_if(
+            operating_margin is not None and operating_margin <= t['operating_margin_critical_max'],
+            'severe',
+            'Operating margin below calibrated risk threshold',
+            operating_margin,
+            t['operating_margin_critical_max'],
+        )
+
+        director_defaults_36m = self._as_float(self._metric_value(params, metrics, 'director_defaults_36m', 'Director Defaults 36m'))
+        add_if(
+            director_defaults_36m is not None and director_defaults_36m >= t['director_defaults_36m_min'],
+            'severe',
+            'Director defaults 36m above calibrated risk threshold',
+            director_defaults_36m,
+            t['director_defaults_36m_min'],
+        )
+
+        revenue_active_rate = self._as_float(self._metric_value(
+            metrics,
+            params,
+            'OB Revenue Active Day Rate',
+            'ob_revenue_active_day_rate',
+            'revenue_active_day_rate',
+        ))
+        add_if(
+            revenue_active_rate is not None and revenue_active_rate <= t['ob_revenue_active_day_rate_max'],
+            'moderate',
+            'Revenue active day rate below calibrated risk threshold',
+            revenue_active_rate,
+            t['ob_revenue_active_day_rate_max'],
+        )
+
+        age = self._as_float(self._metric_value(params, metrics, 'company_age_months', 'Company Age Months'))
+        add_if(
+            age is not None and age <= t['company_age_months_young_max'],
+            'moderate',
+            'Company age below calibrated risk threshold',
+            age,
+            t['company_age_months_young_max'],
+        )
+
+        weakest_month = self._as_float(self._metric_value(
+            metrics,
+            params,
+            'OB Weakest Month Revenue',
+            'ob_weakest_month_revenue',
+            'weakest_month_revenue',
+        ))
+        add_if(
+            weakest_month is not None and weakest_month <= t['ob_weakest_month_revenue_max'],
+            'moderate',
+            'Weakest month revenue below calibrated risk threshold',
+            weakest_month,
+            t['ob_weakest_month_revenue_max'],
+        )
+
+        dti = self._as_float(self._metric_value(metrics, params, 'Debt-to-Income Ratio', 'Debt to Income Ratio', 'debt_to_income_ratio'))
+        add_if(
+            dti is not None and dti >= t['debt_to_income_ratio_max'],
+            'moderate',
+            'Debt-to-income ratio above calibrated risk threshold',
+            dti,
+            t['debt_to_income_ratio_max'],
+        )
+
+        non_revenue_ratio = self._as_float(self._metric_value(
+            metrics,
+            params,
+            'OB Non-Revenue Inflow Ratio',
+            'ob_non_revenue_inflow_ratio',
+            'non_revenue_inflow_ratio',
+        ))
+        add_if(
+            non_revenue_ratio is not None and non_revenue_ratio >= t['ob_non_revenue_inflow_ratio_min'],
+            'moderate',
+            'Non-revenue inflow ratio above calibrated risk threshold',
+            non_revenue_ratio,
+            t['ob_non_revenue_inflow_ratio_min'],
+        )
+
+        severe_count = sum(1 for overlay in overlays if overlay['severity'] == 'severe')
+        moderate_count = sum(1 for overlay in overlays if overlay['severity'] == 'moderate')
+        total_count = len(overlays)
+
+        return {
+            'items': overlays,
+            'severe_count': severe_count,
+            'moderate_count': moderate_count,
+            'total_count': total_count,
+            'decline_overlay': severe_count >= 2 or total_count >= 4,
+            'refer_overlay': severe_count >= 1 or total_count >= 2,
+        }
     
     def _collect_scores(self, scores: Dict[str, Any]) -> Dict[str, ScoringResult]:
         """Collect and normalize scores from different systems."""
@@ -420,9 +569,14 @@ class EnsembleScorer:
         self,
         score: float,
         scores: Dict[str, Any],
+        metrics: Dict[str, Any],
         params: Dict[str, Any]
     ) -> Decision:
         """Determine final decision based on score and context."""
+        overlays = self._get_calibration_risk_overlays(metrics, params)
+
+        if overlays['decline_overlay']:
+            return Decision.DECLINE
         
         # Get MCA rule decision (important - based on transaction consistency)
         mca_decision = scores.get('mca_decision') or params.get('mca_rule_decision')
@@ -465,6 +619,8 @@ class EnsembleScorer:
         # itself. The weighted score must still meet the relevant band.
         if mca_decision == 'APPROVE':
             if score >= self.THRESHOLDS['approve']:
+                if overlays['refer_overlay']:
+                    return Decision.REFER
                 return Decision.APPROVE
             elif score >= self.THRESHOLDS['senior_review']:
                 return Decision.REFER
@@ -473,6 +629,8 @@ class EnsembleScorer:
         
         # Standard threshold-based decision (no MCA decision or unknown)
         if score >= self.THRESHOLDS['approve']:
+            if overlays['refer_overlay']:
+                return Decision.REFER
             return Decision.APPROVE
         elif score >= self.THRESHOLDS['senior_review']:
             return Decision.REFER
@@ -512,6 +670,18 @@ class EnsembleScorer:
         """Identify key risk factors from metrics and params."""
         
         risk_factors = []
+
+        overlays = self._get_calibration_risk_overlays(metrics, params)
+        for overlay in overlays['items']:
+            value = overlay['value']
+            threshold = overlay['threshold']
+            if isinstance(value, float):
+                value_text = f"{value:.3f}"
+            else:
+                value_text = str(value)
+            risk_factors.append(
+                f"Calibration overlay: {overlay['label']} ({value_text} vs {threshold})"
+            )
         
         # DSCR risks
         dscr = metrics.get('Debt Service Coverage Ratio', 1.0)
@@ -597,7 +767,7 @@ class EnsembleScorer:
         if recent_nsf > 0:
             risk_factors.append(f"Recent unpaid/NSF activity ({recent_nsf} in 90 days)")
         
-        return risk_factors[:5]  # Top 5 risk factors
+        return risk_factors[:8]  # Keep overlays visible, then the strongest standard factors.
     
     def _identify_positive_factors(
         self,
@@ -781,6 +951,33 @@ class EnsembleScorer:
                 f"for {convergence.lower()} between MCA and Subprime."
             )
 
+        if subprime is not None:
+            if subprime < self.SUBPRIME_DECISION_GATES['refer_min']:
+                return (
+                    f"Subprime score {subprime:.1f} is below the referral threshold/minimum referral gate, so the case is declined "
+                    f"even though the weighted score is {score:.1f} ({score_context}).{penalty_text}"
+                )
+            if subprime < self.SUBPRIME_DECISION_GATES['approve_min'] and decision == Decision.REFER:
+                return (
+                    f"Subprime score {subprime:.1f} caps the case at referral; MCA score alone is not enough "
+                    f"to approve ({score_context}).{penalty_text}"
+                )
+
+        overlay_factors = [factor for factor in risk_factors if factor.startswith("Calibration overlay:")]
+        if len(overlay_factors) >= 2 and decision == Decision.DECLINE:
+            return (
+                f"Calibrated risk overlays trigger decline despite weighted MCA/Subprime score "
+                f"{score:.1f} ({score_context}). Main overlay: "
+                f"{overlay_factors[0].replace('Calibration overlay: ', '')}.{penalty_text}"
+            )
+
+        if overlay_factors and decision == Decision.REFER and score >= self.THRESHOLDS['approve']:
+            return (
+                f"Weighted MCA/Subprime score {score:.1f} supports approval, but calibrated risk "
+                f"overlays cap the case at referral ({score_context}). Main overlay: "
+                f"{overlay_factors[0].replace('Calibration overlay: ', '')}.{penalty_text}"
+            )
+
         if mca_decision == "DECLINE" and decision == Decision.REFER:
             return (
                 f"Weighted MCA/Subprime score {score:.1f} was not an automatic decline, "
@@ -793,18 +990,6 @@ class EnsembleScorer:
                 f"Weighted MCA/Subprime score {score:.1f} supports approval, but borderline MCA "
                 f"transaction consistency caps the decision at referral ({score_context}).{penalty_text}"
             )
-
-        if subprime is not None:
-            if subprime < self.SUBPRIME_DECISION_GATES['refer_min']:
-                return (
-                    f"Subprime score {subprime:.1f} is below the minimum referral gate, so the case is declined "
-                    f"even though the weighted score is {score:.1f} ({score_context}).{penalty_text}"
-                )
-            if subprime < self.SUBPRIME_DECISION_GATES['approve_min'] and decision == Decision.REFER:
-                return (
-                    f"Subprime score {subprime:.1f} caps the case at referral; MCA score alone is not enough "
-                    f"to approve ({score_context}).{penalty_text}"
-                )
         
         if decision == Decision.APPROVE:
             return f"Weighted MCA/Subprime score {score:.1f} meets approval threshold ({score_context})."

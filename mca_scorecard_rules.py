@@ -25,6 +25,12 @@ class Thresholds:
     months_covered_min: int = 2
     txn_count_avg_month_min: float = 40.0
 
+    # Decision policy: one weak MCA signal should normally refer, not kill the
+    # case. Two or more serious transaction consistency failures can decline.
+    serious_signal_decline_count: int = 2
+    approve_min_score: int = 75
+    refer_min_score: int = 50
+
 
 def _is_nan(x: Any) -> bool:
     try:
@@ -54,22 +60,32 @@ def decide_application(features: Dict[str, Any], t: Thresholds = Thresholds()) -
     months_covered = features.get("months_covered")
     txn_count_avg_month = features.get("txn_count_avg_month")
 
+    soft_flags = 0
+    serious_flags = 0
+
     # ---- Data sufficiency (kept soft: REFER not DECLINE) ----
     if _is_nan(months_covered) or int(months_covered) < t.months_covered_min:
         reasons.append(f"Data sufficiency: months_covered<{t.months_covered_min} (REFER)")
+        soft_flags += 1
     if _is_nan(txn_count_avg_month) or float(txn_count_avg_month) < t.txn_count_avg_month_min:
         reasons.append(f"Low activity: txn_count_avg_month<{t.txn_count_avg_month_min:g} (REFER)")
+        soft_flags += 1
 
-    # ---- Hard DECLINE rules (core MCA consistency) ----
-    # If inflow days are very low OR gaps are very large OR CV very high → fragile revenue
+    # ---- Core MCA consistency signals ----
+    # Each weak signal now contributes risk. A single low-inflow-days result is
+    # no longer a hard decline because the labelled batch showed it was not
+    # discriminating enough on its own.
     if not _is_nan(inflow_days_30d) and int(inflow_days_30d) <= t.inflow_days_30d_decline_max:
-        return "DECLINE", 10, [f"inflow_days_30d<= {t.inflow_days_30d_decline_max}"]
+        serious_flags += 1
+        reasons.append(f"inflow_days_30d<= {t.inflow_days_30d_decline_max} (serious)")
 
     if not _is_nan(max_gap) and float(max_gap) >= t.max_inflow_gap_days_decline_min:
-        return "DECLINE", 10, [f"max_inflow_gap_days>= {t.max_inflow_gap_days_decline_min}"]
+        serious_flags += 1
+        reasons.append(f"max_inflow_gap_days>= {t.max_inflow_gap_days_decline_min} (serious)")
 
     if not _is_nan(inflow_cv) and float(inflow_cv) >= t.inflow_cv_decline_min:
-        return "DECLINE", 10, [f"inflow_cv>= {t.inflow_cv_decline_min:g}"]
+        serious_flags += 1
+        reasons.append(f"inflow_cv>= {t.inflow_cv_decline_min:g} (serious)")
 
     # ---- APPROVE rules (strong consistency) ----
     approve_hits = 0
@@ -89,26 +105,38 @@ def decide_application(features: Dict[str, Any], t: Thresholds = Thresholds()) -
     else:
         reasons.append(f"inflow_cv>{t.inflow_cv_approve_max:g} (not strong)")
 
-    # Score (simple, explainable points)
-    score = 0
+    # Score (simple, explainable points). This deliberately remains MCA-only:
+    # financial overlays are applied in the ensemble layer where Subprime and
+    # business/director context are also available.
+    score = 100
     if not _is_nan(inflow_days_30d):
-        # 0–40 points
-        score += max(0, min(40, int(inflow_days_30d) * 2))
+        if int(inflow_days_30d) <= t.inflow_days_30d_decline_max:
+            score -= 25
+        elif int(inflow_days_30d) < t.inflow_days_30d_approve_min:
+            score -= 10
     if not _is_nan(max_gap):
-        # 0–30 points (smaller gap = better)
-        score += max(0, min(30, int(30 - float(max_gap) * 2)))
+        if float(max_gap) >= t.max_inflow_gap_days_decline_min:
+            score -= 35
+        elif float(max_gap) > t.max_inflow_gap_days_approve_max:
+            score -= 10
     if not _is_nan(inflow_cv):
-        # 0–30 points (lower cv = better)
-        score += max(0, min(30, int(30 - float(inflow_cv) * 20)))
+        if float(inflow_cv) >= t.inflow_cv_decline_min:
+            score -= 25
+        elif float(inflow_cv) > t.inflow_cv_approve_max:
+            score -= 10
+
+    score -= soft_flags * 5
+    score = max(0, min(100, int(round(score))))
 
     # If core signals are strong and there are no sufficiency flags → APPROVE
-    has_soft_flags = any("(REFER)" in r for r in reasons)
-
-    if approve_hits == 3 and not has_soft_flags:
+    if approve_hits == 3 and soft_flags == 0:
         return "APPROVE", min(100, score), ["Strong inflow consistency across all 3 core signals"]
 
-    # Otherwise REFER (review / different terms / request docs)
-    return "REFER", min(100, score), reasons
+    if serious_flags >= t.serious_signal_decline_count or score < t.refer_min_score:
+        reasons.append(f"MCA decline: {serious_flags} serious transaction consistency signals")
+        return "DECLINE", score, reasons
+
+    return "REFER", score, reasons
 
 
 def thresholds_as_dict(t: Thresholds) -> Dict[str, Any]:
@@ -121,4 +149,7 @@ def thresholds_as_dict(t: Thresholds) -> Dict[str, Any]:
         "inflow_cv_decline_min": t.inflow_cv_decline_min,
         "months_covered_min": t.months_covered_min,
         "txn_count_avg_month_min": t.txn_count_avg_month_min,
+        "serious_signal_decline_count": t.serious_signal_decline_count,
+        "approve_min_score": t.approve_min_score,
+        "refer_min_score": t.refer_min_score,
     }

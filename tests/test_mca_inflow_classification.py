@@ -3,6 +3,7 @@ import pytest
 
 from app.services.business_risk_signals import categorize_business_transactions
 from build_training_dataset import build_mca_features
+from mca_scorecard_rules import decide_application
 
 
 @pytest.mark.unit
@@ -41,3 +42,37 @@ def test_mca_features_exclude_transfers_and_loans_from_inflow_consistency():
     assert features["inflow_days_30d"] == 2
     assert features["max_inflow_gap_days"] == 22
     assert features["non_revenue_inflow_total"] == 1200
+
+
+@pytest.mark.unit
+def test_single_low_inflow_days_signal_refers_not_declines():
+    decision, score, reasons = decide_application(
+        {
+            "inflow_days_30d": 6,
+            "max_inflow_gap_days": 4,
+            "inflow_cv": 0.4,
+            "months_covered": 3,
+            "txn_count_avg_month": 80,
+        }
+    )
+
+    assert decision == "REFER"
+    assert score >= 50
+    assert any("inflow_days_30d<=" in reason for reason in reasons)
+
+
+@pytest.mark.unit
+def test_stacked_mca_consistency_failures_decline():
+    decision, score, reasons = decide_application(
+        {
+            "inflow_days_30d": 6,
+            "max_inflow_gap_days": 24,
+            "inflow_cv": 0.4,
+            "months_covered": 3,
+            "txn_count_avg_month": 80,
+        }
+    )
+
+    assert decision == "DECLINE"
+    assert score < 50
+    assert any("MCA decline" in reason for reason in reasons)

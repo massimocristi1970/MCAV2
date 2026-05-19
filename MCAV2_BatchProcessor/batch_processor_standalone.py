@@ -2335,6 +2335,8 @@ def calculate_all_scores_tightened(metrics, params):
             scores={
                 "mca_score": mca_rule.get("mca_rule_score"),
                 "mca_decision": mca_rule.get("mca_rule_decision"),
+                "mca_rule_signals": mca_rule.get("mca_rule_signals"),
+                "mca_rule_reasons": mca_rule.get("mca_rule_reasons"),
                 "subprime_score": subprime_result["subprime_score"],
                 "ml_score": ml_score,
             },

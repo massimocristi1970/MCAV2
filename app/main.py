@@ -1753,6 +1753,8 @@ def calculate_all_scores_enhanced(metrics, params):
                 'ml_score': adjusted_ml_score or ml_score,
                 'mca_score': mca_rule_score,
                 'mca_decision': mca_rule_decision,
+                'mca_rule_signals': params.get('mca_rule_signals'),
+                'mca_rule_reasons': params.get('mca_rule_reasons'),
             }
             
             ensemble_result = get_ensemble_recommendation(
