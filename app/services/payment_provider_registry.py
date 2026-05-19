@@ -21,6 +21,12 @@ PROVIDER_SPECS: List[ProviderSpec] = [
     ProviderSpec("Clover", ["clover", "fiserv", "first data"], "https://www.clover.com/"),
     ProviderSpec("Stripe", ["stripe"], "https://stripe.com/docs/reports/api"),
     ProviderSpec("SumUp", ["sumup", "sum up"], "https://developer.sumup.com/api"),
+    ProviderSpec(
+        "Zempler",
+        ["zempler", "zemplar", "cashplus", "087199", "08-71-99"],
+        "https://zemplerbank.com/",
+        notes="Business account PDF; card settlements appear as EMS / YouLend / SumUp credits.",
+    ),
     ProviderSpec("Zettle", ["zettle", "izettle", "i zettle"], "https://developer.zettle.com/docs/api/finance/user-guides/fetch-account-transactions"),
     ProviderSpec("Square", ["square"], "https://developer.squareup.com/docs"),
     ProviderSpec("Shopify Payments", ["shopify", "shopify payments"], "https://shopify.dev/docs/api"),
