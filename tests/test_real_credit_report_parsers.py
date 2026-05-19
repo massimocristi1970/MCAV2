@@ -68,3 +68,37 @@ def test_real_capital_business_pdf_extracts_bureau_signals():
     assert "Company name: FIRSTUNICORN LTD" in public_record
     assert "Company number: 15064523" in public_record
     assert "Company Status: Active" in public_record
+
+
+@pytest.mark.unit
+def test_capital_credit_score_range_is_usable_bureau_score():
+    text = """
+    Credit information Needs attention
+    Credit score
+    16 - 25
+    E
+    Credit limit Max. recommended credit
+    £500
+    Company searches
+    In the last 12 months
+    11
+    7 enquiries in last 3 months
+    Credit risk factors Needs attention
+    Total factors
+    10
+    Negative impact: 2
+    Neutral impact: 8
+    No CCJs recorded
+    """
+
+    signals = _parse_business_bureau_signals(text)
+    band, reasons = _bureau_band_from_pdf_text(text)
+    info = build_report_information(text)
+
+    assert signals["credit_score"] == 25
+    assert signals["credit_score_min"] == 16
+    assert signals["credit_score_max"] == 25
+    assert signals["credit_score_range"] == "16-25"
+    assert signals["credit_score_suppressed"] is False
+    assert band == "D (Very High Risk)"
+    assert "Credit score: 16-25" in info["Credit information"]

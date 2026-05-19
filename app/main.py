@@ -275,6 +275,19 @@ def _parse_business_bureau_signals(full_text: str) -> dict[str, object]:
     t = _norm_pdf_text(full_text or "")
     tl = t.lower()
 
+    credit_score_range = None
+    credit_score_min = None
+    credit_score_max = None
+    m_range = re.search(
+        r"\bcredit\s+score\b[\s\S]{0,80}?(\d{1,3})\s*[-–]\s*(\d{1,3})\b",
+        t,
+        re.IGNORECASE,
+    )
+    if m_range:
+        credit_score_min = int(m_range.group(1))
+        credit_score_max = int(m_range.group(2))
+        credit_score_range = f"{credit_score_min}-{credit_score_max}"
+
     credit_score = _re_first(r"\bcredit score\b\s*[\:\-]?\s*(\d{1,3})\b", t)
     credit_limit = _re_first(r"\bcredit limit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
     max_credit = _re_first(r"\bmax\.?\s*recommended\s*credit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
@@ -289,7 +302,10 @@ def _parse_business_bureau_signals(full_text: str) -> dict[str, object]:
     no_charges = "no registered mortgages or charges" in tl or "no mortgages or charges" in tl
 
     return {
-        "credit_score": int(credit_score) if credit_score else None,
+        "credit_score": credit_score_max if credit_score_range else (int(credit_score) if credit_score else None),
+        "credit_score_min": credit_score_min,
+        "credit_score_max": credit_score_max,
+        "credit_score_range": credit_score_range,
         "credit_score_suppressed": "risk score suppressed" in tl or bool(re.search(r"\bcredit score\s*-\s*risk score suppressed\b", tl)),
         "credit_limit": _money_to_int(credit_limit),
         "max_recommended_credit": _money_to_int(max_credit),
@@ -311,7 +327,10 @@ def _parse_credit_information(t: str) -> list[str]:
 
     # Credit score (often appears as "Credit score 65")
     score = signals.get("credit_score")
-    if score is not None:
+    score_range = signals.get("credit_score_range")
+    if score_range:
+        bullets.append(f"Credit score: {score_range}")
+    elif score is not None:
         bullets.append(f"Credit score: {score}")
     elif signals.get("credit_score_suppressed"):
         bullets.append("Credit score: Suppressed / unavailable")
@@ -3405,11 +3424,15 @@ def build_evidence_quality(params: dict, scores: dict, df: pd.DataFrame | None =
         },
         {
             "evidence": "Business bureau score",
-            "status": "Suppressed" if params.get("business_credit_score_suppressed") else ("Present" if params.get("business_credit_score") is not None else "Missing"),
+            "status": "Suppressed" if params.get("business_credit_score_suppressed") else ("Present" if params.get("business_credit_score_range") or params.get("business_credit_score") is not None else "Missing"),
             "detail": (
                 "Score suppressed by bureau"
                 if params.get("business_credit_score_suppressed")
-                else (f"Score {params.get('business_credit_score')}" if params.get("business_credit_score") is not None else "No usable bureau score")
+                else (
+                    f"Score {params.get('business_credit_score_range')}"
+                    if params.get("business_credit_score_range")
+                    else (f"Score {params.get('business_credit_score')}" if params.get("business_credit_score") is not None else "No usable bureau score")
+                )
             ),
         },
     ]
@@ -4306,6 +4329,9 @@ def main():
             "company_age_months": company_age_months,
             "business_ccj": business_ccj,  # now derived from PDF (not a checkbox)
             "business_credit_score": bureau_signals.get("credit_score"),
+            "business_credit_score_min": bureau_signals.get("credit_score_min"),
+            "business_credit_score_max": bureau_signals.get("credit_score_max"),
+            "business_credit_score_range": bureau_signals.get("credit_score_range"),
             "business_credit_score_suppressed": bool(bureau_signals.get("credit_score_suppressed", False)),
             "business_credit_limit": bureau_signals.get("credit_limit"),
             "business_max_recommended_credit": bureau_signals.get("max_recommended_credit"),

@@ -3341,6 +3341,19 @@ def _parse_business_bureau_signals(full_text: str) -> dict[str, object]:
     t = _norm_pdf_text(full_text or "")
     tl = t.lower()
 
+    credit_score_range = None
+    credit_score_min = None
+    credit_score_max = None
+    m_range = re.search(
+        r"\bcredit\s+score\b[\s\S]{0,80}?(\d{1,3})\s*[-–]\s*(\d{1,3})\b",
+        t,
+        re.IGNORECASE,
+    )
+    if m_range:
+        credit_score_min = int(m_range.group(1))
+        credit_score_max = int(m_range.group(2))
+        credit_score_range = f"{credit_score_min}-{credit_score_max}"
+
     credit_score = _re_first(r"\bcredit score\b\s*[\:\-]?\s*(\d{1,3})\b", t)
     credit_limit = _re_first(r"\bcredit limit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
     max_credit = _re_first(r"\bmax\.?\s*recommended\s*credit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
@@ -3351,7 +3364,10 @@ def _parse_business_bureau_signals(full_text: str) -> dict[str, object]:
     total_factors = _re_first(r"\btotal factors\s*\n?\s*(\d+)\b", t)
 
     return {
-        "business_credit_score": int(credit_score) if credit_score else None,
+        "business_credit_score": credit_score_max if credit_score_range else (int(credit_score) if credit_score else None),
+        "business_credit_score_min": credit_score_min,
+        "business_credit_score_max": credit_score_max,
+        "business_credit_score_range": credit_score_range,
         "business_credit_score_suppressed": "risk score suppressed" in tl or bool(re.search(r"\bcredit score\s*-\s*risk score suppressed\b", tl)),
         "business_credit_limit": _money_to_int(credit_limit),
         "business_max_recommended_credit": _money_to_int(max_credit),
@@ -3585,6 +3601,9 @@ def build_scorecard_features(results_df: pd.DataFrame) -> pd.DataFrame:
         "director_ccj_value",
         "business_ccj",
         "business_credit_score",
+        "business_credit_score_min",
+        "business_credit_score_max",
+        "business_credit_score_range",
         "business_credit_score_suppressed",
         "business_credit_limit",
         "business_max_recommended_credit",
@@ -3706,6 +3725,8 @@ def _numeric_calibration_features(results_df: pd.DataFrame) -> list[str]:
         "director_ccj_count",
         "director_ccj_value",
         "business_credit_score",
+        "business_credit_score_min",
+        "business_credit_score_max",
         "business_credit_limit",
         "business_max_recommended_credit",
         "business_negative_impact_count",
@@ -4053,6 +4074,8 @@ def build_evidence_quality_report(results_df: pd.DataFrame) -> pd.DataFrame:
         ("Application metadata matched", "parameters_applied_from_csv"),
         ("Business PDF matched", "bureau_pdf_file"),
         ("Business CCJ extracted", "business_ccj"),
+        ("Business bureau score", "business_credit_score"),
+        ("Business bureau score range", "business_credit_score_range"),
         ("Business bureau score suppressed", "business_credit_score_suppressed"),
         ("Business bureau negative factors", "business_negative_impact_count"),
         ("Outcome label present", "outcome_label"),
