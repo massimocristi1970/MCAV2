@@ -35,7 +35,8 @@ class TransactionCategorizer:
                     r'ubereats', r'just\s*eat', r'deliveroo', r'uber', r'bolt',
                     r'fresha', r'treatwell', r'taskrabbit', r'terminal', r'pos\s+deposit',
                     r'revolut', r'capital\s+on\s+tap', r'evo\s*payments?', r'tink',
-                    r'teya(\s+solutions)?', r'talech', r'barclaycard', r'elavon', r'adyen'
+                    r'teya(\s+solutions)?', r'talech', r'barclaycard', r'elavon', r'adyen',
+                    r'merchant\s+payout'
                 ],
                 'direct_revenue': [
                     r'sales', r'revenue', r'income', r'payment\s+received',
@@ -55,6 +56,8 @@ class TransactionCategorizer:
                 r'lendingcrowd', r'folk2folk', r'funding[\s\-]?tree', r'start[\s\-]?up[\s\-]?loans',
                 r'loan', r'advance', r'financing', r'disbursement',
                 r'you\s?lend', r'\byl\b', r'everyday[\s\-]?people[\s\-]?finance',
+                r'close\s+brother(?:s)?\s+premium\s+finance', r'finbiz\s+funding',
+                r'mercedes[\s\-]?benz\s+finance', r'motonovo\s+finance', r'bmw\s+finance',
 
                 # High street / banks
                 r'barclays', r'natwest', r'hsbc', r'lloyds', r'santander',
@@ -93,6 +96,8 @@ class TransactionCategorizer:
                 r'merchant[\s\-]?money', r'capital[\s\-]?on[\s\-]?tap', r'kriya', r'uncapped',
                 r'lendingcrowd', r'folk2folk', r'funding[\s\-]?tree', r'start[\s\-]?up[\s\-]?loans',
                 r'you\s?lend', r'\byl\b', r'everyday[\s\-]?people[\s\-]?finance',
+                r'close\s+brother(?:s)?\s+premium\s+finance', r'finbiz\s+funding',
+                r'mercedes[\s\-]?benz\s+finance', r'motonovo\s+finance', r'bmw\s+finance',
 
                 # High street / banks
                 r'barclays', r'natwest', r'hsbc', r'lloyds', r'santander',
@@ -212,6 +217,27 @@ class TransactionCategorizer:
             if confidence > self.confidence_threshold:
                 return refund_category, confidence
 
+        if is_credit:
+            non_revenue_category, confidence = self._check_non_revenue_credit_patterns(combined_text)
+            if confidence > self.confidence_threshold:
+                return non_revenue_category, confidence
+
+        if is_credit:
+            funding_category, confidence = self._check_funding_patterns(combined_text)
+            if confidence > self.confidence_threshold:
+                return funding_category, confidence
+
+        if is_credit:
+            youlend_category, confidence = self._check_youlend_patterns(combined_text)
+            if confidence > self.confidence_threshold:
+                return youlend_category, confidence
+
+        # Strong processor/revenue names beat weak Plaid transfer labels.
+        if is_credit:
+            income_category, confidence = self._check_income_patterns(combined_text)
+            if confidence > self.confidence_threshold:
+                return income_category, confidence
+
         # STEP 2.5: Separate transfers and owner funding before revenue checks
         transfer_category, confidence = self._check_transfer_patterns(
             combined_text, category, is_credit, is_debit
@@ -219,26 +245,10 @@ class TransactionCategorizer:
         if confidence > self.confidence_threshold:
             return transfer_category, confidence
 
-        if is_credit:
-            funding_category, confidence = self._check_funding_patterns(combined_text)
-            if confidence > self.confidence_threshold:
-                return funding_category, confidence
-
         if is_debit:
             bank_charge_category, confidence = self._check_bank_charge_patterns(combined_text, category)
             if confidence > self.confidence_threshold:
                 return bank_charge_category, confidence
-
-        if is_credit:
-            youlend_category, confidence = self._check_youlend_patterns(combined_text)
-            if confidence > self.confidence_threshold:
-                return youlend_category, confidence
-        
-        # STEP 3: Check for special income patterns (only for credits)
-        if is_credit:
-            income_category, confidence = self._check_income_patterns(combined_text)
-            if confidence > self.confidence_threshold:
-                return income_category, confidence
 
         # STEP 3.25: Disbursement credits should be treated as loans
         if re.search(r"disbursement", normalized_text, re.IGNORECASE):
@@ -316,6 +326,29 @@ class TransactionCategorizer:
             return "Income", 0.95
 
         return "Income", 0.9
+
+    def _check_non_revenue_credit_patterns(self, text: str) -> Tuple[str, float]:
+        """Catch non-trading credits that Plaid often marks as income."""
+        non_trading_transfer_patterns = [
+            r"\bwages?\s+pot\s+transfer\b",
+            r"\btax\s+pot\b",
+        ]
+        for pattern in non_trading_transfer_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return "Transfer In", 0.9
+
+        special_inflow_patterns = [
+            r"\bhmrc\s+vat\b",
+            r"\bhmrc\s+paye\b",
+            r"\bhmrc\s+child\s+benefit\b",
+            r"\btax\s+refund\b",
+            r"\bvat\s+refund\b",
+        ]
+        for pattern in special_inflow_patterns:
+            if re.search(pattern, text, re.IGNORECASE):
+                return "Special Inflow", 0.9
+
+        return "Unknown", 0.0
 
     def _check_transfer_patterns(
         self,

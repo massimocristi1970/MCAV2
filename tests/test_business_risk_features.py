@@ -126,6 +126,87 @@ def test_youlend_out_counts_as_revenue_but_fnd_counts_as_loan():
 
 
 @pytest.mark.unit
+def test_payment_processor_credits_beat_plaid_transfer_labels():
+    df = pd.DataFrame(
+        [
+            {
+                "date": "2026-02-01",
+                "amount": -2500,
+                "name_y": "Stripe Payments UK Ltd / Ref: Stripe",
+                "personal_finance_category.detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+            },
+            {
+                "date": "2026-02-02",
+                "amount": -900,
+                "name_y": "Payment from Paypal Code 2060 - PAYPAL CODE 2060",
+                "personal_finance_category.detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+            },
+            {
+                "date": "2026-02-03",
+                "amount": -1100,
+                "name_y": "Adyen N.V. Adyen",
+                "personal_finance_category.detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+            },
+            {
+                "date": "2026-02-04",
+                "amount": -450,
+                "name_y": "Payment from The Gluten Free World Ltd - sent from SumUp",
+                "personal_finance_category.detailed": "TRANSFER_IN_ACCOUNT_TRANSFER",
+            },
+        ]
+    )
+
+    categorized = categorize_business_transactions(df)
+
+    assert categorized["subcategory"].tolist() == ["Income", "Income", "Income", "Income"]
+    assert categorized["is_revenue"].tolist() == [True, True, True, True]
+
+
+@pytest.mark.unit
+def test_tax_and_pot_credits_do_not_count_as_revenue():
+    df = pd.DataFrame(
+        [
+            {
+                "date": "2026-02-01",
+                "amount": -10000,
+                "name_y": "HMRC VAT 436137208",
+                "personal_finance_category.detailed": "INCOME_WAGES",
+            },
+            {
+                "date": "2026-02-02",
+                "amount": -500,
+                "name_y": "Wages Pot Transfer",
+                "personal_finance_category.detailed": "INCOME_WAGES",
+            },
+        ]
+    )
+
+    categorized = categorize_business_transactions(df)
+
+    assert categorized.loc[0, "subcategory"] == "Special Inflow"
+    assert bool(categorized.loc[0, "is_revenue"]) is False
+    assert categorized.loc[1, "subcategory"] == "Transfer In"
+    assert bool(categorized.loc[1, "is_revenue"]) is False
+
+
+@pytest.mark.unit
+def test_known_finance_repayments_are_debt_repayments_not_expenses():
+    categorizer = TransactionCategorizer()
+
+    examples = [
+        "82442615 Close Brother Premium Finance",
+        "GC Couture - Finbiz Funding Lim Direct Debit",
+        "Mercedes Benz Fin Mercedes-Benz Finance",
+        "Motonovo Finance L 21609437",
+        "Card payment to BMW Finance on 24-05-2024",
+    ]
+
+    for name in examples:
+        category, _ = categorizer.categorize_transaction({"amount": 250, "name_y": name})
+        assert category == "Debt Repayments"
+
+
+@pytest.mark.unit
 def test_open_banking_insights_are_derived_without_scoring_flag(business_transactions):
     categorized = categorize_business_transactions(business_transactions)
     insights = derive_open_banking_insights(categorized, requested_loan=3000)
