@@ -5,11 +5,11 @@ import numpy as np
 import joblib
 from typing import Dict, Any, Tuple, List, Optional
 
-from ..config.industry_config import DIRECTOR_SCORE_PASS_THRESHOLD, get_sector_risk
+from app.config.industry_config import DIRECTOR_SCORE_PASS_THRESHOLD, get_sector_risk
 
 # Import the subprime scoring system
 try:
-    from ..services.subprime_scoring_system import SubprimeScoring
+    from app.services.subprime_scoring_system import SubprimeScoring
     SUBPRIME_SCORING_AVAILABLE = True
 except ImportError:
     SUBPRIME_SCORING_AVAILABLE = False
@@ -17,7 +17,7 @@ except ImportError:
 
 # Import centralized thresholds
 try:
-    from ..config.scoring_thresholds import get_thresholds
+    from app.config.scoring_thresholds import get_thresholds
     THRESHOLDS_AVAILABLE = True
 except ImportError:
     THRESHOLDS_AVAILABLE = False
@@ -571,44 +571,47 @@ def determine_loan_risk_level(
     else:
         return "Very High Risk - Senior Review Required"
 
-# ----------------------------
-# Streamlit Page Entry Point
-# ----------------------------
-
-st.set_page_config(
-    page_title="Scoring | MCA Scorecard",
-    layout="wide",
-    initial_sidebar_state="expanded",
-    menu_items={"Get Help": None, "Report a bug": None, "About": None},
-)
-apply_ui_theme()
-render_compact_page_title(
-    "Scoring detail",
-    "Key outputs from your latest Main-page run.",
-    eyebrow="MCA Scorecard",
-)
-
-run = st.session_state.get("last_run")
-if not run:
-    render_empty_state_no_run(
-        "Scoring",
-        "Scores appear here after you complete an analysis on Main.",
+def render_scoring_page() -> None:
+    """Render the Streamlit scoring detail page."""
+    st.set_page_config(
+        page_title="Scoring | MCA Scorecard",
+        layout="wide",
+        initial_sidebar_state="expanded",
+        menu_items={"Get Help": None, "Report a bug": None, "About": None},
     )
-    st.stop()
+    apply_ui_theme()
+    render_compact_page_title(
+        "Scoring detail",
+        "Key outputs from your latest Main-page run.",
+        eyebrow="MCA Scorecard",
+    )
 
-scores = run["scores"]
+    run = st.session_state.get("last_run")
+    if not run:
+        render_empty_state_no_run(
+            "Scoring",
+            "Scores appear here after you complete an analysis on Main.",
+        )
+        st.stop()
+        return
 
-st.subheader("Score Summary")
-for k in [
-    "subprime_score",
-    "subprime_tier",
-    "subprime_recommendation",
-    "mca_rule_score",
-    "mca_rule_decision",
-    "adjusted_ml_score",
-]:
-    if k in scores:
-        st.write(f"**{k}**: {scores.get(k)}")
+    scores = run["scores"]
 
-with st.expander("Full score JSON"):
-    st.json(scores)
+    st.subheader("Score Summary")
+    for k in [
+        "subprime_score",
+        "subprime_tier",
+        "subprime_recommendation",
+        "mca_rule_score",
+        "mca_rule_decision",
+        "adjusted_ml_score",
+    ]:
+        if k in scores:
+            st.write(f"**{k}**: {scores.get(k)}")
+
+    with st.expander("Full score JSON"):
+        st.json(scores)
+
+
+if __name__ == "__main__":
+    render_scoring_page()
