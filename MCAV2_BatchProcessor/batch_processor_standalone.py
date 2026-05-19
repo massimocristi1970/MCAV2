@@ -72,6 +72,18 @@ except ImportError as e:
     print(f"Ensemble scorer not available: {e}")
 
 try:
+    from mca_scorecard_rules import Thresholds, decide_application
+    from build_training_dataset import _flatten_transactions, build_mca_features
+    MCA_RULE_ENGINE_AVAILABLE = True
+except ImportError as e:
+    Thresholds = None
+    decide_application = None
+    _flatten_transactions = None
+    build_mca_features = None
+    MCA_RULE_ENGINE_AVAILABLE = False
+    print(f"Canonical MCA rule engine not available: {e}")
+
+try:
     from app.plotly_theme import show_mca_plotly
     from app.ui_theme import (
         apply_ui_theme,
@@ -302,6 +314,11 @@ def prepare_application_metadata(data_file, mapping_file, fallback_industry: str
     """Build deduped application metadata from the uploaded data + mapping files."""
     raw_df = read_tabular_upload(data_file)
     mapping = read_mapping_upload(mapping_file)
+    return prepare_application_metadata_from_frame(raw_df, mapping, fallback_industry)
+
+
+def prepare_application_metadata_from_frame(raw_df: pd.DataFrame, mapping: dict, fallback_industry: str) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+    """Build deduped application metadata from raw rows plus a source->canonical mapping."""
     rename_map = {source: target for source, target in mapping.items() if source in raw_df.columns}
     metadata = raw_df.rename(columns=rename_map).copy()
 
@@ -362,6 +379,20 @@ def prepare_application_metadata(data_file, mapping_file, fallback_industry: str
     audit["deduped_rows"] = len(metadata)
     audit["duplicate_rows_removed"] = int(len(raw_df) - len(metadata))
     return metadata.reset_index(drop=True), duplicates_df.reset_index(drop=True), audit
+
+
+def prepare_application_metadata_from_uploads(data_files, mapping_file, fallback_industry: str) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+    """Build application metadata from one or more data uploads using one mapping file."""
+    file_list = data_files if isinstance(data_files, list) else [data_files]
+    frames = []
+    for data_file in file_list:
+        if data_file:
+            frames.append(read_tabular_upload(data_file))
+    if not frames:
+        raise ValueError("At least one application data file is required")
+    raw_df = pd.concat(frames, ignore_index=True, sort=False)
+    mapping = read_mapping_upload(mapping_file)
+    return prepare_application_metadata_from_frame(raw_df, mapping, fallback_industry)
 
 
 def build_metadata_mapping(metadata_df: pd.DataFrame) -> dict:
@@ -605,6 +636,15 @@ def evaluate_mca_rule(metrics: dict, params: dict) -> dict:
         "mca_rule_reasons": [str, ...]
       }
     """
+    if params.get("mca_rule_score") is not None and params.get("mca_rule_decision"):
+        return {
+            "mca_rule_score": params.get("mca_rule_score"),
+            "mca_rule_decision": params.get("mca_rule_decision"),
+            "mca_rule_reasons": params.get("mca_rule_reasons") or [],
+            "mca_rule_signals": params.get("mca_rule_signals") or {},
+            "mca_rule_engine": params.get("mca_rule_engine") or "canonical",
+        }
+
     score = 100
     reasons = []
 
@@ -645,7 +685,36 @@ def evaluate_mca_rule(metrics: dict, params: dict) -> dict:
     return {
         "mca_rule_score": score,
         "mca_rule_decision": decision,
-        "mca_rule_reasons": reasons
+        "mca_rule_reasons": reasons,
+        "mca_rule_signals": {
+            "cash_flow_volatility": vol,
+            "average_negative_balance_days_per_month": neg_days,
+            "number_of_bounced_payments": bounced,
+        },
+        "mca_rule_engine": "legacy_batch_fallback",
+    }
+
+
+def evaluate_canonical_mca_rule(transactions: list[dict]) -> dict:
+    """Evaluate MCA rule exactly as the main app does for the same transaction list."""
+    if not MCA_RULE_ENGINE_AVAILABLE:
+        return {}
+
+    txns_for_scoring = _flatten_transactions(transactions)
+    mca_features = build_mca_features(txns_for_scoring)
+    mca_decision, mca_score, mca_reasons = decide_application(mca_features, t=Thresholds())
+    return {
+        "mca_rule_score": mca_score,
+        "mca_rule_decision": mca_decision,
+        "mca_rule_reasons": mca_reasons,
+        "mca_rule_signals": {
+            "inflow_days_30d": mca_features.get("inflow_days_30d"),
+            "max_inflow_gap_days": mca_features.get("max_inflow_gap_days"),
+            "inflow_cv": mca_features.get("inflow_cv"),
+            "months_covered": mca_features.get("months_covered"),
+            "txn_count_avg_month": mca_features.get("txn_count_avg_month"),
+        },
+        "mca_rule_engine": "canonical",
     }
 
 
@@ -2326,6 +2395,8 @@ def calculate_all_scores_tightened(metrics, params):
         'mca_rule_score': mca_rule.get('mca_rule_score'),
         'mca_rule_decision': mca_rule.get('mca_rule_decision'),
         'mca_rule_reasons': mca_rule.get('mca_rule_reasons'),
+        'mca_rule_signals': mca_rule.get('mca_rule_signals'),
+        'mca_rule_engine': mca_rule.get('mca_rule_engine'),
 
         # Final operating decision
         'final_decision': final_decision,
@@ -2670,6 +2741,11 @@ class BatchProcessor:
             debug_info['debug_step'] = f'Found {len(transactions)} transactions'
             print(f"Loaded {len(transactions)} transactions from {filename}")
 
+            canonical_mca_rule = evaluate_canonical_mca_rule(transactions)
+            if canonical_mca_rule:
+                debug_info["mca_rule_engine"] = canonical_mca_rule.get("mca_rule_engine")
+                debug_info["mca_rule_signals"] = canonical_mca_rule.get("mca_rule_signals")
+
             # Convert to DataFrame
             df = pd.json_normalize(transactions)
             debug_info['dataframe_shape'] = df.shape
@@ -2712,6 +2788,8 @@ class BatchProcessor:
 
             params['company_name'] = company_name
             params['original_filename'] = filename
+            if canonical_mca_rule:
+                params.update(canonical_mca_rule)
 
             # Initialize fuzzy match results with comprehensive tracking
             debug_info.update({
@@ -4426,6 +4504,282 @@ def load_saved_run(manifest: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+class StoredUpload(BytesIO):
+    """Small file-like wrapper so saved input files behave like Streamlit uploads."""
+
+    def __init__(self, path: Path):
+        self.path = Path(path)
+        super().__init__(self.path.read_bytes())
+        self.name = self.path.name
+        self.size = self.path.stat().st_size
+
+
+def load_saved_input_uploads(run_dir: Path, group: str) -> list[StoredUpload]:
+    """Load persisted source uploads for one saved-run input group."""
+    input_dir = Path(run_dir) / "inputs" / group
+    if not input_dir.exists():
+        return []
+    uploads = []
+    for path in sorted(input_dir.iterdir()):
+        if path.is_file():
+            try:
+                uploads.append(StoredUpload(path))
+            except OSError:
+                continue
+    return uploads
+
+
+def _first_upload(uploads: list[Any]) -> Any | None:
+    return uploads[0] if uploads else None
+
+
+def _last_upload(uploads: list[Any]) -> Any | None:
+    return uploads[-1] if uploads else None
+
+
+def _json_signatures(files_data: list[tuple[str, Any]]) -> set[str]:
+    return {stable_json_signature(json_data) for _, json_data in files_data}
+
+
+def split_new_json_files(
+    uploaded_files: list[Any],
+    existing_signatures: set[str],
+) -> tuple[list[tuple[str, Any]], pd.DataFrame]:
+    """Return only uploaded JSON payloads not already present in the saved run."""
+    loaded_files = load_json_files(uploaded_files)
+    seen_signatures = set(existing_signatures)
+    new_files = []
+    audit_rows = []
+
+    for filename, json_data in loaded_files:
+        signature = stable_json_signature(json_data)
+        is_duplicate = signature in seen_signatures
+        audit_rows.append(
+            {
+                "json_file": filename,
+                "content_signature": signature[:16],
+                "status": "duplicate_skipped" if is_duplicate else "new_processed",
+            }
+        )
+        if not is_duplicate:
+            seen_signatures.add(signature)
+            new_files.append((filename, json_data))
+
+    return new_files, pd.DataFrame(audit_rows)
+
+
+def render_extend_saved_run(saved_run: dict[str, Any]) -> None:
+    """Allow a saved run to be extended by processing only newly uploaded JSONs."""
+    manifest = saved_run["manifest"]
+    run_dir = saved_run["run_dir"]
+    base_results_df = saved_run["results_df"]
+    base_outcome_audit_df = saved_run["outcome_audit_df"]
+    base_pdf_audit_df = saved_run["pdf_audit_df"]
+
+    with st.expander("Extend Saved Run", expanded=False):
+        st.caption("Processes only JSON files whose content is not already in this saved run, then saves a new child run.")
+
+        saved_data_uploads = load_saved_input_uploads(run_dir, "data")
+        saved_mapping_uploads = load_saved_input_uploads(run_dir, "mapping")
+        saved_all_json_uploads = load_saved_input_uploads(run_dir, "all_jsons")
+        saved_paid_uploads = load_saved_input_uploads(run_dir, "paid_jsons")
+        saved_not_paid_uploads = load_saved_input_uploads(run_dir, "not_paid_jsons")
+        saved_pdf_uploads = load_saved_input_uploads(run_dir, "bureau_pdfs")
+
+        c1, c2, c3 = st.columns(3)
+        with c1:
+            st.metric("Base Cases", len(base_results_df))
+        with c2:
+            st.metric("Saved JSON Inputs", len(saved_all_json_uploads))
+        with c3:
+            st.metric("Saved Data Files", len(saved_data_uploads))
+
+        if not saved_all_json_uploads:
+            st.warning("This saved run does not include original JSON inputs, so it cannot be extended safely.")
+            return
+        if not saved_data_uploads or not saved_mapping_uploads:
+            st.warning("This saved run is missing its original data or mapping input, so new files cannot be matched reliably.")
+            return
+
+        with st.form(f"extend_saved_run_{manifest.get('run_id', 'run')}", clear_on_submit=False):
+            child_run_name = st.text_input(
+                "New run name",
+                value=f"{manifest.get('run_name', 'Saved run')} + extension {datetime.now().strftime('%Y-%m-%d %H%M')}",
+            )
+            new_data_files = st.file_uploader(
+                "Additional application data file(s) (optional)",
+                type=["csv", "xlsx", "xls"],
+                accept_multiple_files=True,
+                help="Upload this when the new JSONs correspond to new applications not present in the saved data file.",
+                key=f"extend_data_{manifest.get('run_id', 'run')}",
+            )
+            replacement_mapping_file = st.file_uploader(
+                "Replacement mapping file (optional)",
+                type=["csv", "xlsx", "xls"],
+                help="Leave blank to reuse the saved mapping.",
+                key=f"extend_mapping_{manifest.get('run_id', 'run')}",
+            )
+            new_json_files = st.file_uploader(
+                "New application JSONs",
+                type=["json", "zip"],
+                accept_multiple_files=True,
+                key=f"extend_all_jsons_{manifest.get('run_id', 'run')}",
+            )
+            paid_col, not_paid_col, pdf_col = st.columns(3)
+            with paid_col:
+                new_paid_files = st.file_uploader(
+                    "New paid JSONs",
+                    type=["json", "zip"],
+                    accept_multiple_files=True,
+                    key=f"extend_paid_{manifest.get('run_id', 'run')}",
+                )
+            with not_paid_col:
+                new_not_paid_files = st.file_uploader(
+                    "New not-paid JSONs",
+                    type=["json", "zip"],
+                    accept_multiple_files=True,
+                    key=f"extend_not_paid_{manifest.get('run_id', 'run')}",
+                )
+            with pdf_col:
+                new_pdf_files = st.file_uploader(
+                    "New company credit PDFs",
+                    type=["pdf"],
+                    accept_multiple_files=True,
+                    key=f"extend_pdfs_{manifest.get('run_id', 'run')}",
+                )
+            submitted = st.form_submit_button("Process New Files and Save Child Run", type="primary")
+
+        if not submitted:
+            return
+        if not child_run_name.strip():
+            st.error("Enter a name for the new child run.")
+            return
+        if not new_json_files:
+            st.error("Upload at least one new JSON or ZIP file.")
+            return
+
+        with st.spinner("Checking saved and new JSON fingerprints..."):
+            saved_files_data = load_json_files(saved_all_json_uploads)
+            existing_signatures = _json_signatures(saved_files_data)
+            new_files_data, extension_audit_df = split_new_json_files(new_json_files, existing_signatures)
+
+        if not extension_audit_df.empty:
+            st.dataframe(extension_audit_df, use_container_width=True, hide_index=True)
+        if not new_files_data:
+            st.info("All uploaded JSONs are already present in the saved run. Nothing new was processed.")
+            return
+
+        default_params = manifest.get("metadata", {}).get("default_params") or {
+            "industry": "Other",
+            "requested_loan": 10000,
+            "directors_score": 65,
+            "company_age_months": 24,
+            "business_ccj": False,
+            "director_ccj": False,
+            "poor_or_no_online_presence": False,
+            "uses_generic_email": False,
+        }
+
+        data_uploads_for_metadata = saved_data_uploads + list(new_data_files or [])
+        effective_mapping_upload = replacement_mapping_file or _last_upload(saved_mapping_uploads)
+        with st.spinner("Building metadata for saved and new applications..."):
+            try:
+                metadata_df, duplicates_df, metadata_audit = prepare_application_metadata_from_uploads(
+                    data_uploads_for_metadata,
+                    effective_mapping_upload,
+                    str(default_params.get("industry", "Other")),
+                )
+                parameter_mapping = build_metadata_mapping(metadata_df)
+            except Exception as e:
+                st.error(f"Could not prepare application metadata: {e}")
+                return
+
+        if new_pdf_files and not metadata_df.empty:
+            with st.spinner("Reading new company credit report PDFs..."):
+                pdf_risk_mapping, new_pdf_audit_df = build_pdf_risk_mapping(new_pdf_files, metadata_df)
+                parameter_mapping = apply_pdf_risk_to_mapping(parameter_mapping, pdf_risk_mapping)
+        else:
+            new_pdf_audit_df = pd.DataFrame()
+
+        outcome_mapping, new_outcome_audit_df = assign_outcomes(new_files_data, new_paid_files, new_not_paid_files)
+
+        processor = BatchProcessor()
+        progress_bar = st.progress(0, text="Processing new files...")
+        with st.spinner("Processing only new applications..."):
+            new_results_df = processor.process_batch(
+                new_files_data,
+                default_params,
+                parameter_mapping,
+                progress_bar,
+                outcome_mapping=outcome_mapping,
+            )
+        progress_bar.empty()
+
+        if new_results_df.empty:
+            st.error("No new applications were processed successfully.")
+            return
+
+        combined_results_df = pd.concat([base_results_df, new_results_df], ignore_index=True, sort=False)
+        combined_scorecard_features_df = build_scorecard_features(combined_results_df)
+        combined_outcome_audit_df = pd.concat(
+            [base_outcome_audit_df, new_outcome_audit_df],
+            ignore_index=True,
+            sort=False,
+        )
+        combined_pdf_audit_df = pd.concat(
+            [base_pdf_audit_df, new_pdf_audit_df],
+            ignore_index=True,
+            sort=False,
+        )
+        combined_reports = build_calibration_reports(combined_results_df)
+
+        try:
+            child_run_dir = save_named_run(
+                run_name=child_run_name,
+                results_df=combined_results_df,
+                scorecard_features_df=combined_scorecard_features_df,
+                outcome_audit_df=combined_outcome_audit_df,
+                pdf_audit_df=combined_pdf_audit_df,
+                calibration_reports=combined_reports,
+                metadata={
+                    "parent_run_id": manifest.get("run_id"),
+                    "parent_run_name": manifest.get("run_name"),
+                    "extension_mode": True,
+                    "default_params": default_params,
+                    "metadata_audit": metadata_audit,
+                    "base_cases": len(base_results_df),
+                    "new_jsons_uploaded": len(extension_audit_df),
+                    "new_jsons_processed": len(new_results_df),
+                    "duplicates_skipped": int((extension_audit_df["status"] == "duplicate_skipped").sum()),
+                    "combined_cases": len(combined_results_df),
+                    "processing_errors": processor.error_count,
+                },
+                uploads={
+                    "data": data_uploads_for_metadata,
+                    "mapping": [effective_mapping_upload],
+                    "all_jsons": saved_all_json_uploads + list(new_json_files or []),
+                    "paid_jsons": saved_paid_uploads + list(new_paid_files or []),
+                    "not_paid_jsons": saved_not_paid_uploads + list(new_not_paid_files or []),
+                    "bureau_pdfs": saved_pdf_uploads + list(new_pdf_files or []),
+                },
+            )
+        except Exception as e:
+            st.error(f"New files processed, but child run saving failed: {e}")
+            return
+
+        st.success(f"Saved child run: {child_run_dir}")
+        st.metric("New Files Processed", len(new_results_df))
+        st.metric("Combined Cases", len(combined_results_df))
+        st.download_button(
+            "Download Portable Child Run",
+            data=build_saved_run_package(child_run_dir),
+            file_name=f"{slugify_run_name(child_run_name)}_saved_run.zip",
+            mime="application/zip",
+        )
+        st.session_state["loaded_saved_run"] = json.loads((child_run_dir / "manifest.json").read_text(encoding="utf-8"))
+        st.session_state["loaded_saved_run"]["path"] = str(child_run_dir)
+
+
 def render_loaded_saved_run(saved_run: dict[str, Any]) -> None:
     """Render a saved run without reprocessing the original inputs."""
     manifest = saved_run["manifest"]
@@ -4464,6 +4818,8 @@ def render_loaded_saved_run(saved_run: dict[str, Any]) -> None:
                 file_name=prepared_package["name"],
                 mime="application/zip",
             )
+
+    render_extend_saved_run(saved_run)
 
     if results_df.empty:
         st.warning("This saved run does not contain case score output.")
