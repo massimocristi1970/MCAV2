@@ -219,6 +219,131 @@ class CardTerminalIngestionService:
             },
         }
 
+    def derive_card_processing_insights(
+        self,
+        parsed_df: pd.DataFrame,
+        monthly_terminal_df: pd.DataFrame,
+        comparison_payload: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Derive review/export signals from card processor statements."""
+        if parsed_df is None or parsed_df.empty:
+            return {
+                "Card Processing Insight Layer": "Not available",
+                "Card Processing Insights Used In Score": "No - analysis/export only",
+            }
+
+        monthly = monthly_terminal_df.copy() if monthly_terminal_df is not None else pd.DataFrame()
+        comp = comparison_payload.get("comparison", pd.DataFrame()) if comparison_payload else pd.DataFrame()
+        summary = comparison_payload.get("summary", {}) if comparison_payload else {}
+
+        gross_total = float(pd.to_numeric(parsed_df.get("gross_card_sales", 0), errors="coerce").fillna(0).sum())
+        refunds_total = float(pd.to_numeric(parsed_df.get("refunds_amount", 0), errors="coerce").fillna(0).sum())
+        chargebacks_total = float(pd.to_numeric(parsed_df.get("chargebacks_amount", 0), errors="coerce").fillna(0).sum())
+        fees_total = float(pd.to_numeric(parsed_df.get("fees_total", 0), errors="coerce").fillna(0).sum())
+        txn_count = int(pd.to_numeric(parsed_df.get("transaction_count", 0), errors="coerce").fillna(0).sum())
+
+        if monthly is not None and not monthly.empty:
+            sales = pd.to_numeric(monthly.get("gross_card_sales", pd.Series(dtype="float64")), errors="coerce").fillna(0)
+            active_sales = sales[sales > 0]
+            monthly_avg = float(active_sales.mean()) if not active_sales.empty else 0.0
+            weakest_month = float(active_sales.min()) if not active_sales.empty else 0.0
+            strongest_month = float(active_sales.max()) if not active_sales.empty else 0.0
+            volatility = float(active_sales.std(ddof=0) / monthly_avg) if len(active_sales) > 1 and monthly_avg else 0.0
+            latest_sales = float(sales.iloc[-1]) if len(sales) else 0.0
+            previous_avg = float(sales.iloc[:-1].mean()) if len(sales) > 1 else 0.0
+            latest_drop_pct = float((previous_avg - latest_sales) / previous_avg) if previous_avg and latest_sales < previous_avg else 0.0
+            months_present = int((sales > 0).sum())
+        else:
+            monthly_avg = weakest_month = strongest_month = volatility = latest_sales = latest_drop_pct = 0.0
+            months_present = 0
+
+        refund_ratio = refunds_total / gross_total if gross_total else 0.0
+        chargeback_ratio = chargebacks_total / gross_total if gross_total else 0.0
+        fee_ratio = fees_total / gross_total if gross_total else 0.0
+        avg_transaction_value = gross_total / txn_count if txn_count else 0.0
+
+        if comp is not None and not comp.empty:
+            terminal_total = float(pd.to_numeric(comp.get("gross_card_sales", 0), errors="coerce").fillna(0).sum())
+            bank_revenue_total = float(pd.to_numeric(comp.get("bank_revenue_inflows", 0), errors="coerce").fillna(0).sum())
+            unmatched_shortfall = float(
+                comp.apply(
+                    lambda r: max(float(r.get("gross_card_sales", 0) or 0) - float(r.get("bank_revenue_inflows", 0) or 0), 0.0),
+                    axis=1,
+                ).sum()
+            )
+            card_vs_ob_revenue_ratio = terminal_total / bank_revenue_total if bank_revenue_total else 0.0
+            unmatched_pct = unmatched_shortfall / terminal_total if terminal_total else 0.0
+        else:
+            bank_revenue_total = 0.0
+            card_vs_ob_revenue_ratio = 0.0
+            unmatched_shortfall = 0.0
+            unmatched_pct = 0.0
+
+        concerns: List[str] = []
+        positives: List[str] = []
+
+        reconciliation_quality = summary.get("reconciliation_quality", "N/A")
+        if reconciliation_quality == "Good":
+            positives.append("Card sales reconcile well to bank revenue")
+        elif reconciliation_quality == "Poor":
+            concerns.append("Poor reconciliation between card statements and bank revenue")
+
+        if refund_ratio >= 0.10:
+            concerns.append("High refund ratio")
+        elif gross_total and refund_ratio <= 0.05:
+            positives.append("Low refund ratio")
+
+        if chargeback_ratio >= 0.01:
+            concerns.append("Elevated chargeback ratio")
+        elif gross_total and chargeback_ratio == 0:
+            positives.append("No chargebacks detected in uploaded statements")
+
+        if volatility >= 0.45:
+            concerns.append("Volatile card sales")
+        elif months_present >= 3 and volatility <= 0.25:
+            positives.append("Stable card sales")
+
+        if latest_drop_pct >= 0.30:
+            concerns.append("Latest card sales month materially below prior average")
+
+        if unmatched_pct >= 0.25:
+            concerns.append("Material card sales shortfall versus bank revenue evidence")
+
+        if chargeback_ratio >= 0.02 or unmatched_pct >= 0.40 or latest_drop_pct >= 0.50:
+            suitability = "Weak"
+        elif concerns:
+            suitability = "Review"
+        elif positives:
+            suitability = "Strong"
+        else:
+            suitability = "Acceptable"
+
+        return {
+            "Card Processing Insight Layer": "Available",
+            "Card Processing Insights Used In Score": "No - analysis/export only",
+            "Card Processor Statements Parsed": int(len(parsed_df)),
+            "Card Processor Months Present": months_present,
+            "Card Sales Total": round(gross_total, 2),
+            "Card Sales Monthly Average": round(monthly_avg, 2),
+            "Card Weakest Month Sales": round(weakest_month, 2),
+            "Card Strongest Month Sales": round(strongest_month, 2),
+            "Card Latest Month Sales": round(latest_sales, 2),
+            "Card Sales Volatility": round(volatility, 3),
+            "Card Latest Month Drop Pct": round(latest_drop_pct, 3),
+            "Card Refund Ratio": round(refund_ratio, 3),
+            "Card Chargeback Ratio": round(chargeback_ratio, 3),
+            "Card Fee Ratio": round(fee_ratio, 3),
+            "Card Average Transaction Value": round(avg_transaction_value, 2),
+            "Card Transaction Count": txn_count,
+            "Card vs OB Revenue Ratio": round(card_vs_ob_revenue_ratio, 3),
+            "Card Unmatched Sales Shortfall": round(unmatched_shortfall, 2),
+            "Card Unmatched Sales Shortfall Pct": round(unmatched_pct, 3),
+            "Card Reconciliation Quality": reconciliation_quality,
+            "Card MCA Suitability": suitability,
+            "Card Processing Positive Signals": positives,
+            "Card Processing Concerns": concerns,
+        }
+
     def _parse_zip_archive(self, zip_filename: str, raw: bytes) -> tuple[List[ParseResult], List[Dict[str, str]]]:
         """Expand a ZIP and parse each supported file inside."""
         out: List[ParseResult] = []

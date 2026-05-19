@@ -2114,7 +2114,7 @@ def assess_primary_account_signal(df):
     }
 
 
-def render_card_terminal_reconciliation(bank_df, card_files):
+def render_card_terminal_reconciliation(bank_df, card_files, card_processing_payload: dict | None = None):
     """Render card terminal reconciliation from already uploaded files."""
     st.markdown("---")
     st.subheader("Card terminal statements (multi-company)")
@@ -2127,18 +2127,13 @@ def render_card_terminal_reconciliation(bank_df, card_files):
         st.info("No card terminal statements uploaded yet.")
         return
 
-    if not CARD_TERMINAL_SERVICE_AVAILABLE or CardTerminalIngestionService is None:
-        st.warning("Card terminal ingestion service is currently unavailable.")
+    payload = card_processing_payload or derive_card_processing_payload(bank_df, card_files)
+    if payload.get("error"):
+        st.error(f"Failed to parse card terminal statements: {payload.get('error')}")
         return
-
-    try:
-        service = CardTerminalIngestionService()
-        parse_output = service.parse_uploaded_files(card_files)
-        parsed_df = parse_output.get("dataframe", pd.DataFrame())
-        parse_errors = parse_output.get("errors", [])
-    except Exception as exc:
-        st.error(f"Failed to parse card terminal statements: {exc}")
-        return
+    parse_output = payload.get("parse_output", {})
+    parsed_df = payload.get("parsed_df", pd.DataFrame())
+    parse_errors = parse_output.get("errors", [])
 
     top1, top2, top3 = st.columns(3)
     with top1:
@@ -2220,12 +2215,12 @@ def render_card_terminal_reconciliation(bank_df, card_files):
             hide_index=True,
         )
 
-    monthly_terminal = service.summarize_by_month(parsed_df)
+    monthly_terminal = payload.get("monthly_terminal", pd.DataFrame())
     if monthly_terminal.empty:
         st.info("Unable to build monthly card-sales summary from uploaded statements.")
         return
 
-    comparison_payload = service.compare_with_banking_data(bank_df, monthly_terminal)
+    comparison_payload = payload.get("comparison_payload", {"comparison": pd.DataFrame(), "summary": {}})
     comp_df = comparison_payload.get("comparison", pd.DataFrame())
     provider_bank_df = comparison_payload.get("provider_bank_monthly", pd.DataFrame())
     summary = comparison_payload.get("summary", {})
@@ -3568,6 +3563,82 @@ def build_open_banking_insight_rows(metrics: dict, params: dict) -> list[dict[st
     return [{"signal": name, "value": value, "meaning": meaning} for name, value, meaning in rows]
 
 
+def build_card_processing_insight_rows(metrics: dict) -> list[dict[str, object]]:
+    """Create a compact table of card processor statement signals for review."""
+    if metrics.get("Card Processing Insight Layer") != "Available":
+        return [
+            {
+                "signal": "Card processing insight layer",
+                "value": metrics.get("Card Processing Insight Layer", "Not available"),
+                "meaning": "Upload card terminal statements to derive these signals",
+            }
+        ]
+
+    rows = [
+        ("Scoring impact", metrics.get("Card Processing Insights Used In Score", "No - analysis/export only"), "Displayed/exported for underwriting and calibration"),
+        ("Statements", f"{int(metrics.get('Card Processor Statements Parsed', 0) or 0)} files / {int(metrics.get('Card Processor Months Present', 0) or 0)} months", "Coverage from uploaded processor statements"),
+        ("Card sales total", f"£{float(metrics.get('Card Sales Total', 0) or 0):,.0f}", "Gross card sales from statements"),
+        ("Average card sales", f"£{float(metrics.get('Card Sales Monthly Average', 0) or 0):,.0f}", "Monthly card sales average"),
+        ("Weakest card month", f"£{float(metrics.get('Card Weakest Month Sales', 0) or 0):,.0f}", "Lowest observed card sales month"),
+        ("Card sales volatility", f"{float(metrics.get('Card Sales Volatility', 0) or 0) * 100:.1f}%", "Month-to-month card sales stability"),
+        ("Latest month drop", f"{float(metrics.get('Card Latest Month Drop Pct', 0) or 0) * 100:.1f}%", "Latest card month versus prior average"),
+        ("Refund ratio", f"{float(metrics.get('Card Refund Ratio', 0) or 0) * 100:.1f}%", "Refunds as share of gross card sales"),
+        ("Chargeback ratio", f"{float(metrics.get('Card Chargeback Ratio', 0) or 0) * 100:.1f}%", "Chargebacks as share of gross card sales"),
+        ("Fee ratio", f"{float(metrics.get('Card Fee Ratio', 0) or 0) * 100:.1f}%", "Processor fees as share of gross card sales"),
+        ("Average transaction value", f"£{float(metrics.get('Card Average Transaction Value', 0) or 0):,.2f}", "Gross card sales divided by transaction count"),
+        ("Card vs OB revenue", f"{float(metrics.get('Card vs OB Revenue Ratio', 0) or 0) * 100:.1f}%", "Card sales as share of open banking revenue evidence"),
+        ("Unmatched card shortfall", f"£{float(metrics.get('Card Unmatched Sales Shortfall', 0) or 0):,.0f} / {float(metrics.get('Card Unmatched Sales Shortfall Pct', 0) or 0) * 100:.1f}%", "Card sales not covered by bank revenue in matching months"),
+        ("Reconciliation quality", metrics.get("Card Reconciliation Quality", "N/A"), "Monthly card sales versus bank revenue"),
+        ("MCA suitability", metrics.get("Card MCA Suitability", "N/A"), "Initial card-led underwriting view"),
+    ]
+    concerns = metrics.get("Card Processing Concerns") or []
+    positives = metrics.get("Card Processing Positive Signals") or []
+    if positives:
+        rows.append(("Positive signals", "; ".join(positives[:4]), "Supportive card processor evidence"))
+    if concerns:
+        rows.append(("Concerns", "; ".join(concerns[:4]), "Items for underwriting review"))
+    return [{"signal": name, "value": value, "meaning": meaning} for name, value, meaning in rows]
+
+
+def derive_card_processing_payload(bank_df, card_files) -> dict:
+    """Parse uploaded card statements once and return dataframes plus insights."""
+    empty = {
+        "parse_output": {},
+        "parsed_df": pd.DataFrame(),
+        "monthly_terminal": pd.DataFrame(),
+        "comparison_payload": {"comparison": pd.DataFrame(), "summary": {}},
+        "insights": {
+            "Card Processing Insight Layer": "Not available",
+            "Card Processing Insights Used In Score": "No - analysis/export only",
+        },
+        "error": None,
+    }
+    if not card_files:
+        return empty
+    if not CARD_TERMINAL_SERVICE_AVAILABLE or CardTerminalIngestionService is None:
+        empty["error"] = "Card terminal ingestion service is currently unavailable."
+        return empty
+
+    try:
+        service = CardTerminalIngestionService()
+        parse_output = service.parse_uploaded_files(card_files)
+        parsed_df = parse_output.get("dataframe", pd.DataFrame())
+        monthly_terminal = service.summarize_by_month(parsed_df)
+        comparison_payload = service.compare_with_banking_data(bank_df, monthly_terminal)
+        insights = service.derive_card_processing_insights(parsed_df, monthly_terminal, comparison_payload)
+        return {
+            "parse_output": parse_output,
+            "parsed_df": parsed_df,
+            "monthly_terminal": monthly_terminal,
+            "comparison_payload": comparison_payload,
+            "insights": insights,
+            "error": None,
+        }
+    except Exception as exc:
+        empty["error"] = str(exc)
+        return empty
+
+
 def render_full_financial_dashboard(
     company_name: str,
     analysis_period: str,
@@ -3578,6 +3649,7 @@ def render_full_financial_dashboard(
     scores: dict,
     revenue_insights: dict,
     card_terminal_files,
+    card_processing_payload: dict | None = None,
 ) -> None:
     """Render the full main-page dashboard (shared by fresh upload and session restore)."""
     # ENHANCED DASHBOARD RENDERING
@@ -3694,6 +3766,11 @@ def render_full_financial_dashboard(
             st.caption("These additional transaction-derived signals are shown for underwriting review and exports. They do not change the current score unless explicitly added to the scorecard later.")
             st.dataframe(pd.DataFrame(ob_rows), use_container_width=True, hide_index=True)
 
+        card_rows = build_card_processing_insight_rows(metrics)
+        with st.expander("Card processor derived insights", expanded=True):
+            st.caption("These card-statement signals are shown for underwriting review and exports. They do not change the current score unless explicitly added to the scorecard later.")
+            st.dataframe(pd.DataFrame(card_rows), use_container_width=True, hide_index=True)
+
         # Pricing and details in expander
         with st.expander("Pricing guidance & risk analysis", expanded=False):
             pricing = ensemble.get('pricing_guidance', {})
@@ -3765,7 +3842,7 @@ def render_full_financial_dashboard(
         with st.expander("Primary Account Check Details", expanded=False):
             st.json(primary_signal)
 
-    render_card_terminal_reconciliation(filtered_df, card_terminal_files)
+    render_card_terminal_reconciliation(filtered_df, card_terminal_files, card_processing_payload)
 
     # Revenue Insights
     st.markdown("---")
@@ -4471,6 +4548,8 @@ def main():
                 primary_account_assessment = assess_primary_account_signal(filtered_df)
                 params["primary_account_assessment"] = primary_account_assessment
                 metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
+                card_processing_payload = derive_card_processing_payload(filtered_df, card_terminal_files)
+                metrics.update(card_processing_payload.get("insights") or {})
                 scores = calculate_all_scores_enhanced(metrics, params)
 
                 # ensure MCA rule outputs are part of scoring_results for export
@@ -4546,6 +4625,7 @@ def main():
                     "scores": scores,
                     "revenue_insights": revenue_insights,
                     "card_terminal_files": card_terminal_files,
+                    "card_processing_payload": card_processing_payload,
                     "source_upload_name": uploaded_file.name if uploaded_file else None,
                 }
 
@@ -4577,6 +4657,7 @@ def main():
                     scores=scores,
                     revenue_insights=revenue_insights,
                     card_terminal_files=card_terminal_files,
+                    card_processing_payload=card_processing_payload,
                 )
                     
             except Exception as e:
@@ -4606,6 +4687,10 @@ def main():
             if not revenue_insights and not filtered_df.empty:
                 revenue_insights = calculate_revenue_insights(filtered_df)
             card_terminal_files = run.get("card_terminal_files")
+            card_processing_payload = run.get("card_processing_payload")
+            if card_processing_payload is None:
+                card_processing_payload = derive_card_processing_payload(filtered_df, card_terminal_files)
+                metrics.update(card_processing_payload.get("insights") or {})
 
             render_full_financial_dashboard(
                 company_name=company_name,
@@ -4617,6 +4702,7 @@ def main():
                 scores=scores,
                 revenue_insights=revenue_insights,
                 card_terminal_files=card_terminal_files,
+                card_processing_payload=card_processing_payload,
             )
         else:
             render_empty_state_main()
