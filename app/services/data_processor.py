@@ -228,6 +228,11 @@ class TransactionCategorizer:
             bank_charge_category, confidence = self._check_bank_charge_patterns(combined_text, category)
             if confidence > self.confidence_threshold:
                 return bank_charge_category, confidence
+
+        if is_credit:
+            youlend_category, confidence = self._check_youlend_patterns(combined_text)
+            if confidence > self.confidence_threshold:
+                return youlend_category, confidence
         
         # STEP 3: Check for special income patterns (only for credits)
         if is_credit:
@@ -294,6 +299,23 @@ class TransactionCategorizer:
                     return "Debt Repayments", 0.9
         
         return "Unknown", 0.0
+
+    def _check_youlend_patterns(self, text: str) -> Tuple[str, float]:
+        """Handle YouLend net sales remittances separately from funding advances."""
+        if not re.search(
+            r"(you\s?lend|yl\s?iii|yl\s?ii|yl\s?ltd|yl\s?limited|yl\s?a\s?limited|\byl\b)",
+            text,
+            re.IGNORECASE,
+        ):
+            return "Unknown", 0.0
+
+        if re.search(r"(?:^|[^a-z0-9])fnd(?:[^a-z0-9]|$)|[a-z0-9]fnd(?:[^a-z0-9]|$)", text, re.IGNORECASE):
+            return "Loans", 0.95
+
+        if re.search(r"(?:^|[^a-z0-9])out(?:[^a-z0-9]|$)|[a-z0-9]out(?:[^a-z0-9]|$)", text, re.IGNORECASE):
+            return "Income", 0.95
+
+        return "Income", 0.9
 
     def _check_transfer_patterns(
         self,

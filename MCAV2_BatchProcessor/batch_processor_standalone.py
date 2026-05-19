@@ -64,10 +64,15 @@ except ImportError as e:
 try:
     from app.services.ensemble_scorer import get_ensemble_recommendation
     from app.services.open_banking_insights import derive_open_banking_insights
+    from app.services.business_risk_signals import categorize_business_transactions as shared_categorize_transactions
+    from app.services.data_processor import TransactionCategorizer
+    SHARED_TRANSACTION_CATEGORIZER = TransactionCategorizer()
     ENSEMBLE_SCORER_AVAILABLE = True
 except ImportError as e:
     get_ensemble_recommendation = None
     derive_open_banking_insights = None
+    shared_categorize_transactions = None
+    SHARED_TRANSACTION_CATEGORIZER = None
     ENSEMBLE_SCORER_AVAILABLE = False
     print(f"Ensemble scorer not available: {e}")
 
@@ -735,6 +740,10 @@ def map_transaction_category(transaction: Dict[str, Any]) -> str:
     Returns:
         Category string
     """
+    if SHARED_TRANSACTION_CATEGORIZER is not None:
+        category, _confidence = SHARED_TRANSACTION_CATEGORIZER.categorize_transaction(transaction)
+        return category
+
     name = transaction.get("name", "")
     if isinstance(name, list):
         name = " ".join(map(str, name))
@@ -982,6 +991,9 @@ def categorize_transactions(data):
     """Apply categorization"""
     if data.empty:
         return data
+
+    if shared_categorize_transactions is not None:
+        return shared_categorize_transactions(data)
 
     data = data.copy()
     data['subcategory'] = data.apply(map_transaction_category, axis=1)

@@ -72,11 +72,57 @@ def test_transaction_categorizer_classifies_business_specific_inflows_and_charge
     transfer_category, _ = categorizer.categorize_transaction({"amount": -250, "name_y": "Transfer from savings"})
     bank_charge_category, _ = categorizer.categorize_transaction({"amount": 25, "name_y": "Monthly account fee"})
     loan_category, _ = categorizer.categorize_transaction({"amount": -1000, "name_y": "Iwoca disbursement"})
+    youlend_sales_category, _ = categorizer.categorize_transaction(
+        {
+            "amount": -50.91,
+            "name_y": "YouLend Limited YL60406663OUT",
+            "merchant_name": "YouLend",
+            "personal_finance_category.detailed": "TRANSFER_IN_CASH_ADVANCES_AND_LOANS",
+        }
+    )
+    youlend_funding_category, _ = categorizer.categorize_transaction(
+        {
+            "amount": -840.00,
+            "name_y": "YL III Limited YL60406663FND",
+            "personal_finance_category.detailed": "INCOME_WAGES",
+        }
+    )
 
     assert funding_category == "Funding Inflow"
     assert transfer_category == "Transfer In"
     assert bank_charge_category == "Bank Charge"
     assert loan_category == "Loans"
+    assert youlend_sales_category == "Income"
+    assert youlend_funding_category == "Loans"
+
+
+@pytest.mark.unit
+def test_youlend_out_counts_as_revenue_but_fnd_counts_as_loan():
+    df = pd.DataFrame(
+        [
+            {
+                "date": "2026-05-17",
+                "amount": -50.91,
+                "name_y": "YouLend Limited YL60406663OUT",
+                "merchant_name": "YouLend",
+                "personal_finance_category.detailed": "TRANSFER_IN_CASH_ADVANCES_AND_LOANS",
+            },
+            {
+                "date": "2026-03-19",
+                "amount": -840.00,
+                "name_y": "YL III Limited YL60406663FND",
+                "personal_finance_category.detailed": "INCOME_WAGES",
+            },
+        ]
+    )
+
+    categorized = categorize_business_transactions(df)
+
+    assert categorized.loc[0, "subcategory"] == "Income"
+    assert bool(categorized.loc[0, "is_revenue"]) is True
+    assert categorized.loc[1, "subcategory"] == "Loans"
+    assert bool(categorized.loc[1, "is_revenue"]) is False
+    assert bool(categorized.loc[1, "is_debt"]) is True
 
 
 @pytest.mark.unit
