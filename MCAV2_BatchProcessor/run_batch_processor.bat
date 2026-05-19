@@ -38,6 +38,22 @@ if errorlevel 1 (
     goto :end
 )
 
+if exist "sync_batch_inputs.py" (
+    echo.
+    choice /C YN /N /M "Sync new OneDrive batch input files before starting? [Y/N]: "
+    if errorlevel 2 (
+        echo Skipping sync.
+    ) else (
+        echo.
+        echo Syncing batch input files...
+        %PYTHON_EXE% sync_batch_inputs.py
+        if errorlevel 1 (
+            echo ERROR: Batch input sync failed.
+            goto :end
+        )
+    )
+)
+
 set "PORT="
 for %%P in (8502 8503 8504 8505 8506 8507 8508 8509 8510) do (
     if not defined PORT (

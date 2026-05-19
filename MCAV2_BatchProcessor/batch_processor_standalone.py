@@ -4259,6 +4259,11 @@ def resolve_saved_runs_dir() -> Path:
 
 SAVED_RUNS_DIR = resolve_saved_runs_dir()
 
+DEFAULT_SCORECARD_DEV_DIR = SAVED_RUNS_DIR.parent if SAVED_RUNS_DIR.name == "Saved_batch_processor_runs" else BATCH_PROCESSOR_DIR
+DEFAULT_MAPPING_FILE = Path(
+    os.getenv("MCAV2_BATCH_MAPPING_FILE", str(DEFAULT_SCORECARD_DEV_DIR / "PBI_CSV_Mapping.xlsx"))
+).expanduser()
+
 
 def slugify_run_name(name: str) -> str:
     """Create a stable folder-safe run id from the user-facing run name."""
@@ -4527,6 +4532,13 @@ def load_saved_input_uploads(run_dir: Path, group: str) -> list[StoredUpload]:
             except OSError:
                 continue
     return uploads
+
+
+def load_default_mapping_upload() -> StoredUpload | None:
+    """Return the fixed batch mapping workbook when it is available."""
+    if DEFAULT_MAPPING_FILE.exists():
+        return StoredUpload(DEFAULT_MAPPING_FILE)
+    return None
 
 
 def _first_upload(uploads: list[Any]) -> Any | None:
@@ -6360,12 +6372,14 @@ def main():
         render_intake_panel_intro(
             title="Batch run setup",
             description=(
-                "Name the run, upload the application data and mapping, add the full JSON pool, "
+                "Name the run, upload the application data, add the full JSON pool, "
                 "then add paid and not-paid JSON subsets. Processing starts only when you press the button."
             ),
         )
     else:
         section_title("Batch Run Setup", "Processing starts only when you press the button.")
+
+    default_mapping_upload = load_default_mapping_upload()
 
     with st.form("batch_run_form", clear_on_submit=False):
         run_name = st.text_input(
@@ -6385,11 +6399,15 @@ def main():
             )
         with mapping_col:
             mapping_file = st.file_uploader(
-                "CSV mapping file",
+                "Replacement mapping file (optional)",
                 type=["csv", "xlsx", "xls"],
-                help="Example: PBI_CSV_Mapping.xlsx.",
+                help=f"Leave blank to use the fixed mapping file: {DEFAULT_MAPPING_FILE}",
                 key="batch_mapping_file_form",
             )
+            if default_mapping_upload:
+                st.caption(f"Using fixed mapping: {DEFAULT_MAPPING_FILE}")
+            else:
+                st.warning(f"Fixed mapping file not found: {DEFAULT_MAPPING_FILE}")
 
         json_col, paid_col, not_paid_col = st.columns(3)
         with json_col:
@@ -6436,8 +6454,12 @@ def main():
     if not run_name.strip():
         st.error("Enter a run name before processing.")
         return
-    if not data_file or not mapping_file:
-        st.error("Upload both the application data file and mapping file.")
+    effective_mapping_file = mapping_file or default_mapping_upload
+    if not data_file:
+        st.error("Upload the application data file.")
+        return
+    if not effective_mapping_file:
+        st.error("Upload a mapping file or restore the fixed PBI_CSV_Mapping.xlsx file.")
         return
     if not uploaded_files:
         st.error("Upload the full JSON pool before processing.")
@@ -6452,7 +6474,7 @@ def main():
         try:
             metadata_df, duplicates_df, metadata_audit = prepare_application_metadata(
                 data_file,
-                mapping_file,
+                effective_mapping_file,
                 default_industry,
             )
             parameter_mapping = build_metadata_mapping(metadata_df)
@@ -6646,7 +6668,7 @@ def main():
                 },
                 uploads={
                     "data": data_file,
-                    "mapping": mapping_file,
+                    "mapping": effective_mapping_file,
                     "all_jsons": uploaded_files,
                     "paid_jsons": paid_files,
                     "not_paid_jsons": not_paid_files,
