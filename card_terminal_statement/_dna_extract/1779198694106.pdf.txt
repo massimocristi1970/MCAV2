@@ -1,0 +1,142 @@
+Merchant Processing Statement
+CHRISTOPHER IRVING Billing period February 2026
+Sheffield,77 The Moor Statement date 1 Mar 2026
+S1 4PF Statement ID 202602100000092292
+Statement Summary
+Start balance, GBP 3,419.51
+Monitor online
+Refers to the rolled over balance from the previous period
+Monitor transactions in real-time and
+access transparent fee breakdowns for
+Processed volume, GBP 29,991.71
+optimised control with DNA Payments
+Merchant Portal.
+Refunds and chargebacks volume, GBP 0.00
+portal.dnapayments.com
+NET Processed volume, GBP 29,991.71
+Deductions and DCC Rebates summary GBP FAQ on a website
+Discover answers to your questions by
+A Transactional fees -225.27 exploring our informative FAQ section on
+the website.
+B Recurring fees 0.00
+dnapayments.com/faq
+C Non-recurring / One-off fees 0.00
+D Other merchant fees 0.00
+Get in touch
+E DCC Rebates 0.00 dnapayments.com
+support@dnapaymentsgroup.com
+Total -225.27 0208 102 8100
+VAT summary, GBP 0.00
+Settled amount, GBP 29,539.76
+Funds that were settled to your bank accounts during the statement period
+Direct debit payment, GBP -229.01
+The original balance is processed by Direct Debit on the 15th of each month
+End balance, GBP 3,875.20
+The outstanding balance that will be rolled over to the next statement period
+Important information
+Monthly statements are generated on the 1st day of each Month and can be viewed and downloaded
+from the DNA Payments Merchant Portal
+This statement represents averaged Acquiring fees. Detailed breakdown of the Acquiring fees can be
+found on the Merchant portal
+All monthly fees are charged on the 1st of each month
+Statement is based on the processed date
+“Processed date” is the day when transaction was processed and completed
+DNA Payments Limited (Company No.11154668 /FCA No.806630).
+Registered office: 10 Lower Grosvenor Place, London, SW1W 0EN. VAT registration number: 419011529. DNA Payments Limited is Page 1 of 4
+authorised by the Financial Conduct Authority under the Payment Service Regulations 2017 for the provision of payment services.
+Summary Breakdown
+Merchant ID 82603035264
+A1 Transactional fees per day
+Fees, GBP
+Processed Transaction Volume, GBP Number Acquiring Refunds Total
+date type Chargebacks
+2 Feb Processed 667.18 51 -1.53 0.00 -4.52
+3 Feb Processed 711.22 60 -1.80 0.00 -5.66
+4 Feb Processed 1,501.65 75 -2.25 0.00 -11.40
+5 Feb Processed 927.83 61 -1.83 0.00 -7.88
+6 Feb Processed 1,715.81 103 -3.09 0.00 -12.73
+7 Feb Processed 2,431.93 162 -4.86 0.00 -17.07
+9 Feb Processed 871.73 67 -2.01 0.00 -6.12
+10 Feb Processed 967.69 59 -1.77 0.00 -8.75
+11 Feb Processed 902.41 85 -2.55 0.00 -7.28
+12 Feb Processed 1,116.55 64 -1.92 0.00 -8.86
+13 Feb Processed 1,699.14 114 -3.42 0.00 -12.07
+14 Feb Processed 1,430.64 120 -3.60 0.00 -10.78
+16 Feb Processed 1,354.49 90 -2.70 0.00 -12.39
+17 Feb Processed 1,127.43 67 -2.01 0.00 -7.79
+18 Feb Processed 911.83 87 -2.61 0.00 -7.34
+19 Feb Processed 792.52 74 -2.22 0.00 -6.04
+20 Feb Processed 1,401.14 105 -3.15 0.00 -9.57
+21 Feb Processed 1,955.98 138 -4.14 0.00 -14.20
+23 Feb Processed 539.48 38 -1.14 0.00 -4.23
+24 Feb Processed 884.59 66 -1.98 0.00 -7.19
+25 Feb Processed 848.00 68 -2.04 0.00 -6.17
+26 Feb Processed 1,132.00 78 -2.34 0.00 -8.48
+27 Feb Processed 1,933.79 131 -3.93 0.00 -14.87
+28 Feb Processed 2,166.68 141 -4.23 0.00 -13.91
+Totals 29,991.71 2,104 -63.12 0.00 -225.27
+A2 Transactional fees per payment type
+Fees, GBP
+Transaction type Volume, GBP Number Acquiring Refunds Total fees, GBP
+Chargebacks
+MasterCard Domestic Corporate 110.00 1 -0.03 0.00 -2.34
+Credit
+MasterCard Domestic Corporate 1,149.18 29 -0.87 0.00 -14.66
+Debit
+DNA Payments Limited (Company No.11154668 /FCA No.806630).
+Registered office: 10 Lower Grosvenor Place, London, SW1W 0EN. VAT registration number: 419011529. DNA Payments Limited is Page 2 of 4
+authorised by the Financial Conduct Authority under the Payment Service Regulations 2017 for the provision of payment services.
+Summary Breakdown
+Merchant ID 82603035264
+A2 Transactional fees per payment type
+Fees, GBP
+Transaction type Volume, GBP Number Acquiring Refunds Total fees, GBP
+Chargebacks
+MasterCard Domestic Personal 2,668.50 175 -5.25 0.00 -26.60
+Credit
+MasterCard Domestic Personal 8,141.68 596 -17.88 0.00 -50.45
+Debit
+MasterCard International 160.27 11 -0.33 0.00 -4.34
+Personal Credit
+MasterCard International 59.20 5 -0.15 0.00 -1.63
+Personal Debit
+MasterCard Intra Corporate 18.97 1 -0.03 0.00 -0.39
+Debit
+MasterCard Intra Personal Credit 34.80 4 -0.12 0.00 -0.61
+MasterCard Intra Personal Debit 125.30 5 -0.15 0.00 -1.47
+Others 0.00 74 -2.22 0.00 -2.22
+VISA Domestic Corporate Debit 416.86 7 -0.21 0.00 -5.21
+VISA Domestic Personal Credit 1,339.73 78 -2.34 0.00 -13.06
+VISA Domestic Personal Debit 15,504.02 1,087 -32.61 0.00 -94.63
+VISA International Corporate 14.85 3 -0.09 0.00 -0.65
+Credit
+VISA International Personal 85.74 12 -0.36 0.00 -3.10
+Credit
+VISA International Personal Debit 73.82 7 -0.21 0.00 -2.57
+VISA Intra Personal Credit 42.92 2 -0.06 0.00 -0.66
+VISA Intra Personal Debit 45.87 7 -0.21 0.00 -0.69
+Totals 29,991.71 2,104 -63.12 0.00 -225.27
+A3 Chargebacks details
+Chargeback details Transaction Reference Fee, GBP
+Totals 0.00
+B Recurring charges summary
+Fee type Number Fee, GBP VAT, GBP Total fee, GBP
+Totals 0.00
+C Non-recurring, one-off fees
+Fee type Number Fee, GBP VAT, GBP Total fee, GBP
+Totals 0.00
+DNA Payments Limited (Company No.11154668 /FCA No.806630).
+Registered office: 10 Lower Grosvenor Place, London, SW1W 0EN. VAT registration number: 419011529. DNA Payments Limited is Page 3 of 4
+authorised by the Financial Conduct Authority under the Payment Service Regulations 2017 for the provision of payment services.
+Summary Breakdown
+Merchant ID 82603035264
+C Non-recurring, one-off fees
+D Other merchant fees
+Fee type Number Fee, GBP VAT, GBP Total fee, GBP
+Totals 0.00
+E DCC Rebates
+Currency Amount in cardholder currency Transactions Amount, GBP Merchant Rebate, GBP
+Totals 0 0.00 0.00
+DNA Payments Limited (Company No.11154668 /FCA No.806630).
+Registered office: 10 Lower Grosvenor Place, London, SW1W 0EN. VAT registration number: 419011529. DNA Payments Limited is Page 4 of 4
+authorised by the Financial Conduct Authority under the Payment Service Regulations 2017 for the provision of payment services.
