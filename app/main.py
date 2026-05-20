@@ -2720,6 +2720,19 @@ def get_manual_outstanding_debt_total():
     return round(total, 2)
 
 
+def get_manual_outstanding_debt_count():
+    """Return count of underwriter-entered outstanding debt balances."""
+    manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+    count = 0
+    for value in manual_balances.values():
+        try:
+            if float(value or 0) > 0:
+                count += 1
+        except (TypeError, ValueError):
+            continue
+    return count
+
+
 def apply_manual_outstanding_debt(metrics):
     """Apply underwriter-entered known balances to debt metrics before scoring."""
     manual_total = get_manual_outstanding_debt_total()
@@ -2736,6 +2749,129 @@ def apply_manual_outstanding_debt(metrics):
     metrics["Debt-to-Income Ratio"] = round(min(adjusted_total_debt / revenue_for_ratios, 10.0), 3)
     metrics["Manual Debt Applied In Score"] = "Yes"
     return metrics
+
+
+def rerun_last_analysis_with_manual_debt():
+    """Recalculate the current session run after underwriter-entered balances change."""
+    run = st.session_state.get("last_run")
+    if not run:
+        return False
+
+    df = run["df"]
+    analysis_period = run["analysis_period"]
+    params = run["params"]
+    card_terminal_files = run.get("card_terminal_files")
+
+    filtered_df = filter_data_by_period(df, analysis_period)
+    primary_account_assessment = assess_primary_account_signal(filtered_df)
+    params["primary_account_assessment"] = primary_account_assessment
+
+    metrics = calculate_financial_metrics(filtered_df, params["company_age_months"])
+    metrics = apply_manual_outstanding_debt(metrics)
+    card_processing_payload = derive_card_processing_payload(filtered_df, card_terminal_files)
+    metrics.update(card_processing_payload.get("insights") or {})
+    scores = calculate_all_scores_enhanced(metrics, params)
+
+    scores["mca_rule_decision"] = params.get("mca_rule_decision")
+    scores["mca_rule_score"] = params.get("mca_rule_score")
+    scores["mca_rule_reasons"] = params.get("mca_rule_reasons", [])
+    scores["primary_account_assessment"] = primary_account_assessment
+
+    def _base_decision_from_subprime(recommendation_text: str) -> str:
+        s = (recommendation_text or "").upper()
+        if "CONDITIONAL" in s or "SENIOR REVIEW" in s or "REVIEW" in s:
+            return "REFER"
+        if "APPROVE" in s:
+            return "APPROVE"
+        return "DECLINE"
+
+    ensemble = scores.get("ensemble") or {}
+    ensemble_decision = ensemble.get("decision")
+    if ensemble_decision is not None:
+        ensemble_decision = str(ensemble_decision).upper().strip()
+
+    if ensemble_decision in ("DECLINE", "REFER", "APPROVE", "SENIOR_REVIEW", "CONDITIONAL_APPROVE"):
+        final_decision = combine_mca_and_tu_decisions(
+            ensemble_decision,
+            params.get("tu_director_decision"),
+        )
+        final_reasons = [
+            f"Decision from weighted MCA/Subprime engine: {ensemble_decision}",
+            f"Final TU overlay: {ensemble_decision} -> {final_decision}",
+            f"Reason: {ensemble.get('primary_reason', 'n/a')}",
+        ]
+    else:
+        base_decision = _base_decision_from_subprime(scores.get("subprime_recommendation", ""))
+        final_decision = combine_mca_and_tu_decisions(
+            base_decision,
+            params.get("tu_director_decision"),
+        )
+        final_reasons = [
+            f"Fallback decision from Subprime: {base_decision}",
+            f"Final TU overlay: {base_decision} -> {final_decision}",
+        ]
+
+    scores["final_decision"] = final_decision
+    scores["final_decision_reasons"] = final_reasons
+    params["final_decision"] = final_decision
+    params["final_decision_reasons"] = final_reasons
+
+    revenue_insights = calculate_revenue_insights(filtered_df)
+
+    run.update(
+        {
+            "filtered_df": filtered_df,
+            "params": params,
+            "metrics": metrics,
+            "scores": scores,
+            "revenue_insights": revenue_insights,
+            "card_processing_payload": card_processing_payload,
+        }
+    )
+    st.session_state["last_run"] = run
+    return True
+
+
+def render_manual_outstanding_debt_form(possible_lenders, key):
+    """Render a batch-save editor for possible lender outstanding balances."""
+    if possible_lenders.empty:
+        return
+
+    display_possible_lenders = possible_lenders.copy()
+    display_possible_lenders["Possible lender"] = display_possible_lenders["possible_lender"]
+    display_possible_lenders["Repayments"] = display_possible_lenders["repayment_count"]
+    display_possible_lenders["Repaid in period (£)"] = display_possible_lenders["total_repaid_in_period"].round(2)
+    display_possible_lenders["Outstanding balance (£)"] = display_possible_lenders["Possible lender"].str.lower().str.strip().map(
+        st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+    ).fillna(0.0)
+
+    with st.form(f"{key}_form", clear_on_submit=False):
+        edited_lenders = st.data_editor(
+            display_possible_lenders[
+                ["Possible lender", "Repayments", "Repaid in period (£)", "Outstanding balance (£)"]
+            ],
+            hide_index=True,
+            use_container_width=True,
+            disabled=["Possible lender", "Repayments", "Repaid in period (£)"],
+            key=f"{key}_editor",
+        )
+        submitted = st.form_submit_button("Save balances and reprocess", type="primary", use_container_width=True)
+
+    manual_total_before = get_manual_outstanding_debt_total()
+    if manual_total_before > 0:
+        st.caption(f"Currently saved outstanding balances: £{manual_total_before:,.2f}")
+
+    if submitted:
+        manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+        for _, row in edited_lenders.iterrows():
+            lender_key = str(row["Possible lender"]).lower().strip()
+            manual_balances[lender_key] = float(row.get("Outstanding balance (£)", 0) or 0)
+        st.session_state["manual_outstanding_debt_balances"] = manual_balances
+        if rerun_last_analysis_with_manual_debt():
+            st.success("Outstanding balances saved and the application was reprocessed.")
+            st.rerun()
+        else:
+            st.success("Outstanding balances saved. Process the application to apply them to scoring.")
 
 def create_loans_repayments_charts(analysis):
     """Create charts for loans and repayments analysis"""
@@ -2879,15 +3015,24 @@ def display_loans_repayments_section(df, analysis_period):
     
     # Perform analysis
     analysis = analyze_loans_and_repayments(filtered_df)
+    manual_debt_total = get_manual_outstanding_debt_total()
+    manual_debt_count = get_manual_outstanding_debt_count()
+    total_known_borrowing = analysis['total_loans_received'] + manual_debt_total
     
     # Key Metrics Row
     col1, col2, col3, col4, col5 = st.columns(5)
     
     with col1:
         st.metric(
-            "Total Loans Received", 
-            f"£{analysis['total_loans_received']:,.0f}",
-            help=f"From {analysis['loan_count']} loan transactions"
+            "Total Loans / Known Balances" if manual_debt_total > 0 else "Total Loans Received",
+            f"£{total_known_borrowing:,.0f}",
+            delta=f"£{manual_debt_total:,.0f} entered balances" if manual_debt_total > 0 else None,
+            help=(
+                f"£{analysis['total_loans_received']:,.0f} visible loan credits plus "
+                f"£{manual_debt_total:,.0f} underwriter-entered outstanding balances"
+                if manual_debt_total > 0
+                else f"From {analysis['loan_count']} loan transactions"
+            )
         )
     
     with col2:
@@ -2899,10 +3044,11 @@ def display_loans_repayments_section(df, analysis_period):
     
     with col3:
         net_borrowing = analysis['net_borrowing']
+        display_net_borrowing = manual_debt_total if manual_debt_total > 0 else abs(net_borrowing)
         st.metric(
-            "Net Borrowing Position", 
-            f"£{abs(net_borrowing):,.0f}",
-            delta="Outstanding" if net_borrowing > 0 else "Net Repaid" if net_borrowing < 0 else "Balanced"
+            "Known Outstanding Balance" if manual_debt_total > 0 else "Net Borrowing Position",
+            f"£{display_net_borrowing:,.0f}",
+            delta="Confirmed outstanding" if manual_debt_total > 0 else "Outstanding" if net_borrowing > 0 else "Net Repaid" if net_borrowing < 0 else "Balanced"
         )
     
     with col4:
@@ -2923,8 +3069,10 @@ def display_loans_repayments_section(df, analysis_period):
     
     with col5:
         avg_loan = analysis['avg_loan_amount']
+        if manual_debt_total > 0 and analysis['loan_count'] == 0:
+            avg_loan = manual_debt_total / max(manual_debt_count, 1)
         st.metric(
-            "Average Loan Amount", 
+            "Average Known Balance" if manual_debt_total > 0 and analysis['loan_count'] == 0 else "Average Loan Amount",
             f"£{avg_loan:,.0f}" if avg_loan > 0 else "N/A"
         )
     
@@ -2993,30 +3141,7 @@ def display_loans_repayments_section(df, analysis_period):
                     st.info("No loan data available for lender analysis")
                 else:
                     st.warning("No loan credits found. Repayments below may indicate existing borrowing outside the visible bank data.")
-                    display_possible_lenders = possible_lenders.copy()
-                    display_possible_lenders['Possible lender'] = display_possible_lenders['possible_lender']
-                    display_possible_lenders['Repayments'] = display_possible_lenders['repayment_count']
-                    display_possible_lenders['Repaid in period (£)'] = display_possible_lenders['total_repaid_in_period'].round(2)
-                    display_possible_lenders['Outstanding balance (£)'] = display_possible_lenders['recipient_clean'].map(
-                        st.session_state.get("manual_outstanding_debt_balances", {}) or {}
-                    ).fillna(0.0)
-                    edited_lenders = st.data_editor(
-                        display_possible_lenders[
-                            ['Possible lender', 'Repayments', 'Repaid in period (£)', 'Outstanding balance (£)']
-                        ],
-                        hide_index=True,
-                        use_container_width=True,
-                        disabled=['Possible lender', 'Repayments', 'Repaid in period (£)'],
-                        key="possible_lenders_manual_debt_editor",
-                    )
-                    manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
-                    for _, row in edited_lenders.iterrows():
-                        lender_key = str(row['Possible lender']).lower().strip()
-                        manual_balances[lender_key] = float(row.get('Outstanding balance (£)', 0) or 0)
-                    st.session_state["manual_outstanding_debt_balances"] = manual_balances
-                    manual_total = get_manual_outstanding_debt_total()
-                    if manual_total > 0:
-                        st.caption(f"Manual outstanding debt to apply on next Process analysis run: £{manual_total:,.2f}")
+                    render_manual_outstanding_debt_form(possible_lenders, "possible_lenders_manual_debt")
         
         if 'repayments_by_recipient' in charts and charts['repayments_by_recipient'] is not None:
             with chart_row2_col2:
@@ -3033,30 +3158,7 @@ def display_loans_repayments_section(df, analysis_period):
                     "Additional possible lenders found from repayments with no matching loan credit. "
                     "Enter confirmed outstanding balances, then rerun the application."
                 )
-                display_possible_lenders = unmatched_possible_lenders.copy()
-                display_possible_lenders['Possible lender'] = display_possible_lenders['possible_lender']
-                display_possible_lenders['Repayments'] = display_possible_lenders['repayment_count']
-                display_possible_lenders['Repaid in period (£)'] = display_possible_lenders['total_repaid_in_period'].round(2)
-                display_possible_lenders['Outstanding balance (£)'] = display_possible_lenders['recipient_clean'].map(
-                    st.session_state.get("manual_outstanding_debt_balances", {}) or {}
-                ).fillna(0.0)
-                edited_lenders = st.data_editor(
-                    display_possible_lenders[
-                        ['Possible lender', 'Repayments', 'Repaid in period (£)', 'Outstanding balance (£)']
-                    ],
-                    hide_index=True,
-                    use_container_width=True,
-                    disabled=['Possible lender', 'Repayments', 'Repaid in period (£)'],
-                    key="possible_additional_lenders_manual_debt_editor",
-                )
-                manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
-                for _, row in edited_lenders.iterrows():
-                    lender_key = str(row['Possible lender']).lower().strip()
-                    manual_balances[lender_key] = float(row.get('Outstanding balance (£)', 0) or 0)
-                st.session_state["manual_outstanding_debt_balances"] = manual_balances
-                manual_total = get_manual_outstanding_debt_total()
-                if manual_total > 0:
-                    st.caption(f"Manual outstanding debt to apply on next Process analysis run: £{manual_total:,.2f}")
+                render_manual_outstanding_debt_form(unmatched_possible_lenders, "possible_additional_lenders_manual_debt")
     
     # Detailed Breakdown Tables
     with st.expander("Detailed loan and repayment breakdown", expanded=False):
