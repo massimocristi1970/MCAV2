@@ -1,0 +1,16 @@
+JSON files: 772
+Files that would be renamed: 654
+Collision-numbered files: 463
+Collision groups: 174
+Mapping rows compared: 553
+Mapping rows matched >= 88.0: 474
+Mapping rows without JSON match: 79
+Approved weak matches: 2
+Unique cleaned JSON company names: 494
+Cleaned JSON company names not matched to mapping: 104
+Apply mode: no
+
+Rename dry run: analysis_outputs\json_filename_cleanup_20260519_approved\json_rename_dry_run.csv
+Mapping comparison: analysis_outputs\json_filename_cleanup_20260519_approved\data_mapping_comparison.csv
+Missing mapping rows: analysis_outputs\json_filename_cleanup_20260519_approved\mapping_rows_without_json_match.csv
+JSON extras: analysis_outputs\json_filename_cleanup_20260519_approved\json_files_without_mapping_match.csv

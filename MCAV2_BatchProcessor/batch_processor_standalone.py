@@ -20,6 +20,7 @@ import os
 import zipfile
 import tempfile
 import hashlib
+import shutil
 from datetime import datetime, timedelta
 import plotly.express as px
 import plotly.graph_objects as go
@@ -4295,6 +4296,7 @@ def resolve_saved_runs_dir() -> Path:
 
 
 SAVED_RUNS_DIR = resolve_saved_runs_dir()
+ARCHIVED_SAVED_RUNS_DIR = SAVED_RUNS_DIR / "_archived_saved_runs"
 
 DEFAULT_SCORECARD_DEV_DIR = SAVED_RUNS_DIR.parent if SAVED_RUNS_DIR.name == "Saved_batch_processor_runs" else BATCH_PROCESSOR_DIR
 DEFAULT_MAPPING_FILE = Path(
@@ -4477,6 +4479,43 @@ def list_saved_runs() -> list[dict[str, Any]]:
         except Exception:
             continue
     return sorted(runs, key=lambda item: item.get("created_at", ""), reverse=True)
+
+
+def _is_path_within(child: Path, parent: Path) -> bool:
+    try:
+        child.resolve().relative_to(parent.resolve())
+        return True
+    except ValueError:
+        return False
+
+
+def archive_saved_runs(manifests: list[dict[str, Any]]) -> list[dict[str, str]]:
+    """Move selected saved run folders into the archive folder so they leave the dropdown."""
+    archived: list[dict[str, str]] = []
+    ARCHIVED_SAVED_RUNS_DIR.mkdir(parents=True, exist_ok=True)
+
+    for manifest in manifests:
+        run_dir = resolve_saved_run_dir(manifest)
+        if not run_dir.exists() or not (run_dir / "manifest.json").exists():
+            archived.append({"run": str(manifest.get("run_name") or manifest.get("run_id") or run_dir.name), "status": "missing"})
+            continue
+        if not _is_path_within(run_dir, SAVED_RUNS_DIR) or run_dir == SAVED_RUNS_DIR:
+            archived.append({"run": run_dir.name, "status": "skipped_outside_saved_runs"})
+            continue
+        if _is_path_within(run_dir, ARCHIVED_SAVED_RUNS_DIR):
+            archived.append({"run": run_dir.name, "status": "already_archived"})
+            continue
+
+        target_dir = ARCHIVED_SAVED_RUNS_DIR / run_dir.name
+        suffix = 2
+        while target_dir.exists():
+            target_dir = ARCHIVED_SAVED_RUNS_DIR / f"{run_dir.name}_{suffix}"
+            suffix += 1
+
+        shutil.move(str(run_dir), str(target_dir))
+        archived.append({"run": run_dir.name, "status": "archived", "archive_path": str(target_dir)})
+
+    return archived
 
 
 def resolve_saved_run_dir(manifest: dict[str, Any]) -> Path:
@@ -6380,6 +6419,68 @@ def main():
             if st.sidebar.button("Load Selected Run", type="primary"):
                 st.session_state["loaded_saved_run"] = selected_run
                 st.rerun()
+
+        with st.sidebar.expander("Manage saved runs", expanded=False):
+            st.caption("Archive selected runs to remove them from this dropdown without permanently deleting them.")
+            archive_options = pd.DataFrame(
+                [
+                    {
+                        "Archive": False,
+                        "Run": run.get("run_name", run.get("run_id", "Run")),
+                        "Created": run.get("created_at", ""),
+                        "Path": run.get("path", ""),
+                    }
+                    for run in saved_runs
+                ]
+            )
+            selected_archive_rows = st.data_editor(
+                archive_options,
+                hide_index=True,
+                use_container_width=True,
+                column_config={
+                    "Archive": st.column_config.CheckboxColumn("Archive"),
+                    "Path": st.column_config.TextColumn("Path", disabled=True),
+                    "Run": st.column_config.TextColumn("Run", disabled=True),
+                    "Created": st.column_config.TextColumn("Created", disabled=True),
+                },
+                disabled=["Run", "Created", "Path"],
+                key="saved_runs_archive_selector",
+            )
+            selected_paths = set(
+                selected_archive_rows.loc[selected_archive_rows["Archive"], "Path"].astype(str).tolist()
+                if not selected_archive_rows.empty else []
+            )
+            runs_to_archive = [run for run in saved_runs if str(run.get("path", "")) in selected_paths]
+            confirm_archive = st.checkbox(
+                "I understand selected runs will be moved out of the active saved-runs folder",
+                key="confirm_archive_saved_runs",
+            )
+            if st.button(
+                "Archive Selected Runs",
+                disabled=not runs_to_archive or not confirm_archive,
+                key="archive_selected_saved_runs",
+            ):
+                try:
+                    archive_results = archive_saved_runs(runs_to_archive)
+                    st.session_state["saved_run_archive_results"] = archive_results
+                    loaded = st.session_state.get("loaded_saved_run")
+                    archived_paths = {result.get("archive_path") for result in archive_results if result.get("status") == "archived"}
+                    if loaded and str(resolve_saved_run_dir(loaded)) in archived_paths:
+                        st.session_state.pop("loaded_saved_run", None)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Could not archive selected runs: {e}")
+
+            archive_results = st.session_state.get("saved_run_archive_results")
+            if archive_results:
+                archived_count = sum(1 for result in archive_results if result.get("status") == "archived")
+                if archived_count:
+                    st.success(f"Archived {archived_count} saved run(s).")
+                non_archived = [result for result in archive_results if result.get("status") != "archived"]
+                if non_archived:
+                    st.warning(f"{len(non_archived)} selected run(s) were not archived. Check statuses below.")
+                    st.dataframe(pd.DataFrame(non_archived), use_container_width=True, hide_index=True)
+            st.caption(f"Archive folder: {ARCHIVED_SAVED_RUNS_DIR}")
     else:
         selected_run = None
         st.sidebar.info("No saved runs on this machine yet. Import a saved-run package or process and save a new run.")

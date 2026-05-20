@@ -1,0 +1,81 @@
+AppID,CustomerName,normalized_customer,best_json_company,match_score,match_strategy,matched,OB Signed
+100033,1888 trading ltd,1888 trading ltd,Fugazzo Trading Limited,85.7,fuzzy,False,Y
+100032,agricgem ltd,agricgem ltd,MBRB Limited,76.9,fuzzy,False,Y
+101610,Allure Salon (NE) LTD,allure salon ne ltd,Allure Salon (UK) Ltd,91.4,rejected_override,False,Y
+100339,Ark Deliveries LTD,ark deliveries ltd,Porkies Ltd,84.2,fuzzy,False,Y
+100348,BARRY'S FOOD STORES LTD,barry s food stores ltd,Porkies Ltd,84.2,fuzzy,False,Y
+100180,Bubastore LTD,bubastore ltd,Thor Ltd,87.5,fuzzy,False,Y
+100338,car point 7 ltd,car point 7 ltd,Custom Car Paint Ltd,85.7,fuzzy,False,Y
+101527,CHAPTER 8 GROUP LIMITED,chapter 8 group ltd,WMJ Group Limited,87.0,fuzzy,False,Y
+100266,CHEF MATEI BARAN EVENTS LTD,chef matei baran events ltd,Funk Up Events Limited,80.0,fuzzy,False,Y
+100212,Chloespcosmetics,chloespcosmetics,Shepsgourmetkitchen Ltd,56.2,fuzzy,False,Y
+100378,Clickinit Online Ltd,clickinit online ltd,ELIJA Limited,71.4,fuzzy,False,Y
+101556,CRS Group SE Ltd,crs group se ltd,Spencers Group Ltd,86.7,fuzzy,False,Y
+101677,D&C ROOFING & CLADDING LTD,d&c roofing & cladding ltd,AS Cladding And Roofing Ltd,87.0,fuzzy,False,Y
+100305,Dave&STransport ltd,dave&stransport ltd,Mj Trasnsport Ltd,86.7,fuzzy,False,Y
+100074,Denise cakes ltd,denise cakes ltd,Aksz Ltd,87.5,fuzzy,False,Y
+100332,Digitally Delish Ltd,digitally delish ltd,22Lush Limited,77.8,fuzzy,False,Y
+100045,Direct ac ltd,direct ac ltd,Ketco Direct Limited,87.0,fuzzy,False,Y
+100041,Dragon Vapour Ltd,dragon vapour ltd,Thor Ltd,80.0,fuzzy,False,Y
+101522,Eddies Estates,eddies estates,Beddoes Removals And Stotage,58.3,fuzzy,False,Y
+100404,Emerald lawn care,emerald lawn care,Erfan Carpet,70.0,fuzzy,False,Y
+101499,Eyelash Queen Ltd,eyelash queen ltd,The Coven Ltd,80.0,fuzzy,False,Y
+101644,F.B.E Associates LTD,f b e associates ltd,Data4est Ltd,80.0,fuzzy,False,Y
+100286,FAST TDS LTD,fast tds ltd,Canny Fast Car Solutions Ltd,80.0,fuzzy,False,Y
+100353,ForeverFix,foreverfix,CoreERP Solutions,62.5,fuzzy,False,Y
+100270,Forge The Way Ltd,forge way ltd,Sorin&George Ltd,76.2,fuzzy,False,Y
+100384,Gardening kings,gardening kings,Greenlight Digital,62.1,fuzzy,False,Y
+101515,geezer ltd,geezer ltd,E & R IRVING FISHMONGERS Ltd,77.8,fuzzy,False,Y
+100335,GOCLOTHES LTD,goclothes ltd,Aksz Ltd,76.9,fuzzy,False,Y
+101511,Goose Audio Limited,goose audio ltd,Thor Ltd,76.9,fuzzy,False,Y
+100198,Gwynne and hyde plumbing and heating ltd,gwynne and hyde plumbing and heating ltd,Alto Barren Plumbing & Heating Ltd,76.7,fuzzy,False,Y
+100354,HAVEN Coffee,haven coffee,Hans-Lec,66.7,fuzzy,False,Y
+100368,HB Online Limited,hb online ltd,French Sole Ltd,78.3,fuzzy,False,Y
+100119,Jamie redfearn utilities ltd,jamie redfearn utilities ltd,Porkies Ltd,77.8,fuzzy,False,Y
+100129,KimDigitalEdge,kimdigitaledge,Greenlight Digital,66.7,fuzzy,False,Y
+100080,kitty&kobe limited,kitty&kobe ltd,Xydrobe Ltd,77.8,fuzzy,False,Y
+100377,kitty&kobe limited,kitty&kobe ltd,Xydrobe Ltd,77.8,fuzzy,False,Y
+100260,La Latina,la latina,Del Castillo Latin Productions Ltd,77.8,fuzzy,False,Y
+100352,Lavidabeds limited,lavidabeds ltd,Aksz Ltd,76.9,fuzzy,False,Y
+100315,Little Lambs Nursery Doncaster,little lambs nursery doncaster,Steerlux,66.7,fuzzy,False,Y
+101685,Llanelli performance Center ltd,llanelli performance center ltd,Peter G Ltd,80.0,fuzzy,False,Y
+100216,Lucy Hair and Tan,lucy hair and tan,Neu Hair,75.0,fuzzy,False,Y
+100363,Made in Camden CIC,made in camden cic,Alma Deli Ltd,57.1,fuzzy,False,Y
+100343,Marigold Charms,marigold charms,Mar Carpio Ltd,63.6,fuzzy,False,Y
+101609,Maverick swimming solutions ltd,maverick swimming solutions ltd,Go Sure Solutions Ltd,83.3,fuzzy,False,Y
+100250,MB domestic cleaning,mb domestic cleaning,Northwest Cleaning Experts,68.4,fuzzy,False,Y
+100256,Miindful Ltd,miindful ltd,ELIJA Limited,71.4,fuzzy,False,Y
+100054,Mind Logix Limited,mind logix ltd,Delche Gaming Ltd,72.7,fuzzy,False,Y
+100046,MJC PUBS LIMITED,mjc pubs ltd,Nova Pubs Ltd,85.7,fuzzy,False,Y
+101684,Murray Home Care Ltd,murray home care ltd,Gozone Care Ltd,81.5,fuzzy,False,Y
+100248,Ncservices4you ltd,ncservices4you ltd,BK Maintenance Services Limited,82.4,fuzzy,False,Y
+101531,Onairos,onairos,Havelock Group Ltd TA New Longcar,61.5,fuzzy,False,Y
+100316,Orion Racing Limited,orion racing ltd,Starks Flooring Ltd,76.9,fuzzy,False,Y
+100337,O'tenure LTD,o tenure ltd,GC COUTURE Ltd,81.8,fuzzy,False,Y
+100031,Paparazzi Restaurant Limited,paparazzi restaurant ltd,Aurina Ltd,80.0,fuzzy,False,Y
+100048,Paparazzi Restaurant Limited,paparazzi restaurant ltd,Aurina Ltd,80.0,fuzzy,False,Y
+100203,Pats Pet Store,pats pet store,INGS PET STORE & GROOMING Ltd,78.6,fuzzy,False,Y
+100037,Prestige Tech Tiles Limited,prestige tech tiles ltd,Aksz Ltd,76.9,fuzzy,False,Y
+100333,Rjf accountants ltd,rjf accountants ltd,Aksz Ltd,76.9,fuzzy,False,Y
+101720,sds 2015 limited,sds 2015 ltd,HSIDS,75.0,fuzzy,False,Y
+100359,Shape London Designs Ltd,shape london designs ltd,We Design IT Ltd,78.6,fuzzy,False,Y
+100277,Sians Sweet Treats Limited,sians sweet treats ltd,Aksz Ltd,80.0,fuzzy,False,Y
+101595,Southend Rasoi ltd,southend rasoi ltd,Aksz Ltd,75.0,fuzzy,False,Y
+100374,St. Mark & Cee Healthcare LTD,st mark & cee healthcare ltd,Anthony Healthcare Ltd,81.1,fuzzy,False,Y
+100293,Tataru Media Limited,tataru media ltd,ELIJA Limited,82.4,fuzzy,False,Y
+101429,TC TO BUILD LTD,tc to build ltd,TTND Ltd,76.9,fuzzy,False,Y
+100101,Tcom fibre ltd,tcom fibre ltd,MBRB Limited,80.0,fuzzy,False,Y
+100259,The baguette deli,baguette deli,Deli Ice Limited,56.0,fuzzy,False,Y
+100036,The Harbour Galley,harbour galley,Harley Street Hair Transplants,60.0,fuzzy,False,Y
+101707,The Vault TCC,vault tcc,Blisshealth Concepts Limited,66.7,fuzzy,False,Y
+100278,Tr property development est 2019 ltd,tr property development est 2019 ltd,Aksz Ltd,66.7,fuzzy,False,Y
+100314,Trending Furnishings ltd,trending furnishings ltd,Aksz Ltd,76.9,fuzzy,False,Y
+100279,Trident Software Systems Ltd,trident software systems ltd,Aksz Ltd,76.9,fuzzy,False,Y
+100358,Triple 7 Marketing Ltd,triple 7 marketing ltd,Mecn Marketing Ltd,87.5,fuzzy,False,Y
+100274,Unstoppable Caterings Ltd,unstoppable caterings ltd,Aksz Ltd,76.9,fuzzy,False,Y
+100375,usedemand ltd,usedemand ltd,TTND Ltd,85.7,fuzzy,False,Y
+101426,usedemand ltd,usedemand ltd,TTND Ltd,85.7,fuzzy,False,Y
+100360,valtchev group ltd,valtchev group ltd,WMJ Group Limited,87.0,fuzzy,False,Y
+100334,Virtual Oath Studios Ltd,virtual oath studios ltd,Bound Studios Ltd,82.8,fuzzy,False,Y
+100367,Wet seafood & wild meat supplies ltd,wet seafood & wild meat supplies ltd,MYM SUPPLIERS Ltd,86.7,fuzzy,False,Y
+100242,X76 CHESTER LTD,x76 chester ltd,Hussains Leicester Ltd,80.0,fuzzy,False,Y
