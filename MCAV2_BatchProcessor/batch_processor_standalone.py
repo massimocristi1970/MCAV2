@@ -1026,6 +1026,32 @@ def calculate_financial_metrics(data, company_age_months):
         total_debt_repayments = abs(data.loc[data['is_debt_repayment'], 'amount'].sum()) if data[
             'is_debt_repayment'].any() else 0
         total_debt = abs(data.loc[data['is_debt'], 'amount'].sum()) if data['is_debt'].any() else 0
+        debt_repayment_recipients = []
+        possible_lenders_from_repayments = []
+        name_column = 'name' if 'name' in data.columns else 'name_y' if 'name_y' in data.columns else None
+        if total_debt_repayments > 0 and name_column is not None:
+            repayment_recipients = (
+                data.loc[data['is_debt_repayment']]
+                .assign(recipient_clean=lambda x: x[name_column].fillna("").astype(str).str.lower().str.strip())
+                .groupby('recipient_clean')['amount']
+                .agg(['count', lambda values: abs(values.sum())])
+                .reset_index()
+            )
+            repayment_recipients.columns = ['recipient_clean', 'count', 'sum']
+            repayment_recipients = repayment_recipients.sort_values('sum', ascending=False)
+            visible_lenders = set(
+                data.loc[data['is_debt'], name_column].fillna("").astype(str).str.lower().str.strip().unique()
+            )
+            for row in repayment_recipients.head(10).to_dict('records'):
+                lender_name = str(row['recipient_clean'])
+                debt_repayment_recipients.append(lender_name.title())
+                if lender_name not in visible_lenders:
+                    possible_lenders_from_repayments.append({
+                        "possible_lender": lender_name.title(),
+                        "repayment_count": int(row['count']),
+                        "total_repaid_in_period": round(float(row['sum']), 2),
+                        "review_reason": "Repayments found but no matching loan credit in selected bank data",
+                    })
 
         # Ensure minimum values to prevent division by zero
         total_revenue = max(total_revenue, 1)  # Minimum £1 to prevent division by zero
@@ -1154,6 +1180,10 @@ def calculate_financial_metrics(data, company_age_months):
             "Net Income": round(net_income, 2),
             "Total Debt Repayments": round(total_debt_repayments, 2),
             "Total Debt": round(total_debt, 2),
+            "Potential Lenders From Repayments": possible_lenders_from_repayments,
+            "Potential Lenders From Repayments Count": len(possible_lenders_from_repayments),
+            "Debt Repayment Recipients": debt_repayment_recipients,
+            "Repayments Without Visible Loan": bool(total_debt <= 0 and total_debt_repayments > 0),
             "Debt-to-Income Ratio": round(debt_to_income_ratio, 3),
             "Expense-to-Revenue Ratio": round(expense_to_revenue_ratio, 3),
             "Operating Margin": round(operating_margin, 3),

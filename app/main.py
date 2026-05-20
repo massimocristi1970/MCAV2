@@ -2651,7 +2651,35 @@ def analyze_loans_and_repayments(df):
     
     # === COMBINED ANALYSIS ===
     analysis['net_borrowing'] = analysis['total_loans_received'] - analysis['total_repayments_made']
-    analysis['repayment_ratio'] = (analysis['total_repayments_made'] / analysis['total_loans_received']) if analysis['total_loans_received'] > 0 else 0
+    analysis['repayment_ratio'] = (analysis['total_repayments_made'] / analysis['total_loans_received']) if analysis['total_loans_received'] > 0 else None
+    analysis['repayments_without_visible_loan'] = bool(analysis['loan_count'] == 0 and analysis['repayment_count'] > 0)
+
+    if not analysis['repayments_by_recipient'].empty:
+        possible_lenders = analysis['repayments_by_recipient'].copy()
+        possible_lenders['possible_lender'] = possible_lenders['recipient_clean'].str.title()
+        visible_lenders = set()
+        if not analysis['loans_by_lender'].empty:
+            visible_lenders = set(analysis['loans_by_lender']['lender_clean'].astype(str).str.lower().str.strip())
+        possible_lenders['loan_credit_seen'] = possible_lenders['recipient_clean'].isin(visible_lenders)
+        possible_lenders['review_reason'] = possible_lenders['loan_credit_seen'].map({
+            True: "Repayment recipient with visible loan credit",
+            False: "Repayments found but no matching loan credit in selected bank data",
+        })
+        possible_lenders = possible_lenders.rename(
+            columns={'count': 'repayment_count', 'sum': 'total_repaid_in_period'}
+        )
+        analysis['possible_lenders_from_repayments'] = possible_lenders[
+            [
+                'possible_lender',
+                'recipient_clean',
+                'repayment_count',
+                'total_repaid_in_period',
+                'loan_credit_seen',
+                'review_reason',
+            ]
+        ]
+    else:
+        analysis['possible_lenders_from_repayments'] = pd.DataFrame()
     
     # Monthly net borrowing trend
     if not loans_data.empty or not repayments_data.empty:
@@ -2678,6 +2706,36 @@ def analyze_loans_and_repayments(df):
         analysis['monthly_net_borrowing'] = pd.DataFrame()
     
     return analysis
+
+
+def get_manual_outstanding_debt_total():
+    """Return underwriter-entered outstanding debt balances from session state."""
+    manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+    total = 0.0
+    for value in manual_balances.values():
+        try:
+            total += max(float(value or 0), 0.0)
+        except (TypeError, ValueError):
+            continue
+    return round(total, 2)
+
+
+def apply_manual_outstanding_debt(metrics):
+    """Apply underwriter-entered known balances to debt metrics before scoring."""
+    manual_total = get_manual_outstanding_debt_total()
+    metrics["Manual Outstanding Debt"] = manual_total
+    if manual_total <= 0:
+        return metrics
+
+    existing_total_debt = float(metrics.get("Total Debt", 0) or 0)
+    adjusted_total_debt = existing_total_debt + manual_total
+    revenue_for_ratios = max(float(metrics.get("Total Revenue", 0) or 0), 1.0)
+
+    metrics["Open Banking Total Debt"] = round(existing_total_debt, 2)
+    metrics["Total Debt"] = round(adjusted_total_debt, 2)
+    metrics["Debt-to-Income Ratio"] = round(min(adjusted_total_debt / revenue_for_ratios, 10.0), 3)
+    metrics["Manual Debt Applied In Score"] = "Yes"
+    return metrics
 
 def create_loans_repayments_charts(analysis):
     """Create charts for loans and repayments analysis"""
@@ -2875,8 +2933,10 @@ def display_loans_repayments_section(df, analysis_period):
     risk_col1, risk_col2, risk_col3 = st.columns(3)
     
     with risk_col1:
-        if analysis['loan_count'] == 0:
-            st.info("**No external debt** — business operates without external financing")
+        if analysis['loan_count'] == 0 and analysis['repayment_count'] > 0:
+            st.warning("**Possible existing borrowing** — repayments found but no loan credit appears in this bank data")
+        elif analysis['loan_count'] == 0:
+            st.info("**No visible external debt** — no loan credits or repayments found in this bank data")
         elif analysis['repayment_ratio'] >= 0.8:
             st.success("**Good repayment behavior** — consistently repays debt obligations")
         elif analysis['repayment_ratio'] >= 0.5:
@@ -2885,7 +2945,9 @@ def display_loans_repayments_section(df, analysis_period):
             st.error("**High debt risk** — low repayment ratio indicates potential issues")
     
     with risk_col2:
-        if analysis['loan_count'] == 0:
+        if analysis['loan_count'] == 0 and analysis['repayment_count'] > 0:
+            st.warning("**Borrowing not fully visible** — loan may pre-date this period or sit in another account")
+        elif analysis['loan_count'] == 0:
             st.info("**No borrowing history** — cannot assess borrowing patterns")
         elif analysis['loan_count'] <= 3:
             st.success("**Conservative borrowing** — infrequent use of external financing")
@@ -2895,7 +2957,9 @@ def display_loans_repayments_section(df, analysis_period):
             st.error("**High borrowing frequency** — heavy reliance on external financing")
     
     with risk_col3:
-        if analysis['net_borrowing'] <= 0:
+        if analysis['loan_count'] == 0 and analysis['repayment_count'] > 0:
+            st.warning("**Outstanding balance required** — enter known balances below, then rerun the application")
+        elif analysis['net_borrowing'] <= 0:
             st.success("**Positive net position** — more repaid than borrowed")
         elif analysis['net_borrowing'] <= analysis['total_loans_received'] * 0.3:
             st.info("**Manageable outstanding** — reasonable debt burden")
@@ -2924,7 +2988,35 @@ def display_loans_repayments_section(df, analysis_period):
                 show_mca_plotly(charts['loans_by_lender'], key="loans_by_lender")
         else:
             with chart_row2_col1:
-                st.info("No loan data available for lender analysis")
+                possible_lenders = analysis.get('possible_lenders_from_repayments', pd.DataFrame())
+                if possible_lenders.empty:
+                    st.info("No loan data available for lender analysis")
+                else:
+                    st.warning("No loan credits found. Repayments below may indicate existing borrowing outside the visible bank data.")
+                    display_possible_lenders = possible_lenders.copy()
+                    display_possible_lenders['Possible lender'] = display_possible_lenders['possible_lender']
+                    display_possible_lenders['Repayments'] = display_possible_lenders['repayment_count']
+                    display_possible_lenders['Repaid in period (£)'] = display_possible_lenders['total_repaid_in_period'].round(2)
+                    display_possible_lenders['Outstanding balance (£)'] = display_possible_lenders['recipient_clean'].map(
+                        st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+                    ).fillna(0.0)
+                    edited_lenders = st.data_editor(
+                        display_possible_lenders[
+                            ['Possible lender', 'Repayments', 'Repaid in period (£)', 'Outstanding balance (£)']
+                        ],
+                        hide_index=True,
+                        use_container_width=True,
+                        disabled=['Possible lender', 'Repayments', 'Repaid in period (£)'],
+                        key="possible_lenders_manual_debt_editor",
+                    )
+                    manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+                    for _, row in edited_lenders.iterrows():
+                        lender_key = str(row['Possible lender']).lower().strip()
+                        manual_balances[lender_key] = float(row.get('Outstanding balance (£)', 0) or 0)
+                    st.session_state["manual_outstanding_debt_balances"] = manual_balances
+                    manual_total = get_manual_outstanding_debt_total()
+                    if manual_total > 0:
+                        st.caption(f"Manual outstanding debt to apply on next Process analysis run: £{manual_total:,.2f}")
         
         if 'repayments_by_recipient' in charts and charts['repayments_by_recipient'] is not None:
             with chart_row2_col2:
@@ -2932,6 +3024,39 @@ def display_loans_repayments_section(df, analysis_period):
         else:
             with chart_row2_col2:
                 st.info("No repayment data available for recipient analysis")
+
+        possible_lenders = analysis.get('possible_lenders_from_repayments', pd.DataFrame())
+        if 'loans_by_lender' in charts and charts['loans_by_lender'] is not None and not possible_lenders.empty:
+            unmatched_possible_lenders = possible_lenders[possible_lenders['loan_credit_seen'] == False].copy()
+            if not unmatched_possible_lenders.empty:
+                st.warning(
+                    "Additional possible lenders found from repayments with no matching loan credit. "
+                    "Enter confirmed outstanding balances, then rerun the application."
+                )
+                display_possible_lenders = unmatched_possible_lenders.copy()
+                display_possible_lenders['Possible lender'] = display_possible_lenders['possible_lender']
+                display_possible_lenders['Repayments'] = display_possible_lenders['repayment_count']
+                display_possible_lenders['Repaid in period (£)'] = display_possible_lenders['total_repaid_in_period'].round(2)
+                display_possible_lenders['Outstanding balance (£)'] = display_possible_lenders['recipient_clean'].map(
+                    st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+                ).fillna(0.0)
+                edited_lenders = st.data_editor(
+                    display_possible_lenders[
+                        ['Possible lender', 'Repayments', 'Repaid in period (£)', 'Outstanding balance (£)']
+                    ],
+                    hide_index=True,
+                    use_container_width=True,
+                    disabled=['Possible lender', 'Repayments', 'Repaid in period (£)'],
+                    key="possible_additional_lenders_manual_debt_editor",
+                )
+                manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+                for _, row in edited_lenders.iterrows():
+                    lender_key = str(row['Possible lender']).lower().strip()
+                    manual_balances[lender_key] = float(row.get('Outstanding balance (£)', 0) or 0)
+                st.session_state["manual_outstanding_debt_balances"] = manual_balances
+                manual_total = get_manual_outstanding_debt_total()
+                if manual_total > 0:
+                    st.caption(f"Manual outstanding debt to apply on next Process analysis run: £{manual_total:,.2f}")
     
     # Detailed Breakdown Tables
     with st.expander("Detailed loan and repayment breakdown", expanded=False):
@@ -2947,6 +3072,17 @@ def display_loans_repayments_section(df, analysis_period):
                 st.dataframe(display_loans, use_container_width=True, hide_index=True)
             else:
                 st.info("No loan transactions found in the selected period.")
+                possible_lenders = analysis.get('possible_lenders_from_repayments', pd.DataFrame())
+                if not possible_lenders.empty:
+                    st.write("**Possible lenders from repayments:**")
+                    display_possible = possible_lenders.copy()
+                    display_possible['possible_lender'] = display_possible['possible_lender'].str.title()
+                    display_possible = display_possible[
+                        ['possible_lender', 'repayment_count', 'total_repaid_in_period', 'review_reason']
+                    ]
+                    display_possible.columns = ['Possible Lender', 'Repayments', 'Repaid in Period (£)', 'Review Reason']
+                    display_possible['Repaid in Period (£)'] = display_possible['Repaid in Period (£)'].apply(lambda x: f"£{x:,.2f}")
+                    st.dataframe(display_possible, use_container_width=True, hide_index=True)
         
         with tab2:
             if not analysis['repayments_by_recipient'].empty:
@@ -3071,7 +3207,7 @@ class DashboardExporter:
                     </div>
                     <div class="metric-card">
                         <h4>Repayment Ratio</h4>
-                        <div>{export_data['loans_analysis'].get('repayment_ratio', 0)*100:.1f}%</div>
+                        <div>{(export_data['loans_analysis'].get('repayment_ratio') or 0)*100:.1f}%</div>
                     </div>
                 </div>
             </div>
@@ -4040,6 +4176,7 @@ def render_full_financial_dashboard(
         st.markdown("---")
         with st.expander(f"Compare with Full Period Analysis", expanded=False):
             full_metrics = calculate_financial_metrics(df, params['company_age_months'])
+            full_metrics = apply_manual_outstanding_debt(full_metrics)
             full_scores = calculate_all_scores_enhanced(full_metrics, params)
 
             st.write("**Full Period vs Selected Period Comparison:**")
@@ -4548,6 +4685,7 @@ def main():
                 primary_account_assessment = assess_primary_account_signal(filtered_df)
                 params["primary_account_assessment"] = primary_account_assessment
                 metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
+                metrics = apply_manual_outstanding_debt(metrics)
                 card_processing_payload = derive_card_processing_payload(filtered_df, card_terminal_files)
                 metrics.update(card_processing_payload.get("insights") or {})
                 scores = calculate_all_scores_enhanced(metrics, params)

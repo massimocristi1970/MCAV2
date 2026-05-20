@@ -167,6 +167,32 @@ def calculate_business_metrics(data: pd.DataFrame, company_age_months: int | flo
         avg_negative_days = 0
 
     advanced_metrics = calculate_advanced_metrics(df)
+    debt_repayment_recipients = []
+    possible_lenders_from_repayments = []
+    if total_debt_repayments > 0 and "name" in df.columns:
+        repayment_recipients = (
+            df.loc[df["is_debt_repayment"]]
+            .assign(recipient_clean=lambda x: x["name"].fillna("").astype(str).str.lower().str.strip())
+            .groupby("recipient_clean")["abs_amount"]
+            .agg(["count", "sum"])
+            .reset_index()
+            .sort_values("sum", ascending=False)
+        )
+        visible_lenders = set(
+            df.loc[df["is_debt"], "name"].fillna("").astype(str).str.lower().str.strip().unique()
+        )
+        for row in repayment_recipients.head(10).to_dict("records"):
+            lender_name = str(row["recipient_clean"])
+            debt_repayment_recipients.append(lender_name.title())
+            if lender_name not in visible_lenders:
+                possible_lenders_from_repayments.append(
+                    {
+                        "possible_lender": lender_name.title(),
+                        "repayment_count": int(row["count"]),
+                        "total_repaid_in_period": round(float(row["sum"]), 2),
+                        "review_reason": "Repayments found but no matching loan credit in selected bank data",
+                    }
+                )
 
     revenue_plus_funding = total_revenue + funding_inflows
     total_external_funding = funding_inflows + total_debt
@@ -179,6 +205,10 @@ def calculate_business_metrics(data: pd.DataFrame, company_age_months: int | flo
         "Net Income": round(net_income, 2),
         "Total Debt Repayments": round(total_debt_repayments, 2),
         "Total Debt": round(total_debt, 2),
+        "Potential Lenders From Repayments": possible_lenders_from_repayments,
+        "Potential Lenders From Repayments Count": len(possible_lenders_from_repayments),
+        "Debt Repayment Recipients": debt_repayment_recipients,
+        "Repayments Without Visible Loan": bool(total_debt <= 0 and total_debt_repayments > 0),
         "Debt-to-Income Ratio": round(debt_to_income_ratio, 3),
         "Expense-to-Revenue Ratio": round(expense_to_revenue_ratio, 3),
         "Operating Margin": round(operating_margin, 3),

@@ -217,3 +217,22 @@ def test_open_banking_insights_are_derived_without_scoring_flag(business_transac
     assert insights["OB Debt Repayment Burden"] > 0
     assert insights["OB Recent Loan Credits 30D"] >= 0.0
     assert insights["OB Requested Loan To Monthly Revenue"] == 2.0
+
+
+@pytest.mark.unit
+def test_repayments_without_visible_loan_surface_possible_lenders():
+    df = pd.DataFrame(
+        [
+            {"date": "2026-03-01", "amount": -6000, "name_y": "Customer card settlement"},
+            {"date": "2026-03-08", "amount": 350, "name_y": "Iwoca repayment"},
+            {"date": "2026-03-22", "amount": 350, "name_y": "Iwoca repayment"},
+        ]
+    )
+
+    metrics = calculate_business_metrics(df, company_age_months=12)
+
+    assert metrics["Total Debt"] == 0
+    assert metrics["Total Debt Repayments"] == 700
+    assert metrics["Repayments Without Visible Loan"] is True
+    assert metrics["Potential Lenders From Repayments Count"] == 1
+    assert metrics["Potential Lenders From Repayments"][0]["possible_lender"] == "Iwoca Repayment"
