@@ -394,7 +394,37 @@ def analyze_loans_and_repayments(df: pd.DataFrame) -> Dict[str, Any]:
     total_repaid = analysis.get('total_repayments_made', 0)
     
     analysis['net_borrowing'] = total_loans - total_repaid
-    analysis['repayment_ratio'] = total_repaid / total_loans if total_loans > 0 else 0
+    analysis['repayment_ratio'] = total_repaid / total_loans if total_loans > 0 else None
+    analysis['repayments_without_visible_loan'] = bool(analysis.get('loan_count', 0) == 0 and analysis.get('repayment_count', 0) > 0)
+
+    if not repayments_data.empty and 'name' in repayments_data.columns:
+        repayments_data['recipient_clean'] = repayments_data['name'].str.lower().str.strip()
+        possible_lenders = repayments_data.groupby('recipient_clean')['amount_abs'].agg(['count', 'sum']).reset_index()
+        possible_lenders = possible_lenders.sort_values('sum', ascending=False)
+        possible_lenders['possible_lender'] = possible_lenders['recipient_clean'].str.title()
+        visible_lenders = set()
+        if not analysis.get('loans_by_lender', pd.DataFrame()).empty:
+            visible_lenders = set(analysis['loans_by_lender']['lender_clean'].astype(str).str.lower().str.strip())
+        possible_lenders['loan_credit_seen'] = possible_lenders['recipient_clean'].isin(visible_lenders)
+        possible_lenders['review_reason'] = possible_lenders['loan_credit_seen'].map({
+            True: "Repayment recipient with visible loan credit",
+            False: "Repayments found but no matching loan credit in selected bank data",
+        })
+        possible_lenders = possible_lenders.rename(
+            columns={'count': 'repayment_count', 'sum': 'total_repaid_in_period'}
+        )
+        analysis['possible_lenders_from_repayments'] = possible_lenders[
+            [
+                'possible_lender',
+                'recipient_clean',
+                'repayment_count',
+                'total_repaid_in_period',
+                'loan_credit_seen',
+                'review_reason',
+            ]
+        ]
+    else:
+        analysis['possible_lenders_from_repayments'] = pd.DataFrame()
     
     return analysis
 # ----------------------------

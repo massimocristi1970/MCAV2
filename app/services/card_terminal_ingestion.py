@@ -12,6 +12,12 @@ from typing import Any, Dict, List, Optional
 
 import pandas as pd
 import pdfplumber
+
+try:
+    from PyPDF2 import PdfReader as _PyPdfReader
+except ImportError:  # pragma: no cover
+    _PyPdfReader = None
+
 from .payment_provider_registry import detect_providers_in_text, provider_catalog
 from .provider_parser_profiles import get_provider_profile
 
@@ -389,12 +395,19 @@ class CardTerminalIngestionService:
                 return self._parse_paypal_merchant_statement_pdf(filename, text)
             if self._is_zempler_business_statement_pdf(text, filename):
                 return self._parse_zempler_business_statement_pdf(filename, text)
+            if self._is_dojo_invoice_pdf(text, filename):
+                return self._parse_dojo_invoice_pdf(filename, text)
+            if self._is_dna_payments_statement_pdf(text, filename):
+                return self._parse_dna_payments_statement_pdf(filename, text)
             provider_hint = self._detect_provider_hint(f"{filename} {text[:8000]}")
             if provider_hint:
                 prof = get_provider_profile(provider_hint)
                 if prof:
                     return self._parse_profile_pdf(filename, text, prof)
-            return self._parse_generic_pdf(filename, text)
+            generic = self._parse_generic_pdf(filename, text)
+            if generic.gross_card_sales <= 0 and self._is_dna_payments_statement_pdf(text, filename):
+                return self._parse_dna_payments_statement_pdf(filename, text)
+            return generic
 
         if ext in {"csv"}:
             df = pd.read_csv(io.BytesIO(raw))
@@ -410,9 +423,44 @@ class CardTerminalIngestionService:
 
         raise ValueError(f"Unsupported file format: {ext or 'unknown'}")
 
+    @staticmethod
+    def _normalize_pdf_text(text: str) -> str:
+        """Clean PDF extraction artifacts and join common label/value line breaks."""
+        t = (text or "").replace("\x00", " ")
+        joins = (
+            (r"(Processed\s+volume,\s*GBP)\s*\n\s*", r"\1 "),
+            (r"(NET\s+Processed\s+volume,\s*GBP)\s*\n\s*", r"\1 "),
+            (r"(Refunds\s+and\s+chargebacks\s+volume,\s*GBP)\s*\n\s*", r"\1 "),
+            (r"(A\s+Transactional\s+fees)\s*\n\s*-?\s*", r"\1 -"),
+            (r"(Billing\s+period)\s*\n\s*", r"\1 "),
+            (r"(Statement\s+date)\s*\n\s*", r"\1 "),
+        )
+        for pattern, repl in joins:
+            t = re.sub(pattern, repl, t, flags=re.IGNORECASE)
+        return t
+
+    def _extract_pdf_text_pypdf2(self, raw: bytes) -> str:
+        if _PyPdfReader is None:
+            return ""
+        try:
+            reader = _PyPdfReader(io.BytesIO(raw))
+            return "\n".join((page.extract_text() or "") for page in reader.pages)
+        except Exception:
+            return ""
+
     def _extract_pdf_text(self, raw: bytes) -> str:
-        with pdfplumber.open(io.BytesIO(raw)) as pdf:
-            return "\n".join((page.extract_text() or "") for page in pdf.pages)
+        text = ""
+        try:
+            with pdfplumber.open(io.BytesIO(raw)) as pdf:
+                text = "\n".join((page.extract_text() or "") for page in pdf.pages)
+        except Exception:
+            text = ""
+        text = self._normalize_pdf_text(text)
+        if len(text.strip()) < 200:
+            alt = self._normalize_pdf_text(self._extract_pdf_text_pypdf2(raw))
+            if len(alt.strip()) > len(text.strip()):
+                text = alt
+        return text
 
     _stripe_balance_report_markers = re.compile(
         r"balance\s+summary|balance\s+report|about\s+this\s+report",
@@ -617,6 +665,231 @@ class CardTerminalIngestionService:
             raw_summary={"text_length": len(text)},
             extraction_diagnostics={
                 "profile": "PayPal",
+                "fields": {
+                    "gross_card_sales": gross > 0,
+                    "fees_total": fees > 0,
+                    "period_end": period_end is not None,
+                    "merchant_id": merchant_id is not None,
+                },
+                "fallback_used": gross <= 0,
+            },
+        )
+
+    def _is_dojo_invoice_pdf(self, text: str, filename: str = "") -> bool:
+        t = text or ""
+        fn = (filename or "").lower()
+        if "dojo" in fn and re.search(r"Invoice\s+period", t, re.IGNORECASE):
+            return True
+        return bool(
+            re.search(r"Your\s+Dojo\s+invoice", t, re.IGNORECASE)
+            and re.search(r"Card\s+transaction\s+rates", t, re.IGNORECASE)
+            and re.search(r"Invoice\s+period", t, re.IGNORECASE)
+        )
+
+    def _parse_dojo_invoice_pdf(self, filename: str, text: str) -> ParseResult:
+        """Dojo monthly invoice PDF (card transaction rates total = gross card sales)."""
+        warnings: List[str] = []
+        period_start: Optional[date] = None
+        period_end: Optional[date] = None
+
+        m_per = re.search(
+            r"Invoice\s+period\s+(\d{1,2}\s+\w+\s+\d{4})\s+to\s+(\d{1,2}\s+\w+\s+\d{4})",
+            text,
+            re.IGNORECASE,
+        )
+        if m_per:
+            start_ts = pd.to_datetime(m_per.group(1), dayfirst=True, errors="coerce")
+            end_ts = pd.to_datetime(m_per.group(2), dayfirst=True, errors="coerce")
+            if pd.notna(start_ts):
+                period_start = start_ts.date()
+            if pd.notna(end_ts):
+                period_end = end_ts.date()
+        if period_end is None:
+            warnings.append("Could not parse Dojo invoice period.")
+
+        merchant_id = None
+        m_mid = re.search(r"Merchant\s+ID\s+(\d+)", text, re.IGNORECASE)
+        if m_mid:
+            merchant_id = m_mid.group(1).strip()
+
+        gross = 0.0
+        txn_count = 0
+        m_rates = re.search(
+            r"Card\s+transaction\s+rates[\s\S]{0,2500}?^Total\s+([\d,]+)\s+£([\d,]+\.?\d*)\s+£([\d,]+\.?\d*)",
+            text,
+            re.IGNORECASE | re.MULTILINE,
+        )
+        if m_rates:
+            txn_count = int(self._to_float(m_rates.group(1)))
+            gross = self._to_float(m_rates.group(2))
+
+        fees = 0.0
+        for label in ("Card transaction fees", "Card transaction rates", "Additional rates"):
+            m_fee = re.search(rf"{re.escape(label)}\s+£([\d,]+\.?\d*)", text, re.IGNORECASE)
+            if m_fee:
+                fees += self._to_float(m_fee.group(1))
+
+        refunds = 0.0
+        chargebacks = 0.0
+        currency = "GBP"
+
+        if gross <= 0:
+            warnings.append("Dojo invoice: could not find Card transaction rates total volume.")
+        warnings.append(
+            "Parsed as Dojo invoice PDF (native): gross is total card transaction value; "
+            "fees sum secure transaction, interchange-style rates, and additional rates "
+            "(excludes card machine & account services)."
+        )
+
+        confidence = 0.92 if gross > 0 and period_end is not None else 0.65
+
+        return ParseResult(
+            filename=filename,
+            provider="Dojo",
+            parser="dojo_invoice_pdf_v1",
+            merchant_id=merchant_id,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency=currency,
+            gross_card_sales=float(gross),
+            refunds_amount=float(refunds),
+            chargebacks_amount=float(chargebacks),
+            fees_total=float(fees),
+            transaction_count=int(txn_count),
+            confidence=confidence,
+            warnings=warnings,
+            raw_summary={"text_length": len(text)},
+            extraction_diagnostics={
+                "profile": "Dojo",
+                "fields": {
+                    "gross_card_sales": gross > 0,
+                    "fees_total": fees > 0,
+                    "period_end": period_end is not None,
+                    "merchant_id": merchant_id is not None,
+                },
+                "fallback_used": gross <= 0,
+            },
+        )
+
+    def _is_dna_payments_statement_pdf(self, text: str, filename: str = "") -> bool:
+        t = text or ""
+        fn = (filename or "").lower().replace("\\", "/").rsplit("/", 1)[-1]
+        fn_key = fn.replace(" ", "").replace("_", "")
+        if "dnapayment" in fn_key:
+            return True
+        # DNA merchant portal exports often use numeric PDF filenames.
+        if re.search(r"^\d{10,}\.pdf$", fn) and re.search(
+            r"Merchant\s+Processing|Statement\s+ID\s+\d{10,}", t, re.IGNORECASE
+        ):
+            return True
+        markers = [
+            bool(re.search(r"Merchant\s+Processing\s+Statement", t, re.IGNORECASE)),
+            bool(
+                re.search(
+                    r"DNA\s+Payments|dnapayments\.|DNA\s+Payments\s+Limited",
+                    t,
+                    re.IGNORECASE,
+                )
+            ),
+            bool(re.search(r"Processed\s+volume", t, re.IGNORECASE)),
+            bool(re.search(r"Statement\s+ID\s+\d{10,}", t, re.IGNORECASE)),
+        ]
+        return sum(markers) >= 2
+
+    def _parse_dna_payments_statement_pdf(self, filename: str, text: str) -> ParseResult:
+        """DNA Payments merchant processing statement PDF."""
+        warnings: List[str] = []
+        period_start: Optional[date] = None
+        period_end: Optional[date] = None
+
+        m_bill = re.search(r"Billing\s+period\s+(\w+)\s+(\d{4})", text, re.IGNORECASE)
+        if m_bill:
+            month_ts = pd.to_datetime(f"1 {m_bill.group(1)} {m_bill.group(2)}", errors="coerce")
+            if pd.notna(month_ts):
+                period_start = month_ts.date()
+                period_end = (month_ts + pd.offsets.MonthEnd(0)).date()
+        if period_end is None:
+            m_stmt = re.search(r"Statement\s+date\s+(\d{1,2}\s+\w+\s+\d{4})", text, re.IGNORECASE)
+            if m_stmt:
+                stmt_ts = pd.to_datetime(m_stmt.group(1), dayfirst=True, errors="coerce")
+                if pd.notna(stmt_ts):
+                    period_end = (stmt_ts - pd.Timedelta(days=1)).date()
+
+        merchant_id = None
+        m_mid = re.search(r"Merchant\s+ID\s+(\d+)", text, re.IGNORECASE)
+        if m_mid:
+            merchant_id = m_mid.group(1).strip()
+
+        gross = 0.0
+        for vol_pat in (
+            r"Processed\s+volume,\s*GBP\s*([\d,]+\.?\d*)",
+            r"NET\s+Processed\s+volume,\s*GBP\s*([\d,]+\.?\d*)",
+            r"Processed\s+volume,\s*GBP\s*\n\s*([\d,]+\.?\d*)",
+        ):
+            m_vol = re.search(vol_pat, text, re.IGNORECASE)
+            if m_vol:
+                gross = self._to_float(m_vol.group(1))
+                break
+
+        refunds = 0.0
+        m_ref = re.search(
+            r"Refunds\s+and\s+chargebacks\s+volume,\s*GBP\s*([\d,]+\.?\d*)",
+            text,
+            re.IGNORECASE,
+        )
+        if m_ref:
+            refunds = self._to_float(m_ref.group(1))
+
+        fees = 0.0
+        for fee_pat in (
+            r"A\s+Transactional\s+fees\s+-?\s*([\d,]+\.?\d*)",
+            r"Transactional\s+fees\s+-?\s*([\d,]+\.?\d*)",
+        ):
+            m_fee = re.search(fee_pat, text, re.IGNORECASE)
+            if m_fee:
+                fees = abs(self._to_float(m_fee.group(1)))
+                break
+
+        txn_count = 0
+        m_tot = re.search(
+            r"^Totals\s+([\d,]+\.?\d*)\s+([\d,]+)\s+-?([\d,]+\.?\d*)",
+            text,
+            re.IGNORECASE | re.MULTILINE,
+        )
+        if m_tot:
+            txn_count = int(self._to_float(m_tot.group(2)))
+            if gross <= 0:
+                gross = self._to_float(m_tot.group(1))
+            if fees <= 0:
+                fees = abs(self._to_float(m_tot.group(3)))
+
+        chargebacks = 0.0
+        currency = "GBP"
+
+        if gross <= 0:
+            warnings.append("DNA Payments statement: could not find processed volume.")
+        warnings.append("Parsed as DNA Payments Merchant Processing Statement PDF (native).")
+
+        confidence = 0.92 if gross > 0 and period_end is not None else 0.65
+
+        return ParseResult(
+            filename=filename,
+            provider="DNA Payments",
+            parser="dna_payments_merchant_statement_pdf_v1",
+            merchant_id=merchant_id,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency=currency,
+            gross_card_sales=float(gross),
+            refunds_amount=float(refunds),
+            chargebacks_amount=float(chargebacks),
+            fees_total=float(fees),
+            transaction_count=int(txn_count),
+            confidence=confidence,
+            warnings=warnings,
+            raw_summary={"text_length": len(text)},
+            extraction_diagnostics={
+                "profile": "DNA Payments",
                 "fields": {
                     "gross_card_sales": gross > 0,
                     "fees_total": fees > 0,

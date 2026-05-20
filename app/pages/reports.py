@@ -133,7 +133,7 @@ class DashboardExporter:
                     </div>
                     <div class="metric-card">
                         <h4>Repayment Ratio</h4>
-                        <div>{export_data['loans_analysis'].get('repayment_ratio', 0)*100:.1f}%</div>
+                        <div>{(export_data['loans_analysis'].get('repayment_ratio') or 0)*100:.1f}%</div>
                     </div>
                 </div>
             </div>
