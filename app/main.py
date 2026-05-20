@@ -2751,6 +2751,57 @@ def apply_manual_outstanding_debt(metrics):
     return metrics
 
 
+def apply_manual_outstanding_debt_to_loans_analysis(analysis):
+    """Reflect underwriter-entered balances in loan/repayment display metrics and charts."""
+    manual_total = get_manual_outstanding_debt_total()
+    analysis["manual_outstanding_debt"] = manual_total
+    if manual_total <= 0:
+        analysis["total_known_borrowing"] = analysis.get("total_loans_received", 0)
+        analysis["known_outstanding_balance"] = max(float(analysis.get("net_borrowing", 0) or 0), 0.0)
+        return analysis
+
+    visible_loans = float(analysis.get("total_loans_received", 0) or 0)
+    repayments = float(analysis.get("total_repayments_made", 0) or 0)
+
+    if visible_loans > 0:
+        total_known_borrowing = visible_loans + manual_total
+    else:
+        total_known_borrowing = repayments + manual_total
+
+    analysis["total_known_borrowing"] = round(total_known_borrowing, 2)
+    analysis["known_outstanding_balance"] = manual_total
+    analysis["net_borrowing"] = manual_total
+    analysis["repayment_ratio"] = repayments / total_known_borrowing if total_known_borrowing > 0 else None
+
+    monthly_net = analysis.get("monthly_net_borrowing", pd.DataFrame())
+    if monthly_net.empty:
+        today_month = pd.Timestamp.today().to_period("M")
+        monthly_net = pd.DataFrame(
+            [
+                {
+                    "month": today_month,
+                    "month_str": str(today_month),
+                    "loans": 0.0,
+                    "repayments": 0.0,
+                    "manual_balance_adjustment": manual_total,
+                    "net_borrowing": manual_total,
+                }
+            ]
+        )
+    else:
+        monthly_net = monthly_net.copy()
+        monthly_net["manual_balance_adjustment"] = 0.0
+        current_final_position = float(monthly_net["net_borrowing"].sum())
+        balance_adjustment = manual_total - current_final_position
+        monthly_net.loc[monthly_net.index[0], "manual_balance_adjustment"] = balance_adjustment
+        monthly_net["net_borrowing"] = (
+            monthly_net["loans"] + monthly_net["manual_balance_adjustment"] - monthly_net["repayments"]
+        )
+
+    analysis["monthly_net_borrowing"] = monthly_net
+    return analysis
+
+
 def rerun_last_analysis_with_manual_debt():
     """Recalculate the current session run after underwriter-entered balances change."""
     run = st.session_state.get("last_run")
@@ -2880,6 +2931,9 @@ def create_loans_repayments_charts(analysis):
     # 1. Monthly Loans vs Repayments
     if not analysis['monthly_net_borrowing'].empty:
         monthly_data = analysis['monthly_net_borrowing']
+        if 'manual_balance_adjustment' not in monthly_data.columns:
+            monthly_data = monthly_data.copy()
+            monthly_data['manual_balance_adjustment'] = 0.0
         
         fig_monthly = go.Figure()
         
@@ -2890,6 +2944,15 @@ def create_loans_repayments_charts(analysis):
             marker_color='lightcoral',
             opacity=0.8
         ))
+
+        if monthly_data['manual_balance_adjustment'].abs().sum() > 0:
+            fig_monthly.add_trace(go.Bar(
+                name='Entered Outstanding Balances',
+                x=monthly_data['month_str'],
+                y=monthly_data['manual_balance_adjustment'],
+                marker_color='#f59e0b',
+                opacity=0.85
+            ))
         
         fig_monthly.add_trace(go.Bar(
             name='Debt Repayments',
@@ -3017,7 +3080,8 @@ def display_loans_repayments_section(df, analysis_period):
     analysis = analyze_loans_and_repayments(filtered_df)
     manual_debt_total = get_manual_outstanding_debt_total()
     manual_debt_count = get_manual_outstanding_debt_count()
-    total_known_borrowing = analysis['total_loans_received'] + manual_debt_total
+    analysis = apply_manual_outstanding_debt_to_loans_analysis(analysis)
+    total_known_borrowing = analysis.get('total_known_borrowing', analysis['total_loans_received'])
     
     # Key Metrics Row
     col1, col2, col3, col4, col5 = st.columns(5)
@@ -3028,7 +3092,8 @@ def display_loans_repayments_section(df, analysis_period):
             f"£{total_known_borrowing:,.0f}",
             delta=f"£{manual_debt_total:,.0f} entered balances" if manual_debt_total > 0 else None,
             help=(
-                f"£{analysis['total_loans_received']:,.0f} visible loan credits plus "
+                f"£{analysis['total_loans_received']:,.0f} visible loan credits, "
+                f"£{analysis['total_repayments_made']:,.0f} repayments already seen, and "
                 f"£{manual_debt_total:,.0f} underwriter-entered outstanding balances"
                 if manual_debt_total > 0
                 else f"From {analysis['loan_count']} loan transactions"
@@ -3044,7 +3109,7 @@ def display_loans_repayments_section(df, analysis_period):
     
     with col3:
         net_borrowing = analysis['net_borrowing']
-        display_net_borrowing = manual_debt_total if manual_debt_total > 0 else abs(net_borrowing)
+        display_net_borrowing = analysis.get('known_outstanding_balance', manual_debt_total) if manual_debt_total > 0 else abs(net_borrowing)
         st.metric(
             "Known Outstanding Balance" if manual_debt_total > 0 else "Net Borrowing Position",
             f"£{display_net_borrowing:,.0f}",
@@ -3081,7 +3146,9 @@ def display_loans_repayments_section(df, analysis_period):
     risk_col1, risk_col2, risk_col3 = st.columns(3)
     
     with risk_col1:
-        if analysis['loan_count'] == 0 and analysis['repayment_count'] > 0:
+        if manual_debt_total > 0 and analysis['loan_count'] == 0 and analysis['repayment_count'] > 0:
+            st.success("**Existing borrowing confirmed** — repayments plus entered balances are included in assessment")
+        elif analysis['loan_count'] == 0 and analysis['repayment_count'] > 0:
             st.warning("**Possible existing borrowing** — repayments found but no loan credit appears in this bank data")
         elif analysis['loan_count'] == 0:
             st.info("**No visible external debt** — no loan credits or repayments found in this bank data")
@@ -3105,7 +3172,9 @@ def display_loans_repayments_section(df, analysis_period):
             st.error("**High borrowing frequency** — heavy reliance on external financing")
     
     with risk_col3:
-        if analysis['loan_count'] == 0 and analysis['repayment_count'] > 0:
+        if manual_debt_total > 0:
+            st.success("**Outstanding balance included** — saved balances are included in ratio, charts, and scoring")
+        elif analysis['loan_count'] == 0 and analysis['repayment_count'] > 0:
             st.warning("**Outstanding balance required** — enter known balances below, then rerun the application")
         elif analysis['net_borrowing'] <= 0:
             st.success("**Positive net position** — more repaid than borrowed")
