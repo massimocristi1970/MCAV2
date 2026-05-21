@@ -61,6 +61,76 @@ def _month_key(dt: datetime) -> str:
     return f"{dt.year:04d}-{dt.month:02d}"
 
 
+def _date_within_months(dt: Optional[datetime], anchor_date: Optional[datetime], months: int) -> bool:
+    if dt is None or anchor_date is None:
+        return False
+    return dt >= anchor_date - relativedelta(months=months)
+
+
+def _extract_fixed_width_public_info(payload: str, anchor_date: Optional[datetime]) -> Dict[str, Any]:
+    """
+    Extract public-information adverse events from fixed-width TU payloads.
+
+    TU's PDF summary uses a 36-month window for non-current BAI/IVA indicators,
+    but a current/active BAI remains adverse regardless of the original order date.
+    """
+    out: Dict[str, Any] = {
+        "current_bai_record": False,
+        "active_iva_or_admin_order": False,
+        "iva_or_admin_order_36m": False,
+        "active_bankruptcy_or_sequestration": False,
+        "bankruptcy_or_sequestration_36m": False,
+        "active_judgments_total": 0,
+        "satisfied_judgments_total": 0,
+        "public_record_reasons": [],
+    }
+
+    # Codes seen in fixed-width extracts:
+    # AIV = active Individual Voluntary Arrangement.
+    # Keep the matcher deliberately narrow so ordinary account/provider codes are
+    # not treated as public-record events.
+    event_pattern = re.compile(
+        r"(?P<label>VOLUNTARY\s+LIQUIDATION\s+CASES)?"
+        r"(?P<code>AIV|DIV|AAO|DAO|ABK|DBK|ASQ|DSQ|ASE|DSE)"
+        r"(?P<date>\d{4}-\d{2}-\d{2})",
+        re.IGNORECASE,
+    )
+
+    for match in event_pattern.finditer(payload):
+        code = match.group("code").upper()
+        event_date = _parse_dt(match.group("date"))
+        is_active = code.startswith("A")
+        is_recent = _date_within_months(event_date, anchor_date, 36)
+
+        if code.endswith(("IV", "AO")):
+            if is_active:
+                out["current_bai_record"] = True
+                out["active_iva_or_admin_order"] = True
+                out["public_record_reasons"].append(
+                    f"Active IVA/administration order recorded from {match.group('date')}"
+                )
+            elif is_recent:
+                out["iva_or_admin_order_36m"] = True
+                out["public_record_reasons"].append(
+                    f"IVA/administration order recorded within 36 months ({match.group('date')})"
+                )
+
+        if code.endswith(("BK", "SQ", "SE")):
+            if is_active:
+                out["current_bai_record"] = True
+                out["active_bankruptcy_or_sequestration"] = True
+                out["public_record_reasons"].append(
+                    f"Active bankruptcy/sequestration recorded from {match.group('date')}"
+                )
+            elif is_recent:
+                out["bankruptcy_or_sequestration_36m"] = True
+                out["public_record_reasons"].append(
+                    f"Bankruptcy/sequestration recorded within 36 months ({match.group('date')})"
+                )
+
+    return out
+
+
 def _extract_fixed_width_search07a_response(root: ET.Element, app_id: str) -> Optional[TUFeatures]:
     """
     Handle TU exports shaped as:
@@ -87,13 +157,19 @@ def _extract_fixed_width_search07a_response(root: ET.Element, app_id: str) -> Op
     if first_dt:
         anchor_date = _parse_dt(first_dt.group(0))
 
-    # Final score footer in this export appears as F###.... near the end.
+    # Final score footer in some exports appears as F###.... near the end.
+    # Do not use the internal score footer (e.g. ...83.09), and avoid matching
+    # F### inside GUIDs such as "...8F339...".
     bureau_score = 0
     footer_score = re.search(r"F(\d{3})(?=\d{4}[A-Z]\d{4}\.\d{2}\s*$)", payload)
     if footer_score:
         bureau_score = to_int(footer_score.group(1))
     else:
-        score_candidates = [int(m.group(1)) for m in re.finditer(r"F(\d{3})", payload) if 300 <= int(m.group(1)) <= 999]
+        score_candidates = [
+            int(m.group(1))
+            for m in re.finditer(r"(?<![A-Fa-f0-9-])F(\d{3})(?![A-Fa-f0-9-])", payload)
+            if 300 <= int(m.group(1)) <= 999
+        ]
         if score_candidates:
             bureau_score = score_candidates[-1]
 
@@ -153,6 +229,7 @@ def _extract_fixed_width_search07a_response(root: ET.Element, app_id: str) -> Op
         "searches_90d": 0,
         "tu_parser": "fixed_width_search07a_response",
     }
+    feats.update(_extract_fixed_width_public_info(payload, anchor_date))
 
     return TUFeatures(app_id=app_id, anchor_date=anchor_date, features=feats)
 

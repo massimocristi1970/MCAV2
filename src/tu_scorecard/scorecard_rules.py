@@ -72,6 +72,13 @@ def score_tu_features(feats: Dict[str, Any]) -> ScoreResult:
     defaults_12m = int(feats.get("defaults_12m_total", 0) or 0)
     delinq_12m = int(feats.get("delinq_12m_total", 0) or 0)
 
+    current_bai_record = bool(feats.get("current_bai_record", False))
+    active_iva_or_admin = bool(feats.get("active_iva_or_admin_order", False))
+    iva_or_admin_36m = bool(feats.get("iva_or_admin_order_36m", False))
+    active_bankruptcy = bool(feats.get("active_bankruptcy_or_sequestration", False))
+    bankruptcy_36m = bool(feats.get("bankruptcy_or_sequestration_36m", False))
+    active_judgments = int(feats.get("active_judgments_total", feats.get("ccj_active_total", 0)) or 0)
+
     # Utilisation is noisy; cap hard
     util_raw = float(feats.get("utilisation_pct", 0.0) or 0.0)
     util = _cap(util_raw, 0.0, 500.0)
@@ -90,6 +97,43 @@ def score_tu_features(feats: Dict[str, Any]) -> ScoreResult:
     # -----------------
     # Hard-stop declines (few and severe)
     # -----------------
+    public_record_reasons = feats.get("public_record_reasons") or []
+
+    if active_iva_or_admin or active_bankruptcy or current_bai_record:
+        reasons = list(public_record_reasons)
+        if not reasons:
+            reasons = ["Current active BAI/public insolvency record"]
+        return ScoreResult(
+            score=0,
+            decision="DECLINE",
+            reasons=reasons,
+            recovery_flags=recovery_flags,
+        )
+
+    if iva_or_admin_36m:
+        return ScoreResult(
+            score=0,
+            decision="DECLINE",
+            reasons=list(public_record_reasons) or ["IVA/administration order recorded within 36 months"],
+            recovery_flags=recovery_flags,
+        )
+
+    if bankruptcy_36m:
+        return ScoreResult(
+            score=0,
+            decision="DECLINE",
+            reasons=list(public_record_reasons) or ["Bankruptcy/sequestration recorded within 36 months"],
+            recovery_flags=recovery_flags,
+        )
+
+    if active_judgments > 0:
+        return ScoreResult(
+            score=0,
+            decision="DECLINE",
+            reasons=[f"Active judgment/public record count: {active_judgments}"],
+            recovery_flags=recovery_flags,
+        )
+
     if worst_ah_12m >= 3:
         return ScoreResult(
             score=0,
