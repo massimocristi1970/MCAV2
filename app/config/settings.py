@@ -29,6 +29,7 @@ class Settings:
     # Persist completed runs under data/app_runs/ for monitoring and modelling (see app.services.run_persistence)
     # Set SAVE_APP_RUNS=false to disable writing JSON snapshots.
     SAVE_APP_RUNS: bool = os.getenv("SAVE_APP_RUNS", "true").lower().strip() in ("1", "true", "yes")
+    APP_SAVED_RUNS_DIR: Optional[str] = os.getenv("APP_SAVED_RUNS_DIR")
 
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")

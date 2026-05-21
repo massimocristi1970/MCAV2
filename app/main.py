@@ -4555,6 +4555,99 @@ def render_full_financial_dashboard(
         st.success("Enhanced Dashboard complete (export disabled due to error)")
 
 
+def render_saved_run_loader():
+    """Load a saved scorecard run into session state without reprocessing."""
+    from app.services.run_persistence import (
+        choose_directory,
+        list_reloadable_scorecard_runs,
+        reloadable_runs_default_root,
+        load_reloadable_scorecard_run,
+    )
+
+    st.markdown("##### Saved runs")
+    with st.expander("Load a saved run", expanded=False):
+        load_dir = st.session_state.get("app_saved_runs_load_dir") or str(reloadable_runs_default_root())
+        cols = st.columns([1, 2])
+        with cols[0]:
+            if st.button("Choose saved run folder", use_container_width=True, key="choose_saved_run_folder"):
+                selected = choose_directory(title="Choose saved run folder", initial_dir=load_dir)
+                if selected:
+                    st.session_state["app_saved_runs_load_dir"] = selected
+                    st.rerun()
+                else:
+                    st.warning("No folder was selected.")
+        with cols[1]:
+            st.caption(f"Selected: `{load_dir}`")
+
+        saved_runs = list_reloadable_scorecard_runs(load_dir)
+        if not saved_runs:
+            st.info("No saved runs found in the selected folder.")
+            return
+
+        def _label(run):
+            saved_at = str(run.get("saved_at_utc", ""))[:19].replace("T", " ")
+            company = run.get("company_name") or "Unknown company"
+            name = run.get("run_name") or company
+            return f"{saved_at} | {name} | {company}"
+
+        selected_run = st.selectbox(
+            "Saved run",
+            saved_runs,
+            format_func=_label,
+            key="saved_run_selector_main",
+        )
+        if st.button("Load selected run", type="primary", use_container_width=True, key="load_saved_run_main"):
+            try:
+                st.session_state["last_run"] = load_reloadable_scorecard_run(selected_run)
+                st.success("Saved run loaded. Rendering the dashboard now.")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Could not load saved run: {e}")
+
+
+def render_saved_run_saver():
+    """Save the current session run to a user-selected folder."""
+    from app.services.run_persistence import (
+        choose_directory,
+        reloadable_runs_default_root,
+        save_reloadable_scorecard_run,
+    )
+
+    run = st.session_state.get("last_run")
+    if not run:
+        return
+
+    with st.expander("Save this run", expanded=False):
+        save_dir = st.session_state.get("app_saved_runs_save_dir") or str(reloadable_runs_default_root())
+        cols = st.columns([1, 2])
+        with cols[0]:
+            if st.button("Choose save folder", use_container_width=True, key="choose_save_run_folder"):
+                selected = choose_directory(title="Choose folder to save this run", initial_dir=save_dir)
+                if selected:
+                    st.session_state["app_saved_runs_save_dir"] = selected
+                    st.rerun()
+                else:
+                    st.warning("No folder was selected.")
+        with cols[1]:
+            st.caption(f"Selected: `{save_dir}`")
+
+        default_name = run.get("company_name") or run.get("params", {}).get("company_name") or "Scorecard run"
+        run_name = st.text_input("Run name", value=default_name, key="save_run_name_main")
+        if st.button("Save run to selected folder", type="primary", use_container_width=True, key="save_run_main"):
+            try:
+                run_dir = save_reloadable_scorecard_run(
+                    run=run,
+                    save_root=save_dir,
+                    run_name=run_name,
+                )
+                st.session_state["last_saved_reloadable_run"] = str(run_dir)
+                st.success(f"Saved run: `{run_dir}`")
+            except FileExistsError:
+                st.error("A saved run folder with that generated name already exists. Try again in a moment.")
+            except Exception as e:
+                st.error(f"Could not save run: {e}")
+
+
 def main():
     """Main application"""
     try:
@@ -4736,6 +4829,7 @@ def main():
 
         # File upload
         render_intake_panel_intro()
+        render_saved_run_loader()
         uploaded_file = st.file_uploader(
             "Transaction file (JSON)",
             type=["json"],
@@ -4968,6 +5062,7 @@ def main():
                     card_terminal_files=card_terminal_files,
                     card_processing_payload=card_processing_payload,
                 )
+                render_saved_run_saver()
                     
             except Exception as e:
                 st.error(f"Unexpected error during processing: {e}")
@@ -5013,6 +5108,7 @@ def main():
                 card_terminal_files=card_terminal_files,
                 card_processing_payload=card_processing_payload,
             )
+            render_saved_run_saver()
         else:
             render_empty_state_main()
 
