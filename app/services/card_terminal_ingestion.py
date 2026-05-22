@@ -393,6 +393,8 @@ class CardTerminalIngestionService:
                 return self._parse_stripe_balance_report_pdf(filename, text)
             if self._is_paypal_merchant_statement_pdf(text):
                 return self._parse_paypal_merchant_statement_pdf(filename, text)
+            if self._is_paypal_transaction_history_pdf(text):
+                return self._parse_paypal_transaction_history_pdf(filename, text)
             if self._is_zempler_business_statement_pdf(text, filename):
                 return self._parse_zempler_business_statement_pdf(filename, text)
             if self._is_dojo_invoice_pdf(text, filename):
@@ -672,6 +674,108 @@ class CardTerminalIngestionService:
                     "merchant_id": merchant_id is not None,
                 },
                 "fallback_used": gross <= 0,
+            },
+        )
+
+    def _is_paypal_transaction_history_pdf(self, text: str) -> bool:
+        t = text or ""
+        if "paypal" not in t.lower() and "express checkout payment" not in t.lower():
+            return False
+        return bool(re.search(r"Transaction\s+History", t, re.IGNORECASE)) and bool(
+            re.search(r"Date\s+Description\s+Status\s+Currency\s+Gross\s+Fee\s+Net", t, re.IGNORECASE)
+        )
+
+    def _parse_paypal_transaction_history_pdf(self, filename: str, text: str) -> ParseResult:
+        """PayPal transaction-history PDF export (row-level Gross/Fee/Net table)."""
+        warnings: List[str] = []
+        period_start: Optional[date] = None
+        period_end: Optional[date] = None
+
+        m_per = re.search(
+            r"([A-Z][a-z]+\s+\d{1,2},\s+\d{4})\s+through\s+([A-Z][a-z]+\s+\d{1,2},\s+\d{4})",
+            text,
+            re.IGNORECASE,
+        )
+        if m_per:
+            s = pd.to_datetime(m_per.group(1), dayfirst=False, errors="coerce")
+            e = pd.to_datetime(m_per.group(2), dayfirst=False, errors="coerce")
+            period_start = s.date() if pd.notna(s) else None
+            period_end = e.date() if pd.notna(e) else None
+
+        merchant_id = None
+        m_email = re.search(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", text, re.IGNORECASE)
+        if m_email:
+            merchant_id = m_email.group(0).strip()
+
+        row_re = re.compile(
+            r"(?ms)^(\d{2}/\d{2}/\d{4})\s+(.+?)\s+ID:\s+([A-Z0-9]+)\s+"
+            r"(Completed|Pending|Refused|Denied|Cancelled|Canceled)\s+([A-Z]{3})\s+"
+            r"(-?[\d,]+\.\d{2})\s+(-?[\d,]+\.\d{2})\s+(-?[\d,]+\.\d{2})",
+            re.IGNORECASE,
+        )
+        sale_markers = (
+            "express checkout payment",
+            "paypal checkout payment",
+            "website payment",
+            "mobile payment",
+            "payment received",
+        )
+        sale_rows: Dict[str, tuple[float, float]] = {}
+        currencies: List[str] = []
+        for match in row_re.finditer(text or ""):
+            desc = re.sub(r"\s+", " ", match.group(2)).strip().lower()
+            txn_id = match.group(3).strip()
+            status = match.group(4).strip().lower()
+            currency = match.group(5).strip().upper()
+            gross = self._to_float(match.group(6))
+            fee = self._to_float(match.group(7))
+
+            if status != "completed" or gross <= 0:
+                continue
+            if not any(marker in desc for marker in sale_markers):
+                continue
+            if any(skip in desc for skip in ("hold", "withdrawal", "authorisation", "authorization", "cashback")):
+                continue
+            sale_rows.setdefault(txn_id, (gross, fee))
+            currencies.append(currency)
+
+        gross_total = round(sum(gross for gross, _fee in sale_rows.values()), 2)
+        fees_total = round(sum(abs(fee) for _gross, fee in sale_rows.values() if fee < 0), 2)
+        txn_count = len(sale_rows)
+        currency = currencies[0] if currencies else "GBP"
+
+        if gross_total <= 0:
+            warnings.append("PayPal transaction history: could not find completed customer payment rows.")
+        if period_end is None:
+            warnings.append("Could not parse PayPal transaction-history period.")
+        warnings.append("Parsed as PayPal Transaction History PDF (native).")
+
+        confidence = 0.9 if gross_total > 0 and period_end is not None else 0.65
+        return ParseResult(
+            filename=filename,
+            provider="PayPal",
+            parser="paypal_transaction_history_pdf_v1",
+            merchant_id=merchant_id,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency=currency,
+            gross_card_sales=float(gross_total),
+            refunds_amount=0.0,
+            chargebacks_amount=0.0,
+            fees_total=float(fees_total),
+            transaction_count=int(txn_count),
+            confidence=confidence,
+            warnings=warnings,
+            raw_summary={"text_length": len(text), "sales_transaction_ids": sorted(sale_rows.keys())},
+            extraction_diagnostics={
+                "profile": "PayPal",
+                "fields": {
+                    "gross_card_sales": gross_total > 0,
+                    "fees_total": fees_total > 0,
+                    "period_end": period_end is not None,
+                    "merchant_id": merchant_id is not None,
+                },
+                "fallback_used": gross_total <= 0,
             },
         )
 
