@@ -5,10 +5,12 @@ from __future__ import annotations
 import io
 import re
 import zipfile
+from collections import defaultdict
 from dataclasses import dataclass
 from types import SimpleNamespace
+from calendar import monthrange
 from datetime import date
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 import pdfplumber
@@ -95,7 +97,7 @@ class CardTerminalIngestionService:
                     results.extend(inner_results)
                     errors.extend(inner_errors)
                 else:
-                    results.append(self._parse_single(file))
+                    results.extend(self._parse_file_results(file))
             except Exception as exc:  # pragma: no cover - safety path
                 errors.append({"filename": filename, "error": str(exc)})
 
@@ -373,7 +375,7 @@ class CardTerminalIngestionService:
                         member_bytes = zf.read(info)
                         label = f"{zip_filename}/{inner}"
                         pseudo = SimpleNamespace(name=label, getvalue=lambda b=member_bytes: b)
-                        out.append(self._parse_single(pseudo))
+                        out.extend(self._parse_file_results(pseudo))
                     except Exception as exc:
                         errs.append({"filename": f"{zip_filename}/{inner}", "error": str(exc)})
         except zipfile.BadZipFile as exc:
@@ -381,47 +383,61 @@ class CardTerminalIngestionService:
         return out, errs
 
     def _parse_single(self, file: Any) -> ParseResult:
+        """Parse one upload; when a file expands to many months, returns the first record."""
+        results = self._parse_file_results(file)
+        if not results:
+            raise ValueError("No parse results produced for file.")
+        return results[0]
+
+    def _parse_file_results(self, file: Any) -> List[ParseResult]:
         filename = getattr(file, "name", "unknown_file")
         ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
         raw = file.getvalue() if hasattr(file, "getvalue") else file.read()
 
         if ext == "pdf":
+            sample = self._extract_pdf_text_pages(raw, max_pages=2)
+            if self._is_shopify_sales_transactions_pdf(sample, filename):
+                return self._parse_shopify_sales_transactions_from_pdf(filename, raw)
             text = self._extract_pdf_text(raw)
             if "clover" in text.lower() or "merchantportal.app" in text.lower():
-                return self._parse_clover_pdf(filename, text)
+                return [self._parse_clover_pdf(filename, text)]
             if self._is_stripe_balance_report_pdf(text):
-                return self._parse_stripe_balance_report_pdf(filename, text)
+                return [self._parse_stripe_balance_report_pdf(filename, text)]
             if self._is_paypal_merchant_statement_pdf(text):
-                return self._parse_paypal_merchant_statement_pdf(filename, text)
+                return [self._parse_paypal_merchant_statement_pdf(filename, text)]
             if self._is_paypal_transaction_history_pdf(text):
-                return self._parse_paypal_transaction_history_pdf(filename, text)
+                return [self._parse_paypal_transaction_history_pdf(filename, text)]
             if self._is_zempler_business_statement_pdf(text, filename):
-                return self._parse_zempler_business_statement_pdf(filename, text)
+                return [self._parse_zempler_business_statement_pdf(filename, text)]
             if self._is_dojo_invoice_pdf(text, filename):
-                return self._parse_dojo_invoice_pdf(filename, text)
+                return [self._parse_dojo_invoice_pdf(filename, text)]
             if self._is_dna_payments_statement_pdf(text, filename):
-                return self._parse_dna_payments_statement_pdf(filename, text)
+                return [self._parse_dna_payments_statement_pdf(filename, text)]
             provider_hint = self._detect_provider_hint(f"{filename} {text[:8000]}")
             if provider_hint:
                 prof = get_provider_profile(provider_hint)
                 if prof:
-                    return self._parse_profile_pdf(filename, text, prof)
+                    return [self._parse_profile_pdf(filename, text, prof)]
             generic = self._parse_generic_pdf(filename, text)
             if generic.gross_card_sales <= 0 and self._is_dna_payments_statement_pdf(text, filename):
-                return self._parse_dna_payments_statement_pdf(filename, text)
-            return generic
+                return [self._parse_dna_payments_statement_pdf(filename, text)]
+            return [generic]
 
         if ext in {"csv"}:
             df = pd.read_csv(io.BytesIO(raw))
+            if self._is_shopify_sales_transactions_frame(df, filename):
+                return self._parse_shopify_sales_transactions_frame(filename, df)
             provider_hint = self._detect_provider_hint(f"{filename} {' '.join([str(c) for c in df.columns[:30]])}")
             prof = get_provider_profile(provider_hint) if provider_hint else None
-            return self._parse_tabular_statement(filename, df, provider_hint="csv", profile=prof)
+            return [self._parse_tabular_statement(filename, df, provider_hint="csv", profile=prof)]
 
         if ext in {"xls", "xlsx"}:
             df = pd.read_excel(io.BytesIO(raw))
+            if self._is_shopify_sales_transactions_frame(df, filename):
+                return self._parse_shopify_sales_transactions_frame(filename, df)
             provider_hint = self._detect_provider_hint(f"{filename} {' '.join([str(c) for c in df.columns[:30]])}")
             prof = get_provider_profile(provider_hint) if provider_hint else None
-            return self._parse_tabular_statement(filename, df, provider_hint="excel", profile=prof)
+            return [self._parse_tabular_statement(filename, df, provider_hint="excel", profile=prof)]
 
         raise ValueError(f"Unsupported file format: {ext or 'unknown'}")
 
@@ -450,19 +466,262 @@ class CardTerminalIngestionService:
         except Exception:
             return ""
 
-    def _extract_pdf_text(self, raw: bytes) -> str:
-        text = ""
+    def _extract_pdf_text_pages(self, raw: bytes, max_pages: Optional[int] = None) -> str:
+        parts: List[str] = []
         try:
             with pdfplumber.open(io.BytesIO(raw)) as pdf:
-                text = "\n".join((page.extract_text() or "") for page in pdf.pages)
+                pages = pdf.pages if max_pages is None else pdf.pages[:max_pages]
+                for page in pages:
+                    parts.append(page.extract_text() or "")
         except Exception:
-            text = ""
-        text = self._normalize_pdf_text(text)
+            return ""
+        return self._normalize_pdf_text("\n".join(parts))
+
+    def _extract_pdf_text(self, raw: bytes) -> str:
+        text = self._extract_pdf_text_pages(raw)
         if len(text.strip()) < 200:
             alt = self._normalize_pdf_text(self._extract_pdf_text_pypdf2(raw))
             if len(alt.strip()) > len(text.strip()):
                 text = alt
         return text
+
+    _shopify_tx_line_re = re.compile(
+        r"^(\d{2})/(\d{2})/(\d{4})\s+(\d+)\s+(\d+)(.+)$",
+    )
+
+    def _is_shopify_sales_transactions_pdf(self, text: str, filename: str = "") -> bool:
+        fn = (filename or "").lower()
+        if "shopify" in fn and ("sales" in fn or "transaction" in fn):
+            return True
+        t = text or ""
+        return bool(
+            re.search(r"Month\s+Sale\s+ID\s+Order\s+number", t, re.IGNORECASE)
+            and re.search(r"Gross\s+sales", t, re.IGNORECASE)
+            and re.search(r"Net\s+sales", t, re.IGNORECASE)
+        )
+
+    @staticmethod
+    def _normalize_shopify_columns(columns: List[Any]) -> List[str]:
+        return [re.sub(r"\s+", " ", str(c or "").strip().lower()) for c in columns]
+
+    def _is_shopify_sales_transactions_frame(self, df: pd.DataFrame, filename: str = "") -> bool:
+        if df is None or df.empty:
+            return False
+        fn = (filename or "").lower()
+        cols = self._normalize_shopify_columns(list(df.columns))
+        colset = set(cols)
+        has_cols = {"gross sales", "net sales"}.issubset(colset) or (
+            "gross sales" in " ".join(cols) and "net sales" in " ".join(cols)
+        )
+        if "shopify" in fn and has_cols:
+            return True
+        return bool(
+            has_cols
+            and any("sale id" in c for c in cols)
+            and any(c in ("month", "day", "sale date") or "date" in c for c in cols)
+        )
+
+    def _shopify_accumulate_line(self, line: str, by_month: Dict[str, Dict[str, Any]]) -> None:
+        line = (line or "").strip()
+        if not line or re.search(r"^Month\s+Sale\s+ID", line, re.IGNORECASE):
+            return
+        m = self._shopify_tx_line_re.match(line)
+        if not m:
+            return
+        _dd, mm, yyyy = m.group(1), m.group(2), m.group(3)
+        rest = m.group(6)
+        nums = re.findall(r"-?[\d,]+\.?\d*", rest)
+        if len(nums) < 8:
+            return
+        gross, _disc, returns, net, _ship, _retfee, _tax, _total = (
+            self._to_float(x) for x in nums[-8:]
+        )
+        ym = f"{yyyy}-{mm}"
+        bucket = by_month.setdefault(
+            ym,
+            {
+                "gross": 0.0,
+                "net": 0.0,
+                "refunds": 0.0,
+                "count": 0,
+                "year": int(yyyy),
+                "month": int(mm),
+            },
+        )
+        bucket["gross"] += gross
+        bucket["net"] += net
+        bucket["refunds"] += abs(returns)
+        bucket["count"] += 1
+
+    def _shopify_month_period(self, year: int, month: int) -> Tuple[date, date]:
+        last_day = monthrange(year, month)[1]
+        return date(year, month, 1), date(year, month, last_day)
+
+    def _shopify_results_from_monthly(
+        self, filename: str, by_month: Dict[str, Dict[str, Any]]
+    ) -> List[ParseResult]:
+        if not by_month:
+            return [
+                ParseResult(
+                    filename=filename,
+                    provider="Shopify Payments",
+                    parser="shopify_sales_transactions_pdf_v1",
+                    merchant_id=None,
+                    statement_start=None,
+                    statement_end=None,
+                    currency="GBP",
+                    gross_card_sales=0.0,
+                    refunds_amount=0.0,
+                    chargebacks_amount=0.0,
+                    fees_total=0.0,
+                    transaction_count=0,
+                    confidence=0.45,
+                    warnings=[
+                        "Shopify Sales-Transactions report: no transaction rows found.",
+                    ],
+                    raw_summary={"months": 0},
+                    extraction_diagnostics={
+                        "profile": "Shopify Payments",
+                        "fields": {
+                            "gross_card_sales": False,
+                            "fees_total": False,
+                            "period_end": False,
+                            "merchant_id": False,
+                        },
+                        "fallback_used": True,
+                    },
+                )
+            ]
+
+        base_name = filename.rsplit("/", 1)[-1]
+        results: List[ParseResult] = []
+        for ym in sorted(by_month.keys()):
+            bucket = by_month[ym]
+            period_start, period_end = self._shopify_month_period(bucket["year"], bucket["month"])
+            gross = float(bucket["gross"])
+            txn_count = int(bucket["count"])
+            warnings = [
+                "Parsed as Shopify Sales-Transactions report (native): one row per calendar month.",
+                "Processing/payout fees are not in this export; fees_total is set to 0.",
+            ]
+            results.append(
+                ParseResult(
+                    filename=f"{base_name} ({ym})",
+                    provider="Shopify Payments",
+                    parser="shopify_sales_transactions_pdf_v1",
+                    merchant_id=None,
+                    statement_start=period_start,
+                    statement_end=period_end,
+                    currency="GBP",
+                    gross_card_sales=gross,
+                    refunds_amount=float(bucket["refunds"]),
+                    chargebacks_amount=0.0,
+                    fees_total=0.0,
+                    transaction_count=txn_count,
+                    confidence=0.9 if gross > 0 else 0.55,
+                    warnings=warnings,
+                    raw_summary={
+                        "year_month": ym,
+                        "net_sales": float(bucket["net"]),
+                        "source_file": filename,
+                    },
+                    extraction_diagnostics={
+                        "profile": "Shopify Payments",
+                        "fields": {
+                            "gross_card_sales": gross > 0,
+                            "fees_total": False,
+                            "period_end": True,
+                            "merchant_id": False,
+                        },
+                        "fallback_used": False,
+                    },
+                )
+            )
+        return results
+
+    def _parse_shopify_sales_transactions_from_pdf(
+        self, filename: str, raw: bytes
+    ) -> List[ParseResult]:
+        by_month: Dict[str, Dict[str, Any]] = {}
+        try:
+            with pdfplumber.open(io.BytesIO(raw)) as pdf:
+                for page in pdf.pages:
+                    page_text = page.extract_text() or ""
+                    for line in page_text.splitlines():
+                        self._shopify_accumulate_line(line, by_month)
+        except Exception:
+            return self._shopify_results_from_monthly(filename, {})
+        return self._shopify_results_from_monthly(filename, by_month)
+
+    def _parse_shopify_sales_transactions_frame(
+        self, filename: str, df: pd.DataFrame
+    ) -> List[ParseResult]:
+        work = df.copy()
+        work.columns = self._normalize_shopify_columns(list(work.columns))
+
+        def pick_col(options: List[str]) -> Optional[str]:
+            for opt in options:
+                if opt in work.columns:
+                    return opt
+            for col in work.columns:
+                if any(opt in col for opt in options):
+                    return col
+            return None
+
+        month_col = pick_col(["month"])
+        gross_col = pick_col(["gross sales"])
+        net_col = pick_col(["net sales"])
+        returns_col = pick_col(["returns"])
+        if not gross_col or not month_col:
+            return self._shopify_results_from_monthly(filename, {})
+
+        work["_gross"] = pd.to_numeric(
+            work[gross_col].astype(str).str.replace(",", "", regex=False),
+            errors="coerce",
+        ).fillna(0.0)
+        work["_net"] = (
+            pd.to_numeric(
+                work[net_col].astype(str).str.replace(",", "", regex=False),
+                errors="coerce",
+            ).fillna(0.0)
+            if net_col
+            else work["_gross"]
+        )
+        work["_returns"] = (
+            pd.to_numeric(
+                work[returns_col].astype(str).str.replace(",", "", regex=False),
+                errors="coerce",
+            ).fillna(0.0)
+            .abs()
+            if returns_col
+            else 0.0
+        )
+        work["_month"] = pd.to_datetime(work[month_col], dayfirst=True, errors="coerce")
+        work = work.dropna(subset=["_month"])
+        if work.empty:
+            return self._shopify_results_from_monthly(filename, {})
+
+        by_month: Dict[str, Dict[str, Any]] = {}
+        for _, row in work.iterrows():
+            ts = row["_month"]
+            ym = f"{ts.year:04d}-{ts.month:02d}"
+            bucket = by_month.setdefault(
+                ym,
+                {
+                    "gross": 0.0,
+                    "net": 0.0,
+                    "refunds": 0.0,
+                    "count": 0,
+                    "year": int(ts.year),
+                    "month": int(ts.month),
+                },
+            )
+            bucket["gross"] += float(row["_gross"])
+            bucket["net"] += float(row["_net"])
+            bucket["refunds"] += float(row["_returns"])
+            bucket["count"] += 1
+
+        return self._shopify_results_from_monthly(filename, by_month)
 
     _stripe_balance_report_markers = re.compile(
         r"balance\s+summary|balance\s+report|about\s+this\s+report",
