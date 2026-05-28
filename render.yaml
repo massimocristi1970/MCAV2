@@ -18,6 +18,12 @@ services:
         value: INFO
       - key: SAVE_APP_RUNS
         value: "false"
+      - key: STREAMLIT_SERVER_MAX_UPLOAD_SIZE
+        value: "50"
+      - key: STREAMLIT_CACHE_TTL_SECONDS
+        value: "1800"
+      - key: STREAMLIT_CACHE_MAX_ENTRIES
+        value: "8"
 
   - type: web
     name: mcav2-batch-processor
@@ -38,3 +44,5 @@ services:
         value: INFO
       - key: MCAV2_BATCH_SAVED_RUNS_DIR
         value: /tmp/mcav2-batch-saved-runs
+      - key: STREAMLIT_SERVER_MAX_UPLOAD_SIZE
+        value: "50"

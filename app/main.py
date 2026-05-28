@@ -38,6 +38,7 @@ import os
 import base64
 from io import BytesIO
 from dataclasses import asdict
+import gc
 
 from mca_scorecard_rules import decide_application, Thresholds
 from build_training_dataset import _flatten_transactions, build_mca_features
@@ -112,7 +113,15 @@ except ImportError as e:
 import re
 from io import BytesIO
 
-@st.cache_data(show_spinner=False)
+STREAMLIT_CACHE_TTL_SECONDS = int(os.getenv("STREAMLIT_CACHE_TTL_SECONDS", "1800"))
+STREAMLIT_CACHE_MAX_ENTRIES = int(os.getenv("STREAMLIT_CACHE_MAX_ENTRIES", "8"))
+
+
+@st.cache_data(
+    show_spinner=False,
+    ttl=STREAMLIT_CACHE_TTL_SECONDS,
+    max_entries=STREAMLIT_CACHE_MAX_ENTRIES,
+)
 def _extract_text_from_pdf_bytes(pdf_bytes: bytes) -> tuple[str, str, str]:
     """
     Returns: (text, backend_used, error_msg)
@@ -168,7 +177,11 @@ def _extract_text_from_pdf_bytes(pdf_bytes: bytes) -> tuple[str, str, str]:
     return "", "none", " | ".join(errors)
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(
+    show_spinner=False,
+    ttl=STREAMLIT_CACHE_TTL_SECONDS,
+    max_entries=STREAMLIT_CACHE_MAX_ENTRIES,
+)
 def _score_tu_xml_bytes(xml_bytes: bytes, app_id: str) -> dict:
     feats_obj = extract_features_from_xml_bytes(xml_bytes=xml_bytes, app_id=app_id)
     sr = score_tu_features(feats_obj.features)
@@ -778,6 +791,12 @@ def _bureau_band_from_pdf_text(pdf_text: str) -> tuple[str, list[str]]:
 # Debug mode - only enabled when DEBUG environment variable is set to 'true'
 DEBUG_MODE = os.environ.get('DEBUG', 'false').lower() == 'true'
 
+
+@st.cache_resource(show_spinner=False)
+def _load_ml_insights_scaler():
+    return joblib.load('scaler.pkl')
+
+
 def debug_file_structure():
     """Debug helper to understand the file structure - only runs in DEBUG mode"""
     if not DEBUG_MODE:
@@ -818,7 +837,7 @@ class MLScalerInsights:
     
     def __init__(self):
         try:
-            self.scaler = joblib.load('scaler.pkl')
+            self.scaler = _load_ml_insights_scaler()
             self.has_scaler = True
             self.training_means = self.scaler.mean_
             self.training_stds = self.scaler.scale_
@@ -840,11 +859,13 @@ class MLScalerInsights:
                 'Sector_Risk': {'mean': 0.566, 'std': 0.496}
             }
             
-            print("✅ ML validation available (calibrated for your training data)")
+            if DEBUG_MODE:
+                print("ML validation available (calibrated for your training data)")
             
         except Exception as e:
             self.has_scaler = False
-            print(f"ℹ️ ML validation not available: {e}")
+            if DEBUG_MODE:
+                print(f"ML validation not available: {e}")
     
     def validate_business_data(self, metrics, params):
         """Validate business data with awareness of your training data's extreme variability"""
@@ -1389,6 +1410,7 @@ def calculate_weighted_scores(metrics, params, industry_thresholds):
     weighted_score = max(0, weighted_score - penalties)
     return weighted_score
 
+@st.cache_resource(show_spinner=False)
 def load_models():
     """Load ML models"""
     try:
@@ -2123,11 +2145,21 @@ def render_card_terminal_reconciliation(bank_df, card_files, card_processing_pay
         "The app normalizes totals and compares monthly card sales to bank revenue inflows."
     )
 
-    if not card_files:
+    payload = card_processing_payload
+    parsed_payload_df = payload.get("parsed_df") if payload else None
+    has_payload = bool(
+        payload
+        and (
+            payload.get("parse_output")
+            or (isinstance(parsed_payload_df, pd.DataFrame) and not parsed_payload_df.empty)
+            or payload.get("error")
+        )
+    )
+    if not card_files and not has_payload:
         st.info("No card terminal statements uploaded yet.")
         return
 
-    payload = card_processing_payload or derive_card_processing_payload(bank_df, card_files)
+    payload = payload or derive_card_processing_payload(bank_df, card_files)
     if payload.get("error"):
         st.error(f"Failed to parse card terminal statements: {payload.get('error')}")
         return
@@ -5027,10 +5059,12 @@ def main():
                     "metrics": metrics,
                     "scores": scores,
                     "revenue_insights": revenue_insights,
-                    "card_terminal_files": card_terminal_files,
+                    "card_terminal_files": None,
                     "card_processing_payload": card_processing_payload,
                     "source_upload_name": uploaded_file.name if uploaded_file else None,
                 }
+                del raw_bytes, string_data, json_data, transactions, txns_for_scoring
+                gc.collect()
 
                 try:
                     from app.services.run_persistence import persist_scorecard_run

@@ -102,8 +102,13 @@ dmypy.json
 logs/
 *.log
 
-# Data files
+# Runtime image should not carry local datasets, reports, sample statements, or tests.
 data/
+analysis_outputs/
+card_terminal_statement/
+tests/
+legacy/
+synthetic_data/
 *.csv
 *.json
 *.xlsx
@@ -145,6 +150,7 @@ MCAV2_BatchProcessor/saved_runs/
 tmp/
 temp/
 *.tmp
+.codex-tools/
 
 # Node modules (if any JS tools)
 node_modules/

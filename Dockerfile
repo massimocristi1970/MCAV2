@@ -10,6 +10,9 @@ ENV APP_ENTRYPOINT=app/main.py
 ENV PORT=8501
 ENV STREAMLIT_SERVER_PORT=${PORT}
 ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
+ENV STREAMLIT_SERVER_MAX_UPLOAD_SIZE=50
+ENV STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+ENV STREAMLIT_SERVER_FILE_WATCHER_TYPE=none
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -43,4 +46,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 EXPOSE 8501
 
 # Run the selected Streamlit application. Render provides PORT at runtime.
-CMD ["sh", "-c", "streamlit run \"$APP_ENTRYPOINT\" --server.port=\"${PORT:-8501}\" --server.address=0.0.0.0 --server.headless=true"]
+CMD ["sh", "-c", "streamlit run \"$APP_ENTRYPOINT\" --server.port=\"${PORT:-8501}\" --server.address=0.0.0.0 --server.headless=true --server.maxUploadSize=\"${STREAMLIT_SERVER_MAX_UPLOAD_SIZE:-50}\" --server.fileWatcherType=none --browser.gatherUsageStats=false"]
