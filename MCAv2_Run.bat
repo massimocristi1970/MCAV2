@@ -74,9 +74,9 @@ if not exist "logs" mkdir logs
 if not exist "data" mkdir data
 
 if exist "app\main.py" (
-    call "%PYTHON_EXE%" -m streamlit run app\main.py
+    call "%PYTHON_EXE%" -m streamlit run app\main.py --server.port 8624 --server.address localhost
 ) else if exist "main.py" (
-    call "%PYTHON_EXE%" -m streamlit run main.py
+    call "%PYTHON_EXE%" -m streamlit run main.py --server.port 8624 --server.address localhost
 ) else (
     echo Cannot find main.py or app\main.py
     pause
@@ -84,3 +84,4 @@ if exist "app\main.py" (
 )
 
 pause
+

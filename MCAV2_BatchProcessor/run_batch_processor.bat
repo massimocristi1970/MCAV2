@@ -77,7 +77,7 @@ if exist "batch_processor_standalone.py" (
     echo Found batch_processor_standalone.py
     echo Starting Streamlit application on port %PORT%...
     echo URL: http://localhost:%PORT%
-    %PYTHON_EXE% -m streamlit run batch_processor_standalone.py --server.port %PORT% --server.headless false
+    %PYTHON_EXE% -m streamlit run batch_processor_standalone.py --server.port %PORT% --server.headless false --server.address localhost
 ) else (
     echo ERROR: batch_processor_standalone.py not found in current directory
     echo Please make sure this batch file is in the same folder as the Python files
@@ -89,3 +89,4 @@ if exist "batch_processor_standalone.py" (
 echo.
 echo Application stopped.
 pause
+
