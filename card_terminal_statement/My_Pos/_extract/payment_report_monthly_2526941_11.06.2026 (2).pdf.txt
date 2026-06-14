@@ -1,0 +1,395 @@
+Monthly statement - 03.2026
+Account holder
+Name ELEGANT LIVING WHOLESALE LIMITED
+Registration number 16689043
+Address: GBR, , WIDNES, 33C WIDNES ROAD
+Account details
+Account number: 67262337
+Account name: GBP Account
+Account currency: GBP
+IBAN: GB67MPOS00996367262337
+Report summary Gross payments: 30,396.00 GBP
+Total fees: 264.20 GBP
+Net payments: 30,131.80 GBP
+Operation type Amount
+Card machine payments 19,027.00
+Sales 19027
+Refunds 0
+Online payments 11,369.00
+Sales 11369
+Refunds 0
+Card machine fees 95.51
+Sales 95.51
+Refunds 0
+Online payment fees 168.69
+Sales 168.69
+Refunds 0
+Transactions
+Order Exch.
+Value date Type Description Amount
+via Rate
+Outgoing
+28.03.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000 -752.000
+14:27 752.00 GBP
+transfer
+28.03.2026 Internal
+System Financing payment, -143.68 GBP 1.0000 -143.680
+13:19 Transfer
+28.03.2026 READY2GO FURNITURE - 000252 / , -2.81
+System Fee 1.0000 -2.810
+13:07 GBP
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom
+Monthly statement - 03.2026
+28.03.2026 myPOS Payment READY2GO FURNITURE - 000252 / TID 1.0000 898.000
+13:07 80341580, 898.00 GBP
+Outgoing
+26.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+15:45 1060.00 GBP 1060.000
+transfer
+26.03.2026 Internal
+System Financing payment, -208.00 GBP 1.0000 -208.000
+13:49 Transfer
+26.03.2026 ELEGANT LIVING WHOLES - 000114 /
+System Fee 1.0000 -31.230
+13:49 Transaction fee, -31.23 GBP
+26.03.2026 ELEGANT LIVING WHOLES - 000114 /
+myPOS Payment 1.0000 1300.000
+13:49 Payment on TID 80386824, 1300.00 GBP
+Outgoing
+25.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+17:04 2039.00 GBP 2039.000
+transfer
+25.03.2026 Internal
+System Financing payment, -400.00 GBP 1.0000 -400.000
+16:09 Transfer
+25.03.2026
+System Fee , -61.28 GBP 1.0000 -61.280
+16:09
+25.03.2026 myPOS Payment Marwan Arkdash +7472777623 , 2500.00
+1.0000 2500.000
+16:09 Online request GBP
+Outgoing
+25.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+14:52 2038.00 GBP 2038.000
+transfer
+24.03.2026 Internal
+System Financing payment, -400.00 GBP 1.0000 -400.000
+18:56 Transfer
+24.03.2026
+System Fee , -61.28 GBP 1.0000 -61.280
+18:56
+24.03.2026 myPOS Payment Marwan Arkdash +7472777623 , 2500.00
+1.0000 2500.000
+18:56 Online request GBP
+Outgoing
+24.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+16:17 1376.28 GBP 1376.280
+transfer
+24.03.2026 Internal
+System Financing payment, -263.84 GBP 1.0000 -263.840
+16:12 Transfer
+24.03.2026 ELEGANT LIVING WHOLES - 000112 / , -
+System Fee 1.0000 -9.260
+16:12 9.26 GBP
+24.03.2026 ELEGANT LIVING WHOLES - 000112 / TID
+myPOS Payment 1.0000 1649.000
+16:12 80386824, 1649.00 GBP
+Outgoing
+21.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+15:09 1716.00 GBP 1716.000
+transfer
+21.03.2026 Internal
+System Financing payment, -232.00 GBP 1.0000 -232.000
+13:04 Transfer
+21.03.2026 ELEGANT LIVING WHOLES - 000110 / , -
+System Fee 1.0000 -4.530
+12:57 4.53 GBP
+21.03.2026
+ELEGANT LIVING WHOLES - 000110 / TID
+12:57 myPOS Payment 1.0000 1450.000
+80386824, 1450.00 GBP
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom
+Monthly statement - 03.2026
+20.03.2026 Internal
+System Financing payment, -8.00 GBP 1.0000 -8.000
+18:28 Transfer
+20.03.2026 ELEGANT LIVING WHOLES - 000108 / , -
+System Fee 1.0000 -0.310
+18:27 0.31 GBP
+20.03.2026 ELEGANT LIVING WHOLES - 000108 / TID
+myPOS Payment 1.0000 50.000
+18:27 80386824, 50.00 GBP
+20.03.2026 Internal
+System Financing payment, -88.00 GBP 1.0000 -88.000
+12:11 Transfer
+20.03.2026 ELEGANT LIVING WHOLES - 000106 / , -
+System Fee 1.0000 -1.740
+12:10 1.74 GBP
+20.03.2026 ELEGANT LIVING WHOLES - 000106 / TID
+myPOS Payment 1.0000 550.000
+12:10 80386824, 550.00 GBP
+Outgoing
+19.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+23:22 8184.00 GBP 8184.000
+transfer
+Outgoing
+19.03.2026
+Mobile bank MAHSOUD CHILBY 36731260, -316.00 GBP 1.0000 -316.000
+19:33
+transfer
+19.03.2026 Account
+System LIBERIS LIMITED 21132119, 8500.00 GBP 1.0000 8500.000
+19:30 funding
+Outgoing
+19.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+14:27 1845.00 GBP 1845.000
+transfer
+19.03.2026 ELEGANT LIVING WHOLES - 000104 / , -
+System Fee 1.0000 -5.770
+12:51 5.77 GBP
+19.03.2026 ELEGANT LIVING WHOLES - 000104 / TID
+myPOS Payment 1.0000 1850.000
+12:51 80386824, 1850.00 GBP
+Outgoing
+18.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+15:10 1440.00 GBP 1440.000
+transfer
+18.03.2026 ELEGANT LIVING WHOLES - 000102 / , -
+System Fee 1.0000 -4.230
+14:54 4.23 GBP
+18.03.2026 ELEGANT LIVING WHOLES - 000102 / TID
+myPOS Payment 1.0000 750.000
+14:54 80386824, 750.00 GBP
+17.03.2026
+System Fee Fee for payment request, -3.59 GBP 1.0000 -3.590
+18:15
+17.03.2026 myPOS Payment Received payment from Prada Payment
+1.0000 699.000
+18:15 Online request +7443334658 , 699.00 GBP
+Outgoing
+17.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+15:41 1389.00 GBP 1389.000
+transfer
+17.03.2026
+System Fee Fee for payment request, -10.67 GBP 1.0000 -10.670
+15:14
+17.03.2026 myPOS Payment Received payment from Ash Williams
+15:14 Online request Renzo +447563529048 , 1400.00 GBP 1.0000 1400.000
+Outgoing
+16.03.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000 -199.000
+17:45 199.00 GBP
+transfer
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom
+Monthly statement - 03.2026
+16.03.2026 ELEGANT LIVING WHOLES - 000100 / , -
+System Fee 1.0000 -1.150
+17:42 1.15 GBP
+16.03.2026 ELEGANT LIVING WHOLES - 000100 / TID
+myPOS Payment 1.0000 200.000
+17:42 80386824, 200.00 GBP
+Outgoing
+16.03.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000 -299.000
+14:37 299.00 GBP
+transfer
+16.03.2026 ELEGANT LIVING WHOLES - 000098 / , -
+System Fee 1.0000 -0.960
+13:57 0.96 GBP
+16.03.2026 ELEGANT LIVING WHOLES - 000098 / TID
+myPOS Payment 1.0000 300.000
+13:57 80386824, 300.00 GBP
+Outgoing
+13.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+18:25 1196.00 GBP 1196.000
+transfer
+13.03.2026 ELEGANT LIVING WHOLES - 000094 / , -
+System Fee 1.0000 -3.750
+18:20 3.75 GBP
+13.03.2026 ELEGANT LIVING WHOLES - 000094 / TID
+myPOS Payment 1.0000 1200.000
+18:20 80386824, 1200.00 GBP
+Outgoing
+13.03.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000 -184.000
+17:46 184.00 GBP
+transfer
+13.03.2026 ELEGANT LIVING WHOLES - 000092 / , -
+System Fee 1.0000 -0.870
+16:42 0.87 GBP
+13.03.2026 ELEGANT LIVING WHOLES - 000092 / TID
+myPOS Payment 1.0000 150.000
+16:42 80386824, 150.00 GBP
+13.03.2026 ELEGANT LIVING WHOLES - 000090 / , -
+System Fee 1.0000 -0.140
+15:09 0.14 GBP
+13.03.2026 ELEGANT LIVING WHOLES - 000090 / TID
+myPOS Payment 1.0000 35.000
+15:09 80386824, 35.00 GBP
+Outgoing
+13.03.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000 -269.000
+13:02 269.00 GBP
+transfer
+13.03.2026
+System Fee Fee for payment request, -1.41 GBP 1.0000 -1.410
+12:42
+Received payment from
+13.03.2026 myPOS Payment
+zack.marketing17gmail.com *1072 , 1.0000 270.000
+12:42 Online request
+270.00 GBP
+Outgoing
+12.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+23:37 1985.00 GBP 1985.000
+transfer
+12.03.2026
+System Fee Fee for payment request, -15.23 GBP 1.0000 -15.230
+23:31
+12.03.2026 myPOS Payment Received payment from Marwan Arkdash
+1.0000 2000.000
+23:31 Online request +7472777623 , 2000.00 GBP
+Outgoing
+12.03.2026 -
+Mobile bank AISHA ALTUMI 51380960, -1987.00 GBP 1.0000
+18:14 1987.000
+transfer
+12.03.2026
+System Fee Fee for payment request, -15.23 GBP 1.0000 -15.230
+18:12
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom
+Monthly statement - 03.2026
+12.03.2026 myPOS Payment Received payment from Marwan Arkdash
+1.0000 2000.000
+18:12 Online request +7472777623 , 2000.00 GBP
+Outgoing
+12.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+12:34 1500.00 GBP 1500.000
+transfer
+11.03.2026 ELEGANT LIVING WHOLES - 000088 / , -
+System Fee 1.0000 -4.680
+17:12 4.68 GBP
+11.03.2026 ELEGANT LIVING WHOLES - 000088 / TID
+myPOS Payment 1.0000 1499.000
+17:12 80386824, 1499.00 GBP
+Outgoing
+11.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+15:41 2100.00 GBP 2100.000
+transfer
+Outgoing
+11.03.2026
+Mobile bank AISHA ALTUMI 51380960, -200.00 GBP 1.0000 -200.000
+14:54
+transfer
+11.03.2026
+System Fee Fee for payment request, -3.06 GBP 1.0000 -3.060
+14:17
+11.03.2026 myPOS Payment Received payment from June Amaya
+1.0000 399.000
+14:17 Online request +7912077827 , 399.00 GBP
+11.03.2026 ELEGANT LIVING WHOLES - 000086 / , -
+System Fee 1.0000 -2.190
+13:39 2.19 GBP
+11.03.2026 ELEGANT LIVING WHOLES - 000086 / TID
+myPOS Payment 1.0000 698.000
+13:39 80386824, 698.00 GBP
+11.03.2026 ELEGANT LIVING WHOLES - 000084 / , -
+System Fee 1.0000 -3.190
+12:24 3.19 GBP
+11.03.2026 ELEGANT LIVING WHOLES - 000084 / TID
+myPOS Payment 1.0000 1020.000
+12:24 80386824, 1020.00 GBP
+10.03.2026 ELEGANT LIVING WHOLES - 000082 / , -
+System Fee 1.0000 -0.650
+12:20 0.65 GBP
+10.03.2026 ELEGANT LIVING WHOLES - 000082 / TID
+myPOS Payment 1.0000 200.000
+12:20 80386824, 200.00 GBP
+Outgoing
+09.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+15:47 1196.00 GBP 1196.000
+transfer
+09.03.2026 ELEGANT LIVING WHOLES - 000080 / , -
+System Fee 1.0000 -3.750
+15:00 3.75 GBP
+09.03.2026 ELEGANT LIVING WHOLES - 000080 / TID
+15:00 myPOS Payment 80386824, 1200.00 GBP 1.0000 1200.000
+Outgoing
+09.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+12:59 1221.00 GBP 1221.000
+transfer
+09.03.2026 ELEGANT LIVING WHOLES - 000078 / , -
+System Fee 1.0000 -3.830
+12:55 3.83 GBP
+09.03.2026 ELEGANT LIVING WHOLES - 000078 / TID
+myPOS Payment 1.0000 1225.000
+12:55 80386824, 1225.00 GBP
+Outgoing
+07.03.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000 -696.000
+17:12 696.00 GBP
+transfer
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom
+Monthly statement - 03.2026
+07.03.2026 ELEGANT LIVING WHOLES - 000076 / , -
+System Fee 1.0000 -3.950
+16:13 3.95 GBP
+07.03.2026 ELEGANT LIVING WHOLES - 000076 / TID
+myPOS Payment 1.0000 700.000
+16:13 80386824, 700.00 GBP
+Outgoing
+06.03.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000 -798.000
+16:39 798.00 GBP
+transfer
+06.03.2026 ELEGANT LIVING WHOLES - 000074 / , -
+System Fee 1.0000 -2.510
+16:03 2.51 GBP
+06.03.2026 ELEGANT LIVING WHOLES - 000074 / TID
+myPOS Payment 1.0000 800.000
+16:03 80386824, 800.00 GBP
+Outgoing
+03.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+17:07 1495.00 GBP 1495.000
+transfer
+03.03.2026 ELEGANT LIVING WHOLES - 000072 / , -
+System Fee 1.0000 -4.680
+16:48 4.68 GBP
+03.03.2026 ELEGANT LIVING WHOLES - 000072 / TID
+myPOS Payment 1.0000 1500.000
+16:48 80386824, 1500.00 GBP
+Outgoing
+01.03.2026 ELEGANT LIVING WHOLESALE 02772094, - -
+Mobile bank 1.0000
+15:40 2197.00 GBP 2197.000
+transfer
+01.03.2026 ELEGANT LIVING WHOLES - 000070 / , -
+System Fee 1.0000 -6.850
+15:32 6.85 GBP
+01.03.2026 ELEGANT LIVING WHOLES - 000070 / TID
+myPOS Payment 1.0000 2200.000
+15:32 80386824, 2200.00 GBP
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom

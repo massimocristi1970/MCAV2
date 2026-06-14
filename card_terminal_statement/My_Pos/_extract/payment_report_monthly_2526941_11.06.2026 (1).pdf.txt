@@ -1,0 +1,366 @@
+Monthly statement - 04.2026
+Account holder
+Name ELEGANT LIVING WHOLESALE LIMITED
+Registration number 16689043
+Address: GBR, , WIDNES, 33C WIDNES ROAD
+Account details
+Account number: 67262337
+Account name: GBP Account
+Account currency: GBP
+IBAN: GB67MPOS00996367262337
+Report summary Gross payments: 24,251.05 GBP
+Total fees: 356.99 GBP
+Net payments: 23,894.06 GBP
+Operation type Amount
+Card machine payments 10,096.05
+Sales 10096.05
+Refunds 0
+Online payments 14,155.00
+Sales 14155
+Refunds 0
+Card machine fees 60.74
+Sales 60.74
+Refunds 0
+Online payment fees 296.25
+Sales 296.25
+Refunds 0
+Transactions
+Order Exch.
+Value date Type Description Amount
+via Rate
+Outgoing
+27.04.2026 ELEGANT LIVING WHOLESALE 02772094,
+Mobile bank 1.0000 -645.000
+17:33 -645.00 GBP
+transfer
+27.04.2026 Internal
+System Financing payment, -27.84 GBP 1.0000 -27.840
+16:41 Transfer
+27.04.2026 READY2GO FURNITURE - 000286 / , -0.57
+System Fee 1.0000 -0.570
+16:07 GBP
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom
+Monthly statement - 04.2026
+27.04.2026 READY2GO FURNITURE - 000286 / TID
+myPOS Payment 1.0000 174.000
+16:07 80341580, 174.00 GBP
+27.04.2026 Internal
+System Financing payment, -83.04 GBP 1.0000 -83.040
+14:50 Transfer
+27.04.2026 READY2GO FURNITURE - 000284 / , -2.94
+System Fee 1.0000 -2.940
+14:42 GBP
+27.04.2026 READY2GO FURNITURE - 000284 / TID
+myPOS Payment 1.0000 519.000
+14:42 80341580, 519.00 GBP
+27.04.2026 POS *1454, SCREWFIX WIDNES WIDNESS GBR,
+Card 1.0000 -32.950
+13:38 Payment -32.95 GBP
+26.04.2026 POS *1454, TESCO STORES SALFORD GBR, -
+Card 1.0000 -6.050
+21:34 Payment 6.05 GBP
+26.04.2026 POS *1454, Nooree Uk Limited Salford GBR, -
+Card 1.0000 -14.000
+17:23 Payment 14.00 GBP
+25.04.2026 POS *1454, SAINSBURYS - SALFORD SALFORD
+Card 1.0000 -1.260
+23:58 Payment GBR, -1.26 GBP
+25.04.2026 POS *1454, SAINSBURYS PLC SALFORD GBR, -
+Card 1.0000 -31.470
+23:57 Payment 31.47 GBP
+25.04.2026 POS *1454, SAINSBURYS PETROL ELLESMERE
+Card 1.0000 -0.550
+22:13 Payment POR GBR, -0.55 GBP
+25.04.2026 POS *1454, SAINSBURYS PETROL ELLESMERE
+Card 1.0000 -7.400
+22:10 Payment POR GBR, -7.40 GBP
+25.04.2026 POS *1454, ADIDAS U.K. LIMITED STOCKPORT
+Card 1.0000 -25.000
+21:46 Payment GBR, -25.00 GBP
+25.04.2026 Card POS *1454, JOE THE JUICE UK LTD London 1.0000 -14.350
+20:57 Payment GBR, -14.35 GBP
+Outgoing
+25.04.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000
+20:46 -1000.00 GBP 1000.000
+transfer
+25.04.2026 POS *1454, Mowgli Street Food Che Ellesmere
+Card 1.0000 -52.030
+20:19 Payment Por GBR, -52.03 GBP
+25.04.2026 Internal
+System Financing payment, -240.00 GBP 1.0000 -240.000
+18:28 Transfer
+25.04.2026 READY2GO FURNITURE - 000282 / , -8.43
+System Fee 1.0000 -8.430
+17:43 GBP
+25.04.2026 READY2GO FURNITURE - 000282 / TID
+myPOS Payment 1.0000 1500.000
+17:43 80341580, 1500.00 GBP
+Outgoing
+24.04.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000
+18:20 -1083.00 GBP 1083.000
+transfer
+24.04.2026 Internal
+System Financing payment, -92.80 GBP 1.0000 -92.800
+15:29 Transfer
+24.04.2026 READY2GO FURNITURE - 000280 / , -1.83
+System Fee 1.0000 -1.830
+15:28 GBP
+24.04.2026 READY2GO FURNITURE - 000280 / TID
+myPOS Payment 1.0000 580.000
+15:28 80341580, 580.00 GBP
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom
+Monthly statement - 04.2026
+23.04.2026 Internal
+System Financing payment, -107.85 GBP 1.0000 -107.850
+17:39 Transfer
+23.04.2026 ELEGANT LIVING WHOLES - 000116 / , -
+System Fee 1.0000 -2.120
+17:38 2.12 GBP
+23.04.2026 ELEGANT LIVING WHOLES - 000116 / TID
+myPOS Payment 1.0000 674.050
+17:38 80386824, 674.05 GBP
+18.04.2026 Internal
+System Financing payment, -6.40 GBP 1.0000 -6.400
+15:36 Transfer
+18.04.2026 READY2GO FURNITURE - 000278 / , -0.15
+System Fee 1.0000 -0.150
+15:32 GBP
+18.04.2026 READY2GO FURNITURE - 000278 / TID
+myPOS Payment 1.0000 40.000
+15:32 80341580, 40.00 GBP
+Outgoing
+17.04.2026 ELEGANT LIVING WHOLESALE 02772094,
+Mobile bank 1.0000 -308.000
+01:11 -308.00 GBP
+transfer
+16.04.2026 Internal
+System Financing payment, -59.04 GBP 1.0000 -59.040
+17:40 Transfer
+16.04.2026 READY2GO FURNITURE - 000276 / , -1.17
+System Fee 1.0000 -1.170
+17:40 GBP
+16.04.2026 READY2GO FURNITURE - 000276 / TID
+myPOS Payment 1.0000 369.000
+17:40 80341580, 369.00 GBP
+Outgoing
+15.04.2026 ELEGANT LIVING WHOLESALE 02772094,
+Mobile bank 1.0000 -335.130
+18:25 -335.13 GBP
+transfer
+15.04.2026 Internal
+System Financing payment, -64.00 GBP 1.0000 -64.000
+17:06 Transfer
+15.04.2026 READY2GO FURNITURE - 000274 / , -1.27
+System Fee 1.0000 -1.270
+17:06 GBP
+15.04.2026 READY2GO FURNITURE - 000274 / TID
+myPOS Payment 1.0000 400.000
+17:06 80341580, 400.00 GBP
+Outgoing
+11.04.2026
+Mobile bank AISHA ALTUMI 51380960, -70.00 GBP 1.0000 -70.000
+21:58
+transfer
+11.04.2026 Internal
+System Financing payment, -640.00 GBP 1.0000 -640.000
+17:57 Transfer
+Outgoing
+11.04.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000
+17:53 -3000.00 GBP 3000.000
+transfer
+11.04.2026
+System Fee , -98.03 GBP 1.0000 -98.030
+17:38
+11.04.2026 myPOS Payment
+Ziad Gerbi +7999966980 , 4000.00 GBP 1.0000 4000.000
+17:38 Online request
+11.04.2026 Internal
+System Financing payment, -192.00 GBP 1.0000 -192.000
+16:47 Transfer
+11.04.2026 Outgoing -
+16:36 Mobile bank ELEGANT LIVING WHOLESALE 02772094, 1.0000 1199.000
+transfer -1199.00 GBP
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom
+Monthly statement - 04.2026
+11.04.2026 READY2GO FURNITURE - 000272 / , -3.75
+System Fee 1.0000 -3.750
+16:24 GBP
+11.04.2026 READY2GO FURNITURE - 000272 / TID
+myPOS Payment 1.0000 1200.000
+16:24 80341580, 1200.00 GBP
+Outgoing
+11.04.2026 ELEGANT LIVING WHOLESALE 02772094,
+Mobile bank 1.0000 -750.000
+14:24 -750.00 GBP
+transfer
+11.04.2026 Internal
+System Financing payment, -144.00 GBP 1.0000 -144.000
+12:51 Transfer
+11.04.2026 READY2GO FURNITURE - 000270 / , -2.82
+System Fee 1.0000 -2.820
+12:49 GBP
+11.04.2026 READY2GO FURNITURE - 000270 / TID
+myPOS Payment 1.0000 900.000
+12:49 80341580, 900.00 GBP
+Outgoing
+10.04.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000
+12:28 -2854.97 GBP 2854.970
+transfer
+10.04.2026 Internal
+System Financing payment, -560.00 GBP 1.0000 -560.000
+12:22 Transfer
+10.04.2026
+System Fee , -85.78 GBP 1.0000 -85.780
+12:22
+10.04.2026 myPOS Payment
+Ziad Gerbi +7999966980 , 3500.00 GBP 1.0000 3500.000
+12:22 Online request
+Outgoing
+09.04.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000
+16:02 -2854.00 GBP 2854.000
+transfer
+09.04.2026 Internal
+System Financing payment, -560.00 GBP 1.0000 -560.000
+16:01 Transfer
+09.04.2026
+System Fee , -85.78 GBP 1.0000 -85.780
+16:00
+09.04.2026 myPOS Payment
+Ziad Gerbi +7999966980 , 3500.00 GBP 1.0000 3500.000
+16:00 Online request
+Outgoing
+09.04.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000
+15:50 -1259.00 GBP 1259.000
+transfer
+09.04.2026 Internal
+13:50 System Transfer Financing payment, -8.00 GBP 1.0000 -8.000
+09.04.2026 READY2GO FURNITURE - 000268 / , -0.19
+System Fee 1.0000 -0.190
+13:50 GBP
+09.04.2026 READY2GO FURNITURE - 000268 / TID
+myPOS Payment 1.0000 50.000
+13:50 80341580, 50.00 GBP
+09.04.2026 Internal
+System Financing payment, -112.00 GBP 1.0000 -112.000
+13:48 Transfer
+09.04.2026 READY2GO FURNITURE - 000266 / , -2.20
+System Fee 1.0000 -2.200
+13:48 GBP
+09.04.2026 READY2GO FURNITURE - 000266 / TID
+myPOS Payment 1.0000 700.000
+13:48 80341580, 700.00 GBP
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom
+Monthly statement - 04.2026
+09.04.2026 Internal
+System Financing payment, -80.00 GBP 1.0000 -80.000
+13:41 Transfer
+09.04.2026 READY2GO FURNITURE - 000264 / , -1.58
+System Fee 1.0000 -1.580
+13:41 GBP
+09.04.2026 READY2GO FURNITURE - 000264 / TID
+myPOS Payment 1.0000 500.000
+13:41 80341580, 500.00 GBP
+08.04.2026 Internal
+System Financing payment, -9.60 GBP 1.0000 -9.600
+16:47 Transfer
+08.04.2026 READY2GO FURNITURE - 000262 / , -0.22
+System Fee 1.0000 -0.220
+16:47 GBP
+08.04.2026 READY2GO FURNITURE - 000262 / TID
+myPOS Payment 1.0000 60.000
+16:47 80341580, 60.00 GBP
+08.04.2026 Internal
+System Financing payment, -32.00 GBP 1.0000 -32.000
+16:13 Transfer
+08.04.2026
+System Fee , -4.93 GBP 1.0000 -4.930
+16:12
+08.04.2026 myPOS Payment Marwan Arkdash +7472777623 , 200.00
+1.0000 200.000
+16:12 Online request GBP
+Outgoing
+08.04.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000
+14:45 -4227.00 GBP 4227.000
+transfer
+08.04.2026 Internal
+System Financing payment, -552.80 GBP 1.0000 -552.800
+14:30 Transfer
+08.04.2026
+System Fee , -84.68 GBP 1.0000 -84.680
+14:30
+08.04.2026 myPOS Payment
+Ziad Gerbi +7999966980 , 3455.00 GBP 1.0000 3455.000
+14:30 Online request
+07.04.2026 Internal
+System Financing payment, -16.00 GBP 1.0000 -16.000
+13:22 Transfer
+07.04.2026 READY2GO FURNITURE - 000260 / , -0.34
+System Fee 1.0000 -0.340
+13:21 GBP
+07.04.2026 READY2GO FURNITURE - 000260 / TID
+myPOS Payment 1.0000 100.000
+13:21 80341580, 100.00 GBP
+07.04.2026 Internal
+System Refund of Merchant Fees, 52.48 GBP 1.0000 52.480
+12:06 Transfer
+06.04.2026 Internal
+System Financing payment, -248.00 GBP 1.0000 -248.000
+15:47 Transfer
+06.04.2026 READY2GO FURNITURE - 000258 /
+System Fee 1.0000 -28.710
+15:47 Transaction fee, -28.71 GBP
+06.04.2026 READY2GO FURNITURE - 000258 /
+myPOS Payment 1.0000 1550.000
+15:47 Payment on TID 80341580, 1550.00 GBP
+Outgoing
+05.04.2026 ELEGANT LIVING WHOLESALE 02772094,
+Mobile bank 1.0000 -737.000
+16:13 -737.00 GBP
+transfer
+04.04.2026 Internal
+System Financing payment, -136.00 GBP 1.0000 -136.000
+14:54 Transfer
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom
+Monthly statement - 04.2026
+04.04.2026 READY2GO FURNITURE - 000256 / , -2.67
+System Fee 1.0000 -2.670
+14:25 GBP
+04.04.2026 READY2GO FURNITURE - 000256 / TID
+myPOS Payment 1.0000 850.000
+14:25 80341580, 850.00 GBP
+02.04.2026 Internal
+System Financing payment, -4.80 GBP 1.0000 -4.800
+18:55 Transfer
+02.04.2026 READY2GO FURNITURE - 000254 / , -0.12
+18:55 System Fee GBP 1.0000 -0.120
+02.04.2026 READY2GO FURNITURE - 000254 / TID
+myPOS Payment 1.0000 30.000
+18:55 80341580, 30.00 GBP
+Outgoing
+01.04.2026 ELEGANT LIVING WHOLESALE 02772094, -
+Mobile bank 1.0000
+16:46 -2497.00 GBP 2497.000
+transfer
+01.04.2026 Internal
+System Financing payment, -480.00 GBP 1.0000 -480.000
+16:32 Transfer
+01.04.2026
+System Fee Fee for payment request, -22.83 GBP 1.0000 -22.830
+16:32
+01.04.2026 myPOS Payment Received payment from Marwan Arkdash
+1.0000 3000.000
+16:32 Online request +7472777623 , 3000.00 GBP
+myPOS Payments Ltd, company number 10630670, is a licensed Electronic Money Institution, authorized by the FCA, providing e-money and payment services in all EEA
+countries. Address: The Shard, Level 24, 32 London Bridge Street, London, SE1 9SG, United Kingdom

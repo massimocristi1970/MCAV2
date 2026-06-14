@@ -413,6 +413,8 @@ class CardTerminalIngestionService:
                 return [self._parse_dojo_invoice_pdf(filename, text)]
             if self._is_dna_payments_statement_pdf(text, filename):
                 return [self._parse_dna_payments_statement_pdf(filename, text)]
+            if self._is_mypos_monthly_statement_pdf(text, filename):
+                return [self._parse_mypos_monthly_statement_pdf(filename, text)]
             provider_hint = self._detect_provider_hint(f"{filename} {text[:8000]}")
             if provider_hint:
                 prof = get_provider_profile(provider_hint)
@@ -421,6 +423,8 @@ class CardTerminalIngestionService:
             generic = self._parse_generic_pdf(filename, text)
             if generic.gross_card_sales <= 0 and self._is_dna_payments_statement_pdf(text, filename):
                 return [self._parse_dna_payments_statement_pdf(filename, text)]
+            if generic.gross_card_sales <= 0 and self._is_mypos_monthly_statement_pdf(text, filename):
+                return [self._parse_mypos_monthly_statement_pdf(filename, text)]
             return [generic]
 
         if ext in {"csv"}:
@@ -1253,6 +1257,133 @@ class CardTerminalIngestionService:
             raw_summary={"text_length": len(text)},
             extraction_diagnostics={
                 "profile": "DNA Payments",
+                "fields": {
+                    "gross_card_sales": gross > 0,
+                    "fees_total": fees > 0,
+                    "period_end": period_end is not None,
+                    "merchant_id": merchant_id is not None,
+                },
+                "fallback_used": gross <= 0,
+            },
+        )
+
+    def _is_mypos_monthly_statement_pdf(self, text: str, filename: str = "") -> bool:
+        """myPOS monthly payment report PDF (Report summary + Gross payments)."""
+        fn = (filename or "").lower().replace("\\", "/")
+        if any(k in fn for k in ("payment_report_monthly", "my_pos", "mypos")):
+            if re.search(r"Monthly\s+statement\s*-\s*\d{2}\.\d{4}", text or "", re.IGNORECASE):
+                return True
+        t = text or ""
+        return bool(
+            re.search(r"Monthly\s+statement\s*-\s*\d{2}\.\d{4}", t, re.IGNORECASE)
+            and re.search(r"Gross\s+payments:\s*[\d,]+", t, re.IGNORECASE)
+            and re.search(r"myPOS\s+Payments", t, re.IGNORECASE)
+        )
+
+    def _parse_mypos_monthly_statement_pdf(self, filename: str, text: str) -> ParseResult:
+        """myPOS monthly payment report: summary totals for card + online payments."""
+        warnings: List[str] = []
+        period_start: Optional[date] = None
+        period_end: Optional[date] = None
+
+        m_per = re.search(r"Monthly\s+statement\s*-\s*(\d{2})\.(\d{4})", text, re.IGNORECASE)
+        if m_per:
+            month = int(m_per.group(1))
+            year = int(m_per.group(2))
+            if 1 <= month <= 12:
+                period_start = date(year, month, 1)
+                period_end = date(year, month, monthrange(year, month)[1])
+        if period_end is None:
+            warnings.append("Could not parse myPOS statement period (Monthly statement - MM.YYYY).")
+
+        merchant_id = None
+        m_acct = re.search(r"Account\s+number:\s*(\d+)", text, re.IGNORECASE)
+        if m_acct:
+            merchant_id = m_acct.group(1).strip()
+
+        company_name = None
+        m_name = re.search(r"Name\s+(.+)", text)
+        if m_name:
+            company_name = m_name.group(1).strip()
+
+        gross = 0.0
+        m_gross = re.search(
+            r"Gross\s+payments:\s*([\d,]+\.?\d*)\s*(?:GBP)?",
+            text,
+            re.IGNORECASE,
+        )
+        if m_gross:
+            gross = self._to_float(m_gross.group(1))
+
+        fees = 0.0
+        m_fee = re.search(
+            r"Total\s+fees:\s*([\d,]+\.?\d*)\s*(?:GBP)?",
+            text,
+            re.IGNORECASE,
+        )
+        if m_fee:
+            fees = self._to_float(m_fee.group(1))
+
+        net = 0.0
+        m_net = re.search(
+            r"Net\s+payments:\s*([\d,]+\.?\d*)\s*(?:GBP)?",
+            text,
+            re.IGNORECASE,
+        )
+        if m_net:
+            net = self._to_float(m_net.group(1))
+
+        refunds = 0.0
+        summary_block = text.split("Transactions", 1)[0] if "Transactions" in text else text[:4000]
+        for m_ref in re.finditer(r"^Refunds\s+([\d,]+\.?\d*)", summary_block, re.IGNORECASE | re.MULTILINE):
+            refunds += self._to_float(m_ref.group(1))
+
+        card_machine = 0.0
+        m_cm = re.search(r"Card\s+machine\s+payments\s+([\d,]+\.?\d*)", text, re.IGNORECASE)
+        if m_cm:
+            card_machine = self._to_float(m_cm.group(1))
+
+        online = 0.0
+        m_on = re.search(r"Online\s+payments\s+([\d,]+\.?\d*)", text, re.IGNORECASE)
+        if m_on:
+            online = self._to_float(m_on.group(1))
+
+        txn_count = len(re.findall(r"myPOS\s+Payment", text, re.IGNORECASE))
+        chargebacks = 0.0
+        currency = "GBP"
+
+        if gross <= 0:
+            warnings.append("myPOS report: could not find Gross payments total.")
+        warnings.append(
+            "Parsed as myPOS monthly payment report PDF (native): gross is total card + online payments."
+        )
+
+        confidence = 0.92 if gross > 0 and period_end is not None else 0.65
+
+        return ParseResult(
+            filename=filename,
+            provider="myPOS",
+            parser="mypos_monthly_payment_report_pdf_v1",
+            merchant_id=merchant_id,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency=currency,
+            gross_card_sales=float(gross),
+            refunds_amount=float(refunds),
+            chargebacks_amount=float(chargebacks),
+            fees_total=float(fees),
+            transaction_count=int(txn_count),
+            confidence=confidence,
+            warnings=warnings,
+            raw_summary={
+                "text_length": len(text),
+                "company_name": company_name,
+                "net_payments": net,
+                "card_machine_payments": card_machine,
+                "online_payments": online,
+            },
+            extraction_diagnostics={
+                "profile": "myPOS",
                 "fields": {
                     "gross_card_sales": gross > 0,
                     "fees_total": fees > 0,

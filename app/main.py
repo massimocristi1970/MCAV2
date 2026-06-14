@@ -2358,23 +2358,56 @@ def render_card_terminal_reconciliation(bank_df, card_files, card_processing_pay
 
 def create_score_charts(scores, metrics):
     """Create clean bar charts for scores - Updated for 3 scoring methods"""
-    
+
+    def _score_value(raw, fallback=None):
+        if raw is not None:
+            try:
+                return float(raw)
+            except (TypeError, ValueError):
+                pass
+        if fallback is not None:
+            try:
+                return float(fallback)
+            except (TypeError, ValueError):
+                pass
+        return 0.0
+
+    def _score_label(key, raw, fallback=None):
+        display_raw = raw if raw is not None else fallback
+        if display_raw is None:
+            return "N/A"
+        try:
+            val = float(display_raw)
+        except (TypeError, ValueError):
+            return "N/A"
+        suffix = "%" if key == "Adjusted ML" else "/100"
+        return f"{val:.1f}{suffix}"
+
+    adjusted_raw = scores.get("adjusted_ml_score")
+    if adjusted_raw is None:
+        adjusted_raw = scores.get("ml_score")
+
+    score_data = {
+        "Subprime Score": _score_value(scores.get("subprime_score")),
+        "MCA Rule": _score_value(scores.get("mca_rule_score")),
+        "Adjusted ML": _score_value(adjusted_raw),
+    }
+    score_labels = {
+        "Subprime Score": _score_label("Subprime Score", scores.get("subprime_score")),
+        "MCA Rule": _score_label("MCA Rule", scores.get("mca_rule_score")),
+        "Adjusted ML": _score_label("Adjusted ML", scores.get("adjusted_ml_score"), scores.get("ml_score")),
+    }
+
     # Score comparison chart
     fig_scores = go.Figure()
-    
-    score_data = {
-        'Subprime Score': scores.get('subprime_score', 0),
-        'MCA Rule': scores.get('mca_rule_score', 0),
-        'Adjusted ML': scores.get('adjusted_ml_score', scores.get('ml_score', 0))
-    }
-    
+
     colors = ['#2ca02c', '#1f77b4', '#ff7f0e']  # Green, Blue, Orange
-    
+
     fig_scores.add_trace(go.Bar(
         x=list(score_data.keys()),
         y=list(score_data.values()),
         marker_color=colors,
-        text=[f"{v:.1f}" + ("%" if k == "Adjusted ML" else "/100") for k, v in score_data.items()],
+        text=[score_labels[k] for k in score_data.keys()],
         textposition='outside'
     ))
     
@@ -3377,16 +3410,50 @@ class DashboardExporter:
     
     def generate_html_report(self, export_data: dict) -> str:
         """Generate comprehensive HTML report."""
-        
-        # Helper function for score styling
+
+        sr = export_data.get("scoring_results", {}) or {}
+
         def get_score_class(score):
+            if score is None:
+                return "low"
+            try:
+                score = float(score)
+            except (TypeError, ValueError):
+                return "low"
             if score >= 70:
                 return "high"
-            elif score >= 40:
+            if score >= 40:
                 return "medium"
-            else:
-                return "low"
-        
+            return "low"
+
+        def format_score(score, suffix="/100", precision=1):
+            if score is None:
+                return "N/A"
+            try:
+                val = float(score)
+            except (TypeError, ValueError):
+                return "N/A"
+            if precision == 0:
+                return f"{val:.0f}{suffix}"
+            return f"{val:.{precision}f}{suffix}"
+
+        subprime_raw = sr.get("subprime_score")
+        mca_raw = sr.get("mca_rule_score")
+        adjusted_raw = sr.get("adjusted_ml_score")
+        if adjusted_raw is None:
+            adjusted_raw = sr.get("ml_score")
+        ml_display_raw = sr.get("adjusted_ml_score")
+        if ml_display_raw is None:
+            ml_display_raw = sr.get("ml_score")
+
+        subprime_display = format_score(subprime_raw)
+        mca_display = format_score(mca_raw, precision=0)
+        adjusted_display = format_score(adjusted_raw, suffix="%")
+        ml_table_display = (
+            format_score(ml_display_raw, suffix="%")
+            if ml_display_raw is not None
+            else "N/A"
+        )
         # Generate loans section HTML if data exists
         loans_section = ""
         if export_data['loans_analysis'] and export_data['loans_analysis'].get('loan_count', 0) > 0:
@@ -3461,16 +3528,16 @@ class DashboardExporter:
                 <div class="metric-grid">
                     <div class="metric-card">
                         <h3>Subprime score</h3>
-                        <div class="score-{get_score_class(export_data['scoring_results']['subprime_score'])}">{export_data['scoring_results']['subprime_score']:.1f}/100</div>
+                        <div class="score-{get_score_class(subprime_raw)}">{subprime_display}</div>
                         <p>{export_data['scoring_results']['subprime_tier']}</p>
                     </div>
                     <div class="metric-card">
                         <h3>MCA rule (60%)</h3>
-                        <div class="score-{get_score_class(export_data['scoring_results'].get('mca_rule_score', 0))}">{export_data['scoring_results'].get('mca_rule_score', 0):.0f}/100</div>
+                        <div class="score-{get_score_class(mca_raw)}">{mca_display}</div>
                     </div>
                     <div class="metric-card">
                         <h3>ML score (informational)</h3>
-                        <div class="score-{get_score_class(export_data['scoring_results'].get('adjusted_ml_score', 0))}">{export_data['scoring_results'].get('adjusted_ml_score', 0):.1f}%</div>
+                        <div class="score-{get_score_class(adjusted_raw)}">{adjusted_display}</div>
                     </div>
                     <div class="metric-card">
                         <h3>Requested loan</h3>
@@ -3519,7 +3586,7 @@ class DashboardExporter:
                     </tr>
                     <tr>
                         <td>ML Score (Info Only)</td>
-                        <td>{export_data['scoring_results'].get('adjusted_ml_score', export_data['scoring_results'].get('ml_score', 'N/A'))}</td>
+                        <td>{ml_table_display}</td>
                     </tr>
                     <tr>
                         <td>Requested Loan</td>
