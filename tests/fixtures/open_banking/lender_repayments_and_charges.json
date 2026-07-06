@@ -1,0 +1,34 @@
+{
+  "transactions": [
+    {
+      "date": "2026-04-01",
+      "amount": -2000.0,
+      "name": "Invoice payment from client",
+      "personal_finance_category": {"primary": "INCOME", "detailed": "INCOME_OTHER_INCOME"}
+    },
+    {
+      "date": "2026-04-02",
+      "amount": -750.0,
+      "name": "Iwoca disbursement",
+      "personal_finance_category": {"primary": "TRANSFER_IN", "detailed": "TRANSFER_IN_CASH_ADVANCES_AND_LOANS"}
+    },
+    {
+      "date": "2026-04-10",
+      "amount": 150.0,
+      "name": "Iwoca repayment",
+      "personal_finance_category": {"primary": "LOAN_PAYMENTS", "detailed": "LOAN_PAYMENTS_OTHER_PAYMENT"}
+    },
+    {
+      "date": "2026-04-11",
+      "amount": 35.0,
+      "name": "Unpaid DD fee",
+      "personal_finance_category": {"primary": "BANK_FEES", "detailed": "BANK_FEES_INSUFFICIENT_FUNDS"}
+    },
+    {
+      "date": "2026-04-12",
+      "amount": 12.0,
+      "name": "Monthly account fee",
+      "personal_finance_category": {"primary": "BANK_FEES", "detailed": "BANK_FEES_OTHER"}
+    }
+  ]
+}

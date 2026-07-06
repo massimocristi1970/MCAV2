@@ -46,6 +46,7 @@ import numpy as np
 import pandas as pd
 
 from app.services.business_risk_signals import categorize_business_transactions
+from app.services.open_banking_adapter import normalize_open_banking_payload
 
 
 # ============================================================
@@ -139,42 +140,7 @@ def _strip_json_ext(name: str) -> str:
 
 
 def _flatten_transactions(obj):
-    if isinstance(obj, list):
-        return [t for t in obj if isinstance(t, dict)]
-
-    txns = []
-
-    def walk(x):
-        nonlocal txns
-        if isinstance(x, dict):
-            for k in ["transactions", "transaction", "data", "items", "results"]:
-                if isinstance(x.get(k), list):
-                    txns.extend(x[k])
-                elif isinstance(x.get(k), dict):
-                    vv = x[k].get("transactions")
-                    if isinstance(vv, list):
-                        txns.extend(vv)
-            for v in x.values():
-                walk(v)
-        elif isinstance(x, list):
-            for v in x:
-                walk(v)
-
-    walk(obj)
-
-    seen, out = set(), []
-    for t in txns:
-        if not isinstance(t, dict):
-            continue
-        key = (
-            str(t.get("date") or ""),
-            str(t.get("amount") or ""),
-            str(t.get("name") or ""),
-        )
-        if key not in seen:
-            seen.add(key)
-            out.append(t)
-    return out
+    return normalize_open_banking_payload(obj).transactions
 
 
 # ============================================================
@@ -616,3 +582,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

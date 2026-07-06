@@ -1,0 +1,35 @@
+{
+  "accounts": [
+    {
+      "account_id": "acc_business_1",
+      "name": "Business Current",
+      "balances": {"current": 5200.0, "available": 5200.0}
+    }
+  ],
+  "transactions": [
+    {
+      "transaction_id": "txn_stripe_1",
+      "account_id": "acc_business_1",
+      "date": "2026-02-05",
+      "amount": -1200.0,
+      "name": "Stripe Payments UK Ltd / Ref: STRIPE",
+      "personal_finance_category": {"primary": "TRANSFER_IN", "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER"}
+    },
+    {
+      "transaction_id": "txn_sumup_1",
+      "account_id": "acc_business_1",
+      "date": "2026-02-12",
+      "amount": -800.0,
+      "name": "Payment from SumUp",
+      "personal_finance_category": {"primary": "TRANSFER_IN", "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER"}
+    },
+    {
+      "transaction_id": "txn_rent_1",
+      "account_id": "acc_business_1",
+      "date": "2026-02-18",
+      "amount": 500.0,
+      "name": "Office rent",
+      "personal_finance_category": {"primary": "RENT_AND_UTILITIES", "detailed": "RENT_AND_UTILITIES_RENT"}
+    }
+  ]
+}

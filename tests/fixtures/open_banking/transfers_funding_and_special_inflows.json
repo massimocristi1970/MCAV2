@@ -1,0 +1,28 @@
+{
+  "transactions": [
+    {
+      "date": "2026-03-01",
+      "amount": -1000.0,
+      "name": "Customer invoice payment ACME",
+      "personal_finance_category": {"primary": "INCOME", "detailed": "INCOME_OTHER_INCOME"}
+    },
+    {
+      "date": "2026-03-02",
+      "amount": -300.0,
+      "name": "Transfer from savings",
+      "personal_finance_category": {"primary": "TRANSFER_IN", "detailed": "TRANSFER_IN_ACCOUNT_TRANSFER"}
+    },
+    {
+      "date": "2026-03-03",
+      "amount": -400.0,
+      "name": "Director loan capital introduced",
+      "personal_finance_category": {"primary": "TRANSFER_IN", "detailed": "TRANSFER_IN_OTHER"}
+    },
+    {
+      "date": "2026-03-04",
+      "amount": -250.0,
+      "name": "HMRC VAT refund",
+      "personal_finance_category": {"primary": "INCOME", "detailed": "INCOME_OTHER_INCOME"}
+    }
+  ]
+}

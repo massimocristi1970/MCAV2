@@ -13,6 +13,7 @@ from ..core.exceptions import FileProcessingError, DataValidationError
 from ..core.logger import get_logger, log_performance
 from ..core.cache import CacheManager, DataCache
 from ..core.validators import DataValidator, SecurityValidator
+from .open_banking_adapter import normalize_open_banking_payload
 
 logger = get_logger("data_processor")
 
@@ -544,7 +545,12 @@ class DataProcessor:
             Processed DataFrame with categorized transactions
         """
         try:
-            # Validate JSON structure
+            # Normalize flexible Plaid/Open Banking payloads into the canonical shape.
+            ob_payload = normalize_open_banking_payload(json_data)
+            if not ob_payload.transactions:
+                raise DataValidationError("No usable transactions found in Open Banking payload")
+            json_data = ob_payload.as_json_data()
+            json_data["_open_banking_metadata"] = ob_payload.metadata
             json_data = self.validator.validate_json_structure(json_data)
             
             accounts = json_data.get('accounts', [])
@@ -554,20 +560,22 @@ class DataProcessor:
             accounts_df = pd.json_normalize(accounts)
             transactions_df = pd.json_normalize(transactions)
             
-            # Validate required columns
-            required_account_cols = ['account_id']
+            # Validate required columns. Direct transaction-list uploads may not include accounts.
+            if 'account_id' not in transactions_df.columns:
+                transactions_df['account_id'] = 'unknown'
+
             required_transaction_cols = ['account_id', 'amount', 'date']
-            
-            missing_account_cols = [col for col in required_account_cols if col not in accounts_df.columns]
             missing_transaction_cols = [col for col in required_transaction_cols if col not in transactions_df.columns]
-            
-            if missing_account_cols:
-                raise DataValidationError(f"Missing account columns: {missing_account_cols}")
             if missing_transaction_cols:
                 raise DataValidationError(f"Missing transaction columns: {missing_transaction_cols}")
             
-            # Merge accounts and transactions
-            data = pd.merge(accounts_df, transactions_df, on="account_id", how="right")
+            # Merge accounts and transactions when account data is available.
+            if accounts_df.empty:
+                data = transactions_df.copy()
+            else:
+                if 'account_id' not in accounts_df.columns:
+                    raise DataValidationError("Missing account columns: ['account_id']")
+                data = pd.merge(accounts_df, transactions_df, on="account_id", how="right")
             
             if data.empty:
                 raise DataValidationError("No transactions found after merging with accounts")
@@ -764,12 +772,13 @@ class DataProcessor:
             if hasattr(uploaded_file, 'size'):
                 self.security_validator.validate_file_size(uploaded_file.size)
             
-            # Load JSON data
+            # Load and normalize JSON data
             json_data = json.load(uploaded_file)
+            ob_payload = normalize_open_banking_payload(json_data)
             
             # Extract accounts and transactions
-            accounts = json_data.get('accounts', [])
-            transactions = json_data.get('transactions', [])
+            accounts = ob_payload.accounts
+            transactions = ob_payload.transactions
             
             # Date filtering
             if start_date and end_date:
@@ -954,3 +963,4 @@ class DataProcessor:
 
 # Global data processor instance
 data_processor = DataProcessor()
+

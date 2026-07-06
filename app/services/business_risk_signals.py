@@ -146,25 +146,44 @@ def calculate_business_metrics(data: pd.DataFrame, company_age_months: int | flo
         revenue_growth_rate = 0.0
         gross_burn_rate = total_expenses / months_count if months_count else total_expenses
 
-    if "balances.available" in df.columns and not df["balances.available"].isna().all():
-        avg_month_end_balance = float(pd.to_numeric(df["balances.available"], errors="coerce").dropna().mean())
+    balance_source = str(df.get("balance_source", pd.Series(["estimated"])).dropna().iloc[0]) if "balance_source" in df.columns and not df["balance_source"].dropna().empty else "estimated"
+    balance_confidence = str(df.get("balance_confidence", pd.Series(["low"])).dropna().iloc[0]) if "balance_confidence" in df.columns and not df["balance_confidence"].dropna().empty else "low"
+    balance_warning = str(df.get("balance_warning", pd.Series([""])).dropna().iloc[0]) if "balance_warning" in df.columns and not df["balance_warning"].dropna().empty else ""
+
+    balance_column = None
+    if "balances.available" in df.columns and pd.to_numeric(df["balances.available"], errors="coerce").notna().any():
+        balance_column = "balances.available"
+        balance_source = "provided"
+        if balance_confidence not in {"high", "medium"}:
+            balance_confidence = "high"
+    elif "balances.current" in df.columns and pd.to_numeric(df["balances.current"], errors="coerce").notna().any():
+        balance_column = "balances.current"
+        balance_source = "provided"
+        if balance_confidence not in {"high", "medium"}:
+            balance_confidence = "high"
+    elif "calculated_balance" in df.columns and pd.to_numeric(df["calculated_balance"], errors="coerce").notna().any():
+        balance_column = "calculated_balance"
+        balance_source = "reconstructed"
+        if balance_confidence not in {"medium", "low"}:
+            balance_confidence = "medium"
+
+    if balance_column:
+        balances = pd.to_numeric(df[balance_column], errors="coerce")
+        avg_month_end_balance = float(balances.dropna().mean())
+        daily_balance = pd.Series(balances.values, index=df["date"]).sort_index().resample("D").last().ffill().dropna()
+        avg_negative_days = int(round((daily_balance < 0).sum() / months_count)) if len(daily_balance) > 0 else 0
     else:
+        balance_source = "estimated"
+        balance_confidence = "low"
+        balance_warning = balance_warning or "No reliable balance history was supplied; balance metrics are estimated from cashflow."
         monthly_net = (total_revenue - total_expenses) / months_count if months_count else 0.0
         avg_month_end_balance = float(max(1000.0, monthly_net * 0.5))
-
-    if "balances.available" in df.columns and not df["balances.available"].isna().all():
-        balances = pd.to_numeric(df["balances.available"], errors="coerce")
-        daily_balance = pd.Series(balances.values, index=df["date"]).sort_index().resample("D").last().ffill().dropna()
-        if len(daily_balance) > 0:
-            avg_negative_days = int(round((daily_balance < 0).sum() / months_count))
+        if cash_flow_volatility > 0.3:
+            avg_negative_days = min(10, int(cash_flow_volatility * 10))
+        elif operating_margin < 0:
+            avg_negative_days = 3
         else:
             avg_negative_days = 0
-    elif cash_flow_volatility > 0.3:
-        avg_negative_days = min(10, int(cash_flow_volatility * 10))
-    elif operating_margin < 0:
-        avg_negative_days = 3
-    else:
-        avg_negative_days = 0
 
     advanced_metrics = calculate_advanced_metrics(df)
     debt_repayment_recipients = []
@@ -218,6 +237,9 @@ def calculate_business_metrics(data: pd.DataFrame, company_age_months: int | flo
         "Revenue Growth Rate": round(revenue_growth_rate, 2),
         "Average Month-End Balance": round(avg_month_end_balance, 2),
         "Average Negative Balance Days per Month": avg_negative_days,
+        "Balance Source": balance_source,
+        "Balance Confidence": balance_confidence,
+        "Balance Warning": balance_warning,
         "Number of Bounced Payments": failed_payment_count,
         "Funding Inflow Total": round(funding_inflows, 2),
         "Funding Reliance Ratio": round(funding_inflows / max(revenue_plus_funding, 1.0), 3),

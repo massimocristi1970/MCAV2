@@ -40,8 +40,7 @@ from io import BytesIO
 from dataclasses import asdict
 import gc
 
-from mca_scorecard_rules import decide_application, Thresholds
-from build_training_dataset import _flatten_transactions, build_mca_features
+from app.workflows.application_analysis import AnalysisCallbacks, analyse_open_banking_application
 from app.config.industry_config import (
     DIRECTOR_SCORE_PASS_THRESHOLD,
     INDUSTRY_THRESHOLDS as CANONICAL_INDUSTRY_THRESHOLDS,
@@ -4973,57 +4972,55 @@ def main():
 
                 json_data = json.loads(string_data)
 
-                # Handle both formats:  direct list OR dictionary with 'transactions' key
-                if isinstance(json_data, list):
-                    transactions = json_data  # Direct list format
-                elif isinstance(json_data, dict):
-                    transactions = json_data.get('transactions', [])  # Dictionary format
-                else:
-                    st.error("Unexpected JSON format — expected list or dictionary")
-                    return
+                analysis_result = analyse_open_banking_application(
+                    json_data=json_data,
+                    params=params,
+                    analysis_period=analysis_period,
+                    card_terminal_files=card_terminal_files,
+                    callbacks=AnalysisCallbacks(
+                        filter_data_by_period=filter_data_by_period,
+                        assess_primary_account_signal=assess_primary_account_signal,
+                        calculate_financial_metrics=calculate_financial_metrics,
+                        apply_manual_outstanding_debt=apply_manual_outstanding_debt,
+                        derive_card_processing_payload=derive_card_processing_payload,
+                        calculate_all_scores_enhanced=calculate_all_scores_enhanced,
+                        combine_mca_and_tu_decisions=combine_mca_and_tu_decisions,
+                        calculate_revenue_insights=calculate_revenue_insights,
+                    ),
+                    source_upload_name=uploaded_file.name if uploaded_file else None,
+                )
 
-                if not transactions:
-                    st.error("No transactions found in JSON file")
-                    return
+                df = analysis_result.df
+                filtered_df = analysis_result.filtered_df
+                params = analysis_result.params
+                metrics = analysis_result.metrics
+                scores = analysis_result.scores
+                revenue_insights = analysis_result.revenue_insights
+                card_processing_payload = analysis_result.card_processing_payload
+                date_min_iso = analysis_result.date_min_iso
+                date_max_iso = analysis_result.date_max_iso
+                ingestion_metadata = analysis_result.ingestion_metadata
 
-                # --- MCA rule-based decision (new) ---
-                txns_for_scoring = _flatten_transactions(transactions)
-                mca_features = build_mca_features(txns_for_scoring)
-                mca_decision, mca_score, mca_reasons = decide_application(mca_features, t=Thresholds())
+                amount_warning = ingestion_metadata.get("amount_convention_warning")
+                junk_warning = ingestion_metadata.get("junk_transactions_warning")
+                duplicate_warning = ingestion_metadata.get("duplicate_transactions_warning")
+                balance_warning = ""
+                if "balance_warning" in df.columns and not df["balance_warning"].dropna().empty:
+                    balance_warning = str(df["balance_warning"].dropna().iloc[0])
+                for warning in (amount_warning, junk_warning, duplicate_warning, balance_warning):
+                    if warning:
+                        st.warning(warning)
 
-                # Store for later display / export (no other logic changes)
-                params["mca_rule_decision"] = mca_decision
-                params["mca_rule_score"] = mca_score
-                params["mca_rule_reasons"] = mca_reasons
-                params["mca_rule_signals"] = {
-                    "inflow_days_30d": mca_features.get("inflow_days_30d"),
-                    "max_inflow_gap_days": mca_features.get("max_inflow_gap_days"),
-                    "inflow_cv": mca_features.get("inflow_cv"),
-                    "months_covered": mca_features.get("months_covered"),
-                    "txn_count_avg_month": mca_features.get("txn_count_avg_month"),
-                }
-
-                df = pd.json_normalize(transactions)
-                required_columns = ['date', 'amount', 'name']
-
-                missing_columns = [col for col in required_columns if col not in df.columns]
-                
-                if missing_columns:
-                    st.error(f"Missing required columns: {missing_columns}")
-                    return
-                
-                df['date'] = pd.to_datetime(df['date'], errors='coerce')
-                df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
-                df = df.dropna(subset=['date', 'amount'])
-                
-                if df.empty:
-                    st.error("No valid transactions after cleaning")
-                    return
-                
                 # Display data info and export
                 col1, col2, col3, col4 = st.columns(4)
                 with col1:
                     st.success(f"Loaded {len(df)} transactions")
+                    st.caption(f"Amount convention: {ingestion_metadata.get('amount_convention', 'unknown')}")
+                    if "balance_source" in df.columns and not df["balance_source"].dropna().empty:
+                        st.caption(
+                            f"Balance: {df['balance_source'].dropna().iloc[0]} "
+                            f"({df['balance_confidence'].dropna().iloc[0] if 'balance_confidence' in df.columns and not df['balance_confidence'].dropna().empty else 'unknown'})"
+                        )
                 with col2:
                     date_range = f"{df['date'].min().date()} to {df['date'].max().date()}"
                     st.info(f"Date range: {date_range}")
@@ -5044,93 +5041,9 @@ def main():
                             key="csv_export_main"
                         )
 
-                # Filter data and calculate metrics
-                filtered_df = filter_data_by_period(df, analysis_period)
-                primary_account_assessment = assess_primary_account_signal(filtered_df)
-                params["primary_account_assessment"] = primary_account_assessment
-                metrics = calculate_financial_metrics(filtered_df, params['company_age_months'])
-                metrics = apply_manual_outstanding_debt(metrics)
-                card_processing_payload = derive_card_processing_payload(filtered_df, card_terminal_files)
-                metrics.update(card_processing_payload.get("insights") or {})
-                scores = calculate_all_scores_enhanced(metrics, params)
-
-                # ensure MCA rule outputs are part of scoring_results for export
-                scores["mca_rule_decision"] = params.get("mca_rule_decision")
-                scores["mca_rule_score"] = params.get("mca_rule_score")
-                scores["mca_rule_reasons"] = params.get("mca_rule_reasons", [])
-                scores["primary_account_assessment"] = primary_account_assessment
-
-                # -------------------------------
-                # FINAL DECISION RULES
-                # -------------------------------
-                def _base_decision_from_subprime(recommendation_text: str) -> str:
-                    s = (recommendation_text or "").upper()
-                    if "APPROVE" in s:
-                        return "APPROVE"
-                    # Treat conditional / senior review as REFER first (covers "CONDITIONAL APPROVE")
-                    if "CONDITIONAL" in s or "SENIOR REVIEW" in s or "REVIEW" in s:
-                        return "REFER"
-                    if "APPROVE" in s:
-                        return "APPROVE"
-                    return "DECLINE"
-
-                ensemble = scores.get("ensemble") or {}
-                ensemble_decision = ensemble.get("decision")
-
-                # normalise enums / casing
-                if ensemble_decision is not None:
-                    ensemble_decision = str(ensemble_decision).upper().strip()
-
-                if ensemble_decision in ("DECLINE", "REFER", "APPROVE", "SENIOR_REVIEW", "CONDITIONAL_APPROVE"):
-                    final_decision = combine_mca_and_tu_decisions(
-                        ensemble_decision,
-                        params.get("tu_director_decision"),
-                    )
-                    final_reasons = [
-                        f"Decision from weighted MCA/Subprime engine: {ensemble_decision}",
-                        f"Final TU overlay: {ensemble_decision} -> {final_decision}",
-                        f"Reason: {ensemble.get('primary_reason', 'n/a')}",
-                    ]
-                else:
-                    base_decision = _base_decision_from_subprime(scores.get("subprime_recommendation", ""))
-                    final_decision = combine_mca_and_tu_decisions(
-                        base_decision,
-                        params.get("tu_director_decision"),
-                    )
-                    final_reasons = [
-                        f"Fallback decision from Subprime: {base_decision}",
-                        f"Final TU overlay: {base_decision} -> {final_decision}",
-                    ]
-
-                # Persist for UI + exports
-                scores["final_decision"] = final_decision
-                scores["final_decision_reasons"] = final_reasons
-                params["final_decision"] = final_decision
-                params["final_decision_reasons"] = final_reasons
-
-                revenue_insights = calculate_revenue_insights(filtered_df)
-
-                date_min_iso = None
-                date_max_iso = None
-                if df is not None and not df.empty and "date" in df.columns:
-                    date_min_iso = str(df["date"].min())
-                    date_max_iso = str(df["date"].max())
-
                 # Store last successful run (complete, so other pages / return to Main can use it)
-                st.session_state["last_run"] = {
-                    "company_name": company_name,
-                    "analysis_period": analysis_period,
-                    "df": df,
-                    "filtered_df": filtered_df,
-                    "params": params,
-                    "metrics": metrics,
-                    "scores": scores,
-                    "revenue_insights": revenue_insights,
-                    "card_terminal_files": None,
-                    "card_processing_payload": card_processing_payload,
-                    "source_upload_name": uploaded_file.name if uploaded_file else None,
-                }
-                del raw_bytes, string_data, json_data, transactions, txns_for_scoring
+                st.session_state["last_run"] = analysis_result.run
+                del raw_bytes, string_data, json_data
                 gc.collect()
 
                 try:
@@ -5224,3 +5137,5 @@ if __name__ == "__main__":
     main()
 # ADD THIS LINE AT THE VERY END OF THE FILE:
 SubprimeScoringSystem = SubprimeScoring
+
+

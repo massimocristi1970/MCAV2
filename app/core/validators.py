@@ -122,20 +122,20 @@ class DataValidator:
         if not isinstance(json_data, dict):
             raise DataValidationError("JSON data must be a dictionary")
         
-        required_keys = ['accounts', 'transactions']
+        required_keys = ['transactions']
         missing_keys = [key for key in required_keys if key not in json_data]
         
         if missing_keys:
             raise DataValidationError(f"Missing required keys in JSON: {', '.join(missing_keys)}")
         
+        if 'accounts' not in json_data:
+            json_data['accounts'] = []
+
         if not isinstance(json_data['accounts'], list):
             raise DataValidationError("'accounts' must be a list")
         
         if not isinstance(json_data['transactions'], list):
             raise DataValidationError("'transactions' must be a list")
-        
-        if len(json_data['accounts']) == 0:
-            raise DataValidationError("At least one account is required")
         
         if len(json_data['transactions']) == 0:
             raise DataValidationError("At least one transaction is required")
@@ -199,3 +199,4 @@ def validate_inputs(**validators):
             return func(*args, **kwargs)
         return wrapper
     return decorator
+
