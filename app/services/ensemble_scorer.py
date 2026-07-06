@@ -766,7 +766,18 @@ class EnsembleScorer:
         recent_nsf = metrics.get('NSF Count 90D', 0)
         if recent_nsf > 0:
             risk_factors.append(f"Recent unpaid/NSF activity ({recent_nsf} in 90 days)")
-        
+
+        if metrics.get("Card Processing Insight Layer") == "Available":
+            try:
+                card_adjustment = float(metrics.get("Card Processing Score Adjustment", 0) or 0)
+            except (TypeError, ValueError):
+                card_adjustment = 0.0
+            card_concerns = metrics.get("Card Processing Concerns") or []
+            card_suitability = metrics.get("Card MCA Suitability")
+            if card_adjustment <= -2 or card_suitability in ("Weak", "Review"):
+                detail = card_concerns[0] if card_concerns else card_suitability or "card processing review signal"
+                risk_factors.append(f"Card processing overlay ({card_adjustment:+.1f}): {detail}")
+
         return risk_factors[:8]  # Keep overlays visible, then the strongest standard factors.
     
     def _identify_positive_factors(
@@ -789,6 +800,16 @@ class EnsembleScorer:
         if growth > 0.05:
             positive_factors.append(f"Positive revenue growth ({growth*100:.1f}%)")
         
+        if metrics.get("Card Processing Insight Layer") == "Available":
+            try:
+                card_adjustment = float(metrics.get("Card Processing Score Adjustment", 0) or 0)
+            except (TypeError, ValueError):
+                card_adjustment = 0.0
+            card_positives = metrics.get("Card Processing Positive Signals") or []
+            if card_adjustment >= 2:
+                detail = card_positives[0] if card_positives else "supportive card processor evidence"
+                positive_factors.append(f"Card processing overlay ({card_adjustment:+.1f}): {detail}")
+
         # Strong directors score
         directors = params.get('directors_score', 50)
         if directors >= 70:
@@ -829,7 +850,7 @@ class EnsembleScorer:
         recent_nsf = metrics.get('NSF Count 90D', 0)
         if recent_nsf == 0:
             positive_factors.append("No recent NSF activity")
-        
+
         return positive_factors[:5]  # Top 5 positive factors
     
     def _generate_recommendations(

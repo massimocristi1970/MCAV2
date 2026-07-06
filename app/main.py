@@ -3333,7 +3333,8 @@ def build_card_processing_insight_rows(metrics: dict) -> list[dict[str, object]]
         ]
 
     rows = [
-        ("Scoring impact", metrics.get("Card Processing Insights Used In Score", "No - analysis/export only"), "Displayed/exported for underwriting and calibration"),
+        ("Scoring impact", metrics.get("Card Processing Insights Used In Score", "No - analysis/export only"), "Capped overlay applied to Subprime score when statements are parsed"),
+        ("Score overlay", f"{float(metrics.get('Card Processing Score Adjustment', 0) or 0):+.1f} pts", "Bounded card statement impact on score"),
         ("Statements", f"{int(metrics.get('Card Processor Statements Parsed', 0) or 0)} files / {int(metrics.get('Card Processor Months Present', 0) or 0)} months", "Coverage from uploaded processor statements"),
         ("Card sales total", f"£{float(metrics.get('Card Sales Total', 0) or 0):,.0f}", "Gross card sales from statements"),
         ("Average card sales", f"£{float(metrics.get('Card Sales Monthly Average', 0) or 0):,.0f}", "Monthly card sales average"),

@@ -2,7 +2,7 @@
 """
 Subprime Business Finance Scoring System - MICRO ENTERPRISE FRIENDLY VERSION
 Now includes risk factor penalties that match the V2 weighted system
-Balanced for micro enterprises (£1-10k short-term lending)
+Balanced for micro enterprises (Â£1-10k short-term lending)
 
 Uses centralized thresholds from app/config/scoring_thresholds.py
 """
@@ -28,7 +28,7 @@ class SubprimeScoring:
         # Load centralized thresholds if available
         self._thresholds = get_thresholds() if THRESHOLDS_AVAILABLE else None
         
-        # Subprime weights for £1-10k short-term lending (6-9 months)
+        # Subprime weights for Â£1-10k short-term lending (6-9 months)
         # Balanced for micro enterprise realities
         # These are derived from centralized config when available
         if self._thresholds:
@@ -128,9 +128,10 @@ class SubprimeScoring:
         # Apply risk factor penalties
         risk_factor_penalty = self._calculate_risk_factor_penalties(params)
 
-        # Final score calculation - includes risk factor penalties
+        # Final score calculation - includes risk factor penalties and card processing overlay
+        card_processing_adjustment = self._calculate_card_processing_adjustment(metrics, params)
         pre_penalty_score = industry_adjusted_score + growth_bonus - stability_penalty
-        final_score = max(0, min(100, pre_penalty_score - risk_factor_penalty))
+        final_score = max(0, min(100, pre_penalty_score - risk_factor_penalty + card_processing_adjustment))
 
         # Determine risk tier and pricing
         risk_tier, pricing_guidance = self._determine_risk_tier(final_score, metrics, params)
@@ -138,7 +139,7 @@ class SubprimeScoring:
         # Generate detailed breakdown
         breakdown = self._generate_scoring_breakdown(
             base_score, industry_adjusted_score, growth_bonus,
-            stability_penalty, risk_factor_penalty, final_score, metrics, params
+            stability_penalty, risk_factor_penalty, card_processing_adjustment, final_score, metrics, params
         )
         
         # Generate comprehensive diagnostics
@@ -148,6 +149,7 @@ class SubprimeScoring:
             'subprime_score': round(final_score, 1),
             'risk_tier': risk_tier,
             'pricing_guidance': pricing_guidance,
+            'card_processing_score_adjustment': round(card_processing_adjustment, 1),
             'breakdown': breakdown,
             'recommendation': self._generate_recommendation(risk_tier, metrics, params),
             'diagnostics': diagnostics
@@ -217,7 +219,7 @@ class SubprimeScoring:
             score += w * 0.35  # was 0.40 at 250
         elif bal >= 200:
             score += w * 0.15  # was 0.20 at 100
-        # Below £200 gets 0 points
+        # Below Â£200 gets 0 points
 
         # CASH FLOW VOLATILITY (14 points) - slightly tightened
         vol = metrics.get('Cash Flow Volatility', 1.0)
@@ -262,7 +264,7 @@ class SubprimeScoring:
             score += w * 0.25  # was 0.40 to -15000
         elif ni >= -20000:
             score += w * 0.10  # was 0.20 to -25000
-        # Below -£20k gets 0 points
+        # Below -Â£20k gets 0 points
 
         # NEGATIVE BALANCE DAYS (5 points) - slightly tightened
         nd = metrics.get('Average Negative Balance Days per Month', 0)
@@ -347,6 +349,20 @@ class SubprimeScoring:
 
         return min(penalty, 15)  # Cap at 15 points max
 
+    def _calculate_card_processing_adjustment(self, metrics: Dict[str, Any], params: Dict[str, Any]) -> float:
+        """Use uploaded card statements as a bounded, auditable score overlay."""
+        if metrics.get("Card Processing Insight Layer") != "Available":
+            return 0.0
+        try:
+            adjustment = float(metrics.get("Card Processing Score Adjustment", 0) or 0)
+        except (TypeError, ValueError):
+            adjustment = 0.0
+        adjustment = max(-8.0, min(5.0, adjustment))
+        if adjustment:
+            params["_card_processing_score_adjustment"] = round(adjustment, 1)
+            params["_card_processing_adjustment_reasons"] = metrics.get("Card Processing Score Adjustment Reasons") or []
+        return adjustment
+
     def _calculate_risk_factor_penalties(self, params: Dict[str, Any]) -> float:
         """Calculate penalties for risk factors (CCJs, defaults, etc.) - capped for fairness."""
 
@@ -367,7 +383,7 @@ class SubprimeScoring:
         max_credit = params.get('business_max_recommended_credit')
         if credit_limit == 0 and max_credit == 0:
             total_penalty += 2
-            applied_penalties.append("Business bureau credit limit £0: -2")
+            applied_penalties.append("Business bureau credit limit Â£0: -2")
 
         negative_impact_count = params.get('business_negative_impact_count') or 0
         try:
@@ -472,7 +488,7 @@ class SubprimeScoring:
             }
 
     def _generate_scoring_breakdown(self, base_score, industry_score, growth_bonus,
-                                    stability_penalty, risk_factor_penalty, final_score, metrics, params) -> List[str]:
+                                    stability_penalty, risk_factor_penalty, card_processing_adjustment, final_score, metrics, params) -> List[str]:
         """Generate detailed scoring breakdown including risk factor penalties."""
 
         breakdown = [
@@ -481,15 +497,16 @@ class SubprimeScoring:
             f"Growth Momentum Bonus: +{growth_bonus:.1f} points",
             f"Stability Penalty: -{stability_penalty:.1f} points",
             f"Risk Factor Penalties: -{risk_factor_penalty:.1f} points",
+            f"Card Processing Overlay: {card_processing_adjustment:+.1f} points",
             f"Final Score: {final_score:.1f}/100",
             "",
             "Key Metrics (Micro Enterprise Thresholds):",
-            f"• DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f} (Need 1.2+ for good score)",
-            f"• Revenue Growth: {metrics.get('Revenue Growth Rate', 0) * 100:.1f}% (Need 5%+ for good score)",
-            f"• Directors Score: {params.get('directors_score', 0)}/100 (Need 55+ for good score)",
-            f"• Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.50 for good score)",
-            f"• Operating Margin: {metrics.get('Operating Margin', 0) * 100:.1f}% (Need 3%+ for good score)",
-            f"• Negative Balance Days: {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need <5 for good score)"
+            f"â€¢ DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f} (Need 1.2+ for good score)",
+            f"â€¢ Revenue Growth: {metrics.get('Revenue Growth Rate', 0) * 100:.1f}% (Need 5%+ for good score)",
+            f"â€¢ Directors Score: {params.get('directors_score', 0)}/100 (Need 55+ for good score)",
+            f"â€¢ Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.50 for good score)",
+            f"â€¢ Operating Margin: {metrics.get('Operating Margin', 0) * 100:.1f}% (Need 3%+ for good score)",
+            f"â€¢ Negative Balance Days: {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need <5 for good score)"
         ]
 
         # Add risk factor details if any were applied
@@ -498,7 +515,14 @@ class SubprimeScoring:
             breakdown.append("")
             breakdown.append("Risk Factor Penalties Applied:")
             for penalty in applied_penalties:
-                breakdown.append(f"• {penalty}")
+                breakdown.append(f"â€¢ {penalty}")
+
+        card_reasons = metrics.get("Card Processing Score Adjustment Reasons") or []
+        if card_reasons:
+            breakdown.append("")
+            breakdown.append("Card Processing Overlay Applied:")
+            for reason in card_reasons:
+                breakdown.append(f"- {reason}")
 
         return breakdown
 
@@ -976,7 +1000,7 @@ class SubprimeScoring:
         elif metric == 'Directors Score':
             return f"Director score of {int(target)}+ would help (currently {int(actual)})"
         elif metric == 'Average Month-End Balance':
-            return f"Increase balance from £{actual:,.0f} to £{target:,.0f}"
+            return f"Increase balance from Â£{actual:,.0f} to Â£{target:,.0f}"
         elif metric == 'Revenue Growth Rate':
             return f"Improve growth from {actual*100:.1f}% to {target*100:.1f}%+"
         elif metric == 'Operating Margin':
@@ -1029,7 +1053,7 @@ class SubprimeScoring:
         elif metric == 'Directors Score':
             return f"Improving Directors Score from {int(actual)} to {int(achievable_value)} would add ~{estimated_gain:.1f} points"
         elif metric == 'Average Month-End Balance':
-            return f"Increasing balance from £{actual:,.0f} to £{achievable_value:,.0f} would add ~{estimated_gain:.1f} points"
+            return f"Increasing balance from Â£{actual:,.0f} to Â£{achievable_value:,.0f} would add ~{estimated_gain:.1f} points"
         elif metric == 'Revenue Growth Rate':
             return f"Improving growth from {actual*100:.1f}% to {achievable_value*100:.1f}% would add ~{estimated_gain:.1f} points"
         elif metric == 'Operating Margin':
@@ -1181,7 +1205,7 @@ def test_subprime_scoring_with_risk_factors():
     print("=== MICRO ENTERPRISE FRIENDLY SUBPRIME SCORING ===\n")
 
     for scenario in test_scenarios:
-        print(f"🧪 TEST SCENARIO: {scenario['name']}")
+        print(f"ðŸ§ª TEST SCENARIO: {scenario['name']}")
         print("=" * 50)
 
         result = scorer.calculate_subprime_score(test_metrics, scenario['params'])
@@ -1206,3 +1230,4 @@ if __name__ == "__main__":
     test_subprime_scoring_with_risk_factors()
 # ADD THIS LINE AT THE VERY END OF THE FILE:
 SubprimeScoringSystem = SubprimeScoring
+

@@ -13,7 +13,11 @@ from datetime import date
 from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
-import pdfplumber
+
+try:
+    import pdfplumber
+except ImportError:  # pragma: no cover
+    pdfplumber = None
 
 try:
     from PyPDF2 import PdfReader as _PyPdfReader
@@ -69,7 +73,7 @@ class ParseResult:
 class CardTerminalIngestionService:
     """Ingest card-terminal statements across providers and formats."""
 
-    _money_re = re.compile(r"£?\s*([0-9][0-9,]*\.?[0-9]{0,2})")
+    _money_re = re.compile(r"Â£?\s*([0-9][0-9,]*\.?[0-9]{0,2})")
     _period_re = re.compile(r"Period:\s*([0-9]{2}/[0-9]{2}/[0-9]{4})\s*-\s*([0-9]{2}/[0-9]{2}/[0-9]{4})", re.IGNORECASE)
     _merchant_re = re.compile(r"Merchant ID\s*:?\s*([0-9]{8,20})", re.IGNORECASE)
     _currency_re = re.compile(r"Currency:\s*([A-Z]{3})", re.IGNORECASE)
@@ -237,7 +241,9 @@ class CardTerminalIngestionService:
         if parsed_df is None or parsed_df.empty:
             return {
                 "Card Processing Insight Layer": "Not available",
-                "Card Processing Insights Used In Score": "No - analysis/export only",
+                "Card Processing Insights Used In Score": "No - no parsed statements",
+                "Card Processing Score Adjustment": 0.0,
+                "Card Processing Score Adjustment Reasons": [],
             }
 
         monthly = monthly_terminal_df.copy() if monthly_terminal_df is not None else pd.DataFrame()
@@ -326,9 +332,21 @@ class CardTerminalIngestionService:
         else:
             suitability = "Acceptable"
 
+        adjustment, adjustment_reasons = self._calculate_card_processing_score_adjustment(
+            months_present=months_present,
+            reconciliation_quality=reconciliation_quality,
+            refund_ratio=refund_ratio,
+            chargeback_ratio=chargeback_ratio,
+            volatility=volatility,
+            latest_drop_pct=latest_drop_pct,
+            unmatched_pct=unmatched_pct,
+            card_vs_ob_revenue_ratio=card_vs_ob_revenue_ratio,
+            parsed_df=parsed_df,
+        )
+
         return {
             "Card Processing Insight Layer": "Available",
-            "Card Processing Insights Used In Score": "No - analysis/export only",
+            "Card Processing Insights Used In Score": "Yes - capped score overlay",
             "Card Processor Statements Parsed": int(len(parsed_df)),
             "Card Processor Months Present": months_present,
             "Card Sales Total": round(gross_total, 2),
@@ -342,6 +360,8 @@ class CardTerminalIngestionService:
             "Card Chargeback Ratio": round(chargeback_ratio, 3),
             "Card Fee Ratio": round(fee_ratio, 3),
             "Card Average Transaction Value": round(avg_transaction_value, 2),
+            "Card Processing Score Adjustment": round(adjustment, 1),
+            "Card Processing Score Adjustment Reasons": adjustment_reasons,
             "Card Transaction Count": txn_count,
             "Card vs OB Revenue Ratio": round(card_vs_ob_revenue_ratio, 3),
             "Card Unmatched Sales Shortfall": round(unmatched_shortfall, 2),
@@ -351,6 +371,85 @@ class CardTerminalIngestionService:
             "Card Processing Positive Signals": positives,
             "Card Processing Concerns": concerns,
         }
+
+
+    def _calculate_card_processing_score_adjustment(
+        self,
+        *,
+        months_present: int,
+        reconciliation_quality: str,
+        refund_ratio: float,
+        chargeback_ratio: float,
+        volatility: float,
+        latest_drop_pct: float,
+        unmatched_pct: float,
+        card_vs_ob_revenue_ratio: float,
+        parsed_df: pd.DataFrame,
+    ) -> tuple[float, List[str]]:
+        """Return a capped MCA score overlay from card processor evidence."""
+        adjustment = 0.0
+        reasons: List[str] = []
+
+        def add(points: float, reason: str) -> None:
+            nonlocal adjustment
+            adjustment += points
+            sign = "+" if points > 0 else ""
+            reasons.append(f"{reason}: {sign}{points:.1f}")
+
+        if months_present >= 3:
+            add(1.0, "Three or more months of card statement coverage")
+        elif months_present == 1:
+            add(-1.0, "Only one month of card statement coverage")
+
+        if reconciliation_quality == "Good":
+            add(2.0, "Card sales reconcile well to bank revenue")
+        elif reconciliation_quality == "Poor":
+            add(-3.0, "Poor card-to-bank reconciliation")
+
+        if refund_ratio >= 0.10:
+            add(-2.0, "High card refund ratio")
+        elif months_present and refund_ratio <= 0.05:
+            add(1.0, "Low card refund ratio")
+
+        if chargeback_ratio >= 0.02:
+            add(-5.0, "Severe card chargeback ratio")
+        elif chargeback_ratio >= 0.01:
+            add(-3.0, "Elevated card chargeback ratio")
+        elif months_present and chargeback_ratio == 0:
+            add(1.0, "No card chargebacks detected")
+
+        if volatility >= 0.45:
+            add(-2.0, "Volatile card sales")
+        elif months_present >= 3 and volatility <= 0.25:
+            add(1.0, "Stable card sales")
+
+        if latest_drop_pct >= 0.50:
+            add(-4.0, "Latest card sales month sharply below prior average")
+        elif latest_drop_pct >= 0.30:
+            add(-2.0, "Latest card sales month below prior average")
+
+        if unmatched_pct >= 0.40:
+            add(-5.0, "Severe card sales shortfall versus bank revenue")
+        elif unmatched_pct >= 0.25:
+            add(-3.0, "Material card sales shortfall versus bank revenue")
+
+        if card_vs_ob_revenue_ratio > 1.25:
+            add(-2.0, "Card sales materially exceed open banking revenue evidence")
+        elif 0.15 <= card_vs_ob_revenue_ratio <= 1.05 and reconciliation_quality == "Good":
+            add(1.0, "Card sales are supported by open banking revenue evidence")
+
+        confidence = None
+        if parsed_df is not None and not parsed_df.empty and "confidence" in parsed_df.columns:
+            confidence_series = pd.to_numeric(parsed_df["confidence"], errors="coerce").dropna()
+            if not confidence_series.empty:
+                confidence = float(confidence_series.mean())
+        if confidence is not None and confidence < 0.65:
+            add(-2.0, "Low average card parser confidence")
+
+        capped = max(-8.0, min(5.0, adjustment))
+        if capped != adjustment:
+            reasons.append(f"Card processing overlay capped at {capped:+.1f}")
+        return capped, reasons
 
     def _parse_zip_archive(self, zip_filename: str, raw: bytes) -> tuple[List[ParseResult], List[Dict[str, str]]]:
         """Expand a ZIP and parse each supported file inside."""
@@ -471,6 +570,8 @@ class CardTerminalIngestionService:
             return ""
 
     def _extract_pdf_text_pages(self, raw: bytes, max_pages: Optional[int] = None) -> str:
+        if pdfplumber is None:
+            return ""
         parts: List[str] = []
         try:
             with pdfplumber.open(io.BytesIO(raw)) as pdf:
@@ -647,6 +748,8 @@ class CardTerminalIngestionService:
         self, filename: str, raw: bytes
     ) -> List[ParseResult]:
         by_month: Dict[str, Dict[str, Any]] = {}
+        if pdfplumber is None:
+            return self._shopify_results_from_monthly(filename, {})
         try:
             with pdfplumber.open(io.BytesIO(raw)) as pdf:
                 for page in pdf.pages:
@@ -744,9 +847,9 @@ class CardTerminalIngestionService:
         period_start: Optional[date] = None
         period_end: Optional[date] = None
 
-        # Date range 1 Apr 2026 → 30 Apr 2026 (arrow may be Unicode)
+        # Date range 1 Apr 2026 â†’ 30 Apr 2026 (arrow may be Unicode)
         dr = re.search(
-            r"Date\s+range\s+(\d{1,2}\s+\w+\s+\d{4})\s*(?:→|->|—|--|\u2192)\s*(\d{1,2}\s+\w+\s+\d{4})",
+            r"Date\s+range\s+(\d{1,2}\s+\w+\s+\d{4})\s*(?:â†’|->|â€”|--|\u2192)\s*(\d{1,2}\s+\w+\s+\d{4})",
             text,
             re.IGNORECASE,
         )
@@ -765,7 +868,7 @@ class CardTerminalIngestionService:
 
         gross = 0.0
         txn_count = 0
-        # Allow a non-digit glyph (e.g. £ garbled in extraction) between ) and the amount.
+        # Allow a non-digit glyph (e.g. Â£ garbled in extraction) between ) and the amount.
         m_ch = re.search(r"Charges\s*\((\d+)\)\s*[^\d-]*([\d,]+\.?\d*)", text, re.IGNORECASE)
         if m_ch:
             txn_count = int(m_ch.group(1))
@@ -778,11 +881,11 @@ class CardTerminalIngestionService:
 
         fees = 0.0
         # Prefer the summary "Activity" block (fees on balance activity), not payout-side lines like
-        # "Payout fees" / "Fees £12.06" under the Payouts table.
+        # "Payout fees" / "Fees Â£12.06" under the Payouts table.
         act_block = re.search(r"(?ms)^Activity\s*\n^(.*?)^\s*Payouts\s*$", text)
         if act_block:
             ab = act_block.group(1)
-            m_fee = re.search(r"(?mi)^Fees\s+-\s*(?:£|\u00a3)?\s*([\d,]+\.\d{2})", ab)
+            m_fee = re.search(r"(?mi)^Fees\s+-\s*(?:Â£|\u00a3)?\s*([\d,]+\.\d{2})", ab)
             if not m_fee:
                 m_fee = re.search(r"(?mi)^Fees\s+-\D*?([\d,]+\.\d{2})", ab)
             if m_fee:
@@ -798,12 +901,12 @@ class CardTerminalIngestionService:
                 sub = det.group(1)
                 fee_parts: List[float] = []
                 for m in re.finditer(
-                    r"(?mi)^Fees\s+-\s*(?:£|\u00a3)?\s*([\d,]+\.\d{2})",
+                    r"(?mi)^Fees\s+-\s*(?:Â£|\u00a3)?\s*([\d,]+\.\d{2})",
                     sub,
                 ):
                     fee_parts.append(abs(self._to_float(m.group(1))))
                 for m in re.finditer(
-                    r"(?mi)^Additional\s+Stripe\s+fees\s*\(\d+\)\s+-\s*(?:£|\u00a3)?\s*([\d,]+\.\d{2})",
+                    r"(?mi)^Additional\s+Stripe\s+fees\s*\(\d+\)\s+-\s*(?:Â£|\u00a3)?\s*([\d,]+\.\d{2})",
                     sub,
                 ):
                     fee_parts.append(abs(self._to_float(m.group(1))))
@@ -811,7 +914,7 @@ class CardTerminalIngestionService:
                     fees = float(sum(fee_parts))
 
         chargebacks = 0.0
-        currency = "GBP" if "£" in text else (self._extract_first(self._currency_re, text) or "GBP")
+        currency = "GBP" if "Â£" in text else (self._extract_first(self._currency_re, text) or "GBP")
 
         has_charges_line = m_ch is not None
         confidence = (
@@ -1082,7 +1185,7 @@ class CardTerminalIngestionService:
         gross = 0.0
         txn_count = 0
         m_rates = re.search(
-            r"Card\s+transaction\s+rates[\s\S]{0,2500}?^Total\s+([\d,]+)\s+£([\d,]+\.?\d*)\s+£([\d,]+\.?\d*)",
+            r"Card\s+transaction\s+rates[\s\S]{0,2500}?^Total\s+([\d,]+)\s+Â£([\d,]+\.?\d*)\s+Â£([\d,]+\.?\d*)",
             text,
             re.IGNORECASE | re.MULTILINE,
         )
@@ -1092,7 +1195,7 @@ class CardTerminalIngestionService:
 
         fees = 0.0
         for label in ("Card transaction fees", "Card transaction rates", "Additional rates"):
-            m_fee = re.search(rf"{re.escape(label)}\s+£([\d,]+\.?\d*)", text, re.IGNORECASE)
+            m_fee = re.search(rf"{re.escape(label)}\s+Â£([\d,]+\.?\d*)", text, re.IGNORECASE)
             if m_fee:
                 fees += self._to_float(m_fee.group(1))
 
@@ -1395,7 +1498,7 @@ class CardTerminalIngestionService:
         )
 
     _zempler_statement_row_re = re.compile(
-        r"^(\d{2}/\d{2}/\d{4})\s+(\d{4})\s+(.+?)\s+(-?£[\d,]+\.?\d*)\s+(-?£[\d,]+\.?\d*)\s*$",
+        r"^(\d{2}/\d{2}/\d{4})\s+(\d{4})\s+(.+?)\s+(-?Â£[\d,]+\.?\d*)\s+(-?Â£[\d,]+\.?\d*)\s*$",
         re.MULTILINE,
     )
 
@@ -1465,7 +1568,7 @@ class CardTerminalIngestionService:
             period_start = s.date() if pd.notna(s) else None
             period_end = e.date() if pd.notna(e) else None
         if period_end is None:
-            warnings.append("Could not parse Zempler statement period (From … to …).")
+            warnings.append("Could not parse Zempler statement period (From â€¦ to â€¦).")
 
         merchant_id = None
         m_acct = re.search(r"Account\s+number:\s*(\d+)", text, re.IGNORECASE)
@@ -1764,7 +1867,7 @@ class CardTerminalIngestionService:
     def _extract_amount_after_label(self, text: str, label: str) -> float:
         if not text:
             return 0.0
-        pattern = re.compile(re.escape(label) + r"[^\n\r£0-9]*([£]?\s*[0-9][0-9,]*\.?[0-9]{0,2})", re.IGNORECASE)
+        pattern = re.compile(re.escape(label) + r"[^\n\rÂ£0-9]*([Â£]?\s*[0-9][0-9,]*\.?[0-9]{0,2})", re.IGNORECASE)
         match = pattern.search(text)
         if match:
             return self._to_float(match.group(1))
@@ -1840,7 +1943,7 @@ class CardTerminalIngestionService:
     def _to_float(value: Any) -> float:
         if value is None:
             return 0.0
-        s = str(value).replace("£", "").replace(",", "").strip()
+        s = str(value).replace("Â£", "").replace(",", "").strip()
         try:
             return float(s)
         except ValueError:
@@ -1853,3 +1956,4 @@ class CardTerminalIngestionService:
                 if c == normalized or c in normalized:
                     return original
         return None
+
