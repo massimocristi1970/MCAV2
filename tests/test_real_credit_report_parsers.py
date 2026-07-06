@@ -3,11 +3,12 @@ from dataclasses import asdict, is_dataclass
 
 import pytest
 
-from app.main import (
-    _bureau_band_from_pdf_text,
-    _explicit_ccj_present,
-    _extract_text_from_pdf_bytes,
-    _parse_business_bureau_signals,
+from app.services.business_bureau_pdf import (
+    bureau_band_from_pdf_text,
+    explicit_ccj_present,
+    extract_text_from_pdf_bytes,
+    parse_business_bureau_pdf,
+    parse_business_bureau_signals,
     build_report_information,
 )
 from src.tu_scorecard.feature_extractor import extract_features_from_xml_bytes
@@ -110,13 +111,13 @@ def test_real_capital_business_pdf_extracts_bureau_signals():
     if not BUSINESS_PDF.exists():
         pytest.skip("Real business credit PDF fixture is not available on this machine")
 
-    text, backend, error = _extract_text_from_pdf_bytes(BUSINESS_PDF.read_bytes())
-    signals = _parse_business_bureau_signals(text)
-    band, reasons = _bureau_band_from_pdf_text(text)
+    text, backend, error = extract_text_from_pdf_bytes(BUSINESS_PDF.read_bytes())
+    signals = parse_business_bureau_signals(text)
+    band, reasons = bureau_band_from_pdf_text(text)
     info = build_report_information(text)
 
     assert backend != "none", error
-    assert _explicit_ccj_present(text) is False
+    assert explicit_ccj_present(text) is False
     assert signals["credit_score"] is None
     assert signals["credit_score_suppressed"] is True
     assert signals["credit_limit"] == 0
@@ -154,8 +155,8 @@ def test_capital_credit_score_range_is_usable_bureau_score():
     No CCJs recorded
     """
 
-    signals = _parse_business_bureau_signals(text)
-    band, reasons = _bureau_band_from_pdf_text(text)
+    signals = parse_business_bureau_signals(text)
+    band, reasons = bureau_band_from_pdf_text(text)
     info = build_report_information(text)
 
     assert signals["credit_score"] == 25
@@ -165,3 +166,75 @@ def test_capital_credit_score_range_is_usable_bureau_score():
     assert signals["credit_score_suppressed"] is False
     assert band == "D (Very High Risk)"
     assert "Credit score: 16-25" in info["Credit information"]
+
+
+@pytest.mark.unit
+def test_empty_business_bureau_text_is_unknown_not_low_risk():
+    band, reasons = bureau_band_from_pdf_text("")
+
+    assert band is None
+    assert "No usable business bureau text extracted" in reasons
+
+
+@pytest.mark.unit
+def test_invalid_business_bureau_pdf_returns_failed_status():
+    result = parse_business_bureau_pdf(b"not a pdf")
+
+    assert result.parse_status == "failed"
+    assert result.business_ccj is None
+    assert result.bureau_band is None
+    assert result.signals == {}
+
+
+@pytest.mark.unit
+def test_business_bureau_parser_handles_real_pound_symbol():
+    text = """
+    Credit information
+    Credit score
+    16 - 25
+    Credit limit £500
+    Max. recommended credit £2,000
+    Company searches
+    In the last 12 months
+    11
+    7 enquiries in the last 3 months
+    No CCJs recorded
+    """
+
+    signals = parse_business_bureau_signals(text)
+
+    assert signals["credit_score"] == 25
+    assert signals["credit_limit"] == 500
+    assert signals["max_recommended_credit"] == 2000
+    assert signals["company_searches_12m"] == 11
+    assert signals["enquiries_3m"] == 7
+
+
+@pytest.mark.unit
+def test_ccj_detection_is_scoped_to_legal_notices():
+    text = """
+    Credit information
+    Credit limit £2,000 from 31 Jul 2025
+    Legal notices
+    No CCJs recorded
+    Public Record
+    Company Status Active
+    """
+
+    assert explicit_ccj_present(text) is False
+
+
+@pytest.mark.unit
+def test_positive_ccj_detection_in_legal_notices():
+    text = """
+    Legal notices
+    County Court Judgement registered
+    Registered
+    THE COUNTY COURT ONLINE
+    31 Jul 2025
+    £2,059
+    Public Record
+    Company Status Active
+    """
+
+    assert explicit_ccj_present(text) is True

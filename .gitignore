@@ -29,4 +29,4 @@ MCAV2_BatchProcessor/saved_runs/
 # Persisted scorecard runs (local monitoring / modelling data)
 data/app_runs/*
 !data/app_runs/.gitkeep
-
+.tmp_pycache/

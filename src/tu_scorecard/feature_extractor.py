@@ -160,7 +160,7 @@ def _extract_fixed_width_search07a_response(root: ET.Element, app_id: str) -> Op
     # Final score footer in some exports appears as F###.... near the end.
     # Do not use the internal score footer (e.g. ...83.09), and avoid matching
     # F### inside GUIDs such as "...8F339...".
-    bureau_score = 0
+    bureau_score = None
     footer_score = re.search(r"F(\d{3})(?=\d{4}[A-Z]\d{4}\.\d{2}\s*$)", payload)
     if footer_score:
         bureau_score = to_int(footer_score.group(1))
@@ -217,7 +217,11 @@ def _extract_fixed_width_search07a_response(root: ET.Element, app_id: str) -> Op
         "delinq_36m_total": 0,
         "defaults_12m_total": 0,
         "defaults_36m_total": 0,
-        "bureau_score": bureau_score,
+        "bureau_score": bureau_score if bureau_score is not None else 0,
+        "bureau_score_extracted": bureau_score is not None,
+        "account_summary_extracted": summary_counts is not None,
+        "account_history_extracted": bool(account_records),
+        "public_record_extracted": True,
         "missed_months_3m": 0,
         "missed_months_6m": 0,
         "missed_months_12m": 0,
@@ -314,6 +318,7 @@ def extract_features_from_xml_bytes(xml_bytes: bytes, app_id: str) -> TUFeatures
 
     # Summary/searches
     s_searches = sum_path("searches")
+    feats["search_summary_extracted"] = s_searches is not None
     if s_searches is not None:
         feats["searches_3m_total"] = to_int(get_text(find_first_by_local(s_searches, "totalsearches3months")))
         feats["searches_12m_total"] = to_int(get_text(find_first_by_local(s_searches, "totalsearches12months")))
@@ -325,6 +330,7 @@ def extract_features_from_xml_bytes(xml_bytes: bytes, app_id: str) -> TUFeatures
 
     # Summary/judgments
     s_judgments = sum_path("judgments")
+    feats["judgment_summary_extracted"] = s_judgments is not None
     if s_judgments is not None:
         feats["ccj_active_total"] = to_int(get_text(find_first_by_local(s_judgments, "totalactive")))
         feats["ccj_satisfied_total"] = to_int(get_text(find_first_by_local(s_judgments, "totalsatisfied")))
@@ -334,6 +340,7 @@ def extract_features_from_xml_bytes(xml_bytes: bytes, app_id: str) -> TUFeatures
 
     # Summary/share (accounts + worst status + delinq/default counts)
     s_share = sum_path("share")
+    feats["account_summary_extracted"] = s_share is not None
     if s_share is not None:
         feats["accounts_total"] = to_int(get_text(find_first_by_local(s_share, "totalaccounts")))
         feats["accounts_active_total"] = to_int(get_text(find_first_by_local(s_share, "totalactiveaccs")))
@@ -377,16 +384,21 @@ def extract_features_from_xml_bytes(xml_bytes: bytes, app_id: str) -> TUFeatures
                 bureau_score = to_int(s, default=None)  # type: ignore[arg-type]
                 break
     feats["bureau_score"] = bureau_score if bureau_score is not None else 0
+    feats["bureau_score_extracted"] = bureau_score is not None
 
     # ---------------------------
     # Account-history derived features
     # ---------------------------
-    feats.update(_extract_account_history_features(applicant, anchor_date))
+    account_history_features = _extract_account_history_features(applicant, anchor_date)
+    feats["account_history_extracted"] = applicant is not None
+    feats.update(account_history_features)
 
     # ---------------------------
     # Searches derived recency (if anchor_date present)
     # ---------------------------
-    feats.update(_extract_search_recency_features(applicant, anchor_date))
+    search_recency_features = _extract_search_recency_features(applicant, anchor_date)
+    feats["search_recency_extracted"] = applicant is not None and anchor_date is not None
+    feats.update(search_recency_features)
 
     return TUFeatures(app_id=app_id, anchor_date=anchor_date, features=feats)
 

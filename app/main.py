@@ -109,71 +109,10 @@ except ImportError as e:
     CardTerminalIngestionService = None
     print(f"Note: card terminal ingestion service not available ({e}).")
 
-import re
-from io import BytesIO
+from app.services.business_bureau_pdf import parse_business_bureau_pdf
 
 STREAMLIT_CACHE_TTL_SECONDS = int(os.getenv("STREAMLIT_CACHE_TTL_SECONDS", "1800"))
 STREAMLIT_CACHE_MAX_ENTRIES = int(os.getenv("STREAMLIT_CACHE_MAX_ENTRIES", "8"))
-
-
-@st.cache_data(
-    show_spinner=False,
-    ttl=STREAMLIT_CACHE_TTL_SECONDS,
-    max_entries=STREAMLIT_CACHE_MAX_ENTRIES,
-)
-def _extract_text_from_pdf_bytes(pdf_bytes: bytes) -> tuple[str, str, str]:
-    """
-    Returns: (text, backend_used, error_msg)
-    Tries multiple backends. Does NOT silently swallow errors.
-    """
-    if not pdf_bytes or not pdf_bytes[:4] == b"%PDF":
-        return "", "none", "Not a valid PDF header (expected %PDF)."
-
-    errors = []
-
-    # 1) pdfplumber (good general extractor)
-    try:
-        import pdfplumber
-        from io import BytesIO
-        parts = []
-        with pdfplumber.open(BytesIO(pdf_bytes)) as pdf:
-            for page in pdf.pages:
-                parts.append(page.extract_text() or "")
-        text = "\n".join(parts).strip()
-        if text:
-            return text, "pdfplumber", ""
-        errors.append("pdfplumber: extracted empty text")
-    except Exception as e:
-        errors.append(f"pdfplumber: {repr(e)}")
-
-    # 2) PyMuPDF (fitz) (often best for “weird” PDFs)
-    try:
-        import fitz  # PyMuPDF
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        parts = []
-        for page in doc:
-            parts.append(page.get_text("text") or "")
-        text = "\n".join(parts).strip()
-        if text:
-            return text, "pymupdf", ""
-        errors.append("pymupdf: extracted empty text")
-    except Exception as e:
-        errors.append(f"pymupdf: {repr(e)}")
-
-    # 3) PyPDF2 / pypdf (weak for many bureau PDFs but try anyway)
-    try:
-        import PyPDF2
-        from io import BytesIO
-        reader = PyPDF2.PdfReader(BytesIO(pdf_bytes))
-        parts = [(p.extract_text() or "") for p in reader.pages]
-        text = "\n".join(parts).strip()
-        if text:
-            return text, "pypdf2", ""
-        errors.append("pypdf2: extracted empty text")
-    except Exception as e:
-        errors.append(f"pypdf2: {repr(e)}")
-
-    return "", "none", " | ".join(errors)
 
 
 @st.cache_data(
@@ -190,602 +129,6 @@ def _score_tu_xml_bytes(xml_bytes: bytes, app_id: str) -> dict:
         "reasons": sr.reasons,
         "flags": sr.recovery_flags,
     }
-
-def _explicit_ccj_present(pdf_text: str) -> bool:
-    """
-    Detect CCJ presence.
-    Policy: If explicitly registered -> True.
-            If explicitly says none -> False.
-            Otherwise -> False.
-    """
-
-    t = (pdf_text or "").lower()
-
-    # 1) Explicit negatives (must check first)
-    negative_patterns = [
-        r"\bno\s+county\s+court\s+judg(e)?ment(s)?\b",
-        r"\bno\s+ccj\b",
-        r"\bccj\s*:\s*(none|no|0)\b",
-        r"\bnone\s+recorded\b.*\bccj\b",
-    ]
-
-    for pat in negative_patterns:
-        if re.search(pat, t, re.IGNORECASE):
-            return False
-
-    # 2) Explicit positives (expanded for your bureau format)
-
-    positive_patterns = [
-        r"county\s+court\s+judg(e)?ment\s+registered",
-        r"county\s+court\s+judg(e)?ments\s+registered",
-        r"county\s+court\s+judg(e)?ment\s+has\s+been\s+registered",
-        r"\bccj\s+registered\b",
-        r"\bat\s+least\s+one\s+county\s+court\s+judg(e)?ment\b",
-        r"\blegal\s+notices\b[\s\S]{0,300}county\s+court\s+judg(e)?ment",
-    ]
-
-    for pat in positive_patterns:
-        if re.search(pat, t, re.IGNORECASE):
-            return True
-
-    # 3) Fallback: detect structured CCJ section with amount + date
-    # e.g.:
-    # Registered
-    # 31 Jul 2025
-    # £2,059
-    if re.search(r"county\s+court\s+judg(e)?ments?\b", t):
-        if re.search(r"£\s*\d", t) and re.search(r"\b\d{1,2}\s+[a-z]{3}\s+\d{4}\b", t):
-            return True
-
-    return False
-
-# -----------------------------
-# Report Information (Structured) (NEW)
-# -----------------------------
-def _norm_pdf_text(t: str) -> str:
-    """
-    Normalise common PDF extraction artefacts:
-    - Fix ligatures (fi/fl)
-    - Replace odd bullet/space characters
-    - Collapse whitespace lightly
-    """
-    if not t:
-        return ""
-    # common ligatures
-    t = t.replace("\ufb01", "fi").replace("\ufb02", "fl")
-    # common replacement / extraction artefacts
-    t = t.replace("�", "")
-    t = t.replace("\x00", "fi")
-    t = t.replace("Ł", "£")
-    return t
-
-def _re_first(pattern: str, text: str, flags=re.IGNORECASE):
-    m = re.search(pattern, text, flags)
-    return m.group(1).strip() if m else None
-
-def _re_first2(pattern: str, text: str, flags=re.IGNORECASE):
-    m = re.search(pattern, text, flags)
-    return (m.group(1).strip(), m.group(2).strip()) if m else (None, None)
-
-def _money_clean(s: str | None) -> str | None:
-    if not s:
-        return None
-    s = s.replace(",", "").strip()
-    # ensure £ format if present
-    if s.startswith("£"):
-        return "£" + s[1:].strip()
-    return s
-
-def _money_to_int(s: str | None) -> int | None:
-    if not s:
-        return None
-    digits = re.sub(r"[^\d]", "", str(s))
-    return int(digits) if digits else None
-
-def _parse_business_bureau_signals(full_text: str) -> dict[str, object]:
-    """Extract scoring-safe business bureau signals from Capital-style PDFs."""
-    t = _norm_pdf_text(full_text or "")
-    tl = t.lower()
-
-    credit_score_range = None
-    credit_score_min = None
-    credit_score_max = None
-    m_range = re.search(
-        r"\bcredit\s+score\b[\s\S]{0,80}?(\d{1,3})\s*[-–]\s*(\d{1,3})\b",
-        t,
-        re.IGNORECASE,
-    )
-    if m_range:
-        credit_score_min = int(m_range.group(1))
-        credit_score_max = int(m_range.group(2))
-        credit_score_range = f"{credit_score_min}-{credit_score_max}"
-
-    credit_score = _re_first(r"\bcredit score\b\s*[\:\-]?\s*(\d{1,3})\b", t)
-    credit_limit = _re_first(r"\bcredit limit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
-    max_credit = _re_first(r"\bmax\.?\s*recommended\s*credit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
-    searches_12m = _re_first(r"\bin\s+the\s+last\s+12\s+months\s*\n?\s*(\d+)\b", t)
-    enquiries_3m = _re_first(r"\b(\d+)\s+enquiries\s+in\s+last\s+3\s+months\b", t)
-    negative_impact = _re_first(r"\bnegative impact:\s*(\d+)\b", t)
-    neutral_impact = _re_first(r"\bneutral impact:\s*(\d+)\b", t)
-    total_factors = _re_first(r"\btotal factors\s*\n?\s*(\d+)\b", t)
-
-    no_ccj = bool(re.search(r"\bno\s+county\s+court\s+judg(e)?ments?\s+recorded\b", tl))
-    no_legal_notices = "no legal notices registered" in tl
-    no_charges = "no registered mortgages or charges" in tl or "no mortgages or charges" in tl
-
-    return {
-        "credit_score": credit_score_max if credit_score_range else (int(credit_score) if credit_score else None),
-        "credit_score_min": credit_score_min,
-        "credit_score_max": credit_score_max,
-        "credit_score_range": credit_score_range,
-        "credit_score_suppressed": "risk score suppressed" in tl or bool(re.search(r"\bcredit score\s*-\s*risk score suppressed\b", tl)),
-        "credit_limit": _money_to_int(credit_limit),
-        "max_recommended_credit": _money_to_int(max_credit),
-        "company_searches_12m": int(searches_12m) if searches_12m else None,
-        "enquiries_3m": int(enquiries_3m) if enquiries_3m else None,
-        "negative_impact_count": int(negative_impact) if negative_impact else 0,
-        "neutral_impact_count": int(neutral_impact) if neutral_impact else None,
-        "total_factor_count": int(total_factors) if total_factors else None,
-        "needs_attention": "needs attention" in tl,
-        "no_ccj_recorded": no_ccj,
-        "no_legal_notices_registered": no_legal_notices,
-        "no_registered_charges": no_charges,
-    }
-
-def _parse_credit_information(t: str) -> list[str]:
-    bullets = []
-    tl = t.lower()
-    signals = _parse_business_bureau_signals(t)
-
-    # Credit score (often appears as "Credit score 65")
-    score = signals.get("credit_score")
-    score_range = signals.get("credit_score_range")
-    if score_range:
-        bullets.append(f"Credit score: {score_range}")
-    elif score is not None:
-        bullets.append(f"Credit score: {score}")
-    elif signals.get("credit_score_suppressed"):
-        bullets.append("Credit score: Suppressed / unavailable")
-
-    # Credit limit (often "Credit limit £0")
-    credit_limit = signals.get("credit_limit")
-    if credit_limit is not None:
-        bullets.append(f"Credit limit: £{credit_limit:,}")
-
-    # --- Max. recommended credit (current + from-date amount) ---
-    # Current value usually appears near "Max. recommended credit" and may be £0.
-    mrc_current = _re_first(r"\bmax\.?\s*recommended\s*credit\b[\s\S]{0,80}?(£\s*\d[\d,]*)", t)
-
-    # "from Aug 2025 (£2,000)" style
-    m_from = re.search(
-        r"\bfrom\s+([A-Za-z]{3,9}\s+\d{4})\s*\(\s*(£\s*\d[\d,]*)\s*\)",
-        t,
-        re.IGNORECASE
-    )
-    from_date = m_from.group(1).strip() if m_from else None
-    from_amt = m_from.group(2).strip() if m_from else None
-
-    if mrc_current:
-        if from_date and from_amt:
-            bullets.append(
-                f"Max. recommended credit: {_money_clean(mrc_current)} (from {from_date} - {_money_clean(from_amt)})"
-            )
-        else:
-            bullets.append(f"Max. recommended credit: {_money_clean(mrc_current)}")
-    else:
-        # fallback: if only from-date value exists
-        if from_date and from_amt:
-            bullets.append(f"Max. recommended credit: {_money_clean(from_amt)} (from {from_date})")
-
-    # Searches / enquiries
-    enquiries_3m = signals.get("enquiries_3m")
-    if enquiries_3m:
-        bullets.append(f"Searches: {enquiries_3m} enquiries in last 3 months")
-
-    # Needs attention + Negative impact count
-    needs_attention = "needs attention" if "needs attention" in tl else None
-    neg_impact = signals.get("negative_impact_count")
-    if needs_attention:
-        if neg_impact:
-            bullets.append(f"Credit risk factors: Needs attention (Negative impact: {neg_impact})")
-        else:
-            bullets.append("Credit risk factors: Needs attention")
-
-    return bullets
-
-def _parse_payment_performance(t: str) -> list[str]:
-    bullets = []
-    tl = t.lower()
-
-    if "unable to get information" in tl and "payment average" in tl:
-        bullets.append("Payment average: Unavailable")
-        return bullets
-
-    # Payment average Beyond terms / Within terms etc.
-    if "payment average" in tl:
-        avg = _re_first(r"\bpayment average\b\s*[\r\n ]+([A-Za-z][A-Za-z\s]+?)(?:\n|$)", t)
-        if avg:
-            bullets.append(f"Payment average: {avg.strip()}")
-
-    # Average days late
-    days_late = _re_first(r"\b(\d+)\s+days\s+late\b", t)
-    if days_late:
-        bullets.append(f"Average days late: {days_late} days late")
-
-    # Industry average days late
-    ind = _re_first(r"\bindustry average\b[\s\S]{0,60}\b(\d+)\s+days\s+late\b", t)
-    if ind:
-        bullets.append(f"Industry average: {ind} days late")
-
-    # Pattern
-    if "significantly worsening payment pattern" in tl:
-        bullets.append("Pattern: Significantly worsening payment pattern")
-    elif "worsening payment pattern" in tl:
-        bullets.append("Pattern: Worsening payment pattern")
-
-    return bullets
-
-def _parse_legal_notices(t: str) -> list[str]:
-    bullets = []
-    tl = t.lower()
-
-    # CCJ registered yes/no
-    ccj_yes = bool(re.search(r"county\s+court\s+judg(e)?ment\s+registered", tl))
-    if ccj_yes:
-        bullets.append("County Court Judgement registered: Yes")
-    elif re.search(r"\bno\s+county\s+court\s+judg(e)?ment", tl):
-        bullets.append("County Court Judgement registered: No")
-
-    if "no legal notices registered" in tl:
-        bullets.append("Legal notices registered: No")
-        return bullets
-
-    # Registered: source (often appears after "Registered" line)
-    # Example from your other report: "Registered" then "THE COUNTY COURT ONLINE"
-    reg_source = _re_first(r"\bregistered\b\s*\n\s*([A-Z][A-Z\s]+)\n", t, flags=0)
-    if reg_source:
-        bullets.append(f"Registered: {reg_source.strip()}")
-
-    # Ref: (often like 678MC129)
-    ref = _re_first(r"\bregistered\b[\s\S]{0,200}\b([A-Z0-9]{6,})\b", t)
-    # That pattern is broad; only accept if looks like a CCJ ref
-    if ref and re.match(r"^[A-Z0-9]{6,}$", ref):
-        bullets.append(f"Ref: {ref}")
-
-    # Date: e.g. 31 Jul 2025
-    if ccj_yes:
-        date = _re_first(r"\b(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})\b", t)
-        if date:
-            bullets.append(f"Date: {date}")
-
-    # Value: prefer the largest £ amount found in Legal notices block (avoids £0)
-    money_vals = re.findall(r"£\s*\d[\d,]*", t) if ccj_yes else []
-    if money_vals:
-        # convert to numeric, pick max
-        def _to_int(m):
-            return int(m.replace("£", "").replace(",", "").strip())
-
-        max_val = max(money_vals, key=_to_int)
-        bullets.append(f"Value: {_money_clean(max_val)}")
-
-    return bullets
-
-def _parse_public_record(t: str) -> list[str]:
-    """
-    Robust Public Record parser for Capital-style PDFs where labels and values
-    may be split across lines or labels may appear grouped.
-
-    Output format (exact labels):
-    - Company name:
-    - Company number:
-    - Company Status:
-    - Incorporation date:
-    - SIC:
-    """
-    bullets = []
-    if not t:
-        return bullets
-
-    # Normalise once
-    full = _norm_pdf_text(t)
-
-    # -----------------------------
-    # 1) Company name from header (best source)
-    # Capital report
-    # BOUND STUDIOS LTD
-    # ...
-    # -----------------------------
-    company_name = None
-    header_lines = [ln.strip() for ln in full.splitlines() if ln.strip()]
-    for i, ln in enumerate(header_lines[:25]):  # only need top part
-        if ln.lower() == "capital report" and i + 1 < len(header_lines):
-            nxt = header_lines[i + 1].strip()
-            # accept all-caps-ish names and ignore obvious section headers
-            if nxt and nxt.lower() not in ("credit information", "payment performance", "legal notices", "public record", "charges"):
-                company_name = nxt
-                break
-    if not company_name:
-        # fallback: first ALL CAPS line near top that isn't a section title
-        for ln in header_lines[:25]:
-            if ln.isupper() and len(ln) >= 5 and ln.lower() not in ("capital report", "credit information", "payment performance", "legal notices", "public record", "charges"):
-                company_name = ln
-                break
-
-    # -----------------------------
-    # 2) Extract Public Record block (line based)
-    # -----------------------------
-    lines = header_lines
-    start = None
-    for i, ln in enumerate(lines):
-        if ln.strip().lower() == "public record":
-            start = i
-            break
-
-    block = []
-    if start is not None:
-        # end at next major header
-        end = len(lines)
-        for j in range(start + 1, len(lines)):
-            if lines[j].strip().lower() in ("charges", "credit information", "payment performance", "legal notices"):
-                end = j
-                break
-        block = lines[start + 1:end]  # exclude the "Public Record" header line
-
-    # pdfplumber can collapse the company-details row into a single line:
-    # "FIRSTUNICORN 15064523 Active 11 Aug 2023" followed by "LTD".
-    combined_company_row = None
-    for idx, ln in enumerate(block):
-        m = re.match(
-            r"^(.+?)\s+(\d{6,10})\s+([A-Za-z]+)\s+(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})$",
-            ln,
-        )
-        if m:
-            name, number, status, inc_date = m.groups()
-            if idx + 1 < len(block) and re.match(r"^[A-Z]{2,5}$", block[idx + 1]):
-                name = f"{name} {block[idx + 1]}"
-            combined_company_row = {
-                "company_name": name.strip(),
-                "company_number": number,
-                "company_status": status,
-                "incorporation_date": inc_date,
-            }
-            break
-
-    # Helpers to take value after label
-    LABELS = {
-        "company number": "Company number",
-        "company status": "Company Status",
-        "incorporation date": "Incorporation date",
-        "sic": "SIC",
-    }
-    label_set = set(LABELS.keys())
-
-    def is_label_line(s: str) -> bool:
-        s2 = s.strip().lower()
-        # Some PDFs merge labels onto one line: "Company number Company Status Incorporation date"
-        return any(lbl in s2 for lbl in label_set)
-
-    def next_value_after(label: str):
-        """Return the first non-label line after a label line, within the block."""
-        lbl = label.lower()
-        for idx, ln in enumerate(block):
-            if lbl in ln.lower():
-                # if the label and value are on the same line, try to extract value on that line
-                tail = re.sub(rf"(?i).*{re.escape(label)}\s*[:\-]?\s*", "", ln).strip()
-                # if tail looks like a value (not just other labels), accept it
-                if tail and not is_label_line(tail):
-                    return tail
-
-                # otherwise take next non-label line
-                for k in range(idx + 1, min(idx + 6, len(block))):
-                    cand = block[k].strip()
-                    if cand and not is_label_line(cand):
-                        return cand
-        return None
-
-    # Company number (prefer strict numeric)
-    company_number = combined_company_row.get("company_number") if combined_company_row else None
-    # try line-based label extraction
-    cand_num = next_value_after("Company number")
-    if cand_num:
-        m = re.search(r"\b(\d{6,10})\b", cand_num)
-        if m:
-            company_number = m.group(1)
-
-    # fallback: anywhere in public record block
-    if not company_number and block:
-        m = re.search(r"\b(\d{6,10})\b", "\n".join(block))
-        if m:
-            company_number = m.group(1)
-
-    # Company status
-    company_status = combined_company_row.get("company_status") if combined_company_row else None
-    company_status = company_status or next_value_after("Company Status") or next_value_after("Company status")
-    if company_status:
-        # guard against grabbing another label word like "Incorporation"
-        if is_label_line(company_status):
-            company_status = None
-        else:
-            # keep first word-ish value (Active/Dissolved etc.) if it’s noisy
-            company_status = company_status.strip()
-
-    # Incorporation date (strict date pattern)
-    incorporation_date = combined_company_row.get("incorporation_date") if combined_company_row else None
-    cand_inc = next_value_after("Incorporation date")
-    if not incorporation_date and cand_inc:
-        m = re.search(r"\b(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\b", cand_inc)
-        if m:
-            incorporation_date = m.group(1)
-    if not incorporation_date:
-        m = re.search(r"\b(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})\b", "\n".join(block)) if block else None
-        if m:
-            incorporation_date = m.group(1)
-
-    # SIC (keep full “code - description”)
-    sic = None
-    cand_sic = next_value_after("SIC")
-    if cand_sic:
-        # if it already contains "47710 - ..." keep it
-        m = re.search(r"\b(\d{4,6}\s*-\s*.+)$", cand_sic)
-        if m:
-            sic = m.group(1).strip()
-    if not sic:
-        m = re.search(r"\b(\d{4,6}\s*-\s*[A-Za-z].+)", "\n".join(block)) if block else None
-        if m:
-            sic = m.group(1).strip()
-
-    # -----------------------------
-    # Output in the exact format you want
-    # -----------------------------
-    if combined_company_row and combined_company_row.get("company_name"):
-        company_name = combined_company_row["company_name"]
-
-    if company_name:
-        bullets.append(f"Company name: {company_name}")
-    if company_number:
-        bullets.append(f"Company number: {company_number}")
-    if company_status:
-        bullets.append(f"Company Status: {company_status}")
-    if incorporation_date:
-        bullets.append(f"Incorporation date: {incorporation_date}")
-    if sic:
-        bullets.append(f"SIC: {sic}")
-
-    return bullets
-
-def _parse_charges(t: str) -> list[str]:
-    bullets = []
-    tl = t.lower()
-
-    if "no mortgages or charges" in tl:
-        bullets.append("No mortgages or charges")
-        return bullets
-
-    # fallback: if “Charges” section exists but not the “no charges” sentence
-    if "charges" in tl:
-        bullets.append("Charges: present (details in report)")
-    return bullets
-
-def build_report_information(full_text: str) -> dict[str, list[str]]:
-    """
-    Returns exactly the 5 sections with formatted bullet lines.
-    """
-    t = _norm_pdf_text(full_text)
-
-    return {
-        "Credit information": _parse_credit_information(t),
-        "Payment performance": _parse_payment_performance(t),
-        "Legal notices": _parse_legal_notices(t),
-        "Public Record": _parse_public_record(t),
-        "Charges": _parse_charges(t),
-    }
-
-def _bureau_band_from_pdf_text(pdf_text: str) -> tuple[str, list[str]]:
-    """
-    Returns (bureau_band, reasons).
-
-    This version is tailored to the bureau PDF format you uploaded:
-    - Detects: 'Maximum risk', letter grade (A-F), and 'Credit score 2 - 15'
-    - Banding is informational to the underwriter ONLY.
-    """
-    t = (pdf_text or "").lower()
-    reasons: list[str] = []
-    signals = _parse_business_bureau_signals(pdf_text)
-
-    # 1) Strong explicit signals
-    if "maximum risk" in t:
-        reasons.append("Report states: Maximum risk")
-        return "D (Very High Risk)", reasons
-
-    if signals.get("credit_score_suppressed"):
-        reasons.append("Business bureau risk score is suppressed")
-
-    credit_limit = signals.get("credit_limit")
-    max_credit = signals.get("max_recommended_credit")
-    if credit_limit == 0 and max_credit == 0:
-        reasons.append("Credit limit and max recommended credit are £0")
-
-    neg_count = int(signals.get("negative_impact_count") or 0)
-    if neg_count:
-        reasons.append(f"Negative impact factors: {neg_count}")
-
-    enquiries_3m = signals.get("enquiries_3m")
-    if isinstance(enquiries_3m, int) and enquiries_3m >= 3:
-        reasons.append(f"Recent company searches: {enquiries_3m} enquiries in 3 months")
-
-    if signals.get("no_ccj_recorded"):
-        reasons.append("No CCJs recorded")
-
-    if signals.get("credit_score_suppressed") and credit_limit == 0 and max_credit == 0 and neg_count >= 4:
-        return "C (High Risk)", reasons
-    if signals.get("credit_score_suppressed") or (credit_limit == 0 and max_credit == 0) or neg_count >= 3:
-        return "B (Moderate Risk)", reasons
-
-    # 2) Letter grade (A-F) — seen as 'F' in your report
-    # Match patterns like: "Credit score ... F" or isolated grade near "credit score"
-    grade = None
-    m_grade = re.search(r"\bcredit\s+score\b[\s\S]{0,120}\b([a-f])\b", t, re.IGNORECASE)
-    if m_grade:
-        grade = m_grade.group(1).upper()
-        reasons.append(f"Detected credit grade: {grade}")
-
-    # Map grade to band (conservative)
-    if grade in ("F", "E"):
-        return "D (Very High Risk)", reasons
-    if grade == "D":
-        return "C (High Risk)", reasons
-    if grade == "C":
-        return "B (Moderate Risk)", reasons
-    if grade in ("A", "B"):
-        return "A (Low Risk)", reasons
-
-    # 3) Credit score range like "2 - 15"
-    # Use the upper bound as a proxy of where they sit within the bureau scale.
-    score_hi = None
-    m_range = re.search(r"\bcredit\s+score\b[\s:]*([0-9]{1,3})\s*[-–]\s*([0-9]{1,3})\b", t, re.IGNORECASE)
-    if m_range:
-        try:
-            lo = int(m_range.group(1))
-            hi = int(m_range.group(2))
-            score_hi = hi
-            reasons.append(f"Detected credit score range: {lo}-{hi}")
-        except Exception:
-            score_hi = None
-
-    # For a 2–15 scale, 15 is worst (per your report showing 'Maximum risk' with 2–15)
-    if score_hi is not None:
-        if score_hi >= 12:
-            return "D (Very High Risk)", reasons
-        if score_hi >= 9:
-            return "C (High Risk)", reasons
-        if score_hi >= 6:
-            return "B (Moderate Risk)", reasons
-        return "A (Low Risk)", reasons
-
-    # 4) Final fallback: adverse keyword density
-    adverse_hits = 0
-    adverse_rules = [
-        (r"\binsolvenc(y|ies)\b|\bliquidat(e|ion)\b|\badministration\b|\bwinding\s+up\b", "Insolvency / liquidation indicator"),
-        (r"\bdefault(s)?\b", "Defaults mentioned"),
-        (r"\barrear(s)?\b|\blate\s+payment(s)?\b|\bdelinquen(t|cy)\b", "Arrears / late payments mentioned"),
-        (r"\bcollections?\b|\bdebt\s+collection\b", "Collections mentioned"),
-        (r"\bdissolved\b|\bstrike\s+off\b", "Dissolved/strike-off mentioned"),
-        (r"\bneeds\s+attention\b", "Needs attention flagged"),
-    ]
-    for pat, label in adverse_rules:
-        if re.search(pat, t, re.IGNORECASE):
-            adverse_hits += 1
-            reasons.append(label)
-
-    if adverse_hits >= 3:
-        return "D (Very High Risk)", reasons
-    if adverse_hits == 2:
-        return "C (High Risk)", reasons
-    if adverse_hits == 1:
-        return "B (Moderate Risk)", reasons
-    reasons.append("No specific indicators extracted (fallback)")
-    return "A (Low Risk)", reasons
-
 
 # Debug mode - only enabled when DEBUG environment variable is set to 'true'
 DEBUG_MODE = os.environ.get('DEBUG', 'false').lower() == 'true'
@@ -1073,18 +416,18 @@ def import_subprime_scoring():
     # Strategy 1: Direct import from services (if main.py is in app/)
     try:
         from services.subprime_scoring_system import SubprimeScoring
-        print("✅ Imported SubprimeScoring from services.subprime_scoring_system")
+        print("OK Imported SubprimeScoring from services.subprime_scoring_system")
         return SubprimeScoring, True
     except ImportError as e:
-        print(f"❌ Failed import from services: {e}")
+        print(f"WARN Failed import from services: {e}")
     
     # Strategy 2: Import from app.services (if main.py is in root/)
     try:
         from app.services.subprime_scoring_system import SubprimeScoring
-        print("✅ Imported SubprimeScoring from app.services.subprime_scoring_system")
+        print("OK Imported SubprimeScoring from app.services.subprime_scoring_system")
         return SubprimeScoring, True
     except ImportError as e:
-        print(f"❌ Failed import from app.services: {e}")
+        print(f"WARN Failed import from app.services: {e}")
     
     # Strategy 3: Add path and import
     try:
@@ -1096,10 +439,10 @@ def import_subprime_scoring():
             print(f"📁 Added to path: {services_dir}")
         
         from subprime_scoring_system import SubprimeScoring
-        print("✅ Imported SubprimeScoring after adding services to path")
+        print("OK Imported SubprimeScoring after adding services to path")
         return SubprimeScoring, True
     except ImportError as e:
-        print(f"❌ Failed import after path addition: {e}")
+        print(f"WARN Failed import after path addition: {e}")
     
     # Strategy 4: Check parent app/services directory
     try:
@@ -1112,10 +455,10 @@ def import_subprime_scoring():
             print(f"📁 Added to path: {app_services_dir}")
         
         from subprime_scoring_system import SubprimeScoring
-        print("✅ Imported SubprimeScoring from parent app/services")
+        print("OK Imported SubprimeScoring from parent app/services")
         return SubprimeScoring, True
     except ImportError as e:
-        print(f"❌ Failed import from parent app/services: {e}")
+        print(f"WARN Failed import from parent app/services: {e}")
     
     # Strategy 5: Absolute import with file loading
     try:
@@ -1137,13 +480,13 @@ def import_subprime_scoring():
                 spec.loader.exec_module(module)
                 
                 SubprimeScoring = module.SubprimeScoring
-                print("✅ Imported SubprimeScoring using importlib")
+                print("OK Imported SubprimeScoring using importlib")
                 return SubprimeScoring, True
         
-        print("❌ subprime_scoring_system.py not found in any expected location")
+        print("WARN subprime_scoring_system.py not found in any expected location")
         
     except Exception as e:
-        print(f"❌ Failed absolute import: {e}")
+        print(f"WARN Failed absolute import: {e}")
     
     # If all strategies fail, return None
     print("🚨 All import strategies failed!")
@@ -1154,7 +497,7 @@ SubprimeScoring, SUBPRIME_SCORING_AVAILABLE = import_subprime_scoring()
 
 # Create fallback class if import failed
 if not SUBPRIME_SCORING_AVAILABLE:
-    print("⚠️ Creating fallback SubprimeScoring class")
+    print("WARN Creating fallback SubprimeScoring class")
     class SubprimeScoring:
         def calculate_subprime_score(self, metrics, params):
             return {
@@ -3800,7 +3143,9 @@ def build_evidence_quality(params: dict, scores: dict, df: pd.DataFrame | None =
     """Summarise whether the main evidence sources were present and usable."""
     row_count = len(df) if df is not None else 0
     tu_score = params.get("tu_director_score")
+    tu_status = params.get("tu_parse_status", "parsed" if tu_score is not None else "missing")
     bureau_band = params.get("bureau_band")
+    bureau_status = params.get("business_bureau_parse_status", "parsed" if bureau_band else "missing")
     evidence = [
         {
             "evidence": "Bank transactions",
@@ -3814,13 +3159,21 @@ def build_evidence_quality(params: dict, scores: dict, df: pd.DataFrame | None =
         },
         {
             "evidence": "Director TU XML",
-            "status": "Present" if tu_score is not None else "Missing",
-            "detail": f"Score {tu_score} / {params.get('tu_director_decision')}" if tu_score is not None else "No director TU XML parsed",
+            "status": "Present" if tu_status == "parsed" else ("Failed" if tu_status == "failed" else "Missing"),
+            "detail": (
+                f"Score {tu_score} / {params.get('tu_director_decision')}"
+                if tu_status == "parsed"
+                else (params.get("tu_parse_error") or "No director TU XML parsed")
+            ),
         },
         {
             "evidence": "Business credit PDF",
-            "status": "Present" if bureau_band else "Missing",
-            "detail": f"{bureau_band}" if bureau_band else "No business credit PDF parsed",
+            "status": "Present" if bureau_status == "parsed" else ("Failed" if bureau_status == "failed" else "Missing"),
+            "detail": (
+                f"{bureau_band}"
+                if bureau_status == "parsed" and bureau_band
+                else (params.get("business_bureau_parse_error") or "No business credit PDF parsed")
+            ),
         },
         {
             "evidence": "Business bureau score",
@@ -4775,7 +4128,11 @@ def main():
         tu_xml_file = st.sidebar.file_uploader("Upload TU XML", type=["xml"], key="tu_xml_upload")
 
         tu_result = None
-        directors_score = 0
+        tu_present = tu_xml_file is not None
+        tu_parse_status = "missing"
+        tu_parse_error = ""
+        directors_score = 50  # Neutral legacy fallback; real TU score is stored separately.
+        tu_director_score = None
         revenue_insights = {}
 
         if tu_xml_file is not None:
@@ -4784,7 +4141,9 @@ def main():
                 app_id = Path(tu_xml_file.name).stem
 
                 tu_result = _score_tu_xml_bytes(xml_bytes, app_id)
-                directors_score = tu_result["score"]
+                tu_director_score = tu_result["score"]
+                directors_score = tu_director_score
+                tu_parse_status = "parsed"
 
                 st.sidebar.success(f"Director TU Score: {tu_result['score']}/100")
                 st.sidebar.write(f"Director TU Decision: **{tu_result['decision']}**")
@@ -4798,8 +4157,11 @@ def main():
                     st.sidebar.write(tu_result["reasons"])
 
             except Exception as e:
+                tu_parse_status = "failed"
+                tu_parse_error = str(e)
                 st.sidebar.error(f"TU XML scoring failed: {e}")
-                directors_score = 0
+                directors_score = 50
+                tu_director_score = None
                 tu_result = None
 
         # -----------------------------
@@ -4812,35 +4174,35 @@ def main():
             key="bureau_pdf_upload"
         )
 
-        # Defaults so variables always exist
         bureau_text = ""
         bureau_backend = "none"
         bureau_err = ""
-        business_ccj = False
+        bureau_parse_status = "missing"
+        business_ccj = None
         bureau_band = None
         bureau_band_reasons = []
         bureau_signals = {}
+        report_info = {}
 
         if bureau_pdf is not None:
-            pdf_bytes = bureau_pdf.getvalue()
-            bureau_text, bureau_backend, bureau_err = _extract_text_from_pdf_bytes(pdf_bytes)
+            bureau_result = parse_business_bureau_pdf(bureau_pdf.getvalue())
+            bureau_text = bureau_result.text
+            bureau_backend = bureau_result.backend
+            bureau_err = bureau_result.error
+            bureau_parse_status = bureau_result.parse_status
+            business_ccj = bureau_result.business_ccj
+            bureau_band = bureau_result.bureau_band
+            bureau_band_reasons = bureau_result.bureau_band_reasons
+            bureau_signals = bureau_result.signals
+            report_info = bureau_result.report_information
 
-            # Bureau PDF required for extraction messaging
-            if bureau_backend == "none":
+            if bureau_parse_status == "failed":
                 st.sidebar.error(
-                    "PDF text extraction is not available. "
-                    "Install PyMuPDF in requirements.txt to enable bureau banding."
+                    "Business credit PDF text extraction failed. "
+                    f"No bureau band or CCJ status was inferred. {bureau_err}"
                 )
-
-            # CCJ detection (scoring-impacting)
-            business_ccj = _explicit_ccj_present(bureau_text)
-
-            # Banding (UW display only)
-            bureau_signals = _parse_business_bureau_signals(bureau_text)
-            bureau_band, bureau_band_reasons = _bureau_band_from_pdf_text(bureau_text)
-
-        report_info = build_report_information(bureau_text) if bureau_text else {}
-
+            elif bureau_parse_status == "parsed":
+                st.sidebar.success(f"Business credit PDF parsed via {bureau_backend}")
         with st.sidebar.expander("Report Information", expanded=False):
             for section_name in ["Credit information", "Payment performance", "Legal notices", "Public Record",
                                  "Charges"]:
@@ -4861,7 +4223,8 @@ def main():
         sidebar_subsection("Risk factors")
 
         # Show CCJ as derived (no manual tick box)
-        st.sidebar.write(f"**Business CCJ:** {'Yes' if business_ccj else 'No'}")
+        ccj_label = "Unknown" if business_ccj is None else ("Yes" if business_ccj else "No")
+        st.sidebar.write(f"**Business CCJ:** {ccj_label}")
 
         # Removed: Poor/No Online Presence + Generic Email (no longer used / no penalties)
         poor_or_no_online_presence = False
@@ -4897,13 +4260,16 @@ def main():
             "directors_score": directors_score,
 
             # Persist TU outputs for display/export
-            "tu_director_score": directors_score,
+            "tu_present": tu_present,
+            "tu_parse_status": tu_parse_status,
+            "tu_parse_error": tu_parse_error,
+            "tu_director_score": tu_director_score,
             "tu_director_decision": (tu_result or {}).get("decision"),
             "tu_director_flags": (tu_result or {}).get("flags") or [],
             "tu_director_reasons": (tu_result or {}).get("reasons") or [],
 
             "company_age_months": company_age_months,
-            "business_ccj": business_ccj,  # now derived from PDF (not a checkbox)
+            "business_ccj": business_ccj,  # True/False when parsed, None when missing or failed
             "business_credit_score": bureau_signals.get("credit_score"),
             "business_credit_score_min": bureau_signals.get("credit_score_min"),
             "business_credit_score_max": bureau_signals.get("credit_score_max"),
@@ -4916,6 +4282,9 @@ def main():
             "business_company_searches_12m": bureau_signals.get("company_searches_12m"),
             "business_bureau_needs_attention": bool(bureau_signals.get("needs_attention", False)),
             "business_no_registered_charges": bool(bureau_signals.get("no_registered_charges", False)),
+            "business_bureau_parse_status": bureau_parse_status,
+            "business_bureau_backend": bureau_backend,
+            "business_bureau_parse_error": bureau_err,
             "poor_or_no_online_presence": False,
             "uses_generic_email": False,
 
