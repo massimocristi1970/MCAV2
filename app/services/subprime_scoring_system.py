@@ -375,6 +375,16 @@ class SubprimeScoring:
             total_penalty += penalty
             applied_penalties.append(f"Business CCJ: -{penalty}")
 
+        if params.get('director_ccj', False):
+            penalty = self.risk_factor_penalties.get('director_ccj', 4)
+            total_penalty += penalty
+            applied_penalties.append(f"Director CCJ: -{penalty}")
+
+        if params.get('personal_default_12m', False):
+            penalty = self.risk_factor_penalties.get('personal_default_12m', 5)
+            total_penalty += penalty
+            applied_penalties.append(f"Personal default (12m): -{penalty}")
+
         if params.get('business_credit_score_suppressed', False):
             total_penalty += 2
             applied_penalties.append("Business bureau score suppressed: -2")

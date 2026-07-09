@@ -17,6 +17,7 @@ class BusinessBureauParseResult:
     error: str = ""
     parse_status: str = "missing"
     business_ccj: bool | None = None
+    business_ccj_count: int | None = None
     bureau_band: str | None = None
     bureau_band_reasons: list[str] = field(default_factory=list)
     signals: dict[str, Any] = field(default_factory=dict)
@@ -91,12 +92,15 @@ def parse_business_bureau_pdf(pdf_bytes: bytes | None) -> BusinessBureauParseRes
 
     signals = parse_business_bureau_signals(text)
     band, reasons = bureau_band_from_pdf_text(text)
+    ccj_count = count_business_ccjs(text)
+    ccj_present = explicit_ccj_present(text) if ccj_count is None else bool(ccj_count and ccj_count > 0)
     return BusinessBureauParseResult(
         text=text,
         backend=backend,
         error=error,
         parse_status="parsed",
-        business_ccj=explicit_ccj_present(text),
+        business_ccj=ccj_present,
+        business_ccj_count=ccj_count,
         bureau_band=band,
         bureau_band_reasons=reasons,
         signals=signals,
@@ -144,6 +148,52 @@ def explicit_ccj_present(pdf_text: str) -> bool:
             return True
 
     return False
+
+
+def count_business_ccjs(pdf_text: str) -> int | None:
+    """
+    Return the number of business CCJs detected in bureau text.
+
+    Returns 0 when the report explicitly states no CCJs, 1+ when evidence is found,
+    and None when CCJ status cannot be determined from the text.
+    """
+    if not pdf_text:
+        return None
+
+    t = norm_pdf_text(pdf_text).lower()
+
+    negative_patterns = [
+        r"\bno\s+county\s+court\s+judg(e)?ment(s)?\b",
+        r"\bno\s+ccj(s)?\b",
+        r"\bccj(s)?\s*:\s*(none|no|0)\b",
+        r"\bnone\s+recorded\b[\s\S]{0,80}\bccj(s)?\b",
+        r"\bno\s+ccj(s)?\s+recorded\b",
+    ]
+    for pattern in negative_patterns:
+        if re.search(pattern, t, re.IGNORECASE):
+            return 0
+
+    section = _section_text(t, ("legal notices", "public record"), ("charges", "credit information", "payment performance"))
+    ccj_scope = section or t
+
+    count_patterns = [
+        r"(\d+)\s+county\s+court\s+judg(e)?ments?",
+        r"county\s+court\s+judg(e)?ments?\s*[:\-]?\s*(\d+)",
+        r"\b(\d+)\s+ccj(s)?\b",
+    ]
+    for pattern in count_patterns:
+        match = re.search(pattern, ccj_scope, re.IGNORECASE)
+        if match:
+            for group in match.groups():
+                if group is None:
+                    continue
+                if str(group).isdigit():
+                    return max(int(group), 1)
+
+    if explicit_ccj_present(pdf_text):
+        return 1
+
+    return 0
 
 
 def norm_pdf_text(text: str) -> str:

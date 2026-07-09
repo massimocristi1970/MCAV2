@@ -110,6 +110,25 @@ except ImportError as e:
     print(f"Note: card terminal ingestion service not available ({e}).")
 
 from app.services.business_bureau_pdf import parse_business_bureau_pdf
+from app.services.dashboard_export import (
+    DashboardExporter,
+    apply_manual_debt_to_loans_analysis,
+    build_card_processing_insight_rows,
+    build_evidence_quality,
+    build_open_banking_insight_rows,
+    build_score_impact_rows,
+    compute_loans_analysis,
+    manual_debt_total_from_balances,
+)
+from app.services.loans_analysis import analyze_loans_and_repayments
+from app.services.mca_rule_runner import apply_mca_rule_to_params, dataframe_to_mca_transactions
+from app.services.tu_director_params import apply_tu_features_to_params_and_metrics, director_tu_is_ready, tu_features_to_scoring_fields
+from app.services.underwriting_insights import (
+    apply_data_quality_gate,
+    assess_data_quality,
+    build_underwriting_package,
+    render_underwriting_workspace,
+)
 
 STREAMLIT_CACHE_TTL_SECONDS = int(os.getenv("STREAMLIT_CACHE_TTL_SECONDS", "1800"))
 STREAMLIT_CACHE_MAX_ENTRIES = int(os.getenv("STREAMLIT_CACHE_MAX_ENTRIES", "8"))
@@ -128,6 +147,7 @@ def _score_tu_xml_bytes(xml_bytes: bytes, app_id: str) -> dict:
         "decision": sr.decision,
         "reasons": sr.reasons,
         "flags": sr.recovery_flags,
+        "features": feats_obj.features,
     }
 
 # Debug mode - only enabled when DEBUG environment variable is set to 'true'
@@ -731,7 +751,7 @@ def calculate_weighted_scores(metrics, params, industry_thresholds):
             if params['directors_score'] >= industry_thresholds['Directors Score']:
                 weighted_score += weight
         elif metric == 'Sector Risk':
-            sector_risk = industry_thresholds['Sector Risk']
+            sector_risk = get_sector_risk(params.get('industry', ''))
             if sector_risk <= industry_thresholds['Sector Risk']:
                 weighted_score += weight
         elif metric in metrics:
@@ -912,6 +932,7 @@ def calculate_financial_metrics(data, company_age_months):
 def calculate_all_scores_enhanced(metrics, params):
     """Enhanced scoring calculation with better debugging and subprime scoring"""
     print = builtins.print if DEBUG_MODE else (lambda *args, **kwargs: None)
+    apply_tu_features_to_params_and_metrics(params, metrics, params.get("tu_director_features"))
     industry_thresholds = get_industry_thresholds(params['industry'])
     sector_risk = get_sector_risk(params['industry'])
     
@@ -1160,23 +1181,13 @@ def calculate_all_scores_enhanced(metrics, params):
             print(f"  {traceback.format_exc()}")
             ensemble_result = None
 
-    # -----------------------------
-    # 4B) Apply TU × MCA Decision Logic
-    # -----------------------------
-    tu_decision = params.get("tu_director_decision")
-    mca_decision = ensemble_result.get("decision") if isinstance(ensemble_result, dict) else params.get(
-        "mca_rule_decision", "REFER")
-
-    final_decision = combine_mca_and_tu_decisions(mca_decision, tu_decision)
-
-    params["mca_main_decision"] = mca_decision
-    params["final_decision"] = final_decision
-    
     print(f"="*50)
     
     return {
         'weighted_score': weighted_score,
+        'legacy_weighted_score_note': 'Reference only — not used in final decision',
         'industry_score': industry_score,
+        'legacy_industry_score_note': 'Reference only — not used in final decision',
         'ml_score': ml_score,
         'adjusted_ml_score': adjusted_ml_score,
         'loan_risk': loan_risk,
@@ -1192,7 +1203,6 @@ def calculate_all_scores_enhanced(metrics, params):
         'ml_validation': ml_validation,
         # Ensemble scoring results
         'ensemble': ensemble_result,
-        "final_decision": final_decision,
     }
 
 def adjust_ml_score_for_growth_business(raw_ml_score, metrics, params):
@@ -1989,142 +1999,11 @@ def create_categorized_csv(df):
     
     return export_df.to_csv(index=False)
 
-def analyze_loans_and_repayments(df):
-    """Comprehensive analysis of loans received and debt repayments"""
-    if df.empty:
-        return {}
-    
-    # Apply categorization to ensure we have subcategories
-    categorized_data = categorize_transactions(df.copy())
-    
-    # Extract loans and repayments
-    loans_data = categorized_data[categorized_data['subcategory'] == 'Loans'].copy()
-    repayments_data = categorized_data[categorized_data['subcategory'] == 'Debt Repayments'].copy()
-    
-    # Prepare date columns
-    for data in [loans_data, repayments_data]:
-        if not data.empty:
-            data['date'] = pd.to_datetime(data['date'])
-            data['month'] = data['date'].dt.to_period('M')
-            data['amount_abs'] = abs(data['amount'])
-    
-    analysis = {}
-    
-    # === LOANS ANALYSIS ===
-    if not loans_data.empty:
-        analysis['total_loans_received'] = loans_data['amount_abs'].sum()
-        analysis['loan_count'] = len(loans_data)
-        analysis['avg_loan_amount'] = loans_data['amount_abs'].mean()
-        analysis['largest_loan'] = loans_data['amount_abs'].max()
-        analysis['smallest_loan'] = loans_data['amount_abs'].min()
-        
-        # Monthly loans
-        analysis['loans_by_month'] = loans_data.groupby('month')['amount_abs'].agg(['count', 'sum']).reset_index()
-        analysis['loans_by_month']['month_str'] = analysis['loans_by_month']['month'].astype(str)
-        
-        # Lender analysis
-        loans_data['lender_clean'] = loans_data['name'].str.lower().str.strip()
-        analysis['loans_by_lender'] = loans_data.groupby('lender_clean')['amount_abs'].agg(['count', 'sum']).reset_index()
-        analysis['loans_by_lender'] = analysis['loans_by_lender'].sort_values('sum', ascending=False)
-    else:
-        analysis.update({
-            'total_loans_received': 0, 'loan_count': 0, 'avg_loan_amount': 0,
-            'largest_loan': 0, 'smallest_loan': 0, 'loans_by_month': pd.DataFrame(),
-            'loans_by_lender': pd.DataFrame()
-        })
-    
-    # === REPAYMENTS ANALYSIS ===
-    if not repayments_data.empty:
-        analysis['total_repayments_made'] = repayments_data['amount_abs'].sum()
-        analysis['repayment_count'] = len(repayments_data)
-        analysis['avg_repayment_amount'] = repayments_data['amount_abs'].mean()
-        analysis['largest_repayment'] = repayments_data['amount_abs'].max()
-        analysis['smallest_repayment'] = repayments_data['amount_abs'].min()
-        
-        # Monthly repayments
-        analysis['repayments_by_month'] = repayments_data.groupby('month')['amount_abs'].agg(['count', 'sum']).reset_index()
-        analysis['repayments_by_month']['month_str'] = analysis['repayments_by_month']['month'].astype(str)
-        
-        # Recipient analysis
-        repayments_data['recipient_clean'] = repayments_data['name'].str.lower().str.strip()
-        analysis['repayments_by_recipient'] = repayments_data.groupby('recipient_clean')['amount_abs'].agg(['count', 'sum']).reset_index()
-        analysis['repayments_by_recipient'] = analysis['repayments_by_recipient'].sort_values('sum', ascending=False)
-    else:
-        analysis.update({
-            'total_repayments_made': 0, 'repayment_count': 0, 'avg_repayment_amount': 0,
-            'largest_repayment': 0, 'smallest_repayment': 0, 'repayments_by_month': pd.DataFrame(),
-            'repayments_by_recipient': pd.DataFrame()
-        })
-    
-    # === COMBINED ANALYSIS ===
-    analysis['net_borrowing'] = analysis['total_loans_received'] - analysis['total_repayments_made']
-    analysis['repayment_ratio'] = (analysis['total_repayments_made'] / analysis['total_loans_received']) if analysis['total_loans_received'] > 0 else None
-    analysis['repayments_without_visible_loan'] = bool(analysis['loan_count'] == 0 and analysis['repayment_count'] > 0)
-
-    if not analysis['repayments_by_recipient'].empty:
-        possible_lenders = analysis['repayments_by_recipient'].copy()
-        possible_lenders['possible_lender'] = possible_lenders['recipient_clean'].str.title()
-        visible_lenders = set()
-        if not analysis['loans_by_lender'].empty:
-            visible_lenders = set(analysis['loans_by_lender']['lender_clean'].astype(str).str.lower().str.strip())
-        possible_lenders['loan_credit_seen'] = possible_lenders['recipient_clean'].isin(visible_lenders)
-        possible_lenders['review_reason'] = possible_lenders['loan_credit_seen'].map({
-            True: "Repayment recipient with visible loan credit",
-            False: "Repayments found but no matching loan credit in selected bank data",
-        })
-        possible_lenders = possible_lenders.rename(
-            columns={'count': 'repayment_count', 'sum': 'total_repaid_in_period'}
-        )
-        analysis['possible_lenders_from_repayments'] = possible_lenders[
-            [
-                'possible_lender',
-                'recipient_clean',
-                'repayment_count',
-                'total_repaid_in_period',
-                'loan_credit_seen',
-                'review_reason',
-            ]
-        ]
-    else:
-        analysis['possible_lenders_from_repayments'] = pd.DataFrame()
-    
-    # Monthly net borrowing trend
-    if not loans_data.empty or not repayments_data.empty:
-        all_months = set()
-        if not loans_data.empty:
-            all_months.update(loans_data['month'].unique())
-        if not repayments_data.empty:
-            all_months.update(repayments_data['month'].unique())
-        
-        monthly_net = []
-        for month in sorted(all_months):
-            month_loans = loans_data[loans_data['month'] == month]['amount_abs'].sum() if not loans_data.empty else 0
-            month_repayments = repayments_data[repayments_data['month'] == month]['amount_abs'].sum() if not repayments_data.empty else 0
-            monthly_net.append({
-                'month': month,
-                'month_str': str(month),
-                'loans': month_loans,
-                'repayments': month_repayments,
-                'net_borrowing': month_loans - month_repayments
-            })
-        
-        analysis['monthly_net_borrowing'] = pd.DataFrame(monthly_net)
-    else:
-        analysis['monthly_net_borrowing'] = pd.DataFrame()
-    
-    return analysis
-
 
 def get_manual_outstanding_debt_total():
     """Return underwriter-entered outstanding debt balances from session state."""
-    manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
-    total = 0.0
-    for value in manual_balances.values():
-        try:
-            total += max(float(value or 0), 0.0)
-        except (TypeError, ValueError):
-            continue
-    return round(total, 2)
+    balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+    return manual_debt_total_from_balances(balances)
 
 
 def get_manual_outstanding_debt_count():
@@ -2160,53 +2039,8 @@ def apply_manual_outstanding_debt(metrics):
 
 def apply_manual_outstanding_debt_to_loans_analysis(analysis):
     """Reflect underwriter-entered balances in loan/repayment display metrics and charts."""
-    manual_total = get_manual_outstanding_debt_total()
-    analysis["manual_outstanding_debt"] = manual_total
-    if manual_total <= 0:
-        analysis["total_known_borrowing"] = analysis.get("total_loans_received", 0)
-        analysis["known_outstanding_balance"] = max(float(analysis.get("net_borrowing", 0) or 0), 0.0)
-        return analysis
-
-    visible_loans = float(analysis.get("total_loans_received", 0) or 0)
-    repayments = float(analysis.get("total_repayments_made", 0) or 0)
-
-    if visible_loans > 0:
-        total_known_borrowing = visible_loans + manual_total
-    else:
-        total_known_borrowing = repayments + manual_total
-
-    analysis["total_known_borrowing"] = round(total_known_borrowing, 2)
-    analysis["known_outstanding_balance"] = manual_total
-    analysis["net_borrowing"] = manual_total
-    analysis["repayment_ratio"] = repayments / total_known_borrowing if total_known_borrowing > 0 else None
-
-    monthly_net = analysis.get("monthly_net_borrowing", pd.DataFrame())
-    if monthly_net.empty:
-        today_month = pd.Timestamp.today().to_period("M")
-        monthly_net = pd.DataFrame(
-            [
-                {
-                    "month": today_month,
-                    "month_str": str(today_month),
-                    "loans": 0.0,
-                    "repayments": 0.0,
-                    "manual_balance_adjustment": manual_total,
-                    "net_borrowing": manual_total,
-                }
-            ]
-        )
-    else:
-        monthly_net = monthly_net.copy()
-        monthly_net["manual_balance_adjustment"] = 0.0
-        current_final_position = float(monthly_net["net_borrowing"].sum())
-        balance_adjustment = manual_total - current_final_position
-        monthly_net.loc[monthly_net.index[0], "manual_balance_adjustment"] = balance_adjustment
-        monthly_net["net_borrowing"] = (
-            monthly_net["loans"] + monthly_net["manual_balance_adjustment"] - monthly_net["repayments"]
-        )
-
-    analysis["monthly_net_borrowing"] = monthly_net
-    return analysis
+    balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+    return apply_manual_debt_to_loans_analysis(analysis, balances)
 
 
 def rerun_last_analysis_with_manual_debt():
@@ -2226,8 +2060,12 @@ def rerun_last_analysis_with_manual_debt():
 
     metrics = calculate_financial_metrics(filtered_df, params["company_age_months"])
     metrics = apply_manual_outstanding_debt(metrics)
+    apply_tu_features_to_params_and_metrics(params, metrics, params.get("tu_director_features"))
     card_processing_payload = derive_card_processing_payload(filtered_df, card_terminal_files)
     metrics.update(card_processing_payload.get("insights") or {})
+
+    apply_mca_rule_to_params(params, dataframe_to_mca_transactions(df), analysis_period)
+
     scores = calculate_all_scores_enhanced(metrics, params)
 
     scores["mca_rule_decision"] = params.get("mca_rule_decision")
@@ -2274,7 +2112,20 @@ def rerun_last_analysis_with_manual_debt():
     params["final_decision"] = final_decision
     params["final_decision_reasons"] = final_reasons
 
+    data_quality = assess_data_quality(filtered_df, metrics, params, analysis_period)
+    params["data_quality"] = data_quality
+    apply_data_quality_gate(scores, params, data_quality)
+
     revenue_insights = calculate_revenue_insights(filtered_df)
+    manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+    underwriting = build_underwriting_package(
+        metrics=metrics,
+        params=params,
+        scores=scores,
+        filtered_df=filtered_df,
+        analysis_period=analysis_period,
+        manual_debt_balances=manual_balances,
+    )
 
     run.update(
         {
@@ -2284,6 +2135,7 @@ def rerun_last_analysis_with_manual_debt():
             "scores": scores,
             "revenue_insights": revenue_insights,
             "card_processing_payload": card_processing_payload,
+            "underwriting": underwriting,
         }
     )
     st.session_state["last_run"] = run
@@ -2689,411 +2541,7 @@ def display_loans_repayments_section(df, analysis_period):
                 st.info("No loan or repayment data found for monthly analysis.")
     
     return analysis
-class DashboardExporter:
-    """Safe dashboard export system integrated directly into main.py"""
-    
-    def __init__(self):
-        self.export_timestamp = datetime.now()
-    
-    def export_dashboard_data(
-        self, 
-        company_name: str,
-        params: dict,
-        metrics: dict, 
-        scores: dict,
-        analysis_period: str,
-        revenue_insights: dict,
-        loans_analysis: dict = None
-    ) -> dict:
-        """Prepare all dashboard data for export."""
-        
-        export_data = {
-            'export_info': {
-                'company_name': company_name,
-                'export_timestamp': self.export_timestamp.isoformat(),
-                'analysis_period': analysis_period,
-                'generated_by': 'Business Finance Scorecard v2.0'
-            },
-            'business_parameters': {
-                'industry': params.get('industry'),
-                'requested_loan': params.get('requested_loan'),
-                'directors_score': params.get('directors_score'),
-                'company_age_months': params.get('company_age_months'),
 
-                # TU director outputs
-                'tu_director_score': params.get('tu_director_score'),
-                'tu_director_decision': params.get('tu_director_decision'),
-                'tu_director_flags': params.get('tu_director_flags', []),
-                'tu_director_reasons': params.get('tu_director_reasons', []),
-
-                # Optional: overall decision
-                'overall_decision': params.get('overall_decision'),
-                'mca_main_decision': params.get('mca_main_decision'),
-                'primary_account_assessment': params.get('primary_account_assessment'),
-
-            },
-            'financial_metrics': metrics,
-            'scoring_results': {
-                'subprime_score': scores.get('subprime_score'),
-                'subprime_tier': scores.get('subprime_tier'),
-                'subprime_recommendation': scores.get('subprime_recommendation'),
-                'mca_rule_score': scores.get('mca_rule_score', params.get('mca_rule_score', 0)),
-                'ml_score': scores.get('ml_score'),
-                'adjusted_ml_score': scores.get('adjusted_ml_score'),
-                'industry_score': scores.get('industry_score'),
-                'loan_risk': scores.get('loan_risk'),
-                'primary_account_assessment': scores.get('primary_account_assessment', params.get('primary_account_assessment'))
-            },
-            'revenue_insights': revenue_insights,
-            'loans_analysis': loans_analysis or {}
-        }
-        
-        return export_data
-    
-    def generate_html_report(self, export_data: dict) -> str:
-        """Generate comprehensive HTML report."""
-
-        sr = export_data.get("scoring_results", {}) or {}
-
-        def get_score_class(score):
-            if score is None:
-                return "low"
-            try:
-                score = float(score)
-            except (TypeError, ValueError):
-                return "low"
-            if score >= 70:
-                return "high"
-            if score >= 40:
-                return "medium"
-            return "low"
-
-        def format_score(score, suffix="/100", precision=1):
-            if score is None:
-                return "N/A"
-            try:
-                val = float(score)
-            except (TypeError, ValueError):
-                return "N/A"
-            if precision == 0:
-                return f"{val:.0f}{suffix}"
-            return f"{val:.{precision}f}{suffix}"
-
-        subprime_raw = sr.get("subprime_score")
-        mca_raw = sr.get("mca_rule_score")
-        adjusted_raw = sr.get("adjusted_ml_score")
-        if adjusted_raw is None:
-            adjusted_raw = sr.get("ml_score")
-        ml_display_raw = sr.get("adjusted_ml_score")
-        if ml_display_raw is None:
-            ml_display_raw = sr.get("ml_score")
-
-        subprime_display = format_score(subprime_raw)
-        mca_display = format_score(mca_raw, precision=0)
-        adjusted_display = format_score(adjusted_raw, suffix="%")
-        ml_table_display = (
-            format_score(ml_display_raw, suffix="%")
-            if ml_display_raw is not None
-            else "N/A"
-        )
-        # Generate loans section HTML if data exists
-        loans_section = ""
-        if export_data['loans_analysis'] and export_data['loans_analysis'].get('loan_count', 0) > 0:
-            loans_section = f"""
-            <div class="section">
-                <h2>Loans &amp; debt analysis</h2>
-                <div class="metric-grid">
-                    <div class="metric-card">
-                        <h4>Total Loans Received</h4>
-                        <div>£{export_data['loans_analysis'].get('total_loans_received', 0):,.0f}</div>
-                        <p>{export_data['loans_analysis'].get('loan_count', 0)} transactions</p>
-                    </div>
-                    <div class="metric-card">
-                        <h4>Total Repayments</h4>
-                        <div>£{export_data['loans_analysis'].get('total_repayments_made', 0):,.0f}</div>
-                        <p>{export_data['loans_analysis'].get('repayment_count', 0)} transactions</p>
-                    </div>
-                    <div class="metric-card">
-                        <h4>Net Borrowing</h4>
-                        <div>£{export_data['loans_analysis'].get('net_borrowing', 0):,.0f}</div>
-                    </div>
-                    <div class="metric-card">
-                        <h4>Repayment Ratio</h4>
-                        <div>{(export_data['loans_analysis'].get('repayment_ratio') or 0)*100:.1f}%</div>
-                    </div>
-                </div>
-            </div>
-            """
-
-        # ---- Safe access (prevents KeyError if risk_factors missing) ----
-        bp = export_data.get("business_parameters", {}) or {}
-        rf = bp.get("risk_factors", {}) or {}
-
-        business_ccj = bool(rf.get("business_ccj", False))
-        poor_online = bool(rf.get("poor_or_no_online_presence", False))
-        generic_email = bool(rf.get("uses_generic_email", False))
-
-        html_template = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Business Finance Scorecard Report - {export_data['export_info']['company_name']}</title>
-            <style>
-                body {{ font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }}
-                .header {{ background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }}
-                .section {{ margin-bottom: 30px; padding: 15px; border-left: 4px solid #007bff; }}
-                .metric-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }}
-                .metric-card {{ background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; }}
-                .score-high {{ color: #28a745; font-weight: bold; }}
-                .score-medium {{ color: #ffc107; font-weight: bold; }}
-                .score-low {{ color: #dc3545; font-weight: bold; }}
-                .table-responsive {{ overflow-x: auto; }}
-                table {{ width: 100%; border-collapse: collapse; margin: 10px 0; }}
-                th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }}
-                th {{ background-color: #f8f9fa; font-weight: bold; }}
-                .footer {{ margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #6c757d; }}
-            </style>
-        </head>
-        <body>
-            <!-- Header Section -->
-            <div class="header">
-                <h1>Business Finance Scorecard report</h1>
-                <h2>{export_data['export_info']['company_name']}</h2>
-                <p><strong>Generated:</strong> {datetime.fromisoformat(export_data['export_info']['export_timestamp']).strftime('%B %d, %Y at %I:%M %p')}</p>
-                <p><strong>Analysis Period:</strong> {export_data['export_info']['analysis_period']}</p>
-                <p><strong>Industry:</strong> {export_data['business_parameters']['industry']}</p>
-            </div>
-            
-            <!-- Executive Summary -->
-            <div class="section">
-                <h2>Executive summary</h2>
-                <div class="metric-grid">
-                    <div class="metric-card">
-                        <h3>Subprime score</h3>
-                        <div class="score-{get_score_class(subprime_raw)}">{subprime_display}</div>
-                        <p>{export_data['scoring_results']['subprime_tier']}</p>
-                    </div>
-                    <div class="metric-card">
-                        <h3>MCA rule (60%)</h3>
-                        <div class="score-{get_score_class(mca_raw)}">{mca_display}</div>
-                    </div>
-                    <div class="metric-card">
-                        <h3>ML score (informational)</h3>
-                        <div class="score-{get_score_class(adjusted_raw)}">{adjusted_display}</div>
-                    </div>
-                    <div class="metric-card">
-                        <h3>Requested loan</h3>
-                        <div>£{export_data['business_parameters']['requested_loan']:,.0f}</div>
-                        <p>{export_data['scoring_results']['loan_risk']}</p>
-                    </div>
-                    <div class="metric-card">
-                        <h3>MCA rule</h3>
-                        <div>{export_data['scoring_results'].get('mca_rule_decision', 'N/A')}</div>
-                        <p>Score: {export_data['scoring_results'].get('mca_rule_score', 'N/A')}</p>
-                    </div>
-                </div>
-                
-                <h3>Primary recommendation</h3>
-                <p><strong>{export_data['scoring_results']['subprime_recommendation']}</strong></p>
-
-                <h3>MCA rule decision (transparent)</h3>
-                <p><strong>{export_data['scoring_results'].get('mca_rule_decision', 'N/A')}</strong>
-                &nbsp;&nbsp;|&nbsp;&nbsp; Score: <strong>{export_data['scoring_results'].get('mca_rule_score', 'N/A')}</strong></p>
-
-                <p><strong>Reasons:</strong></p>
-                <ul>
-                {''.join([f"<li>{r}</li>" for r in export_data['scoring_results'].get('mca_rule_reasons', [])])}
-                </ul>
-
-                <h3>Decision stack summary</h3>
-                <table>
-                    <tr><th>Layer</th><th>Result</th></tr>
-                    <tr>
-                        <td><strong>FINAL Decision</strong></td>
-                        <td><strong>{export_data['scoring_results'].get('final_decision', 'N/A')}</strong></td>
-                    </tr>
-                    <tr>
-                        <td>MCA Rule</td>
-                        <td><strong>{export_data['scoring_results'].get('mca_rule_decision', 'N/A')}</strong>
-                        &nbsp;&nbsp;|&nbsp;&nbsp; Score: {export_data['scoring_results'].get('mca_rule_score', 'N/A')}</td>
-                    </tr>
-                    <tr>
-                        <td>Subprime (Existing)</td>
-                        <td><strong>{export_data['scoring_results'].get('subprime_recommendation', 'N/A')}</strong>
-                        &nbsp;&nbsp;|&nbsp;&nbsp; Tier: {export_data['scoring_results'].get('subprime_tier', 'N/A')}</td>
-                    </tr>
-                    <tr>
-                        <td>MCA Rule (60%)</td>
-                        <td>{export_data['scoring_results'].get('mca_rule_score', 'N/A')}/100</td>
-                    </tr>
-                    <tr>
-                        <td>ML Score (Info Only)</td>
-                        <td>{ml_table_display}</td>
-                    </tr>
-                    <tr>
-                        <td>Requested Loan</td>
-                        <td>£{export_data['business_parameters'].get('requested_loan', 0):,.0f}</td>
-                    </tr>
-                </table>
-
-                </div>
-
-            
-            <!-- Financial Metrics -->
-            <div class="section">
-                <h2>Financial performance</h2>
-                <div class="table-responsive">
-                    <table>
-                        <tr><th>Metric</th><th>Value</th></tr>
-                        <tr><td>Total Revenue</td><td>£{export_data['financial_metrics'].get('Total Revenue', 0):,.2f}</td></tr>
-                        <tr><td>Monthly Average Revenue</td><td>£{export_data['financial_metrics'].get('Monthly Average Revenue', 0):,.2f}</td></tr>
-                        <tr><td>Net Income</td><td>£{export_data['financial_metrics'].get('Net Income', 0):,.2f}</td></tr>
-                        <tr><td>Operating Margin</td><td>{export_data['financial_metrics'].get('Operating Margin', 0)*100:.1f}%</td></tr>
-                        <tr><td>Revenue Growth Rate</td><td>{export_data['financial_metrics'].get('Revenue Growth Rate', 0)*100:.1f}%</td></tr>
-                        <tr><td>Debt Service Coverage Ratio</td><td>{export_data['financial_metrics'].get('Debt Service Coverage Ratio', 0):.2f}</td></tr>
-                        <tr><td>Cash Flow Volatility</td><td>{export_data['financial_metrics'].get('Cash Flow Volatility', 0):.3f}</td></tr>
-                        <tr><td>Average Month-End Balance</td><td>£{export_data['financial_metrics'].get('Average Month-End Balance', 0):,.2f}</td></tr>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Revenue Analysis -->
-            <div class="section">
-                <h2>Revenue insights</h2>
-                <div class="metric-grid">
-                    <div class="metric-card">
-                        <h4>Revenue Sources</h4>
-                        <div>{export_data['revenue_insights'].get('unique_revenue_sources', 0)}</div>
-                    </div>
-                    <div class="metric-card">
-                        <h4>Avg Daily Revenue</h4>
-                        <div>£{export_data['revenue_insights'].get('avg_daily_revenue_amount', 0):,.2f}</div>
-                    </div>
-                    <div class="metric-card">
-                        <h4>Revenue Active Days</h4>
-                        <div>{export_data['revenue_insights'].get('total_revenue_days', 0)}</div>
-                    </div>
-                    <div class="metric-card">
-                        <h4>Transactions/Day</h4>
-                        <div>{export_data['revenue_insights'].get('avg_revenue_transactions_per_day', 0):.1f}</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Loans Analysis -->
-            {loans_section}
-            
-            <!-- Risk Factors -->
-            <div class="section">
-                <h2>Risk factors assessment</h2>
-                <div class="table-responsive">
-                    <table>
-                        <tr><th>Risk Factor</th><th>Status</th></tr>
-                        <tr><td>Business CCJs</td><td>{'Yes' if business_ccj else 'No'}</td></tr>
-                        <tr><td>Poor/No Online Presence</td><td>{'Yes' if poor_online else 'No'}</td></tr>
-                        <tr><td>Generic Email</td><td>{'Yes' if generic_email else 'No'}</td></tr>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Business Parameters -->
-            <div class="section">
-                <h2>Business information</h2>
-                <div class="table-responsive">
-                    <table>
-                        <tr><th>Parameter</th><th>Value</th></tr>
-                        <tr><td>Company Name</td><td>{export_data['export_info']['company_name']}</td></tr>
-                        <tr><td>Industry</td><td>{export_data['business_parameters']['industry']}</td></tr>
-                        <tr><td>Company Age</td><td>{export_data['business_parameters']['company_age_months']} months</td></tr>
-                        <tr><td>Directors Score</td><td>{export_data['business_parameters']['directors_score']}/100</td></tr>
-                        <tr><td>Requested Loan Amount</td><td>£{export_data['business_parameters']['requested_loan']:,.0f}</td></tr>
-                    </table>
-                </div>
-            </div>
-            
-            <!-- Footer -->
-            <div class="footer">
-                <p><strong>Report Generated by:</strong> {export_data['export_info']['generated_by']}</p>
-                <p><strong>Disclaimer:</strong> This report is for informational purposes only and should not be considered as financial advice. 
-                All lending decisions should involve comprehensive due diligence and risk assessment.</p>
-            </div>
-        </body>
-        </html>
-        """
-        
-        return html_template
-    
-    def create_export_buttons(
-        self,
-        company_name: str,
-        params: dict,
-        metrics: dict, 
-        scores: dict,
-        analysis_period: str,
-        revenue_insights: dict,
-        loans_analysis: dict = None
-    ) -> None:
-        """Create export buttons in Streamlit interface."""
-        
-        st.markdown("---")
-        st.subheader("Export dashboard report")
-        
-        # Prepare export data
-        export_data = self.export_dashboard_data(
-            company_name, params, metrics, scores, 
-            analysis_period, revenue_insights, loans_analysis
-        )
-        
-        # Create columns for export buttons
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            # HTML Export
-            html_report = self.generate_html_report(export_data)
-            st.download_button(
-                label="Export HTML report",
-                data=html_report,
-                file_name=f"{company_name.replace(' ', '_')}_financial_report_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
-                mime="text/html",
-                help="Download comprehensive HTML report (opens in any browser)",
-                type="primary"
-            )
-        
-        with col2:
-            # JSON Export
-            json_data = json.dumps(export_data, indent=2, default=str)
-            st.download_button(
-                label="Export JSON data",
-                data=json_data,
-                file_name=f"{company_name.replace(' ', '_')}_data_{datetime.now().strftime('%Y%m%d_%H%M')}.json",
-                mime="application/json",
-                help="Download all data in JSON format for further analysis"
-            )
-        
-        with col3:
-            # CSV Export (Financial Metrics)
-            metrics_df = pd.DataFrame([
-                {'Metric': k, 'Value': v} for k, v in metrics.items() 
-                if k != 'monthly_summary' and isinstance(v, (int, float))
-            ])
-            csv_data = metrics_df.to_csv(index=False)
-            st.download_button(
-                label="Export CSV metrics",
-                data=csv_data,
-                file_name=f"{company_name.replace(' ', '_')}_metrics_{datetime.now().strftime('%Y%m%d_%H%M')}.csv",
-                mime="text/csv",
-                help="Download financial metrics as CSV"
-            )
-        
-        # Export information
-        st.info("""
-        **Export options**
-        - **HTML report** — full dashboard in a web page you can open in any browser
-        - **JSON data** — all fields for analysis or integration
-        - **CSV metrics** — key numbers for spreadsheet work
-
-        **Includes:** scoring results, financial metrics, revenue insights, risk factors, loans analysis, and business parameters.
-        """)
 
 def _normalise_mca_decision_for_overlay(d: str | None) -> str:
     d = (d or "REFER").upper()
@@ -3137,226 +2585,6 @@ def combine_mca_and_tu_decisions(mca_decision: str | None, tu_decision: str | No
         return "CONDITIONAL_APPROVE" if raw_mca == "CONDITIONAL_APPROVE" else "APPROVE"
 
     return "REFER"
-
-
-def build_evidence_quality(params: dict, scores: dict, df: pd.DataFrame | None = None) -> list[dict[str, str]]:
-    """Summarise whether the main evidence sources were present and usable."""
-    row_count = len(df) if df is not None else 0
-    tu_score = params.get("tu_director_score")
-    tu_status = params.get("tu_parse_status", "parsed" if tu_score is not None else "missing")
-    bureau_band = params.get("bureau_band")
-    bureau_status = params.get("business_bureau_parse_status", "parsed" if bureau_band else "missing")
-    evidence = [
-        {
-            "evidence": "Bank transactions",
-            "status": "Present" if row_count else "Missing",
-            "detail": f"{row_count:,} transaction rows" if row_count else "No transaction JSON processed",
-        },
-        {
-            "evidence": "MCA rule signals",
-            "status": "Present" if params.get("mca_rule_score") is not None else "Missing",
-            "detail": f"Score {params.get('mca_rule_score')} / {params.get('mca_rule_decision')}" if params.get("mca_rule_score") is not None else "No MCA rule output",
-        },
-        {
-            "evidence": "Director TU XML",
-            "status": "Present" if tu_status == "parsed" else ("Failed" if tu_status == "failed" else "Missing"),
-            "detail": (
-                f"Score {tu_score} / {params.get('tu_director_decision')}"
-                if tu_status == "parsed"
-                else (params.get("tu_parse_error") or "No director TU XML parsed")
-            ),
-        },
-        {
-            "evidence": "Business credit PDF",
-            "status": "Present" if bureau_status == "parsed" else ("Failed" if bureau_status == "failed" else "Missing"),
-            "detail": (
-                f"{bureau_band}"
-                if bureau_status == "parsed" and bureau_band
-                else (params.get("business_bureau_parse_error") or "No business credit PDF parsed")
-            ),
-        },
-        {
-            "evidence": "Business bureau score",
-            "status": "Suppressed" if params.get("business_credit_score_suppressed") else ("Present" if params.get("business_credit_score_range") or params.get("business_credit_score") is not None else "Missing"),
-            "detail": (
-                "Score suppressed by bureau"
-                if params.get("business_credit_score_suppressed")
-                else (
-                    f"Score {params.get('business_credit_score_range')}"
-                    if params.get("business_credit_score_range")
-                    else (f"Score {params.get('business_credit_score')}" if params.get("business_credit_score") is not None else "No usable bureau score")
-                )
-            ),
-        },
-    ]
-
-    if scores.get("ensemble"):
-        evidence.append(
-            {
-                "evidence": "Decision engine",
-                "status": "Present",
-                "detail": f"Confidence {scores['ensemble'].get('confidence', 0):.0f}%",
-            }
-        )
-    return evidence
-
-
-def build_score_impact_rows(params: dict, metrics: dict, scores: dict) -> list[dict[str, object]]:
-    """Create a plain-English score impact table for the underwriting UI."""
-    ensemble = scores.get("ensemble") or {}
-    detailed = ensemble.get("detailed_breakdown", {}) or {}
-    contributing = ensemble.get("contributing_scores", {}) or {}
-    rows = []
-
-    raw_combined = detailed.get("raw_combined_score")
-    combined = ensemble.get("combined_score")
-    if contributing:
-        rows.append(
-            {
-                "component": "MCA rule",
-                "value": contributing.get("mca_score", params.get("mca_rule_score")),
-                "impact": "60% weighted input",
-                "decision_effect": params.get("mca_rule_decision") or "N/A",
-            }
-        )
-        rows.append(
-            {
-                "component": "Subprime score",
-                "value": contributing.get("subprime_score", scores.get("subprime_score")),
-                "impact": "40% weighted input",
-                "decision_effect": scores.get("subprime_tier") or "N/A",
-            }
-        )
-    if raw_combined is not None:
-        rows.append(
-            {
-                "component": "Raw weighted score",
-                "value": round(float(raw_combined), 1),
-                "impact": "MCA/Subprime before disagreement penalty",
-                "decision_effect": ensemble.get("score_convergence", "N/A"),
-            }
-        )
-    if raw_combined is not None and combined is not None:
-        penalty = round(float(raw_combined) - float(combined), 1)
-        rows.append(
-            {
-                "component": "Convergence adjustment",
-                "value": -penalty,
-                "impact": "Penalty for score disagreement" if penalty else "No penalty",
-                "decision_effect": ensemble.get("score_convergence", "N/A"),
-            }
-        )
-
-    for penalty in params.get("_applied_risk_penalties", []) or []:
-        rows.append(
-            {
-                "component": "Risk penalty",
-                "value": "",
-                "impact": penalty,
-                "decision_effect": "Included in Subprime score",
-            }
-        )
-
-    tu_decision = params.get("tu_director_decision")
-    if tu_decision:
-        rows.append(
-            {
-                "component": "Director TU overlay",
-                "value": params.get("tu_director_score"),
-                "impact": f"TU decision {tu_decision}",
-                "decision_effect": "May cap approve to refer",
-            }
-        )
-
-    bureau_band = params.get("bureau_band")
-    if bureau_band:
-        rows.append(
-            {
-                "component": "Business credit PDF",
-                "value": bureau_band,
-                "impact": "; ".join((params.get("bureau_band_reasons") or [])[:3]),
-                "decision_effect": "Feeds bureau risk penalties",
-            }
-        )
-
-    rows.append(
-        {
-            "component": "Final decision",
-            "value": scores.get("final_decision") or ensemble.get("decision"),
-            "impact": "After MCA/Subprime decision and TU overlay",
-            "decision_effect": "Current displayed recommendation",
-        }
-    )
-    return rows
-
-
-def build_open_banking_insight_rows(metrics: dict, params: dict) -> list[dict[str, object]]:
-    """Create a compact table of derived open-banking signals for review."""
-    requested = float(params.get("requested_loan") or 0)
-    monthly_revenue = float(metrics.get("Monthly Average Revenue") or 0)
-    weakest_revenue = float(metrics.get("OB Weakest Month Revenue") or 0)
-    rows = [
-        ("Scoring impact", metrics.get("Open Banking Insights Used In Score", "No - analysis/export only"), "New derived fields are displayed/exported only"),
-        ("History", f"{metrics.get('OB History Months', 0)} months / {metrics.get('OB Transaction Count', 0)} transactions", "Coverage and file depth"),
-        ("True revenue", f"£{float(metrics.get('OB True Revenue', metrics.get('Total Revenue', 0)) or 0):,.0f}", "Revenue after categorisation"),
-        ("Non-revenue inflows", f"{float(metrics.get('OB Non-Revenue Inflow Ratio', 0) or 0) * 100:.1f}%", "Transfers, funding injections, loans and other non-trading inflows"),
-        ("Revenue concentration", f"{float(metrics.get('OB Top Revenue Source Percentage', 0) or 0):.1f}%", "Largest payer or processor share of revenue"),
-        ("Card processor share", f"{float(metrics.get('OB Card Processor Revenue Share', 0) or 0) * 100:.1f}%", "Revenue from recognised card/payment processors"),
-        ("Weakest month revenue", f"£{weakest_revenue:,.0f}", "Lowest observed trading revenue month"),
-        ("Debt repayment burden", f"{float(metrics.get('OB Debt Repayment Burden', 0) or 0) * 100:.1f}%", "Debt repayments as share of trading revenue"),
-        ("Recent loan credits", f"£{float(metrics.get('OB Recent Loan Credits 30D', 0) or 0):,.0f}", "Funding credits in the latest 30 days"),
-        ("Low balance days", f"{int(metrics.get('OB Low Balance Days <1000', 0) or 0)} below £1k", "Daily balance pressure"),
-        ("Failed payments 30D", int(metrics.get("OB Recent Failed Payments 30D", 0) or 0), "Recent returned or failed payment markers"),
-    ]
-    if requested > 0:
-        rows.append(
-            (
-                "Requested amount cover",
-                f"{requested / monthly_revenue:.2f}x monthly / {requested / weakest_revenue:.2f}x weakest"
-                if monthly_revenue and weakest_revenue
-                else "N/A",
-                "Requested loan versus normal and weakest-month revenue",
-            )
-        )
-    return [{"signal": name, "value": value, "meaning": meaning} for name, value, meaning in rows]
-
-
-def build_card_processing_insight_rows(metrics: dict) -> list[dict[str, object]]:
-    """Create a compact table of card processor statement signals for review."""
-    if metrics.get("Card Processing Insight Layer") != "Available":
-        return [
-            {
-                "signal": "Card processing insight layer",
-                "value": metrics.get("Card Processing Insight Layer", "Not available"),
-                "meaning": "Upload card terminal statements to derive these signals",
-            }
-        ]
-
-    rows = [
-        ("Scoring impact", metrics.get("Card Processing Insights Used In Score", "No - analysis/export only"), "Capped overlay applied to Subprime score when statements are parsed"),
-        ("Score overlay", f"{float(metrics.get('Card Processing Score Adjustment', 0) or 0):+.1f} pts", "Bounded card statement impact on score"),
-        ("Statements", f"{int(metrics.get('Card Processor Statements Parsed', 0) or 0)} files / {int(metrics.get('Card Processor Months Present', 0) or 0)} months", "Coverage from uploaded processor statements"),
-        ("Card sales total", f"£{float(metrics.get('Card Sales Total', 0) or 0):,.0f}", "Gross card sales from statements"),
-        ("Average card sales", f"£{float(metrics.get('Card Sales Monthly Average', 0) or 0):,.0f}", "Monthly card sales average"),
-        ("Weakest card month", f"£{float(metrics.get('Card Weakest Month Sales', 0) or 0):,.0f}", "Lowest observed card sales month"),
-        ("Card sales volatility", f"{float(metrics.get('Card Sales Volatility', 0) or 0) * 100:.1f}%", "Month-to-month card sales stability"),
-        ("Latest month drop", f"{float(metrics.get('Card Latest Month Drop Pct', 0) or 0) * 100:.1f}%", "Latest card month versus prior average"),
-        ("Refund ratio", f"{float(metrics.get('Card Refund Ratio', 0) or 0) * 100:.1f}%", "Refunds as share of gross card sales"),
-        ("Chargeback ratio", f"{float(metrics.get('Card Chargeback Ratio', 0) or 0) * 100:.1f}%", "Chargebacks as share of gross card sales"),
-        ("Fee ratio", f"{float(metrics.get('Card Fee Ratio', 0) or 0) * 100:.1f}%", "Processor fees as share of gross card sales"),
-        ("Average transaction value", f"£{float(metrics.get('Card Average Transaction Value', 0) or 0):,.2f}", "Gross card sales divided by transaction count"),
-        ("Card vs OB revenue", f"{float(metrics.get('Card vs OB Revenue Ratio', 0) or 0) * 100:.1f}%", "Card sales as share of open banking revenue evidence"),
-        ("Unmatched card shortfall", f"£{float(metrics.get('Card Unmatched Sales Shortfall', 0) or 0):,.0f} / {float(metrics.get('Card Unmatched Sales Shortfall Pct', 0) or 0) * 100:.1f}%", "Card sales not covered by bank revenue in matching months"),
-        ("Reconciliation quality", metrics.get("Card Reconciliation Quality", "N/A"), "Monthly card sales versus bank revenue"),
-        ("MCA suitability", metrics.get("Card MCA Suitability", "N/A"), "Initial card-led underwriting view"),
-    ]
-    concerns = metrics.get("Card Processing Concerns") or []
-    positives = metrics.get("Card Processing Positive Signals") or []
-    if positives:
-        rows.append(("Positive signals", "; ".join(positives[:4]), "Supportive card processor evidence"))
-    if concerns:
-        rows.append(("Concerns", "; ".join(concerns[:4]), "Items for underwriting review"))
-    return [{"signal": name, "value": value, "meaning": meaning} for name, value, meaning in rows]
 
 
 def derive_card_processing_payload(bank_df, card_files) -> dict:
@@ -3503,6 +2731,17 @@ def render_full_financial_dashboard(
             )
         else:
             st.error(f"**Score convergence:** {convergence} — significant disagreement")
+
+        manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+        underwriting = build_underwriting_package(
+            metrics=metrics,
+            params=params,
+            scores=scores,
+            filtered_df=filtered_df,
+            analysis_period=analysis_period,
+            manual_debt_balances=manual_balances,
+        )
+        render_underwriting_workspace(underwriting)
 
         impact_rows = build_score_impact_rows(params, metrics, scores)
         if impact_rows:
@@ -3754,6 +2993,18 @@ def render_full_financial_dashboard(
     # NEW: Loans and Debt Repayments Analysis
     display_loans_repayments_section(filtered_df, analysis_period)
 
+    if scores.get("weighted_score") is not None or scores.get("industry_score") is not None:
+        with st.expander("Reference scores (not used in final decision)", expanded=False):
+            st.caption(
+                "Legacy weighted and industry pass-count scores are retained for reference only. "
+                "The displayed recommendation uses MCA rule (60%) + Subprime (40%) via the ensemble engine."
+            )
+            ref_cols = st.columns(2)
+            with ref_cols[0]:
+                st.metric("Legacy weighted score", f"{scores.get('weighted_score', 0):.0f}/100")
+            with ref_cols[1]:
+                st.metric("Industry threshold passes", f"{scores.get('industry_score', 0)}/12")
+
     # Detailed Metrics Table
     st.markdown("---")
     st.subheader("Detailed Financial Metrics")
@@ -3989,6 +3240,8 @@ def render_full_financial_dashboard(
 
     # Dashboard Export Section
     try:
+        manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+        loans_analysis = compute_loans_analysis(filtered_df, analysis_period, manual_balances)
         exporter = DashboardExporter()
         exporter.create_export_buttons(
             company_name=company_name,
@@ -3997,8 +3250,9 @@ def render_full_financial_dashboard(
             scores=scores,
             analysis_period=analysis_period,
             revenue_insights=revenue_insights,
-            loans_analysis=None,  # Will be added when loans analysis is available
-
+            loans_analysis=loans_analysis,
+            filtered_df=filtered_df,
+            manual_debt_balances=manual_balances,
         )
         st.success("Enhanced Dashboard complete with Export Functionality")
 
@@ -4050,7 +3304,11 @@ def render_saved_run_loader():
         )
         if st.button("Load selected run", type="primary", use_container_width=True, key="load_saved_run_main"):
             try:
-                st.session_state["last_run"] = load_reloadable_scorecard_run(selected_run)
+                loaded = load_reloadable_scorecard_run(selected_run)
+                st.session_state["last_run"] = loaded
+                balances = loaded.get("manual_outstanding_debt_balances") or {}
+                if balances:
+                    st.session_state["manual_outstanding_debt_balances"] = balances
                 st.success("Saved run loaded. Rendering the dashboard now.")
                 st.rerun()
             except Exception as e:
@@ -4087,13 +3345,17 @@ def render_saved_run_saver():
         run_name = st.text_input("Run name", value=default_name, key="save_run_name_main")
         if st.button("Save run to selected folder", type="primary", use_container_width=True, key="save_run_main"):
             try:
+                run_to_save = {
+                    **run,
+                    "manual_outstanding_debt_balances": st.session_state.get("manual_outstanding_debt_balances", {}) or {},
+                }
                 run_dir = save_reloadable_scorecard_run(
-                    run=run,
+                    run=run_to_save,
                     save_root=save_dir,
                     run_name=run_name,
                 )
                 st.session_state["last_saved_reloadable_run"] = str(run_dir)
-                st.success(f"Saved run: `{run_dir}`")
+                st.success(f"Saved run (JSON + HTML + PDF): `{run_dir}`")
             except FileExistsError:
                 st.error("A saved run folder with that generated name already exists. Try again in a moment.")
             except Exception as e:
@@ -4125,15 +3387,16 @@ def main():
         # -----------------------------
         # Director TU XML Upload
         # -----------------------------
-        sidebar_subsection("Director TU credit file (TransUnion XML)")
+        sidebar_subsection("Director TU credit file (TransUnion XML) — required")
+        st.sidebar.caption("A valid director TransUnion XML file is required before you can process an analysis.")
         tu_xml_file = st.sidebar.file_uploader("Upload TU XML", type=["xml"], key="tu_xml_upload")
 
         tu_result = None
         tu_present = tu_xml_file is not None
         tu_parse_status = "missing"
         tu_parse_error = ""
-        directors_score = 50  # Neutral legacy fallback; real TU score is stored separately.
         tu_director_score = None
+        tu_director_features: dict = {}
         revenue_insights = {}
 
         if tu_xml_file is not None:
@@ -4143,8 +3406,16 @@ def main():
 
                 tu_result = _score_tu_xml_bytes(xml_bytes, app_id)
                 tu_director_score = tu_result["score"]
-                directors_score = tu_director_score
+                tu_director_features = tu_result.get("features") or {}
                 tu_parse_status = "parsed"
+                st.session_state["tu_director_context"] = {
+                    "tu_result": tu_result,
+                    "tu_director_score": tu_director_score,
+                    "tu_director_features": tu_director_features,
+                    "tu_parse_status": tu_parse_status,
+                    "tu_parse_error": "",
+                    "tu_present": True,
+                }
 
                 st.sidebar.success(f"Director TU Score: {tu_result['score']}/100")
                 st.sidebar.write(f"Director TU Decision: **{tu_result['decision']}**")
@@ -4161,9 +3432,27 @@ def main():
                 tu_parse_status = "failed"
                 tu_parse_error = str(e)
                 st.sidebar.error(f"TU XML scoring failed: {e}")
-                directors_score = 50
                 tu_director_score = None
                 tu_result = None
+                tu_director_features = {}
+                st.session_state.pop("tu_director_context", None)
+        elif st.session_state.get("tu_director_context"):
+            cached = st.session_state["tu_director_context"]
+            tu_result = cached.get("tu_result")
+            tu_director_score = cached.get("tu_director_score")
+            tu_director_features = cached.get("tu_director_features") or {}
+            tu_parse_status = cached.get("tu_parse_status", "parsed")
+            tu_parse_error = cached.get("tu_parse_error", "")
+            tu_present = True
+            st.sidebar.info(f"Using parsed TU XML from this session (score {tu_director_score}/100).")
+
+        if not director_tu_is_ready(
+            tu_parse_status=tu_parse_status,
+            tu_director_score=tu_director_score,
+        ):
+            st.sidebar.warning("Upload a valid director TU XML file to enable processing.")
+
+        directors_score = tu_director_score
 
         # -----------------------------
         # Business Bureau PDF Upload (NEW)
@@ -4180,6 +3469,8 @@ def main():
         bureau_err = ""
         bureau_parse_status = "missing"
         business_ccj = None
+        business_ccj_count = None
+        multiple_ccjs = False
         bureau_band = None
         bureau_band_reasons = []
         bureau_signals = {}
@@ -4192,6 +3483,8 @@ def main():
             bureau_err = bureau_result.error
             bureau_parse_status = bureau_result.parse_status
             business_ccj = bureau_result.business_ccj
+            business_ccj_count = bureau_result.business_ccj_count
+            multiple_ccjs = bool(business_ccj_count is not None and business_ccj_count >= 2)
             bureau_band = bureau_result.bureau_band
             bureau_band_reasons = bureau_result.bureau_band_reasons
             bureau_signals = bureau_result.signals
@@ -4268,9 +3561,12 @@ def main():
             "tu_director_decision": (tu_result or {}).get("decision"),
             "tu_director_flags": (tu_result or {}).get("flags") or [],
             "tu_director_reasons": (tu_result or {}).get("reasons") or [],
+            "tu_director_features": tu_director_features,
 
             "company_age_months": company_age_months,
             "business_ccj": business_ccj,  # True/False when parsed, None when missing or failed
+            "business_ccj_count": business_ccj_count,
+            "multiple_ccjs": multiple_ccjs,
             "business_credit_score": bureau_signals.get("credit_score"),
             "business_credit_score_min": bureau_signals.get("credit_score_min"),
             "business_credit_score_max": bureau_signals.get("credit_score_max"),
@@ -4293,6 +3589,7 @@ def main():
             "bureau_band": bureau_band,
             "bureau_band_reasons": bureau_band_reasons,
         }
+        params.update(tu_features_to_scoring_fields(tu_director_features))
 
 
         # File upload
@@ -4314,15 +3611,24 @@ def main():
             key="card_terminal_statements_uploader",
             help="You can upload mixed providers/formats in one run.",
         )
+        tu_ready = director_tu_is_ready(
+            tu_parse_status=tu_parse_status,
+            tu_director_score=tu_director_score,
+        )
         process_clicked = st.button(
             "Process analysis",
             type="primary",
-            disabled=uploaded_file is None,
+            disabled=uploaded_file is None or not tu_ready,
             use_container_width=True,
         )
+        if uploaded_file is not None and not tu_ready:
+            st.warning("Director TU XML is required. Upload and parse a valid TransUnion XML file in the sidebar first.")
         run_to_show = None  # set after processing or from last_run when returning from another page
 
         if uploaded_file is not None and process_clicked:
+            if not tu_ready:
+                st.error("Director TU XML is required before processing.")
+                return
             try:
                 # Read and process file
                 uploaded_file.seek(0)
@@ -4341,6 +3647,10 @@ def main():
                     return
 
                 json_data = json.loads(string_data)
+
+                params["manual_outstanding_debt_balances"] = (
+                    st.session_state.get("manual_outstanding_debt_balances", {}) or {}
+                )
 
                 analysis_result = analyse_open_banking_application(
                     json_data=json_data,

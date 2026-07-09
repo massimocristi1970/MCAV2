@@ -18,6 +18,11 @@ from typing import Any, Dict, Optional
 import pandas as pd
 
 from app.config.settings import settings
+from app.services.dashboard_export import (
+    build_export_payload_from_run,
+    generate_html_report,
+    generate_pdf_report,
+)
 
 
 def _slug(name: str, max_len: int = 48) -> str:
@@ -120,8 +125,23 @@ def save_reloadable_scorecard_run(
         "revenue_insights": _jsonable(run.get("revenue_insights") or {}),
         "card_processing_payload": _jsonable(run.get("card_processing_payload") or {}),
         "source_upload_name": run.get("source_upload_name"),
+        "manual_outstanding_debt_balances": _jsonable(run.get("manual_outstanding_debt_balances") or {}),
     }
     (run_dir / "run.json").write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+
+    report_files: dict[str, str] = {}
+    report_error: str | None = None
+    try:
+        export_data = build_export_payload_from_run({**run, **payload})
+        html_report = generate_html_report(export_data)
+        (run_dir / "report.html").write_text(html_report, encoding="utf-8")
+        report_files["report_html"] = "report.html"
+
+        pdf_bytes = generate_pdf_report(export_data)
+        (run_dir / "report.pdf").write_bytes(pdf_bytes)
+        report_files["report_pdf"] = "report.pdf"
+    except Exception as exc:
+        report_error = str(exc)
 
     manifest = {
         "schema_version": 1,
@@ -136,8 +156,11 @@ def save_reloadable_scorecard_run(
             "run": "run.json",
             "transactions": "transactions.json",
             "filtered_transactions": "filtered_transactions.json",
+            **report_files,
         },
     }
+    if report_error:
+        manifest["report_generation_error"] = report_error
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
     return run_dir
 
@@ -190,6 +213,7 @@ def load_reloadable_scorecard_run(manifest_or_path: dict[str, Any] | str | Path)
         "card_terminal_files": None,
         "card_processing_payload": payload.get("card_processing_payload") or {},
         "source_upload_name": payload.get("source_upload_name"),
+        "manual_outstanding_debt_balances": payload.get("manual_outstanding_debt_balances") or {},
         "loaded_saved_run_path": str(run_dir),
     }
 

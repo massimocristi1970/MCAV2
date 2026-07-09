@@ -13,8 +13,13 @@ from typing import Any, Callable, Dict
 import pandas as pd
 
 from app.services.open_banking_adapter import normalize_open_banking_payload, transactions_to_dataframe
-from build_training_dataset import build_mca_features
-from mca_scorecard_rules import Thresholds, decide_application
+from app.services.mca_rule_runner import run_mca_rule_scoring
+from app.services.tu_director_params import apply_tu_features_to_params_and_metrics
+from app.services.underwriting_insights import (
+    apply_data_quality_gate,
+    assess_data_quality,
+    build_underwriting_package,
+)
 
 
 @dataclass
@@ -58,6 +63,7 @@ def _apply_final_decision(scores: Dict[str, Any], params: Dict[str, Any], combin
     ensemble_decision = ensemble.get("decision")
     if ensemble_decision is not None:
         ensemble_decision = str(ensemble_decision).upper().strip()
+        params["mca_main_decision"] = ensemble_decision
 
     if ensemble_decision in ("DECLINE", "REFER", "APPROVE", "SENIOR_REVIEW", "CONDITIONAL_APPROVE"):
         final_decision = combine_decisions(ensemble_decision, params.get("tu_director_decision"))
@@ -98,29 +104,21 @@ def analyse_open_banking_application(
 
     params["open_banking_ingestion"] = ob_payload.metadata
 
-    mca_features = build_mca_features(transactions)
-    mca_decision, mca_score, mca_reasons = decide_application(mca_features, t=Thresholds())
-    params["mca_rule_decision"] = mca_decision
-    params["mca_rule_score"] = mca_score
-    params["mca_rule_reasons"] = mca_reasons
-    params["mca_rule_signals"] = {
-        "inflow_days_30d": mca_features.get("inflow_days_30d"),
-        "max_inflow_gap_days": mca_features.get("max_inflow_gap_days"),
-        "inflow_cv": mca_features.get("inflow_cv"),
-        "months_covered": mca_features.get("months_covered"),
-        "txn_count_avg_month": mca_features.get("txn_count_avg_month"),
-    }
-
     df = transactions_to_dataframe(transactions, ob_payload.accounts)
     if df.empty:
         raise ValueError("No valid transactions after cleaning")
 
     filtered_df = callbacks.filter_data_by_period(df, analysis_period)
+
+    mca = run_mca_rule_scoring(transactions, analysis_period)
+    params.update(mca)
+
     primary_account_assessment = callbacks.assess_primary_account_signal(filtered_df)
     params["primary_account_assessment"] = primary_account_assessment
 
     metrics = callbacks.calculate_financial_metrics(filtered_df, params["company_age_months"])
     metrics = callbacks.apply_manual_outstanding_debt(metrics)
+    apply_tu_features_to_params_and_metrics(params, metrics, params.get("tu_director_features"))
     card_processing_payload = callbacks.derive_card_processing_payload(filtered_df, card_terminal_files)
     metrics.update(card_processing_payload.get("insights") or {})
 
@@ -129,11 +127,25 @@ def analyse_open_banking_application(
     scores["mca_rule_score"] = params.get("mca_rule_score")
     scores["mca_rule_reasons"] = params.get("mca_rule_reasons", [])
     scores["primary_account_assessment"] = primary_account_assessment
+
+    data_quality = assess_data_quality(filtered_df, metrics, params, analysis_period)
+    params["data_quality"] = data_quality
+
     _apply_final_decision(scores, params, callbacks.combine_mca_and_tu_decisions)
+    apply_data_quality_gate(scores, params, data_quality)
 
     revenue_insights = callbacks.calculate_revenue_insights(filtered_df)
     date_min_iso = str(df["date"].min()) if "date" in df.columns and not df.empty else None
     date_max_iso = str(df["date"].max()) if "date" in df.columns and not df.empty else None
+
+    underwriting = build_underwriting_package(
+        metrics=metrics,
+        params=params,
+        scores=scores,
+        filtered_df=filtered_df,
+        analysis_period=analysis_period,
+        manual_debt_balances=params.get("manual_outstanding_debt_balances") or {},
+    )
 
     run = {
         "company_name": params.get("company_name"),
@@ -144,6 +156,8 @@ def analyse_open_banking_application(
         "metrics": metrics,
         "scores": scores,
         "revenue_insights": revenue_insights,
+        "underwriting": underwriting,
+        "manual_outstanding_debt_balances": params.get("manual_outstanding_debt_balances") or {},
         "card_terminal_files": None,
         "card_processing_payload": card_processing_payload,
         "source_upload_name": source_upload_name,

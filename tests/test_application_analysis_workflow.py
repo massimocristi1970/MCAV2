@@ -19,7 +19,10 @@ def test_application_analysis_workflow_builds_run_payload_without_ui_side_effect
         "requested_loan": 1000,
         "directors_score": 70,
         "company_age_months": 24,
-        "tu_director_decision": "PASS",
+        "tu_director_decision": "APPROVE",
+        "tu_director_score": 70,
+        "tu_director_features": {"defaults_36m_total": 0, "defaults_12m_total": 0, "ccj_active_total": 0},
+        "tu_parse_status": "parsed",
     }
 
     callbacks = AnalysisCallbacks(
@@ -47,7 +50,10 @@ def test_application_analysis_workflow_builds_run_payload_without_ui_side_effect
 
     assert isinstance(result.df, pd.DataFrame)
     assert result.metrics["Total Revenue"] == 1000
-    assert result.scores["final_decision"] == "APPROVE"
+    assert result.run["underwriting"]
+    assert result.run["underwriting"]["data_quality"]["overall"] == "Fail"
+    assert result.scores["final_decision"] == "REFER"
+    assert any("Data quality gate" in r for r in result.scores.get("final_decision_reasons", []))
     assert result.run["source_upload_name"] == "fixture.json"
     assert result.run["params"]["open_banking_ingestion"]["transaction_count"] == 2
 
