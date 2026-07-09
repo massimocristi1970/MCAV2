@@ -15,6 +15,7 @@ import pandas as pd
 from app.services.open_banking_adapter import normalize_open_banking_payload, transactions_to_dataframe
 from app.services.mca_rule_runner import run_mca_rule_scoring
 from app.services.tu_director_params import apply_tu_features_to_params_and_metrics
+from app.services.scoring_alignment import align_scoring_metrics
 from app.services.underwriting_insights import (
     apply_data_quality_gate,
     assess_data_quality,
@@ -119,6 +120,7 @@ def analyse_open_banking_application(
     metrics = callbacks.calculate_financial_metrics(filtered_df, params["company_age_months"])
     metrics = callbacks.apply_manual_outstanding_debt(metrics)
     apply_tu_features_to_params_and_metrics(params, metrics, params.get("tu_director_features"))
+    align_scoring_metrics(metrics, params)
     card_processing_payload = callbacks.derive_card_processing_payload(filtered_df, card_terminal_files)
     metrics.update(card_processing_payload.get("insights") or {})
 

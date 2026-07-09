@@ -15,6 +15,7 @@ def _base_metrics():
         "Operating Margin": 0.08,
         "Net Income": 2000,
         "Average Negative Balance Days per Month": 1,
+        "Number of Bounced Payments": 0,
     }
 
 
@@ -98,8 +99,9 @@ def test_subprime_score_uses_card_processing_overlay():
         dict(params),
     )
 
-    assert with_card["subprime_score"] == pytest.approx(baseline["subprime_score"] + 5.0)
     assert with_card["card_processing_score_adjustment"] == 5.0
+    assert with_card["subprime_score"] >= baseline["subprime_score"]
+    assert with_card["subprime_score"] == pytest.approx(min(100.0, baseline["subprime_score"] + 5.0))
     assert any("Card Processing Overlay: +5.0" in line for line in with_card["breakdown"])
 
 

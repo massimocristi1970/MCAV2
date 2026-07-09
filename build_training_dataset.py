@@ -308,8 +308,13 @@ def build_mca_features(transactions):
     inflow_cv = inflow_vol / avg_in if avg_in > 0 else np.nan
     outflow_cv = outflow_vol / avg_out if avg_out > 0 else np.nan
 
-    # Revenue-day consistency
-    anchor = df["date"].max()
+    # Revenue-day consistency — use today for stale files; otherwise anchor to latest txn
+    latest_txn = df["date"].max()
+    today = pd.Timestamp.now().normalize()
+    if getattr(latest_txn, "tzinfo", None) is not None:
+        latest_txn = latest_txn.tz_localize(None)
+    staleness_days = int((today - latest_txn.normalize()).days) if pd.notna(latest_txn) else 999
+    anchor = today if staleness_days > 45 else latest_txn.normalize()
     inflow_days_30d = (
         df[(df["inflow"] > 0) & (df["date"] >= anchor - pd.Timedelta(days=30))]
         ["date"]

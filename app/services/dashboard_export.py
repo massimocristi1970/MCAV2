@@ -305,7 +305,7 @@ def build_score_impact_rows(params: dict, metrics: dict, scores: dict) -> list[d
             {
                 "component": "Raw weighted score",
                 "value": round(float(raw_combined), 1),
-                "impact": "MCA/Subprime before disagreement penalty",
+                "impact": "MCA/Subprime before numeric-gap penalty",
                 "decision_effect": ensemble.get("score_convergence", "N/A"),
             }
         )
@@ -315,8 +315,19 @@ def build_score_impact_rows(params: dict, metrics: dict, scores: dict) -> list[d
             {
                 "component": "Convergence adjustment",
                 "value": -penalty,
-                "impact": "Penalty for score disagreement" if penalty else "No penalty",
+                "impact": "Penalty for wide numeric gap" if penalty else "No penalty",
                 "decision_effect": ensemble.get("score_convergence", "N/A"),
+            }
+        )
+
+    alignment = ensemble.get("decision_alignment") or detailed.get("decision_alignment")
+    if alignment:
+        rows.append(
+            {
+                "component": "Decision alignment",
+                "value": ensemble.get("numeric_score_gap") or detailed.get("numeric_score_gap"),
+                "impact": ensemble.get("decision_alignment_detail") or detailed.get("decision_alignment_detail"),
+                "decision_effect": alignment,
             }
         )
 

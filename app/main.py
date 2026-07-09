@@ -123,6 +123,8 @@ from app.services.dashboard_export import (
 from app.services.loans_analysis import analyze_loans_and_repayments
 from app.services.mca_rule_runner import apply_mca_rule_to_params, dataframe_to_mca_transactions
 from app.services.tu_director_params import apply_tu_features_to_params_and_metrics, director_tu_is_ready, tu_features_to_scoring_fields
+from app.services.scoring_ui import render_complementary_scoring_assessment
+from app.services.scoring_alignment import align_scoring_metrics
 from app.services.underwriting_insights import (
     apply_data_quality_gate,
     assess_data_quality,
@@ -1007,13 +1009,14 @@ def calculate_all_scores_enhanced(metrics, params):
         import traceback
         print(f"  Full traceback: {traceback.format_exc()}")
         
-        # Fallback result
+        # Fallback — mark Subprime unavailable so ensemble reweights MCA only
         subprime_result = {
-            'subprime_score': 0,
-            'risk_tier': 'Error',
+            'subprime_score': None,
+            'risk_tier': 'Unavailable',
             'pricing_guidance': {'suggested_rate': 'N/A'},
             'recommendation': f'Subprime scoring failed: {str(e)}',
-            'breakdown': [f'Error: {str(e)}']
+            'breakdown': [f'Error: {str(e)}'],
+            'scoring_error': str(e),
         }
     
     # Industry Score (binary) - ENHANCED with debugging
@@ -2061,6 +2064,7 @@ def rerun_last_analysis_with_manual_debt():
     metrics = calculate_financial_metrics(filtered_df, params["company_age_months"])
     metrics = apply_manual_outstanding_debt(metrics)
     apply_tu_features_to_params_and_metrics(params, metrics, params.get("tu_director_features"))
+    align_scoring_metrics(metrics, params)
     card_processing_payload = derive_card_processing_payload(filtered_df, card_terminal_files)
     metrics.update(card_processing_payload.get("insights") or {})
 
@@ -2719,18 +2723,8 @@ def render_full_financial_dashboard(
             ml_s = ml_info.get('ml_score', scores.get('adjusted_ml_score') or scores.get('ml_score') or 0)
             st.metric("ML Score (Info Only)", f"{ml_s:.1f}%" if ml_s else "N/A")
 
-        # Score convergence indicator
-        convergence = ensemble.get('score_convergence', 'Unknown')
-        if 'High' in convergence:
-            st.success(f"**Score convergence:** {convergence} — MCA and Subprime agree")
-        elif 'Good' in convergence:
-            st.info(f"**Score convergence:** {convergence}")
-        elif 'Moderate' in convergence:
-            st.warning(
-                f"**Score convergence:** {convergence} — some disagreement between MCA and Subprime"
-            )
-        else:
-            st.error(f"**Score convergence:** {convergence} — significant disagreement")
+        # Score convergence / complementary assessment
+        render_complementary_scoring_assessment(ensemble, scores, params, metrics)
 
         manual_balances = st.session_state.get("manual_outstanding_debt_balances", {}) or {}
         underwriting = build_underwriting_package(
@@ -3083,8 +3077,10 @@ def render_full_financial_dashboard(
         subprime_col1, subprime_col2, subprime_col3 = st.columns(3)
 
         with subprime_col1:
-            score = scores['subprime_score']
-            if score >= 75:
+            score = scores.get('subprime_score')
+            if score is None:
+                st.warning("**Subprime unavailable**\nScoring could not be completed for this run.")
+            elif score >= 75:
                 st.success(f"**Excellent candidate**\nScore: {score:.1f}/100")
             elif score >= 60:
                 st.info(f"**Good candidate**\nScore: {score:.1f}/100")

@@ -109,7 +109,7 @@ def test_zero_scores_are_treated_as_real_inputs_not_missing_data():
         params=_strong_params(),
     )
 
-    assert result["combined_score"] == 27
+    assert result["combined_score"] == 29.0
     assert result["contributing_scores"]["mca_score"] == 0
     assert "ml_score" not in result["contributing_scores"]
 
@@ -169,7 +169,7 @@ def test_mca_approve_cannot_override_weak_subprime_score():
         params=_strong_params(),
     )
 
-    assert result["combined_score"] == 79.8
+    assert result["combined_score"] == 82.8
     assert result["decision"] == "REFER"
     assert "MCA score alone is not enough" in result["primary_reason"]
 
@@ -187,7 +187,7 @@ def test_full_approval_requires_subprime_gate_even_with_perfect_mca():
         params=_strong_params(),
     )
 
-    assert result["combined_score"] == 80.6
+    assert result["combined_score"] == 83.6
     assert result["decision"] == "REFER"
     assert "caps the case at referral" in result["primary_reason"]
 

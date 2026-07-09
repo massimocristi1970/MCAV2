@@ -201,6 +201,26 @@ class ScoringThresholds:
     
     # Maximum total penalty (prevents "death by 1000 cuts")
     MAX_PENALTY_CAP: int = 12
+
+    # DSCR when no repayments or visible debt are observed in bank data
+    DSCR_NEUTRAL_NO_REPAYMENTS: float = 1.15
+
+    # Discount balance component when month-end balance is estimated from cashflow
+    ESTIMATED_BALANCE_SCORE_FACTOR: float = 0.85
+
+    # Bounded bonus when MCA flow signals are strong (added after base Subprime score)
+    MCA_FLOW_BONUS_MAX: float = 5.0
+
+    # Ensemble convergence bands: (max_gap, label, penalty)
+    CONVERGENCE_BANDS: Tuple[Tuple[float, str, float], ...] = (
+        (15.0, "High Convergence", 0.0),
+        (25.0, "Good Convergence", 1.0),
+        (40.0, "Moderate Convergence", 2.0),
+    )
+    CONVERGENCE_LOW_LABEL: str = "Complementary Views"
+    CONVERGENCE_LOW_PENALTY: float = 3.0
+    CONVERGENCE_INSUFFICIENT_LABEL: str = "Single Score Available"
+    CONVERGENCE_INSUFFICIENT_PENALTY: float = 0.0
     
     # ===========================================
     # TIER THRESHOLDS

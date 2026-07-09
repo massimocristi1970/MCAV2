@@ -113,11 +113,14 @@ def calculate_business_metrics(data: pd.DataFrame, company_age_months: int | flo
 
     if total_debt_repayments > 0:
         debt_service_coverage_ratio = total_revenue / total_debt_repayments
+        dscr_repayments_observed = True
     elif total_debt > 0:
         estimated_annual_payment = total_debt * 0.1
         debt_service_coverage_ratio = total_revenue / estimated_annual_payment if estimated_annual_payment > 0 else 0.0
+        dscr_repayments_observed = False
     else:
-        debt_service_coverage_ratio = 10.0
+        debt_service_coverage_ratio = 1.15
+        dscr_repayments_observed = False
     debt_service_coverage_ratio = min(float(debt_service_coverage_ratio), 50.0)
 
     monthly_summary = pd.DataFrame(
@@ -177,7 +180,7 @@ def calculate_business_metrics(data: pd.DataFrame, company_age_months: int | flo
         balance_confidence = "low"
         balance_warning = balance_warning or "No reliable balance history was supplied; balance metrics are estimated from cashflow."
         monthly_net = (total_revenue - total_expenses) / months_count if months_count else 0.0
-        avg_month_end_balance = float(max(1000.0, monthly_net * 0.5))
+        avg_month_end_balance = float(max(500.0, monthly_net * 0.35))
         if cash_flow_volatility > 0.3:
             avg_negative_days = min(10, int(cash_flow_volatility * 10))
         elif operating_margin < 0:
@@ -232,6 +235,7 @@ def calculate_business_metrics(data: pd.DataFrame, company_age_months: int | flo
         "Expense-to-Revenue Ratio": round(expense_to_revenue_ratio, 3),
         "Operating Margin": round(operating_margin, 3),
         "Debt Service Coverage Ratio": round(debt_service_coverage_ratio, 2),
+        "DSCR Repayments Observed": dscr_repayments_observed,
         "Gross Burn Rate": round(gross_burn_rate, 2),
         "Cash Flow Volatility": round(cash_flow_volatility, 3),
         "Revenue Growth Rate": round(revenue_growth_rate, 2),

@@ -11,6 +11,8 @@ from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 
+from mca_scorecard_rules import Thresholds as McaRuleThresholds
+
 
 class Decision(Enum):
     """Lending decision outcomes."""
@@ -161,6 +163,9 @@ class EnsembleScorer:
         
         # Analyze score convergence between decision-driving systems only.
         convergence, convergence_penalty = self._analyze_convergence(scoring_results)
+        decision_alignment, decision_alignment_detail = self._analyze_decision_alignment(
+            scores, contributing_scores
+        )
         
         # Apply convergence penalty (divergent scores reduce confidence)
         adjusted_score = combined_score - convergence_penalty
@@ -230,6 +235,9 @@ class EnsembleScorer:
                     for name, result in scoring_results.items()
                     if result.available and result.weight <= 0
                 },
+                'decision_alignment': decision_alignment,
+                'decision_alignment_detail': decision_alignment_detail,
+                'numeric_score_gap': self._numeric_score_gap(contributing_scores),
             }
         )
     
@@ -291,48 +299,95 @@ class EnsembleScorer:
         
         return None
 
+    def _scoring_thresholds_config(self):
+        try:
+            from app.config.scoring_thresholds import get_thresholds
+            return get_thresholds()
+        except ImportError:
+            return None
+
+    def _numeric_score_gap(self, contributing_scores: Dict[str, float]) -> Optional[float]:
+        mca = contributing_scores.get("mca_score")
+        subprime = contributing_scores.get("subprime_score")
+        if mca is None or subprime is None:
+            return None
+        return round(abs(float(mca) - float(subprime)), 1)
+
+    def _analyze_decision_alignment(
+        self,
+        scores: Dict[str, Any],
+        contributing_scores: Dict[str, float],
+    ) -> Tuple[str, str]:
+        """Whether MCA decision direction aligns with Subprime strength."""
+        mca_decision = str(scores.get("mca_decision") or scores.get("mca_rule_decision") or "").upper()
+        subprime = contributing_scores.get("subprime_score")
+        try:
+            subprime_val = float(subprime) if subprime is not None else None
+        except (TypeError, ValueError):
+            subprime_val = None
+
+        mca_positive = mca_decision == "APPROVE"
+        mca_negative = mca_decision == "DECLINE"
+        mca_borderline = mca_decision == "REFER"
+        sub_strong = subprime_val is not None and subprime_val >= 65
+        sub_weak = subprime_val is not None and subprime_val < 50
+        sub_borderline = subprime_val is not None and 50 <= subprime_val < 65
+
+        if mca_positive and sub_strong:
+            return "Aligned", "Strong deposit pattern and strong business/director profile."
+        if mca_negative and sub_weak:
+            return "Aligned", "Both models flag elevated risk."
+        if mca_borderline and sub_borderline:
+            return "Mixed", "Borderline collection pattern and borderline business profile — manual review."
+        if mca_positive and sub_weak:
+            return "Opposed", "Healthy bank flow but weak business/director profile — weight Subprime heavily."
+        if mca_negative and sub_strong:
+            return "Opposed", "Strong business profile but weak deposit pattern — check collection feasibility."
+        if mca_borderline or sub_borderline:
+            return "Mixed", "One model is borderline — review MCA flow signals and Subprime fundamentals separately."
+        return "Complementary", "Models measure different risks; use both views in underwriting."
+
     def _is_severe_mca_failure(self, scores: Dict[str, Any], params: Dict[str, Any]) -> bool:
         """Return True only for MCA failures that should hard-stop a case."""
         mca_decision = scores.get('mca_decision') or params.get('mca_rule_decision')
         if not mca_decision or str(mca_decision).upper() != 'DECLINE':
             return False
 
+        t = McaRuleThresholds()
         signals = params.get('mca_rule_signals') or scores.get('mca_rule_signals') or {}
         serious_count = 0
         try:
             inflow_days = signals.get('inflow_days_30d')
-            if inflow_days is not None and float(inflow_days) <= 8:
+            if inflow_days is not None and float(inflow_days) <= t.inflow_days_30d_decline_max:
                 serious_count += 1
         except (TypeError, ValueError):
             pass
 
         try:
             max_gap = signals.get('max_inflow_gap_days')
-            if max_gap is not None and float(max_gap) >= 21:
+            if max_gap is not None and float(max_gap) >= t.max_inflow_gap_days_decline_min:
                 serious_count += 1
         except (TypeError, ValueError):
             pass
 
         try:
             inflow_cv = signals.get('inflow_cv')
-            if inflow_cv is not None and float(inflow_cv) >= 1.3:
+            if inflow_cv is not None and float(inflow_cv) >= t.inflow_cv_decline_min:
                 serious_count += 1
         except (TypeError, ValueError):
             pass
 
-        if serious_count >= 2:
+        if serious_count >= t.serious_signal_decline_count:
             return True
 
         mca_score = scores.get('mca_score', params.get('mca_rule_score'))
         try:
-            if serious_count >= 1 and mca_score is not None and float(mca_score) < 50:
+            if serious_count >= 1 and mca_score is not None and float(mca_score) < t.refer_min_score:
                 return True
         except (TypeError, ValueError):
             pass
 
-        reasons = scores.get('mca_reasons') or scores.get('mca_rule_reasons') or params.get('mca_rule_reasons') or []
-        reason_text = " | ".join(str(reason).lower() for reason in reasons)
-        return "mca decline:" in reason_text and serious_count >= 2
+        return False
 
     def _metric_value(self, metrics: Dict[str, Any], params: Dict[str, Any], *names: str) -> Any:
         for name in names:
@@ -552,18 +607,25 @@ class EnsembleScorer:
         ]
         
         if len(primary_scores) < 2:
-            return "Insufficient Data", 5.0
+            cfg = self._scoring_thresholds_config()
+            label = getattr(cfg, "CONVERGENCE_INSUFFICIENT_LABEL", "Single Score Available")
+            penalty = float(getattr(cfg, "CONVERGENCE_INSUFFICIENT_PENALTY", 2.0))
+            return label, penalty
         
         score_range = max(primary_scores) - min(primary_scores)
-        
-        if score_range <= 10:
-            return "High Convergence", 0.0
-        elif score_range <= 20:
-            return "Good Convergence", 1.0
-        elif score_range <= 30:
-            return "Moderate Convergence", 3.0
-        else:
-            return "Low Convergence", 5.0
+        cfg = self._scoring_thresholds_config()
+        bands = getattr(cfg, "CONVERGENCE_BANDS", (
+            (15.0, "High Convergence", 0.0),
+            (25.0, "Good Convergence", 1.0),
+            (40.0, "Moderate Convergence", 2.0),
+        ))
+        for max_gap, label, penalty in bands:
+            if score_range <= max_gap:
+                return label, penalty
+
+        low_label = getattr(cfg, "CONVERGENCE_LOW_LABEL", "Complementary Views")
+        low_penalty = float(getattr(cfg, "CONVERGENCE_LOW_PENALTY", 3.0))
+        return low_label, low_penalty
     
     def _determine_decision(
         self,
@@ -653,8 +715,11 @@ class EnsembleScorer:
             "High Convergence": 10,
             "Good Convergence": 5,
             "Moderate Convergence": 0,
-            "Low Convergence": -10,
-            "Insufficient Data": -20
+            "Complementary Views": -5,
+            "Single Score Available": -10,
+            # Legacy labels still recognised if present in cached runs
+            "Low Convergence": -5,
+            "Insufficient Data": -10,
         }
         
         confidence = base_confidence + convergence_adjustments.get(convergence, 0)
@@ -687,6 +752,8 @@ class EnsembleScorer:
         dscr = metrics.get('Debt Service Coverage Ratio', 1.0)
         if dscr < 1.0:
             risk_factors.append(f"Low DSCR ({dscr:.2f}) - debt servicing strain")
+        elif not metrics.get("DSCR Repayments Observed", True):
+            risk_factors.append("No debt repayments observed in bank data — DSCR uses neutral assumption (1.15)")
         
         # Cash flow volatility
         volatility = metrics.get('Cash Flow Volatility', 0)
@@ -1008,7 +1075,7 @@ class EnsembleScorer:
 
         if mca_decision == "REFER" and decision == Decision.REFER:
             return (
-                f"Weighted MCA/Subprime score {score:.1f} supports approval, but borderline MCA "
+                f"Weighted MCA/Subprime score {score:.1f} is in range, but borderline MCA "
                 f"transaction consistency caps the decision at referral ({score_context}).{penalty_text}"
             )
         
@@ -1051,6 +1118,9 @@ def get_ensemble_recommendation(
         'primary_reason': result.primary_reason,
         'contributing_scores': result.contributing_scores,
         'score_convergence': result.score_convergence,
+        'decision_alignment': result.detailed_breakdown.get('decision_alignment'),
+        'decision_alignment_detail': result.detailed_breakdown.get('decision_alignment_detail'),
+        'numeric_score_gap': result.detailed_breakdown.get('numeric_score_gap'),
         'risk_factors': result.risk_factors,
         'positive_factors': result.positive_factors,
         'recommendations': result.recommendations,

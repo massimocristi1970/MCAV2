@@ -128,8 +128,8 @@ def decide_application(features: Dict[str, Any], t: Thresholds = Thresholds()) -
     score -= soft_flags * 5
     score = max(0, min(100, int(round(score))))
 
-    # If core signals are strong and there are no sufficiency flags → APPROVE
-    if approve_hits == 3 and soft_flags == 0:
+    # If core signals are strong, sufficiency is OK, and score meets approve floor → APPROVE
+    if approve_hits == 3 and soft_flags == 0 and score >= t.approve_min_score:
         return "APPROVE", min(100, score), ["Strong inflow consistency across all 3 core signals"]
 
     if serious_flags >= t.serious_signal_decline_count or score < t.refer_min_score:
