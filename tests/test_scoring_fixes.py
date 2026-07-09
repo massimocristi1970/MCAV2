@@ -111,3 +111,30 @@ def test_subprime_unavailable_does_not_force_zero_decline():
     )
     assert result["combined_score"] == 80.0
     assert result["decision"] == "APPROVE"
+
+
+@pytest.mark.unit
+def test_calculate_financial_metrics_debug_mode_does_not_drop_metrics(monkeypatch):
+    """Regression: financial metrics must return even when DEBUG logging is enabled."""
+    import app.main as main
+
+    df = pd.DataFrame(
+        {
+            "date": pd.date_range("2025-01-01", periods=30, freq="D"),
+            "amount": [100.0] * 30,
+            "name": ["Customer"] * 30,
+            "subcategory": ["Income"] * 30,
+        }
+    )
+    monkeypatch.setattr(main, "DEBUG_MODE", True, raising=False)
+    metrics = main.calculate_financial_metrics(df, company_age_months=12)
+    assert metrics
+    assert metrics.get("Total Revenue") is not None
+
+
+@pytest.mark.unit
+def test_format_score_display_handles_none():
+    from app.main import _format_score_display
+
+    assert _format_score_display(None) == "N/A"
+    assert _format_score_display(65.7) == "65.7/100"

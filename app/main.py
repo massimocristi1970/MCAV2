@@ -435,21 +435,21 @@ class MLScalerInsights:
 def import_subprime_scoring():
     """Import SubprimeScoring with comprehensive fallback strategies"""
     
-    # Strategy 1: Direct import from services (if main.py is in app/)
-    try:
-        from services.subprime_scoring_system import SubprimeScoring
-        print("OK Imported SubprimeScoring from services.subprime_scoring_system")
-        return SubprimeScoring, True
-    except ImportError as e:
-        print(f"WARN Failed import from services: {e}")
-    
-    # Strategy 2: Import from app.services (if main.py is in root/)
+    # Strategy 1: Import from app.services (repo root / streamlit run app/main.py)
     try:
         from app.services.subprime_scoring_system import SubprimeScoring
         print("OK Imported SubprimeScoring from app.services.subprime_scoring_system")
         return SubprimeScoring, True
     except ImportError as e:
         print(f"WARN Failed import from app.services: {e}")
+    
+    # Strategy 2: Direct import from services (when app/ is on sys.path)
+    try:
+        from services.subprime_scoring_system import SubprimeScoring
+        print("OK Imported SubprimeScoring from services.subprime_scoring_system")
+        return SubprimeScoring, True
+    except ImportError as e:
+        print(f"WARN Failed import from services: {e}")
     
     # Strategy 3: Add path and import
     try:
@@ -523,11 +523,12 @@ if not SUBPRIME_SCORING_AVAILABLE:
     class SubprimeScoring:
         def calculate_subprime_score(self, metrics, params):
             return {
-                'subprime_score': 0,
+                'subprime_score': None,
                 'risk_tier': 'Import Failed',
                 'pricing_guidance': {'suggested_rate': 'N/A'},
                 'recommendation': 'Subprime scoring import failed - check file structure',
-                'breakdown': ['Import failed - check console for details']
+                'breakdown': ['Import failed - check console for details'],
+                'scoring_error': 'SubprimeScoring import failed',
             }
 
 st.set_page_config(
@@ -854,6 +855,67 @@ def filter_data_by_period(df, period_months):
     
     return df[df['date'] >= start_date]
 
+def _debug_print_financial_metrics(metrics: dict) -> None:
+    """Print financial metrics when DEBUG mode is enabled (ASCII-only for Windows consoles)."""
+    debug_print = builtins.print if DEBUG_MODE else (lambda *args, **kwargs: None)
+    debug_print("\nDEBUG - Financial Metrics:")
+    debug_print(
+        f"  Total Revenue: GBP {metrics.get('Total Revenue', 0):,.2f}"
+        if metrics.get("Total Revenue") is not None else "  Total Revenue: N/A"
+    )
+    debug_print(
+        f"  Total Expenses: GBP {metrics.get('Total Expenses', 0):,.2f}"
+        if metrics.get("Total Expenses") is not None else "  Total Expenses: N/A"
+    )
+    debug_print(
+        f"  Net Income: GBP {metrics.get('Net Income', 0):,.2f}"
+        if metrics.get("Net Income") is not None else "  Net Income: N/A"
+    )
+    debug_print(
+        f"  DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f}"
+        if metrics.get("Debt Service Coverage Ratio") is not None else "  DSCR: N/A"
+    )
+    debug_print(
+        f"  Operating Margin: {metrics.get('Operating Margin', 0):.3f} ({metrics.get('Operating Margin', 0)*100:.1f}%)"
+        if metrics.get("Operating Margin") is not None else "  Operating Margin: N/A"
+    )
+    debug_print(
+        f"  Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f}"
+        if metrics.get("Cash Flow Volatility") is not None else "  Cash Flow Volatility: N/A"
+    )
+    debug_print(
+        f"  Revenue Growth Rate: {metrics.get('Revenue Growth Rate', 0)*100:.1f}%"
+        if metrics.get("Revenue Growth Rate") is not None else "  Revenue Growth Rate: N/A"
+    )
+    debug_print(
+        f"  Avg Month-End Balance: GBP {metrics.get('Average Month-End Balance', 0):,.2f}"
+        if metrics.get("Average Month-End Balance") is not None else "  Avg Month-End Balance: N/A"
+    )
+    debug_print(
+        f"  Avg Negative Days: {metrics.get('Average Negative Balance Days per Month', 0)}"
+        if metrics.get("Average Negative Balance Days per Month") is not None else "  Avg Negative Days: N/A"
+    )
+    debug_print(
+        f"  Bounced Payments: {metrics.get('Number of Bounced Payments', 0)}"
+        if metrics.get("Number of Bounced Payments") is not None else "  Bounced Payments: N/A"
+    )
+    debug_print(
+        f"  Funding Reliance: {metrics.get('Funding Reliance Ratio', 0)*100:.1f}%"
+        if metrics.get("Funding Reliance Ratio") is not None else "  Funding Reliance: N/A"
+    )
+    debug_print(
+        f"  Transfer Activity: {metrics.get('Internal Transfer Activity Ratio', 0)*100:.1f}%"
+        if metrics.get("Internal Transfer Activity Ratio") is not None else "  Transfer Activity: N/A"
+    )
+    debug_print(
+        f"  Revenue Concentration: {metrics.get('Revenue Concentration Risk', 'Unknown')}"
+    )
+    debug_print(
+        f"  Active Lenders: {metrics.get('Active Lenders Detected', 0)}"
+        if metrics.get("Active Lenders Detected") is not None else "  Active Lenders: N/A"
+    )
+
+
 def calculate_financial_metrics(data, company_age_months):
     """Calculate comprehensive financial metrics - ENHANCED VERSION"""
     if data.empty:
@@ -866,69 +928,13 @@ def calculate_financial_metrics(data, company_age_months):
             data = categorize_transactions(data)
             metrics = {}
 
-        # DEBUGGING: Print key values
-        print(f"\n🔍 DEBUG - Financial Metrics:")
-        print(
-            f"  Total Revenue: £{metrics.get('Total Revenue', 0):,.2f}"
-            if metrics.get("Total Revenue") is not None else "  Total Revenue: N/A"
-        )
-        print(
-            f"  Total Expenses: £{metrics.get('Total Expenses', 0):,.2f}"
-            if metrics.get("Total Expenses") is not None else "  Total Expenses: N/A"
-        )
-        print(
-            f"  Net Income: £{metrics.get('Net Income', 0):,.2f}"
-            if metrics.get("Net Income") is not None else "  Net Income: N/A"
-        )
-        print(
-            f"  DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f}"
-            if metrics.get("Debt Service Coverage Ratio") is not None else "  DSCR: N/A"
-        )
-        print(
-            f"  Operating Margin: {metrics.get('Operating Margin', 0):.3f} ({metrics.get('Operating Margin', 0)*100:.1f}%)"
-            if metrics.get("Operating Margin") is not None else "  Operating Margin: N/A"
-        )
-        print(
-            f"  Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f}"
-            if metrics.get("Cash Flow Volatility") is not None else "  Cash Flow Volatility: N/A"
-        )
-        print(
-            f"  Revenue Growth Rate: {metrics.get('Revenue Growth Rate', 0)*100:.1f}%"
-            if metrics.get("Revenue Growth Rate") is not None else "  Revenue Growth Rate: N/A"
-        )
-        print(
-            f"  Avg Month-End Balance: £{metrics.get('Average Month-End Balance', 0):,.2f}"
-            if metrics.get("Average Month-End Balance") is not None else "  Avg Month-End Balance: N/A"
-        )
-        print(
-            f"  Avg Negative Days: {metrics.get('Average Negative Balance Days per Month', 0)}"
-            if metrics.get("Average Negative Balance Days per Month") is not None else "  Avg Negative Days: N/A"
-        )
-        print(
-            f"  Bounced Payments: {metrics.get('Number of Bounced Payments', 0)}"
-            if metrics.get("Number of Bounced Payments") is not None else "  Bounced Payments: N/A"
-        )
-        print(
-            f"  Funding Reliance: {metrics.get('Funding Reliance Ratio', 0)*100:.1f}%"
-            if metrics.get("Funding Reliance Ratio") is not None else "  Funding Reliance: N/A"
-        )
-        print(
-            f"  Transfer Activity: {metrics.get('Internal Transfer Activity Ratio', 0)*100:.1f}%"
-            if metrics.get("Internal Transfer Activity Ratio") is not None else "  Transfer Activity: N/A"
-        )
-        print(
-            f"  Revenue Concentration: {metrics.get('Revenue Concentration Risk', 'Unknown')}"
-        )
-        print(
-            f"  Active Lenders: {metrics.get('Active Lenders Detected', 0)}"
-            if metrics.get("Active Lenders Detected") is not None else "  Active Lenders: N/A"
-        )
+        _debug_print_financial_metrics(metrics)
         return metrics
         
     except Exception as e:
         st.error(f"Error calculating metrics: {e}")
-        import traceback
-        print(f"Full error traceback: {traceback.format_exc()}")
+        import logging
+        logging.getLogger(__name__).exception("Error calculating financial metrics")
         return {}
 
 def calculate_all_scores_enhanced(metrics, params):
@@ -1203,6 +1209,7 @@ def calculate_all_scores_enhanced(metrics, params):
         'subprime_pricing': subprime_result['pricing_guidance'],
         'subprime_recommendation': subprime_result['recommendation'],
         'subprime_breakdown': subprime_result['breakdown'],
+        'subprime_scoring_error': subprime_result.get('scoring_error'),
         'ml_validation': ml_validation,
         # Ensemble scoring results
         'ensemble': ensemble_result,
@@ -1711,21 +1718,17 @@ def render_card_terminal_reconciliation(bank_df, card_files, card_processing_pay
         else:
             st.info("Provider reference catalog not available.")
 
+def _format_score_display(raw, *, suffix="/100", unavailable="N/A") -> str:
+    if raw is None:
+        return unavailable
+    try:
+        return f"{float(raw):.1f}{suffix}"
+    except (TypeError, ValueError):
+        return unavailable
+
+
 def create_score_charts(scores, metrics):
     """Create clean bar charts for scores - Updated for 3 scoring methods"""
-
-    def _score_value(raw, fallback=None):
-        if raw is not None:
-            try:
-                return float(raw)
-            except (TypeError, ValueError):
-                pass
-        if fallback is not None:
-            try:
-                return float(fallback)
-            except (TypeError, ValueError):
-                pass
-        return 0.0
 
     def _score_label(key, raw, fallback=None):
         display_raw = raw if raw is not None else fallback
@@ -1742,16 +1745,23 @@ def create_score_charts(scores, metrics):
     if adjusted_raw is None:
         adjusted_raw = scores.get("ml_score")
 
-    score_data = {
-        "Subprime Score": _score_value(scores.get("subprime_score")),
-        "MCA Rule": _score_value(scores.get("mca_rule_score")),
-        "Adjusted ML": _score_value(adjusted_raw),
-    }
-    score_labels = {
-        "Subprime Score": _score_label("Subprime Score", scores.get("subprime_score")),
-        "MCA Rule": _score_label("MCA Rule", scores.get("mca_rule_score")),
-        "Adjusted ML": _score_label("Adjusted ML", scores.get("adjusted_ml_score"), scores.get("ml_score")),
-    }
+    score_entries = [
+        ("Subprime Score", scores.get("subprime_score")),
+        ("MCA Rule", scores.get("mca_rule_score")),
+        ("Adjusted ML", adjusted_raw),
+    ]
+    score_data = {}
+    score_labels = {}
+    for key, raw in score_entries:
+        if raw is None:
+            score_labels[key] = "N/A"
+            continue
+        try:
+            score_data[key] = float(raw)
+        except (TypeError, ValueError):
+            score_labels[key] = "N/A"
+            continue
+        score_labels[key] = _score_label(key, raw)
 
     # Score comparison chart
     fig_scores = go.Figure()
@@ -1761,10 +1771,20 @@ def create_score_charts(scores, metrics):
     fig_scores.add_trace(go.Bar(
         x=list(score_data.keys()),
         y=list(score_data.values()),
-        marker_color=colors,
+        marker_color=colors[: len(score_data)],
         text=[score_labels[k] for k in score_data.keys()],
         textposition='outside'
     ))
+    
+    if not score_data:
+        fig_scores.add_annotation(
+            text="No scoring methods available for chart",
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            showarrow=False,
+        )
     
     fig_scores.update_layout(
         title=dict(text="Primary scoring methods", x=0.02, xanchor="left"),
@@ -2715,8 +2735,10 @@ def render_full_financial_dashboard(
             st.metric("MCA Rule (60%)", f"{mca_s:.0f}")
 
         with score_cols[1]:
-            subprime_s = contributing.get('subprime_score', scores.get('subprime_score', 0))
-            st.metric("Subprime (40%)", f"{subprime_s:.1f}")
+            subprime_s = contributing.get('subprime_score', scores.get('subprime_score'))
+            st.metric("Subprime (40%)", _format_score_display(subprime_s, suffix=""))
+            if scores.get('subprime_score') is None and scores.get('subprime_tier') in ('Import Failed', 'Unavailable'):
+                st.caption("Subprime scoring failed — see detailed analysis below.")
 
         with score_cols[2]:
             ml_info = ensemble.get('detailed_breakdown', {}).get('informational_scores', {})
@@ -3051,9 +3073,16 @@ def render_full_financial_dashboard(
             comp_col1, comp_col2, comp_col3, = st.columns(3)
 
             with comp_col1:
-                delta_subprime = scores.get('subprime_score', 0) - full_scores.get('subprime_score', 0)
-                st.metric("Full Period Subprime Score", f"{full_scores.get('subprime_score', 0):.1f}/100", 
-                        delta=f"{delta_subprime:+.1f} difference")
+                current_subprime = scores.get('subprime_score')
+                full_subprime = full_scores.get('subprime_score')
+                delta_subprime = None
+                if current_subprime is not None and full_subprime is not None:
+                    delta_subprime = current_subprime - full_subprime
+                st.metric(
+                    "Full Period Subprime Score",
+                    _format_score_display(full_subprime),
+                    delta=f"{delta_subprime:+.1f} difference" if delta_subprime is not None else None,
+                )
 
             with comp_col2:
                 if full_scores['ml_score'] and scores['ml_score']:
