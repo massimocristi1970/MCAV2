@@ -410,6 +410,12 @@ def get_provider_profile(provider_name: Optional[str]) -> Optional[ProviderParse
 
 def providers_with_native_profiles() -> List[str]:
     """Providers with dedicated parsing (tabular profile and/or hardcoded PDF path in ingestion)."""
-    extra_pdf_native = {"PayPal", "Zempler", "DNA Payments", "Shopify Payments"}
+    extra_pdf_native = {
+        "PayPal",
+        "Zempler",
+        "DNA Payments",
+        "Shopify Payments",
+        "PSR Payment Systems Regulator",
+    }
     return sorted(set(PROVIDER_PARSER_PROFILES.keys()) | extra_pdf_native)
 

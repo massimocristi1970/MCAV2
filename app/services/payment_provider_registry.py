@@ -38,6 +38,12 @@ PROVIDER_SPECS: List[ProviderSpec] = [
     ProviderSpec("Barclaycard", ["barclaycard", "bcard"], "https://developer.barclays.com/"),
     ProviderSpec("Elavon", ["elavon"], "https://www.elavon.co.uk/"),
     ProviderSpec("EVO Payments", ["evo payments", "evo"], "https://evopayments.com/"),
+    ProviderSpec(
+        "PSR Payment Systems Regulator",
+        ["payment systems regulator"],
+        "https://www.psr.org.uk/",
+        notes="UK card-cost summary paired with a monthly merchant transaction statement; dedicated PDF parser.",
+    ),
     ProviderSpec("Teya", ["teya", "teya solutions"], "https://www.teya.com/"),
     ProviderSpec("Dojo", ["dojo", "paymentsense"], "https://docs.dojo.tech/api"),
     ProviderSpec(

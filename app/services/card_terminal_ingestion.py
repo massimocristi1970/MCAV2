@@ -514,6 +514,8 @@ class CardTerminalIngestionService:
                 return [self._parse_dna_payments_statement_pdf(filename, text)]
             if self._is_mypos_monthly_statement_pdf(text, filename):
                 return [self._parse_mypos_monthly_statement_pdf(filename, text)]
+            if self._is_psr_payment_systems_regulator_statement(text, filename):
+                return [self._parse_psr_payment_systems_regulator_pdf(filename, text)]
             provider_hint = self._detect_provider_hint(f"{filename} {text[:8000]}")
             if provider_hint:
                 prof = get_provider_profile(provider_hint)
@@ -1675,6 +1677,158 @@ class CardTerminalIngestionService:
                     "merchant_id": merchant_id is not None,
                 },
                 "fallback_used": gross_card_sales <= 0,
+            },
+        )
+
+    def _is_psr_payment_systems_regulator_statement(
+        self, text: str, filename: str = ""
+    ) -> bool:
+        """Detect the regulator-summary plus EVO monthly transaction layout."""
+        probe = f"{filename}\n{text or ''}"
+        return bool(
+            re.search(
+                r"required\s+to\s+provide\s+this\s+information\s+by\s+the\s+Payment\s+Systems\s+Regulator",
+                probe,
+                re.IGNORECASE,
+            )
+            and re.search(r"Monthly\s+transaction\s+statement", probe, re.IGNORECASE)
+            and re.search(r"Daily\s+Settlement\s+Report", probe, re.IGNORECASE)
+        )
+
+    @staticmethod
+    def _psr_decimal(value: str) -> float:
+        cleaned = re.sub(r"\s+", "", str(value or "")).replace(".", "").replace(",", ".")
+        try:
+            return float(cleaned)
+        except ValueError:
+            return 0.0
+
+    def _parse_psr_payment_systems_regulator_pdf(
+        self, filename: str, text: str
+    ) -> ParseResult:
+        period_match = re.search(
+            r"Monthly\s+transaction\s+statement\s+"
+            r"(\d{2}-\d{2}-\d{4})\s+to\s+(\d{2}-\d{2}-\d{4})",
+            text,
+            re.IGNORECASE,
+        )
+        period_start = period_end = None
+        if period_match:
+            period_start = pd.to_datetime(period_match.group(1), dayfirst=True, errors="coerce")
+            period_end = pd.to_datetime(period_match.group(2), dayfirst=True, errors="coerce")
+            period_start = None if pd.isna(period_start) else period_start.date()
+            period_end = None if pd.isna(period_end) else period_end.date()
+
+        merchant_match = re.search(
+            r"Merchant\s+number:\s*([A-Z0-9]+)", text, re.IGNORECASE
+        )
+        merchant_id = merchant_match.group(1) if merchant_match else None
+        merchant_name = None
+        if merchant_id:
+            merchant_name_match = re.search(
+                rf"^\s*([^\n|]+?)\s*\|\s*{re.escape(merchant_id)}\s*$",
+                text,
+                re.IGNORECASE | re.MULTILINE,
+            )
+            merchant_name = (
+                merchant_name_match.group(1).strip() if merchant_name_match else None
+            )
+
+        settlement_match = re.search(
+            r"Daily\s+Settlement\s+Report.*?\n\s*Total\s+([^\n]+)",
+            text,
+            re.IGNORECASE | re.DOTALL,
+        )
+        settlement_values: List[float] = []
+        if settlement_match:
+            settlement_values = [
+                self._psr_decimal(value)
+                for value in re.findall(
+                    r"-?(?:\d{1,3}(?:\s+\d{3})*|\d+),\d{2}",
+                    settlement_match.group(1),
+                )
+            ]
+
+        gross = abs(settlement_values[0]) if len(settlement_values) >= 1 else 0.0
+        refunds = abs(settlement_values[1]) if len(settlement_values) >= 2 else 0.0
+        msc_fees = abs(settlement_values[2]) if len(settlement_values) >= 3 else 0.0
+        chargebacks = abs(settlement_values[3]) if len(settlement_values) >= 4 else 0.0
+        settlement_total = settlement_values[7] if len(settlement_values) >= 8 else 0.0
+
+        other_fee_total = 0.0
+        other_fee_section = re.search(
+            r"Monthly\s+activity\s+for\s+other\s+fees(.*?)"
+            r"Monthly\s+activity\s+of\s+other\s+fees",
+            text,
+            re.IGNORECASE | re.DOTALL,
+        )
+        if other_fee_section:
+            fee_total_match = re.search(
+                r"^\s*Total\s+(-?(?:\d{1,3}(?:\s+\d{3})*|\d+),\d{2})\s*$",
+                other_fee_section.group(1),
+                re.IGNORECASE | re.MULTILINE,
+            )
+            if fee_total_match:
+                other_fee_total = abs(self._psr_decimal(fee_total_match.group(1)))
+
+        transaction_count = 0
+        dcc_section = re.search(
+            r"Total\s+Visa\s+and\s+MasterCard\s+activity\s+by\s+transaction\s+type\s+plus\s+DCC\s+sales"
+            r"(.*?)Daily\s+Settlement\s+Report",
+            text,
+            re.IGNORECASE | re.DOTALL,
+        )
+        if dcc_section:
+            txn_match = re.search(
+                r"^\s*Total\s+(?:\d{1,3}(?:\s+\d{3})*|\d+),\d{2}(\d+)\s+",
+                dcc_section.group(1),
+                re.IGNORECASE | re.MULTILINE,
+            )
+            if txn_match:
+                transaction_count = int(txn_match.group(1))
+
+        required_fields = {
+            "gross_card_sales": gross > 0,
+            "period_end": period_end is not None,
+            "merchant_id": merchant_id is not None,
+            "transaction_count": transaction_count > 0,
+            "settlement_total": len(settlement_values) >= 8,
+        }
+        complete = all(required_fields.values())
+        warnings = [
+            "Parsed with PSR Payment Systems Regulator monthly statement template.",
+            "The statement issuer shown in this layout is EVO Payments International.",
+        ]
+        if not complete:
+            warnings.append("One or more authoritative PSR statement totals could not be extracted.")
+
+        return ParseResult(
+            filename=filename,
+            provider="PSR Payment Systems Regulator",
+            parser="psr_payment_systems_regulator_pdf_v1",
+            merchant_id=merchant_id,
+            statement_start=period_start,
+            statement_end=period_end,
+            currency="GBP",
+            gross_card_sales=round(gross, 2),
+            refunds_amount=round(refunds, 2),
+            chargebacks_amount=round(chargebacks, 2),
+            fees_total=round(msc_fees + other_fee_total, 2),
+            transaction_count=transaction_count,
+            confidence=0.98 if complete else 0.65,
+            warnings=warnings,
+            raw_summary={
+                "issuer": "EVO Payments International",
+                "merchant_name": merchant_name,
+                "monthly_service_charge": round(msc_fees, 2),
+                "other_fees": round(other_fee_total, 2),
+                "settlement_total": round(settlement_total, 2),
+                "source_layout": "Payment Systems Regulator card payments summary",
+            },
+            extraction_diagnostics={
+                "profile": "PSR Payment Systems Regulator",
+                "fields": required_fields,
+                "fallback_used": not complete,
             },
         )
 
