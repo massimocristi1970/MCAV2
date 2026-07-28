@@ -150,6 +150,18 @@ def score_tu_features(feats: Dict[str, Any]) -> ScoreResult:
             recovery_flags=recovery_flags,
         )
 
+    extraction_requirements = {
+        "bureau_score_extracted": "bureau score",
+        "account_summary_extracted": "account summary",
+        "account_history_extracted": "monthly account history",
+        "search_recency_extracted": "search recency",
+    }
+    missing_extractions = [
+        label
+        for flag, label in extraction_requirements.items()
+        if feats.get(flag) is False
+    ]
+
     # -----------------
     # Score build (0-100)
     # -----------------
@@ -244,8 +256,17 @@ def score_tu_features(feats: Dict[str, Any]) -> ScoreResult:
 
     score = max(0, min(100, int(score)))
 
-    # Decision bands
-    if score >= 60:
+    # Missing critical TU sections must never be interpreted as a clean file.
+    # Hard-stop declines above remain authoritative; other incomplete results
+    # are capped at the top of the referral band for downstream scoring too.
+    if missing_extractions:
+        score = min(score, 59)
+        decision = "REFER"
+        reasons.insert(
+            0,
+            "Incomplete TU data: missing " + ", ".join(missing_extractions),
+        )
+    elif score >= 60:
         decision = "APPROVE"
     elif score >= 45:
         decision = "REFER"
@@ -256,3 +277,4 @@ def score_tu_features(feats: Dict[str, Any]) -> ScoreResult:
         reasons.append("No adverse bureau indicators triggered (v2d ruleset)")
 
     return ScoreResult(score=score, decision=decision, reasons=reasons, recovery_flags=recovery_flags)
+

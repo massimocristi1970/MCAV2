@@ -2586,9 +2586,9 @@ def combine_mca_and_tu_decisions(mca_decision: str | None, tu_decision: str | No
 
     Policy:
       - If MCA is DECLINE -> final DECLINE
+      - If TU is DECLINE -> final DECLINE
       - If MCA is REFER/SENIOR_REVIEW -> final REFER
       - If MCA is APPROVE/CONDITIONAL_APPROVE:
-            TU DECLINE -> final REFER
             TU APPROVE -> keep MCA decision (APPROVE or CONDITIONAL_APPROVE)
             TU missing/REFER -> REFER
     """
@@ -2598,12 +2598,12 @@ def combine_mca_and_tu_decisions(mca_decision: str | None, tu_decision: str | No
 
     if mca_norm == "DECLINE":
         return "DECLINE"
+    if tu == "DECLINE":
+        return "DECLINE"
     if mca_norm == "REFER":
         return "REFER"
 
     # MCA is APPROVE (including CONDITIONAL_APPROVE normalised)
-    if tu == "DECLINE":
-        return "REFER"
     if tu == "APPROVE":
         # keep conditional if that’s what ensemble said
         return "CONDITIONAL_APPROVE" if raw_mca == "CONDITIONAL_APPROVE" else "APPROVE"
@@ -3842,5 +3842,4 @@ if __name__ == "__main__":
     main()
 # ADD THIS LINE AT THE VERY END OF THE FILE:
 SubprimeScoringSystem = SubprimeScoring
-
 

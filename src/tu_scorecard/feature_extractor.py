@@ -218,7 +218,10 @@ def _extract_fixed_width_search07a_response(root: ET.Element, app_id: str) -> Op
         cutoff_6m = anchor_date - relativedelta(months=6)
         opened_6m = sum(
             1 for record in account_records
-            if record["opened_date"] is not None and record["opened_date"] >= cutoff_6m
+            if (
+                record["opened_date"] is not None
+                and cutoff_6m <= record["opened_date"] <= anchor_date
+            )
         )
 
     feats: Dict[str, Any] = {
@@ -240,8 +243,10 @@ def _extract_fixed_width_search07a_response(root: ET.Element, app_id: str) -> Op
         "bureau_score": bureau_score if bureau_score is not None else 0,
         "bureau_score_extracted": bureau_score is not None,
         "account_summary_extracted": summary_counts is not None,
-        "account_history_extracted": bool(account_records),
+        # Account records expose balances/open dates, not decoded monthly history.
+        "account_history_extracted": False,
         "public_record_extracted": True,
+        "search_recency_extracted": False,
         "missed_months_3m": 0,
         "missed_months_6m": 0,
         "missed_months_12m": 0,
@@ -412,14 +417,24 @@ def extract_features_from_xml_bytes(xml_bytes: bytes, app_id: str) -> TUFeatures
     # Account-history derived features
     # ---------------------------
     account_history_features = _extract_account_history_features(applicant, anchor_date)
-    feats["account_history_extracted"] = applicant is not None
+    history_records_total = int(
+        account_history_features.pop("account_history_records_total", 0) or 0
+    )
+    feats["account_history_extracted"] = history_records_total > 0
     feats.update(account_history_features)
 
     # ---------------------------
     # Searches derived recency (if anchor_date present)
     # ---------------------------
     search_recency_features = _extract_search_recency_features(applicant, anchor_date)
-    feats["search_recency_extracted"] = applicant is not None and anchor_date is not None
+    searches_node = (
+        None
+        if applicant is None
+        else next((c for c in list(applicant) if strip_ns(c.tag) == "searches"), None)
+    )
+    feats["search_recency_extracted"] = (
+        anchor_date is not None and searches_node is not None
+    )
     feats.update(search_recency_features)
 
     return TUFeatures(app_id=app_id, anchor_date=anchor_date, features=feats)
@@ -447,9 +462,9 @@ def _extract_search_recency_features(applicant: Optional[ET.Element], anchor_dat
         d = _parse_dt(d_text)
         if not d:
             continue
-        if d >= cutoff_30:
+        if cutoff_30 <= d <= anchor_date:
             out["searches_30d"] += 1
-        if d >= cutoff_90:
+        if cutoff_90 <= d <= anchor_date:
             out["searches_90d"] += 1
 
     return out
@@ -470,6 +485,7 @@ def _extract_account_history_features(applicant: Optional[ET.Element], anchor_da
         "sum_balances": 0.0,
         "sum_limits": 0.0,
         "utilisation_pct": 0.0,
+        "account_history_records_total": 0,
     }
     if applicant is None or anchor_date is None:
         return out
@@ -484,6 +500,9 @@ def _extract_account_history_features(applicant: Optional[ET.Element], anchor_da
     months_12 = {_month_key(anchor_date - relativedelta(months=i)) for i in range(0, 12)}
 
     worst_12m = 0
+    adverse_months_3: set[str] = set()
+    adverse_months_6: set[str] = set()
+    adverse_months_12: set[str] = set()
 
     for acc in list(accs):
         if strip_ns(acc.tag) != "acc":
@@ -519,17 +538,21 @@ def _extract_account_history_features(applicant: Optional[ET.Element], anchor_da
             try:
                 pay = int(pay_raw)
             except Exception:
-                pay = 0
+                continue
 
+            out["account_history_records_total"] += 1
             if m in months_12:
                 worst_12m = max(worst_12m, pay)
                 if pay > 0:
-                    out["missed_months_12m"] += 1
+                    adverse_months_12.add(m)
                     if m in months_6:
-                        out["missed_months_6m"] += 1
+                        adverse_months_6.add(m)
                         if m in months_3:
-                            out["missed_months_3m"] += 1
+                            adverse_months_3.add(m)
 
+    out["missed_months_3m"] = len(adverse_months_3)
+    out["missed_months_6m"] = len(adverse_months_6)
+    out["missed_months_12m"] = len(adverse_months_12)
     out["worst_ah_pay_12m"] = worst_12m
     out["utilisation_pct"] = (out["sum_balances"] / out["sum_limits"] * 100.0) if out["sum_limits"] > 0 else 0.0
     return out
