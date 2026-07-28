@@ -18,6 +18,9 @@ from src.tu_scorecard.scorecard_rules import score_tu_features
 TU_XML = Path(
     r"C:\Users\Massimo Cristi\OneDrive - Savvy Loan Products Ltd\Merchant Cash Advance (MCA)\Applications\UNDERWRITING\firstunicorn ltd\101897.xml"
 )
+CELESTIAL_TU_XML = Path(
+    r"C:\Users\Massimo Cristi\OneDrive - Savvy Loan Products Ltd\Merchant Cash Advance (MCA)\Applications\UNDERWRITING\CELESTIAL PRIZES LTD\101925 _1.xml"
+)
 BUSINESS_PDF = Path(
     r"C:\Users\Massimo Cristi\OneDrive - Savvy Loan Products Ltd\Merchant Cash Advance (MCA)\Applications\UNDERWRITING\firstunicorn ltd\FIRSTUNICORN_LTD-capital_report-2026-05-11.pdf"
 )
@@ -63,6 +66,45 @@ def test_real_tu_active_iva_is_hard_decline_when_available():
     assert result.decision == "DECLINE"
     assert any("Active IVA" in reason for reason in result.reasons)
 
+
+
+@pytest.mark.unit
+def test_fixed_width_tu_judgments_are_extracted_and_hard_declined():
+    payload = (
+        "<rows><row><field name=\"Search07aResponse\">"
+        "2026-07-28T14:08:07"
+        "CIVIL NATIONAL BUSINESS CENTRE0H2CY4501JG3852021-02-09"
+        "CIVIL NATIONAL BUSINESS CENTRE0G8JH11H6JG9852020-08-272022-03-09"
+        "</field></row></rows>"
+    )
+
+    features = extract_features_from_xml_bytes(
+        payload.encode("utf-8"), app_id="fixed-width-judgments"
+    ).features
+    result = score_tu_features(features)
+
+    assert features["active_judgments_total"] == 1
+    assert features["satisfied_judgments_total"] == 1
+    assert features["ccj_active_total"] == 1
+    assert features["ccj_satisfied_total"] == 1
+    assert result.score == 0
+    assert result.decision == "DECLINE"
+
+
+@pytest.mark.unit
+def test_real_celestial_tu_active_judgment_is_hard_decline_when_available():
+    if not CELESTIAL_TU_XML.exists():
+        pytest.skip("Real TU XML fixture is not available on this machine")
+
+    features = extract_features_from_xml_bytes(
+        CELESTIAL_TU_XML.read_bytes(), app_id="101925"
+    ).features
+    result = score_tu_features(features)
+
+    assert features["active_judgments_total"] >= 1
+    assert features["ccj_active_total"] >= 1
+    assert result.score == 0
+    assert result.decision == "DECLINE"
 
 @pytest.mark.unit
 def test_active_iva_is_used_regardless_of_date():

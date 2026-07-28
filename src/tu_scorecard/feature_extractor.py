@@ -128,6 +128,26 @@ def _extract_fixed_width_public_info(payload: str, anchor_date: Optional[datetim
                     f"Bankruptcy/sequestration recorded within 36 months ({match.group('date')})"
                 )
 
+    # Judgment records in Search07a fixed-width responses use a JG marker,
+    # followed by the judgment amount and registration date. A second adjacent
+    # ISO date is the satisfaction date; without it the judgment is active.
+    judgment_pattern = re.compile(
+        r"JG(?P<amount>\d+?)"
+        r"(?P<registered>\d{4}-\d{2}-\d{2})"
+        r"(?P<satisfied>\d{4}-\d{2}-\d{2})?",
+        re.IGNORECASE,
+    )
+    for match in judgment_pattern.finditer(payload):
+        if match.group("satisfied"):
+            out["satisfied_judgments_total"] += 1
+        else:
+            out["active_judgments_total"] += 1
+
+    if out["active_judgments_total"]:
+        out["public_record_reasons"].append(
+            f"Active judgment/public record count: {out['active_judgments_total']}"
+        )
+
     return out
 
 
@@ -234,6 +254,8 @@ def _extract_fixed_width_search07a_response(root: ET.Element, app_id: str) -> Op
         "tu_parser": "fixed_width_search07a_response",
     }
     feats.update(_extract_fixed_width_public_info(payload, anchor_date))
+    feats["ccj_active_total"] = feats["active_judgments_total"]
+    feats["ccj_satisfied_total"] = feats["satisfied_judgments_total"]
 
     return TUFeatures(app_id=app_id, anchor_date=anchor_date, features=feats)
 
@@ -511,3 +533,4 @@ def _extract_account_history_features(applicant: Optional[ET.Element], anchor_da
     out["worst_ah_pay_12m"] = worst_12m
     out["utilisation_pct"] = (out["sum_balances"] / out["sum_limits"] * 100.0) if out["sum_limits"] > 0 else 0.0
     return out
+
