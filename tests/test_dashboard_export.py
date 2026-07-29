@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from io import BytesIO
+
 import pandas as pd
 import pytest
 
@@ -157,3 +159,46 @@ def test_export_pdf_generates_bytes(sample_run_context):
     pdf = generate_pdf_report(payload)
     assert pdf[:4] == b"%PDF"
     assert len(pdf) > 1000
+
+
+def test_export_pdf_wraps_long_lender_stacking_cells(sample_run_context):
+    pdfplumber = pytest.importorskip("pdfplumber")
+    pytest.importorskip("reportlab")
+    payload = build_export_payload(
+        company_name=sample_run_context["company_name"],
+        params=sample_run_context["params"],
+        metrics=sample_run_context["metrics"],
+        scores=sample_run_context["scores"],
+        analysis_period=sample_run_context["analysis_period"],
+        revenue_insights=sample_run_context["revenue_insights"],
+        filtered_df=sample_run_context["filtered_df"],
+        manual_debt_balances=sample_run_context["manual_outstanding_debt_balances"],
+    )
+    payload["underwriting"]["lender_stacking"] = [
+        {
+            "lender_or_counterparty": f"Very Long Commercial Finance Counterparty Number {number}",
+            "source": "Underwriter entered balance",
+            "outstanding_or_entered": 12500 + number,
+            "notes": "Repayments without matching loan credit in period",
+        }
+        for number in range(1, 15)
+    ]
+
+    pdf = generate_pdf_report(payload)
+
+    lender_rows: list[list[str]] = []
+    with pdfplumber.open(BytesIO(pdf)) as document:
+        for page in document.pages:
+            for table in page.extract_tables():
+                if table and table[0] and table[0][0] == "Lender":
+                    lender_rows.extend(table[1:])
+
+    assert len(lender_rows) == 14
+    for number, row in enumerate(lender_rows, start=1):
+        assert " ".join(row[0].split()) == (
+            f"Very Long Commercial Finance Counterparty Number {number}"
+        )
+        assert " ".join(row[1].split()) == "Underwriter entered balance"
+        assert " ".join(row[3].split()) == (
+            "Repayments without matching loan credit in period"
+        )

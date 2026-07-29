@@ -2066,14 +2066,16 @@ def apply_manual_outstanding_debt_to_loans_analysis(analysis):
     return apply_manual_debt_to_loans_analysis(analysis, balances)
 
 
-def rerun_last_analysis_with_manual_debt():
-    """Recalculate the current session run after underwriter-entered balances change."""
+def rerun_last_analysis_with_manual_debt(analysis_period_override=None):
+    """Recalculate the current session run after inputs affecting scoring change."""
     run = st.session_state.get("last_run")
     if not run:
         return False
 
     df = run["df"]
-    analysis_period = run["analysis_period"]
+    analysis_period = str(
+        analysis_period_override if analysis_period_override is not None else run["analysis_period"]
+    )
     params = run["params"]
     card_terminal_files = run.get("card_terminal_files")
 
@@ -2153,6 +2155,7 @@ def rerun_last_analysis_with_manual_debt():
 
     run.update(
         {
+            "analysis_period": analysis_period,
             "filtered_df": filtered_df,
             "params": params,
             "metrics": metrics,
@@ -3331,6 +3334,7 @@ def render_saved_run_loader():
             try:
                 loaded = load_reloadable_scorecard_run(selected_run)
                 st.session_state["last_run"] = loaded
+                st.session_state["_analysis_period_pending"] = str(loaded.get("analysis_period", "All"))
                 balances = loaded.get("manual_outstanding_debt_balances") or {}
                 if balances:
                     st.session_state["manual_outstanding_debt_balances"] = balances
@@ -3562,9 +3566,19 @@ def main():
 
         # Time period filter
         sidebar_subsection("Analysis period")
+        period_options = ["All", "3", "6", "9", "12"]
+        pending_period = st.session_state.pop("_analysis_period_pending", None)
+        if pending_period in period_options:
+            st.session_state["analysis_period_select"] = pending_period
+        elif "analysis_period_select" not in st.session_state:
+            saved_period = str((st.session_state.get("last_run") or {}).get("analysis_period", "All"))
+            st.session_state["analysis_period_select"] = (
+                saved_period if saved_period in period_options else "All"
+            )
         analysis_period = st.sidebar.selectbox(
             "Select Time Period",
-            ["All", "3", "6", "9", "12"],
+            period_options,
+            key="analysis_period_select",
             help="Choose how many months of data to analyze",
         )
 
@@ -3795,9 +3809,13 @@ def main():
 
         elif st.session_state.get("last_run"):
             run = st.session_state["last_run"]
+            if str(analysis_period) != str(run.get("analysis_period", "All")):
+                with st.spinner(f"Reprocessing the analysis for {analysis_period} months..."):
+                    rerun_last_analysis_with_manual_debt(analysis_period)
+                st.rerun()
             st.info(
                 "Showing your last completed analysis (same session). "
-                "Upload a new JSON transaction file to run a fresh score."
+                "Change the analysis period to reprocess it from the original transactions."
             )
             company_name = run["company_name"]
             analysis_period = run["analysis_period"]
