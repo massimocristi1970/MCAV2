@@ -8,6 +8,7 @@ import json
 from datetime import datetime
 from io import BytesIO
 from typing import Any, Dict, List, Optional
+from xml.sax.saxutils import escape as xml_escape
 
 import pandas as pd
 
@@ -885,7 +886,7 @@ def generate_html_report(export_data: dict) -> str:
 def generate_pdf_report(export_data: dict) -> bytes:
     """Generate a polished multi-page PDF report."""
     from reportlab.lib import colors
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import inch
@@ -939,6 +940,34 @@ def generate_pdf_report(export_data: dict) -> bytes:
     )
     body_style = ParagraphStyle("Body", parent=styles["Normal"], fontSize=9.5, textColor=ink, leading=13)
     small_style = ParagraphStyle("Small", parent=body_style, fontSize=8.5, textColor=muted)
+    table_header_style = ParagraphStyle(
+        "TableHeader",
+        parent=body_style,
+        fontName="Helvetica-Bold",
+        fontSize=8,
+        leading=10,
+        textColor=muted,
+        splitLongWords=True,
+    )
+    table_cell_style = ParagraphStyle(
+        "TableCell",
+        parent=body_style,
+        fontSize=8,
+        leading=10,
+        textColor=ink,
+        splitLongWords=True,
+    )
+    table_cell_right_style = ParagraphStyle(
+        "TableCellRight",
+        parent=table_cell_style,
+        alignment=TA_RIGHT,
+    )
+    table_caption_style = ParagraphStyle(
+        "TableCaption",
+        parent=body_style,
+        keepWithNext=True,
+        spaceBefore=6,
+    )
 
     info = export_data.get("export_info", {})
     bp = export_data.get("business_parameters", {}) or {}
@@ -953,8 +982,24 @@ def generate_pdf_report(export_data: dict) -> bytes:
     def _section(title: str):
         return _p(title, section_style)
 
-    def _table(headers: list[str], rows: list[list[str]], col_widths: list[float] | None = None):
-        data = [headers] + [[str(c) for c in row] for row in rows]
+    def _table(
+        headers: list[str],
+        rows: list[list[str]],
+        col_widths: list[float] | None = None,
+        right_align_columns: set[int] | None = None,
+    ):
+        right_align_columns = right_align_columns or set()
+        data = [[Paragraph(xml_escape(str(header)), table_header_style) for header in headers]]
+        for row in rows:
+            data.append(
+                [
+                    Paragraph(
+                        xml_escape(str(cell)),
+                        table_cell_right_style if column in right_align_columns else table_cell_style,
+                    )
+                    for column, cell in enumerate(row)
+                ]
+            )
         if not col_widths:
             col_widths = [doc.width / len(headers)] * len(headers)
         t = Table(data, colWidths=col_widths, repeatRows=1)
@@ -1086,7 +1131,7 @@ def generate_pdf_report(export_data: dict) -> bytes:
             )
         lenders = uw.get("lender_stacking") or []
         if lenders:
-            story.append(_p("<b>Lender stacking</b>", body_style))
+            story.append(_p("<b>Lender stacking</b>", table_caption_style))
             story.append(
                 _table(
                     ["Lender", "Source", "Outstanding", "Notes"],
@@ -1099,7 +1144,8 @@ def generate_pdf_report(export_data: dict) -> bytes:
                         ]
                         for r in lenders
                     ],
-                    [1.4 * inch, 1.2 * inch, 1.0 * inch, doc.width - 3.6 * inch],
+                    [2.0 * inch, 1.4 * inch, 0.85 * inch, doc.width - 4.25 * inch],
+                    right_align_columns={2},
                 )
             )
 
