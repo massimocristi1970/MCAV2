@@ -245,4 +245,4 @@ with col3:
 
 st.divider()
 st.subheader("Feature values used")
-st.dataframe(pd.DataFrame([features]).T.rename(columns={0: "Value"}), use_container_width=True)
+st.dataframe(pd.DataFrame([features]).T.rename(columns={0: "Value"}), width="stretch")

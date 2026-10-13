@@ -23,6 +23,13 @@ GENERATED_BY = f"{settings.APP_NAME} v{settings.APP_VERSION}"
 # Helpers
 # ---------------------------------------------------------------------------
 
+def format_flag_status(value: Any) -> str:
+    """Yes or No for a known flag. None means the source report was not provided."""
+    if value is None:
+        return "Not provided"
+    return "Yes" if bool(value) else "No"
+
+
 def _jsonable(obj: Any) -> Any:
     if obj is None or isinstance(obj, (bool, str, int, float)):
         return obj
@@ -850,7 +857,7 @@ def generate_html_report(export_data: dict) -> str:
     <div class="section">
         <h2>Business risk flags</h2>
         {_html_table(['Risk factor', 'Status'], [
-            ['Business CCJs', 'Yes' if rf.get('business_ccj') else 'No'],
+            ['Business CCJs', format_flag_status(rf.get('business_ccj'))],
             ['Poor/no online presence', 'Yes' if rf.get('poor_or_no_online_presence') else 'No'],
             ['Generic email', 'Yes' if rf.get('uses_generic_email') else 'No'],
         ])}
@@ -1223,7 +1230,7 @@ def generate_pdf_report(export_data: dict) -> bytes:
         _table(
             ["Risk factor", "Status"],
             [
-                ["Business CCJs", "Yes" if rf.get("business_ccj") else "No"],
+                ["Business CCJs", format_flag_status(rf.get("business_ccj"))],
                 ["Poor/no online presence", "Yes" if rf.get("poor_or_no_online_presence") else "No"],
                 ["Generic email", "Yes" if rf.get("uses_generic_email") else "No"],
             ],

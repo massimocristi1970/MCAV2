@@ -462,7 +462,7 @@ if not run:
 filtered_df = run["filtered_df"]
 company_name = run["company_name"]
 
-st.dataframe(filtered_df, use_container_width=True)
+st.dataframe(filtered_df, width="stretch")
 
 # Reuse your existing CSV export helper used in main.py (if available in scope/importable)
 try:

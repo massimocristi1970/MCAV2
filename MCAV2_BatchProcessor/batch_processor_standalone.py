@@ -173,7 +173,7 @@ def plot_mca_chart(fig, key: str | None = None) -> None:
     if show_mca_plotly:
         show_mca_plotly(fig, key=key)
     else:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 
 def normalize_upload_name(name: str) -> str:
@@ -3610,7 +3610,7 @@ def render_pdf_match_review(pdf_audit_df: pd.DataFrame) -> None:
     display_cols = [col for col in display_cols if col in review_df.columns]
     st.dataframe(
         review_df[display_cols].sort_values(["pdf_match_status", "match_score"], ascending=[True, False]),
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
@@ -4782,7 +4782,7 @@ def render_extend_saved_run(saved_run: dict[str, Any]) -> None:
             new_files_data, extension_audit_df = split_new_json_files(new_json_files, existing_signatures)
 
         if not extension_audit_df.empty:
-            st.dataframe(extension_audit_df, use_container_width=True, hide_index=True)
+            st.dataframe(extension_audit_df, width="stretch", hide_index=True)
         if not new_files_data:
             st.info("All uploaded JSONs are already present in the saved run. Nothing new was processed.")
             return
@@ -4945,15 +4945,15 @@ def render_loaded_saved_run(saved_run: dict[str, Any]) -> None:
 
     if "outcome_label" in results_df.columns:
         section_title("Outcome Summary")
-        st.dataframe(results_df["outcome_label"].value_counts().reset_index(), use_container_width=True, hide_index=True)
+        st.dataframe(results_df["outcome_label"].value_counts().reset_index(), width="stretch", hide_index=True)
 
     if not outcome_audit_df.empty:
         with st.expander("Matching Audit", expanded=False):
-            st.dataframe(outcome_audit_df, use_container_width=True, hide_index=True)
+            st.dataframe(outcome_audit_df, width="stretch", hide_index=True)
 
     if not pdf_audit_df.empty:
         with st.expander("Company Credit Report PDF Audit", expanded=False):
-            st.dataframe(pdf_audit_df, use_container_width=True, hide_index=True)
+            st.dataframe(pdf_audit_df, width="stretch", hide_index=True)
 
     section_title("Saved Run Downloads")
     d1, d2, d3, d4 = st.columns(4)
@@ -5103,7 +5103,7 @@ def render_scorecard_calibration(results_df: pd.DataFrame) -> dict[str, pd.DataF
                 "paid_median",
                 "not_paid_median",
             ]
-            st.dataframe(recs[[col for col in display_cols if col in recs.columns]].head(20), use_container_width=True, hide_index=True)
+            st.dataframe(recs[[col for col in display_cols if col in recs.columns]].head(20), width="stretch", hide_index=True)
 
             top = recs.iloc[0]
             st.info(
@@ -5132,7 +5132,7 @@ def render_scorecard_calibration(results_df: pd.DataFrame) -> dict[str, pd.DataF
                 "subprime_score",
                 "final_decision",
             ]
-            st.dataframe(focus[[col for col in display_cols if col in focus.columns]].head(50), use_container_width=True, hide_index=True)
+            st.dataframe(focus[[col for col in display_cols if col in focus.columns]].head(50), width="stretch", hide_index=True)
 
             chart_df = focus.head(30).copy()
             chart_df["label"] = chart_df["company_name"].astype(str).str.slice(0, 42)
@@ -5153,7 +5153,7 @@ def render_scorecard_calibration(results_df: pd.DataFrame) -> dict[str, pd.DataF
         if bands.empty:
             st.info("Score band analysis is not available for this run.")
         else:
-            st.dataframe(bands, use_container_width=True, hide_index=True)
+            st.dataframe(bands, width="stretch", hide_index=True)
             for score_col in bands["score"].dropna().unique():
                 chart_df = bands[bands["score"] == score_col]
                 fig = px.bar(
@@ -5172,7 +5172,7 @@ def render_scorecard_calibration(results_df: pd.DataFrame) -> dict[str, pd.DataF
         if bureau.empty:
             st.info("No business bureau PDF signals were available for calibration in this run.")
         else:
-            st.dataframe(bureau, use_container_width=True, hide_index=True)
+            st.dataframe(bureau, width="stretch", hide_index=True)
             bool_rows = bureau[bureau["signal_type"] == "boolean"].copy()
             if not bool_rows.empty:
                 fig = px.bar(
@@ -5194,14 +5194,14 @@ def render_scorecard_calibration(results_df: pd.DataFrame) -> dict[str, pd.DataF
             st.info("No rule reason signals were available in the processed results.")
         else:
             display_cols = ["reason_source", "reason", "paid", "not_paid", "total_mentions", "not_paid_share"]
-            st.dataframe(rules[display_cols].head(30), use_container_width=True, hide_index=True)
+            st.dataframe(rules[display_cols].head(30), width="stretch", hide_index=True)
 
     with tabs[5]:
         evidence = reports["evidence_quality"]
         if evidence.empty:
             st.info("Evidence quality report is not available for this run.")
         else:
-            st.dataframe(evidence, use_container_width=True, hide_index=True)
+            st.dataframe(evidence, width="stretch", hide_index=True)
             fig = px.bar(
                 evidence,
                 x="evidence",
@@ -5214,7 +5214,7 @@ def render_scorecard_calibration(results_df: pd.DataFrame) -> dict[str, pd.DataF
             plot_mca_chart(fig, key="evidence_quality_coverage")
 
     with tabs[6]:
-        st.dataframe(summary_df, use_container_width=True, hide_index=True)
+        st.dataframe(summary_df, width="stretch", hide_index=True)
 
     return reports
 
@@ -5333,7 +5333,7 @@ def create_results_dashboard(results_df):
             final_counts_df = final_counts.reset_index()
             final_counts_df.columns = ["final_decision", "count"]
 
-            st.dataframe(final_counts_df, use_container_width=True)
+            st.dataframe(final_counts_df, width="stretch")
         else:
             st.info("final_decision not found in results.")
 
@@ -5345,7 +5345,7 @@ def create_results_dashboard(results_df):
             mca_counts_df = mca_counts.reset_index()
             mca_counts_df.columns = ["mca_rule_decision", "count"]
 
-            st.dataframe(mca_counts_df, use_container_width=True)
+            st.dataframe(mca_counts_df, width="stretch")
         else:
             st.info("mca_rule_decision not found in results.")
 
@@ -5357,7 +5357,7 @@ def create_results_dashboard(results_df):
             results_df["final_decision"].fillna("UNKNOWN"),
             margins=True
         )
-        st.dataframe(ctab, use_container_width=True)
+        st.dataframe(ctab, width="stretch")
 
     ob_cols = [
         "company_name",
@@ -5384,7 +5384,7 @@ def create_results_dashboard(results_df):
             "These extra transaction-derived fields are displayed and exported for review/calibration. "
             "They do not change scoring unless you later choose to add them to the scorecard."
         )
-        st.dataframe(results_df[available_ob_cols].head(100), use_container_width=True, hide_index=True)
+        st.dataframe(results_df[available_ob_cols].head(100), width="stretch", hide_index=True)
 
     # Detailed Results Table
     section_title("Detailed Results")
@@ -5438,7 +5438,7 @@ def create_results_dashboard(results_df):
         if col in display_df.columns:
             display_df[col] = display_df[col].apply(formatter)
 
-    st.dataframe(display_df, use_container_width=True, hide_index=True)
+    st.dataframe(display_df, width="stretch", hide_index=True)
 
     # Download button (export-friendly)
     export_df = results_df.copy()
@@ -5457,912 +5457,6 @@ def create_results_dashboard(results_df):
         mime="text/csv",
         type="primary"
     )
-
-
-def legacy_main():
-    """Main application"""
-
-    if render_main_hero:
-        render_main_hero(
-            "MCA v2 Batch Processor",
-            "Score multiple applications, audit CSV-to-JSON matching, and export scorecard-ready results.",
-            eyebrow="Batch scoring workspace",
-        )
-    else:
-        st.title("MCA v2 Batch Processor")
-        st.markdown("Score multiple applications, audit CSV-to-JSON matching, and export scorecard-ready results.")
-    render_batch_workflow_rail()
-
-    # Sidebar for parameters
-    if sidebar_section:
-        sidebar_section("Parameter Sources")
-    else:
-        st.sidebar.header("Parameter Sources")
-    st.sidebar.markdown("""
-    **Parameter Priority:**
-    1. **Individual JSON files** (if they contain application data)
-    2. **CSV mapping file** (upload a CSV with company-specific parameters)
-    3. **Fallback defaults** (only used when data is missing)
-    """)
-    st.sidebar.caption(
-        "Matching mode: RapidFuzz" if RAPIDFUZZ_AVAILABLE else "Matching mode: exact fallback"
-    )
-    
-    # Option to upload parameter mapping
-    if sidebar_subsection:
-        sidebar_subsection("Upload Parameter Mapping")
-    else:
-        st.sidebar.subheader("Upload Parameter Mapping")
-    parameter_file = st.sidebar.file_uploader(
-        "Upload CSV with application parameters",
-        type=['csv'],
-        help="CSV should include columns: company_name, industry, directors_score, requested_loan, etc."
-    )
-    
-    # Load parameter mapping if provided
-    parameter_mapping = {}
-    if parameter_file:
-        try:
-            param_df = pd.read_csv(parameter_file)
-            st.sidebar.success(f"Loaded parameters for {len(param_df)} companies")
-            
-            # Show available columns
-            available_cols = list(param_df.columns)
-            expected_cols = ['industry', 'directors_score', 'requested_loan', 'company_age_months',
-                             'business_ccj', 'director_ccj', 'poor_or_no_online_presence', 'uses_generic_email']
-            
-            missing_cols = [col for col in expected_cols if col not in available_cols]
-            if missing_cols:
-                st.sidebar.warning(f"Missing columns: {', '.join(missing_cols)}")
-            
-            identifier_candidates = [
-                'company_name',
-                'application_id',
-                'Company Name',
-                'company',
-                'business_name',
-                'Business Name',
-            ]
-            identifier_column = next((col for col in identifier_candidates if col in param_df.columns), None)
-
-            # Convert to dictionary using the best available company/application identifier.
-            if identifier_column:
-                for _, row in param_df.iterrows():
-                    company_name = row[identifier_column]
-                    if pd.isna(company_name) or not str(company_name).strip():
-                        continue
-
-                    row_dict = row.to_dict()
-                    row_dict['company_name'] = str(company_name).strip()
-                    parameter_mapping[str(company_name).strip()] = row_dict
-                
-                st.sidebar.caption(f"Using `{identifier_column}` as the matching column")
-                st.sidebar.info(f"CSV company examples: {list(parameter_mapping.keys())[:3]}")
-            else:
-                st.sidebar.error("CSV must have a company identifier column such as 'company_name' or 'application_id'")
-            
-            # Show preview
-            with st.sidebar.expander("Preview Parameter CSV"):
-                st.dataframe(param_df.head(), use_container_width=True)
-                
-            # Add diagnostic button here
-            st.sidebar.markdown("---")
-            if sidebar_subsection:
-                sidebar_subsection("Diagnostic Tools")
-            else:
-                st.sidebar.subheader("Diagnostic Tools")
-            if st.sidebar.button("Diagnose Specific Cases"):
-                st.session_state['show_diagnostic'] = True
-                
-        except Exception as e:
-            st.sidebar.error(f"Error reading parameter file: {e}")
-            
-    # Fallback defaults
-    if sidebar_subsection:
-        sidebar_subsection("Fallback Defaults")
-    else:
-        st.sidebar.subheader("Fallback Defaults")
-    st.sidebar.markdown("*Only used when data is missing from JSON or CSV*")
-    
-    default_industry = st.sidebar.selectbox(
-        "Fallback Industry", 
-        list(INDUSTRY_THRESHOLDS.keys()),
-        index=list(INDUSTRY_THRESHOLDS.keys()).index('Other')
-    )
-    
-    default_loan = st.sidebar.number_input("Fallback Requested Loan (£)", min_value=0.0, value=5000.0, step=1000.0)
-    default_directors_score = st.sidebar.slider("Fallback Director Credit Score", 0, 100, DIRECTOR_SCORE_PASS_THRESHOLD)
-    default_company_age = st.sidebar.number_input("Fallback Company Age (Months)", min_value=0, value=12, step=1)
-
-    # Risk factors
-    if sidebar_subsection:
-        sidebar_subsection("Default Risk Factors")
-    else:
-        st.sidebar.subheader("Default Risk Factors")
-    default_business_ccj = st.sidebar.checkbox("Business CCJs", False)
-    default_director_ccj = st.sidebar.checkbox("Director CCJs", False)
-    default_poor_or_no_online = st.sidebar.checkbox("Poor/No Online Presence", False)
-    default_generic_email = st.sidebar.checkbox("Generic Email", False)
-
-    default_params = {
-        'industry': default_industry,
-        'requested_loan': default_loan,
-        'directors_score': default_directors_score,
-        'company_age_months': default_company_age,
-        'business_ccj': default_business_ccj,
-        'director_ccj': default_director_ccj,
-        'poor_or_no_online_presence': default_poor_or_no_online,
-        'uses_generic_email': default_generic_email
-    }
-    
-    # NEW: Show diagnostic section here (after parameter_mapping is loaded)
-    if st.session_state.get('show_diagnostic', False) and parameter_mapping:
-        section_title("Direct Matching Diagnostic", "Inspect how a JSON filename is normalized against the CSV identifiers.")
-    
-        # Test the exact cases that are failing
-        failing_cases = [
-            ("22LUSH LTD", "22Lush Limited Transaction Report_0,0.json"),
-        ]
-    
-        processor = BatchProcessor()
-        csv_companies = list(parameter_mapping.keys())
-    
-        for csv_name, json_filename in failing_cases:
-            st.write(f"**CSV:** `{csv_name}` vs **JSON:** `{json_filename}`")
-            extracted_name, method = processor.extract_company_name_from_json({}, json_filename)
-            st.write(f"**Extracted:** `{extracted_name}`")
-    
-            # Simple comparison
-            csv_lower = csv_name.lower().replace('ltd', '').strip()
-            extracted_lower = extracted_name.lower().replace('limited', '').strip()
-    
-            st.write(f"**CSV cleaned:** `{csv_lower}`")
-            st.write(f"**Extracted cleaned:** `{extracted_lower}`")
-    
-            if csv_lower == extracted_lower:
-                st.success("Match after simple cleaning")
-            else:
-                st.error(f"No match: '{csv_lower}' vs '{extracted_lower}'")
-    
-            break  # Just show first case for now
-    
-        if st.button("Close Diagnostic"):
-            st.session_state['show_diagnostic'] = False
-            st.rerun()
-    
-        st.markdown("---")
-    
-    # File upload section
-    if render_intake_panel_intro:
-        render_intake_panel_intro(
-            title="Application batch",
-            description="Upload individual JSON files or a ZIP archive containing multiple JSON files. The optional CSV mapping controls company-specific parameters.",
-        )
-    else:
-        section_title("Application Batch", "Upload individual JSON files or a ZIP archive containing multiple JSON files.")
-    
-    uploaded_files = st.file_uploader(
-        "Choose files",
-        type=['json', 'zip'],
-        accept_multiple_files=True,
-        help="Upload JSON transaction files or ZIP archives. Each JSON should contain transaction data."
-    )
-    
-    if uploaded_files:
-        # Load files
-        with st.spinner("Loading files..."):
-            files_data = load_json_files(uploaded_files)
-        
-        if files_data:
-            loaded_col, csv_col, ready_col = st.columns(3)
-            with loaded_col:
-                st.metric("JSON Files Loaded", len(files_data))
-            with csv_col:
-                st.metric("CSV Companies", len(parameter_mapping) if parameter_mapping else 0)
-            with ready_col:
-                st.metric("Ready to Process", "Yes")
-            
-            # Show file list
-            with st.expander("Loaded Files", expanded=False):
-                for filename, _ in files_data:
-                    st.write(f"- {filename}")
-            
-            # Enhanced file matching analysis
-            if parameter_mapping:
-                section_title("File Matching Analysis", "Preview how uploaded JSON filenames align with the CSV mapping before processing.")
-                
-                # Get list of uploaded JSON filenames (without .json extension)
-                uploaded_filenames = [filename.replace('.json', '') for filename, _ in files_data]
-                
-                # Get list of companies from CSV
-                csv_companies = list(parameter_mapping.keys())
-                
-                # Perform fuzzy matching analysis
-                potential_matches = []
-                missing_jsons = []
-                extra_jsons = []
-                
-                if RAPIDFUZZ_AVAILABLE:
-                    # Use fuzzy matching for analysis
-                    for csv_company in csv_companies:
-                        match_result = process.extractOne(
-                            csv_company,
-                            uploaded_filenames,
-                            scorer=fuzz.token_sort_ratio,
-                            score_cutoff=60
-                        )
-                        if match_result:
-                            potential_matches.append({
-                                'csv_company': csv_company,
-                                'json_file': match_result[0],
-                                'score': match_result[1]
-                            })
-                        else:
-                            missing_jsons.append(csv_company)
-                    
-                    # Find extra JSON files
-                    matched_json_files = [m['json_file'] for m in potential_matches]
-                    extra_jsons = [f for f in uploaded_filenames if f not in matched_json_files]
-                
-                else:
-                    # Fallback exact matching
-                    for csv_company in csv_companies:
-                        if csv_company in uploaded_filenames:
-                            potential_matches.append({
-                                'csv_company': csv_company,
-                                'json_file': csv_company,
-                                'score': 100
-                            })
-                        else:
-                            missing_jsons.append(csv_company)
-                    
-                    matched_json_files = [m['json_file'] for m in potential_matches]
-                    extra_jsons = [f for f in uploaded_filenames if f not in matched_json_files]
-                
-                # Display matching results
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Companies in CSV", len(csv_companies))
-                with col2:
-                    st.metric("JSON Files Uploaded", len(uploaded_filenames))
-                with col3:
-                    st.metric("Expected Matches", len(potential_matches))
-                
-                # Show potential matches
-                if potential_matches:
-                    st.success(f"{len(potential_matches)} potential matches found")
-                    
-                    with st.expander(f"Potential Matches ({len(potential_matches)})", expanded=True):
-                        match_df = pd.DataFrame(potential_matches)
-                        match_df['score'] = match_df['score'].apply(lambda x: f"{x:.1f}%")
-                        match_df.columns = ['CSV Company', 'JSON File', 'Match Score']
-                        st.dataframe(match_df, use_container_width=True, hide_index=True)
-                
-                # Show missing JSON files
-                if missing_jsons:
-                    st.warning(f"{len(missing_jsons)} companies from CSV do not have matching JSON files")
-                    
-                    with st.expander(f"Missing JSON Files ({len(missing_jsons)})", expanded=False):
-                        missing_df = pd.DataFrame({
-                            'Company Name (from CSV)': missing_jsons,
-                            'Status': ['No matching JSON file found'] * len(missing_jsons)
-                        })
-                        st.dataframe(missing_df, use_container_width=True, hide_index=True)
-                
-                # Show extra JSON files
-                if extra_jsons:
-                    with st.expander(f"Extra JSON Files ({len(extra_jsons)})", expanded=False):
-                        st.markdown("**JSON files uploaded but not in CSV (will use default parameters):**")
-                        for filename in extra_jsons:
-                            st.write(f"- {filename}.json")
-            
-            else:
-                st.info("Upload a CSV file to see file matching analysis.")
-            
-            # Process button
-            if st.button("Process All Applications", type="primary"):
-                
-                # Initialize processor
-                processor = BatchProcessor()
-                
-                # Progress tracking
-                progress_bar = st.progress(0, text="Starting batch processing...")
-                
-                # Process batch
-                with st.spinner("Processing applications..."):
-                    results_df = processor.process_batch(files_data, default_params, parameter_mapping, progress_bar)
-                
-                # Clear progress bar
-                progress_bar.empty()
-                
-                # Show processing summary
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Processed Successfully", processor.processed_count)
-                with col2:
-                    st.metric("Processing Errors", processor.error_count)
-                with col3:
-                    success_rate = (processor.processed_count / len(files_data)) * 100
-                    st.metric("Success Rate", f"{success_rate:.1f}%")
-                
-                # ENHANCED: Show fuzzy matching results
-                if not results_df.empty and 'fuzzy_match_success' in results_df.columns:
-                    section_title("Fuzzy Matching Results")
-                    
-                    # Calculate fuzzy matching stats
-                    total_processed = len(results_df)
-                    successful_matches = results_df['fuzzy_match_success'].sum()
-                    csv_params_applied = results_df['parameters_applied_from_csv'].sum()
-                    using_defaults = results_df['using_defaults'].sum()
-                    
-                    col1, col2, col3, col4 = st.columns(4)
-                    with col1:
-                        st.metric("Applications Processed", total_processed)
-                    with col2:
-                        match_rate = (successful_matches / total_processed) * 100 if total_processed > 0 else 0
-                        st.metric("Fuzzy Match Success", f"{match_rate:.1f}%")
-                    with col3:
-                        st.metric("CSV Parameters Applied", int(csv_params_applied))
-                    with col4:
-                        default_rate = (using_defaults / total_processed) * 100 if total_processed > 0 else 0
-                        st.metric("Using Defaults", f"{default_rate:.1f}%")
-                    
-                    # Show detailed matching results
-                    if successful_matches > 0:
-                        with st.expander("Detailed Fuzzy Matching Results", expanded=False):
-                            
-                            # Successful matches
-                            successful_df = results_df[results_df['fuzzy_match_success'] == True]
-                            if not successful_df.empty:
-                                st.write("**Successful Matches:**")
-                                match_details = successful_df[['original_filename', 'extracted_company_name', 'fuzzy_match_company', 'fuzzy_match_score', 'fuzzy_match_strategy', 'parameters_applied_from_csv']].copy()
-                                match_details['fuzzy_match_score'] = match_details['fuzzy_match_score'].apply(lambda x: f"{x:.1f}%" if pd.notna(x) else "N/A")
-                                match_details.columns = ['JSON File', 'Extracted Name', 'CSV Matched Company', 'Match Score', 'Strategy', 'Params Applied']
-                                st.dataframe(match_details, use_container_width=True, hide_index=True)
-                            
-                            # Failed matches
-                            failed_df = results_df[results_df['fuzzy_match_success'] == False]
-                            if not failed_df.empty:
-                                st.write("**Failed Matches:**")
-                                failed_details = failed_df[['original_filename', 'extracted_company_name', 'fuzzy_match_debug']].copy()
-                                failed_details.columns = ['JSON File', 'Extracted Company Name', 'Debug Info']
-                                st.dataframe(failed_details, use_container_width=True, hide_index=True)
-                    
-                    # Show parameter source breakdown
-                    section_title("Parameter Source Analysis")
-                    
-                    param_source_data = []
-                    for _, row in results_df.iterrows():
-                        if row.get('fuzzy_match_success', False):
-                            source = f"CSV Match ({row.get('fuzzy_match_score', 0):.1f}%)"
-                        elif row.get('using_defaults', False):
-                            source = "Fallback Defaults"
-                        else:
-                            source = "JSON Metadata"
-                        
-                        param_source_data.append({
-                            'Company': row.get('company_name', 'Unknown'),
-                            'Parameter Source': source,
-                            'Industry': row.get('industry', 'Unknown'),
-                            'Directors Score': row.get('directors_score', 'Unknown'),
-                            'Requested Loan': f"£{row.get('requested_loan', 0):,.0f}"
-                        })
-                    
-                    if param_source_data:
-                        param_df = pd.DataFrame(param_source_data)
-                        st.dataframe(param_df, use_container_width=True, hide_index=True)
-                
-                # Show errors if any
-                if processor.error_log:
-                    section_title("Processing Errors Analysis")
-                    
-                    # Categorize errors
-                    error_categories = {}
-                    for error in processor.error_log:
-                        error_msg = error['error']
-                        if 'No transactions found' in error_msg:
-                            category = 'No Transactions'
-                        elif 'Missing required columns' in error_msg:
-                            category = 'Missing Required Columns'
-                        elif 'No valid transactions after cleaning' in error_msg:
-                            category = 'Invalid Transaction Data'
-                        elif 'Could not calculate financial metrics' in error_msg:
-                            category = 'Financial Calculation Error'
-                        elif 'Invalid parameter data types' in error_msg:
-                            category = 'Parameter Type Error'
-                        elif 'Unknown industry' in error_msg:
-                            category = 'Unknown Industry'
-                        else:
-                            category = 'Other Error'
-                        
-                        if category not in error_categories:
-                            error_categories[category] = []
-                        error_categories[category].append(error)
-                    
-                    # Show error summary
-                    col1, col2 = st.columns(2)
-                    
-                    with col1:
-                        st.write("**Error Categories:**")
-                        for category, errors in error_categories.items():
-                            st.write(f"- **{category}**: {len(errors)} files")
-                    
-                    with col2:
-                        st.write("**Most Common Errors:**")
-                        sorted_categories = sorted(error_categories.items(), key=lambda x: len(x[1]), reverse=True)
-                        for category, errors in sorted_categories[:3]:
-                            percentage = (len(errors) / len(processor.error_log)) * 100
-                            st.write(f"- {category}: {percentage:.1f}%")
-                    
-                    # Detailed error breakdown
-                    with st.expander(f"Detailed Error Breakdown ({len(processor.error_log)} errors)", expanded=False):
-                        error_df = pd.DataFrame(processor.error_log)
-                        st.dataframe(error_df, use_container_width=True, hide_index=True)
-                        
-                        # Download error log
-                        error_csv = error_df.to_csv(index=False)
-                        st.download_button(
-                            label="Download Error Log (CSV)",
-                            data=error_csv,
-                            file_name=f"processing_errors_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                            mime="text/csv"
-                        )
-                
-                # Display results dashboard
-                if not results_df.empty:
-                    st.markdown("---")
-                    
-                    # COMPREHENSIVE DEBUG SECTION - Show all debug information
-                    section_title("Comprehensive Debug Information")
-                    
-                    # Processing summary with debug info
-                    debug_summary = []
-                    for _, row in results_df.iterrows():
-                        debug_summary.append({
-                            'File': row.get('original_filename', 'Unknown'),
-                            'Company Extracted': row.get('extracted_company_name', 'None'),
-                            'Extraction Method': row.get('extraction_method', 'None'),
-                            'CSV Available': row.get('parameter_mapping_available', False),
-                            'Fuzzy Match Success': row.get('fuzzy_match_success', False),
-                            'Match Score': f"{row.get('fuzzy_match_score', 0):.1f}%",
-                            'Match Strategy': row.get('fuzzy_match_strategy', 'None'),
-                            'CSV Params Applied': row.get('parameters_applied_from_csv', 0),
-                            'Using Defaults': row.get('using_defaults', False),
-                            'Final Score': f"{row.get('subprime_score', 0):.1f}",
-                            'Processing Status': 'SUCCESS' if row.get('processing_successful', False) else 'UNKNOWN'
-                        })
-                    
-                    if debug_summary:
-                        debug_df = pd.DataFrame(debug_summary)
-                        st.dataframe(debug_df, use_container_width=True, hide_index=True)
-                        
-                        # Debug download
-                        debug_csv = debug_df.to_csv(index=False)
-                        st.download_button(
-                            label="Download Debug Log (CSV)",
-                            data=debug_csv,
-                            file_name=f"debug_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                            mime="text/csv"
-                        )
-                    
-                    # Quick debug stats
-                    if debug_summary:
-                        st.write("**Quick Debug Stats:**")
-                        total_apps = len(debug_summary)
-                        csv_available_count = sum(1 for d in debug_summary if d['CSV Available'])
-                        fuzzy_success_count = sum(1 for d in debug_summary if d['Fuzzy Match Success'])
-                        using_defaults_count = sum(1 for d in debug_summary if d['Using Defaults'])
-                        
-                        debug_col1, debug_col2, debug_col3, debug_col4 = st.columns(4)
-                        with debug_col1:
-                            st.metric("Total Applications", total_apps)
-                        with debug_col2:
-                            csv_rate = (csv_available_count / total_apps) * 100 if total_apps > 0 else 0
-                            st.metric("CSV Available", f"{csv_rate:.1f}%")
-                        with debug_col3:
-                            fuzzy_rate = (fuzzy_success_count / total_apps) * 100 if total_apps > 0 else 0
-                            st.metric("Fuzzy Match Success", f"{fuzzy_rate:.1f}%")
-                        with debug_col4:
-                            defaults_rate = (using_defaults_count / total_apps) * 100 if total_apps > 0 else 0
-                            st.metric("Using Defaults", f"{defaults_rate:.1f}%")
-                        
-                        # Extraction method breakdown
-                        extraction_methods = {}
-                        for d in debug_summary:
-                            method = d['Extraction Method']
-                            extraction_methods[method] = extraction_methods.get(method, 0) + 1
-                        
-                        st.write("**Company Name Extraction Methods:**")
-                        for method, count in extraction_methods.items():
-                            percentage = (count / total_apps) * 100
-                            st.write(f"- **{method}**: {count} files ({percentage:.1f}%)")
-                    
-                    st.markdown("---")
-                    
-                    create_results_dashboard(results_df)
-                    
-                    # Store results in session state for potential re-use
-                    st.session_state['batch_results'] = results_df
-                
-                else:
-                    st.error("No applications were processed successfully")
-        
-        else:
-            st.error("No valid JSON files found in uploaded files")
-    
-    else:
-        render_batch_empty_state()
-        
-
-def main():
-    """Simplified batch dataset builder."""
-
-    if render_main_hero:
-        render_main_hero(
-            "MCA v2 Batch Processor",
-            "Build paid/not-paid scorecard datasets from application data, transaction JSONs, and optional bureau PDFs.",
-            eyebrow="Batch scoring workspace",
-        )
-    else:
-        st.title("MCA v2 Batch Processor")
-        st.markdown("Build paid/not-paid scorecard datasets from application data, transaction JSONs, and optional bureau PDFs.")
-    render_batch_workflow_rail()
-
-    if sidebar_section:
-        sidebar_section("Fallbacks")
-    else:
-        st.sidebar.header("Fallbacks")
-    st.sidebar.caption("Only used where the uploaded data and mapping cannot supply a value.")
-    st.sidebar.caption("Matching mode: RapidFuzz" if RAPIDFUZZ_AVAILABLE else "Matching mode: exact fallback")
-
-    default_industry = st.sidebar.selectbox(
-        "Fallback Industry",
-        list(INDUSTRY_THRESHOLDS.keys()),
-        index=list(INDUSTRY_THRESHOLDS.keys()).index("Other"),
-    )
-    default_loan = st.sidebar.number_input("Fallback Requested Loan (£)", min_value=0.0, value=5000.0, step=1000.0)
-    default_directors_score = st.sidebar.slider("Fallback Director Credit Score", 0, 100, DIRECTOR_SCORE_PASS_THRESHOLD)
-    default_company_age = st.sidebar.number_input("Fallback Company Age (Months)", min_value=0, value=12, step=1)
-
-    default_params = {
-        "industry": default_industry,
-        "requested_loan": default_loan,
-        "directors_score": default_directors_score,
-        "company_age_months": default_company_age,
-        "business_ccj": False,
-        "director_ccj": False,
-        "poor_or_no_online_presence": False,
-        "uses_generic_email": False,
-    }
-
-    if render_intake_panel_intro:
-        render_intake_panel_intro(
-            title="Batch inputs",
-            description=(
-                "Upload the application data file, its mapping file, the full JSON pool, "
-                "then paid and not-paid JSON subsets for automatic outcome labels."
-            ),
-        )
-    else:
-        section_title("Batch Inputs", "Upload the data, mapping, JSON pool, and outcome JSON subsets.")
-
-    data_col, mapping_col = st.columns(2)
-    with data_col:
-        data_file = st.file_uploader(
-            "Application data file",
-            type=["csv", "xlsx", "xls"],
-            help="Example: data (6).xlsx. Filename does not matter.",
-            key="batch_data_file",
-        )
-    with mapping_col:
-        mapping_file = st.file_uploader(
-            "CSV mapping file",
-            type=["csv", "xlsx", "xls"],
-            help="Example: PBI_CSV_Mapping.xlsx.",
-            key="batch_mapping_file",
-        )
-
-    json_col, paid_col, not_paid_col = st.columns(3)
-    with json_col:
-        uploaded_files = st.file_uploader(
-            "All application JSONs",
-            type=["json", "zip"],
-            accept_multiple_files=True,
-            help="Full pool of transaction JSON files.",
-            key="batch_all_jsons",
-        )
-    with paid_col:
-        paid_files = st.file_uploader(
-            "Paid JSONs",
-            type=["json", "zip"],
-            accept_multiple_files=True,
-            help="Files uploaded here are labelled paid.",
-            key="batch_paid_jsons",
-        )
-    with not_paid_col:
-        not_paid_files = st.file_uploader(
-            "Not-paid JSONs",
-            type=["json", "zip"],
-            accept_multiple_files=True,
-            help="Files uploaded here are labelled not_paid/defaulted.",
-            key="batch_not_paid_jsons",
-        )
-
-    bureau_pdf_files = st.file_uploader(
-        "Company credit report PDFs (optional)",
-        type=["pdf"],
-        accept_multiple_files=True,
-        help="Optional bureau PDFs used to derive business CCJ flags.",
-        key="batch_bureau_pdfs",
-    )
-
-    metadata_df = pd.DataFrame()
-    duplicates_df = pd.DataFrame()
-    metadata_audit = {}
-    parameter_mapping = {}
-
-    if data_file and mapping_file:
-        try:
-            metadata_df, duplicates_df, metadata_audit = prepare_application_metadata(
-                data_file,
-                mapping_file,
-                default_industry,
-            )
-            parameter_mapping = build_metadata_mapping(metadata_df)
-
-            m1, m2, m3, m4 = st.columns(4)
-            with m1:
-                st.metric("Raw Data Rows", metadata_audit.get("raw_rows", 0))
-            with m2:
-                st.metric("Deduped Applications", len(metadata_df))
-            with m3:
-                st.metric("Duplicate Rows Removed", metadata_audit.get("duplicate_rows_removed", 0))
-            with m4:
-                st.metric("Mapped Companies", len(parameter_mapping))
-
-            with st.expander("Mapped Data Preview", expanded=False):
-                preview_cols = [
-                    c for c in [
-                        "application_id",
-                        "company_name",
-                        "requested_loan",
-                        "company_age_months",
-                        "directors_score",
-                        "director_defaults_12m",
-                        "director_ccj_count",
-                    ] if c in metadata_df.columns
-                ]
-                st.dataframe(metadata_df[preview_cols].head(20), use_container_width=True, hide_index=True)
-
-            if not duplicates_df.empty:
-                with st.expander(f"Duplicate AppID Rows Found ({len(duplicates_df)})", expanded=False):
-                    st.dataframe(duplicates_df.head(100), use_container_width=True, hide_index=True)
-        except Exception as e:
-            st.error(f"Could not read data/mapping files: {e}")
-
-    if not uploaded_files:
-        render_batch_empty_state()
-        return
-
-    with st.spinner("Loading JSON files..."):
-        files_data = load_json_files(uploaded_files)
-
-    if not files_data:
-        st.error("No valid JSON files found in uploaded files")
-        return
-
-    outcome_mapping, outcome_audit_df = assign_outcomes(files_data, paid_files, not_paid_files)
-
-    pdf_risk_mapping = {}
-    pdf_audit_df = pd.DataFrame()
-    if bureau_pdf_files and not metadata_df.empty:
-        with st.spinner("Reading company credit report PDFs..."):
-            pdf_risk_mapping, pdf_audit_df = build_pdf_risk_mapping(bureau_pdf_files, metadata_df)
-            parameter_mapping = apply_pdf_risk_to_mapping(parameter_mapping, pdf_risk_mapping)
-        render_pdf_match_review(pdf_audit_df)
-
-    loaded_col, csv_col, ready_col = st.columns(3)
-    with loaded_col:
-        st.metric("JSON Files Loaded", len(files_data))
-    with csv_col:
-        st.metric("CSV Companies", len(parameter_mapping))
-    with ready_col:
-        st.metric("Ready to Process", "Yes" if parameter_mapping else "Needs data/mapping")
-
-    if not outcome_audit_df.empty:
-        outcome_counts = outcome_audit_df["outcome_label"].value_counts().reset_index()
-        outcome_counts.columns = ["Outcome", "Files"]
-        st.dataframe(outcome_counts, use_container_width=True, hide_index=True)
-        if (outcome_audit_df["outcome_label"] == "conflict").any():
-            st.error("Some JSON files are present in both paid and not-paid uploads. Resolve these before using the outputs.")
-
-    with st.expander("Loaded Files", expanded=False):
-        for filename, _ in files_data:
-            st.write(f"- {filename}")
-
-    if parameter_mapping:
-        section_title("File Matching Analysis", "Preview how uploaded JSON filenames align with the mapped company data.")
-        uploaded_filenames = [filename.replace(".json", "") for filename, _ in files_data]
-        csv_companies = list(parameter_mapping.keys())
-        potential_matches = []
-        missing_jsons = []
-        extra_jsons = []
-
-        if RAPIDFUZZ_AVAILABLE:
-            for csv_company in csv_companies:
-                match_result = process.extractOne(
-                    csv_company,
-                    uploaded_filenames,
-                    scorer=fuzz.token_sort_ratio,
-                    score_cutoff=60,
-                )
-                if match_result:
-                    potential_matches.append(
-                        {"csv_company": csv_company, "json_file": match_result[0], "score": match_result[1]}
-                    )
-                else:
-                    missing_jsons.append(csv_company)
-            matched_json_files = [m["json_file"] for m in potential_matches]
-            extra_jsons = [f for f in uploaded_filenames if f not in matched_json_files]
-        else:
-            for csv_company in csv_companies:
-                if csv_company in uploaded_filenames:
-                    potential_matches.append({"csv_company": csv_company, "json_file": csv_company, "score": 100})
-                else:
-                    missing_jsons.append(csv_company)
-            matched_json_files = [m["json_file"] for m in potential_matches]
-            extra_jsons = [f for f in uploaded_filenames if f not in matched_json_files]
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Companies in Data", len(csv_companies))
-        with col2:
-            st.metric("JSON Files Uploaded", len(uploaded_filenames))
-        with col3:
-            st.metric("Expected Matches", len(potential_matches))
-
-        if potential_matches:
-            with st.expander(f"Potential Matches ({len(potential_matches)})", expanded=False):
-                match_df = pd.DataFrame(potential_matches)
-                match_df["score"] = match_df["score"].apply(lambda x: f"{x:.1f}%")
-                match_df.columns = ["CSV Company", "JSON File", "Match Score"]
-                st.dataframe(match_df, use_container_width=True, hide_index=True)
-
-        if missing_jsons:
-            with st.expander(f"Missing JSON Files ({len(missing_jsons)})", expanded=False):
-                st.dataframe(
-                    pd.DataFrame({"Company Name (from data)": missing_jsons}),
-                    use_container_width=True,
-                    hide_index=True,
-                )
-
-        if extra_jsons:
-            with st.expander(f"Extra JSON Files ({len(extra_jsons)})", expanded=False):
-                st.dataframe(pd.DataFrame({"JSON File": extra_jsons}), use_container_width=True, hide_index=True)
-    else:
-        st.info("Upload the data and mapping files to enable metadata matching.")
-
-    if not pdf_audit_df.empty:
-        with st.expander("Company Credit Report PDF Audit", expanded=False):
-            st.dataframe(pdf_audit_df, use_container_width=True, hide_index=True)
-
-    if not st.button("Process All Applications", type="primary"):
-        return
-
-    processor = BatchProcessor()
-    progress_bar = st.progress(0, text="Starting batch processing...")
-    with st.spinner("Processing applications..."):
-        results_df = processor.process_batch(
-            files_data,
-            default_params,
-            parameter_mapping,
-            progress_bar,
-            outcome_mapping=outcome_mapping,
-        )
-    progress_bar.empty()
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Processed Successfully", processor.processed_count)
-    with col2:
-        st.metric("Processing Errors", processor.error_count)
-    with col3:
-        success_rate = (processor.processed_count / len(files_data)) * 100
-        st.metric("Success Rate", f"{success_rate:.1f}%")
-
-    if processor.error_log:
-        section_title("Processing Errors Analysis")
-        error_df = pd.DataFrame(processor.error_log)
-        st.dataframe(error_df, use_container_width=True, hide_index=True)
-        st.download_button(
-            label="Download Error Log (CSV)",
-            data=error_df.to_csv(index=False),
-            file_name=f"processing_errors_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-        )
-
-    if results_df.empty:
-        st.error("No applications were processed successfully")
-        return
-
-    scorecard_features_df = build_scorecard_features(results_df)
-    section_title("Scorecard Dataset Exports")
-    d1, d2, d3, d4 = st.columns(4)
-    with d1:
-        st.download_button(
-            "Download Case Scores",
-            data=results_df.to_csv(index=False),
-            file_name=f"case_scores_with_outcomes_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-            type="primary",
-        )
-    with d2:
-        st.download_button(
-            "Download Scorecard Features",
-            data=scorecard_features_df.to_csv(index=False),
-            file_name=f"scorecard_features_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-        )
-    with d3:
-        st.download_button(
-            "Download Matching Audit",
-            data=outcome_audit_df.to_csv(index=False),
-            file_name=f"matching_audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-        )
-    with d4:
-        if not pdf_audit_df.empty:
-            st.download_button(
-                "Download PDF Audit",
-                data=pdf_audit_df.to_csv(index=False),
-                file_name=f"bureau_pdf_audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-                mime="text/csv",
-            )
-
-    if "outcome_label" in results_df.columns:
-        section_title("Outcome Summary")
-        st.dataframe(results_df["outcome_label"].value_counts().reset_index(), use_container_width=True, hide_index=True)
-
-    calibration_reports = render_scorecard_calibration(results_df)
-    section_title("Calibration Report Exports")
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.download_button(
-            "Download Calibration Summary",
-            data=calibration_reports["summary"].to_csv(index=False),
-            file_name=f"calibration_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-        )
-    with c2:
-        st.download_button(
-            "Download Threshold Recommendations",
-            data=calibration_reports["threshold_recommendations"].to_csv(index=False),
-            file_name=f"threshold_recommendations_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-        )
-    with c3:
-        st.download_button(
-            "Download Score Band Report",
-            data=calibration_reports["score_bands"].to_csv(index=False),
-            file_name=f"score_band_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-        )
-    with c4:
-        st.download_button(
-            "Download Rule Signal Report",
-            data=calibration_reports["rule_signals"].to_csv(index=False),
-            file_name=f"rule_signal_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime="text/csv",
-        )
-    st.download_button(
-        "Download Paid Lookalike Report",
-        data=calibration_reports["paid_lookalikes"].to_csv(index=False),
-        file_name=f"paid_lookalike_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-        mime="text/csv",
-    )
-
-    create_results_dashboard(results_df)
-    st.session_state["batch_results"] = results_df
 
 
 def main():
@@ -6466,7 +5560,7 @@ def main():
             selected_archive_rows = st.data_editor(
                 archive_options,
                 hide_index=True,
-                use_container_width=True,
+                width="stretch",
                 column_config={
                     "Archive": st.column_config.CheckboxColumn("Archive"),
                     "Path": st.column_config.TextColumn("Path", disabled=True),
@@ -6509,7 +5603,7 @@ def main():
                 non_archived = [result for result in archive_results if result.get("status") != "archived"]
                 if non_archived:
                     st.warning(f"{len(non_archived)} selected run(s) were not archived. Check statuses below.")
-                    st.dataframe(pd.DataFrame(non_archived), use_container_width=True, hide_index=True)
+                    st.dataframe(pd.DataFrame(non_archived), width="stretch", hide_index=True)
             st.caption(f"Archive folder: {ARCHIVED_SAVED_RUNS_DIR}")
     else:
         selected_run = None
@@ -6672,11 +5766,11 @@ def main():
                 "director_ccj_count",
             ] if c in metadata_df.columns
         ]
-        st.dataframe(metadata_df[preview_cols].head(20), use_container_width=True, hide_index=True)
+        st.dataframe(metadata_df[preview_cols].head(20), width="stretch", hide_index=True)
 
     if not duplicates_df.empty:
         with st.expander(f"Duplicate AppID Rows Found ({len(duplicates_df)})", expanded=False):
-            st.dataframe(duplicates_df.head(100), use_container_width=True, hide_index=True)
+            st.dataframe(duplicates_df.head(100), width="stretch", hide_index=True)
 
     with st.spinner("Loading JSON files..."):
         files_data = load_json_files(uploaded_files)
@@ -6705,7 +5799,7 @@ def main():
     if not outcome_audit_df.empty:
         outcome_counts = outcome_audit_df["outcome_label"].value_counts().reset_index()
         outcome_counts.columns = ["Outcome", "Files"]
-        st.dataframe(outcome_counts, use_container_width=True, hide_index=True)
+        st.dataframe(outcome_counts, width="stretch", hide_index=True)
         if (outcome_audit_df["outcome_label"] == "conflict").any():
             st.error("Some JSON files are present in both paid and not-paid uploads. Resolve these before using the outputs.")
 
@@ -6759,23 +5853,23 @@ def main():
                 match_df = pd.DataFrame(potential_matches)
                 match_df["score"] = match_df["score"].apply(lambda x: f"{x:.1f}%")
                 match_df.columns = ["CSV Company", "JSON File", "Match Score"]
-                st.dataframe(match_df, use_container_width=True, hide_index=True)
+                st.dataframe(match_df, width="stretch", hide_index=True)
 
         if missing_jsons:
             with st.expander(f"Missing JSON Files ({len(missing_jsons)})", expanded=False):
                 st.dataframe(
                     pd.DataFrame({"Company Name (from data)": missing_jsons}),
-                    use_container_width=True,
+                    width="stretch",
                     hide_index=True,
                 )
 
         if extra_jsons:
             with st.expander(f"Extra JSON Files ({len(extra_jsons)})", expanded=False):
-                st.dataframe(pd.DataFrame({"JSON File": extra_jsons}), use_container_width=True, hide_index=True)
+                st.dataframe(pd.DataFrame({"JSON File": extra_jsons}), width="stretch", hide_index=True)
 
     if not pdf_audit_df.empty:
         with st.expander("Company Credit Report PDF Audit", expanded=False):
-            st.dataframe(pdf_audit_df, use_container_width=True, hide_index=True)
+            st.dataframe(pdf_audit_df, width="stretch", hide_index=True)
 
     processor = BatchProcessor()
     progress_bar = st.progress(0, text="Starting batch processing...")
@@ -6801,7 +5895,7 @@ def main():
     error_df = pd.DataFrame(processor.error_log)
     if processor.error_log:
         section_title("Processing Errors Analysis")
-        st.dataframe(error_df, use_container_width=True, hide_index=True)
+        st.dataframe(error_df, width="stretch", hide_index=True)
         st.download_button(
             label="Download Error Log (CSV)",
             data=dataframe_to_csv_bytes(error_df),
@@ -6889,7 +5983,7 @@ def main():
 
     if "outcome_label" in results_df.columns:
         section_title("Outcome Summary")
-        st.dataframe(results_df["outcome_label"].value_counts().reset_index(), use_container_width=True, hide_index=True)
+        st.dataframe(results_df["outcome_label"].value_counts().reset_index(), width="stretch", hide_index=True)
 
     calibration_reports = render_scorecard_calibration(results_df)
     section_title("Calibration Report Exports")

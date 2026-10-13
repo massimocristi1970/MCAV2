@@ -9,6 +9,7 @@ import pytest
 
 from app.services.dashboard_export import (
     build_export_payload,
+    format_flag_status,
     generate_html_report,
     generate_pdf_report,
 )
@@ -123,6 +124,30 @@ def test_export_payload_includes_dashboard_decision_fields(sample_run_context):
     assert payload["metrics_thresholds"]
     assert payload["underwriting"]
     assert "advance_holdback" in payload["underwriting"]
+
+
+def test_missing_business_credit_report_is_not_labelled_as_no_ccj(sample_run_context):
+    assert format_flag_status(None) == "Not provided"
+    assert format_flag_status(False) == "No"
+    assert format_flag_status(True) == "Yes"
+
+    sample_run_context["params"]["business_ccj"] = None
+    sample_run_context["params"]["business_bureau_parse_status"] = "missing"
+    payload = build_export_payload(
+        company_name=sample_run_context["company_name"],
+        params=sample_run_context["params"],
+        metrics=sample_run_context["metrics"],
+        scores=sample_run_context["scores"],
+        analysis_period=sample_run_context["analysis_period"],
+        revenue_insights=sample_run_context["revenue_insights"],
+        filtered_df=sample_run_context["filtered_df"],
+        manual_debt_balances=sample_run_context["manual_outstanding_debt_balances"],
+    )
+    assert payload["business_parameters"]["risk_factors"]["business_ccj"] is None
+    html = generate_html_report(payload)
+    assert "Not provided" in html
+    evidence = {row["evidence"]: row["status"] for row in payload["evidence_quality"]}
+    assert evidence["Business credit PDF"] == "Missing"
 
 
 def test_export_html_contains_final_decision(sample_run_context):

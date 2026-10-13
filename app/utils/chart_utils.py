@@ -710,11 +710,11 @@ class ChartGenerator:
 chart_generator = ChartGenerator()
 
 # Streamlit integration functions
-def display_chart(fig: go.Figure, use_container_width: bool = True) -> None:
+def display_chart(fig: go.Figure, width: str = "stretch") -> None:
     """Display Plotly chart in Streamlit with error handling."""
     
     try:
-        show_mca_plotly(fig, use_container_width=use_container_width)
+        show_mca_plotly(fig, width=width)
     except Exception as e:
         logger.error(f"Error displaying chart: {str(e)}")
         st.error("Error displaying chart. Please try again.")

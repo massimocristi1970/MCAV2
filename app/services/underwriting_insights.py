@@ -600,7 +600,7 @@ def render_underwriting_workspace(
         st.success(f"**Data quality:** {dq.get('summary')}")
 
     with st.expander("Data quality checks", expanded=overall != "Pass"):
-        st.dataframe(pd.DataFrame(dq.get("checks", [])), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(dq.get("checks", [])), width="stretch", hide_index=True)
 
     advance = underwriting.get("advance_holdback") or {}
     st.markdown("#### Suggested advance & holdback")
@@ -628,23 +628,23 @@ def render_underwriting_workspace(
 
     if advance.get("advance_scenarios"):
         st.caption("Advance scenarios")
-        st.dataframe(pd.DataFrame(advance["advance_scenarios"]), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(advance["advance_scenarios"]), width="stretch", hide_index=True)
 
     alerts = underwriting.get("underwriting_alerts") or []
     with st.expander(f"Underwriting alerts ({len(alerts)})", expanded=expanded_alerts and bool(alerts)):
         if alerts:
-            st.dataframe(pd.DataFrame(alerts), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(alerts), width="stretch", hide_index=True)
         else:
             st.info("No automated alerts — still apply standard manual review.")
 
     caps = (underwriting.get("decision_caps") or {}).get("decision_caps") or []
     with st.expander(f"Decision caps & overlays ({len(caps)})", expanded=bool(caps)):
         if caps:
-            st.dataframe(pd.DataFrame(caps), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(caps), width="stretch", hide_index=True)
         else:
             st.info("No active calibration overlays or hard gates beyond the headline decision.")
 
     lenders = underwriting.get("lender_stacking") or []
     with st.expander("Lender & stacking view", expanded=True):
         st.caption("Visible loan credits, repayment recipients, and underwriter-entered balances.")
-        st.dataframe(pd.DataFrame(lenders), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(lenders), width="stretch", hide_index=True)

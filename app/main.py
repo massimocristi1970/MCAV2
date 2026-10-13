@@ -1598,14 +1598,14 @@ def render_card_terminal_reconciliation(bank_df, card_files, card_processing_pay
                 "parser_reliability",
             ]
         ],
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )
 
     with st.expander("Per-file Extraction Diagnostics", expanded=False):
         st.dataframe(
             parsed_view[["filename", "provider", "parser", "parser_reliability", "extraction_diagnostics", "warnings"]],
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
         )
 
@@ -1697,7 +1697,7 @@ def render_card_terminal_reconciliation(bank_df, card_files, card_processing_pay
         display_df = comp_df.copy()
         display_df["difference_amount"] = display_df["difference_amount"].round(2)
         display_df["difference_pct_vs_terminal"] = display_df["difference_pct_vs_terminal"].round(2)
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        st.dataframe(display_df, width="stretch", hide_index=True)
 
         if provider_bank_df is not None and not provider_bank_df.empty:
             st.markdown("**Bank Narration Provider Signals (Unverified unless matched to uploaded provider)**")
@@ -1706,7 +1706,7 @@ def render_card_terminal_reconciliation(bank_df, card_files, card_processing_pay
             provider_bank_display["signal_confidence"] = provider_bank_display["verified_against_uploaded"].map(
                 lambda v: "High" if v else ("Medium" if narration_confidence == "High" else "Low")
             )
-            st.dataframe(provider_bank_display, use_container_width=True, hide_index=True)
+            st.dataframe(provider_bank_display, width="stretch", hide_index=True)
     else:
         st.info("No comparable months found between uploaded card statements and bank transaction period.")
 
@@ -1714,7 +1714,7 @@ def render_card_terminal_reconciliation(bank_df, card_files, card_processing_pay
         catalog = summary.get("provider_catalog", [])
         if catalog:
             catalog_df = pd.DataFrame(catalog)
-            st.dataframe(catalog_df, use_container_width=True, hide_index=True)
+            st.dataframe(catalog_df, width="stretch", hide_index=True)
         else:
             st.info("Provider reference catalog not available.")
 
@@ -2188,11 +2188,11 @@ def render_manual_outstanding_debt_form(possible_lenders, key):
                 ["Possible lender", "Repayments", "Repaid in period (£)", "Outstanding balance (£)"]
             ],
             hide_index=True,
-            use_container_width=True,
+            width="stretch",
             disabled=["Possible lender", "Repayments", "Repaid in period (£)"],
             key=f"{key}_editor",
         )
-        submitted = st.form_submit_button("Save balances and reprocess", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("Save balances and reprocess", type="primary", width="stretch")
 
     manual_total_before = get_manual_outstanding_debt_total()
     if manual_total_before > 0:
@@ -2526,7 +2526,7 @@ def display_loans_repayments_section(df, analysis_period):
                 display_loans['lender_clean'] = display_loans['lender_clean'].str.title()
                 display_loans.columns = ['Lender', 'Number of Loans', 'Total Amount (£)']
                 display_loans['Total Amount (£)'] = display_loans['Total Amount (£)'].apply(lambda x: f"£{x:,.2f}")
-                st.dataframe(display_loans, use_container_width=True, hide_index=True)
+                st.dataframe(display_loans, width="stretch", hide_index=True)
             else:
                 st.info("No loan transactions found in the selected period.")
                 possible_lenders = analysis.get('possible_lenders_from_repayments', pd.DataFrame())
@@ -2539,7 +2539,7 @@ def display_loans_repayments_section(df, analysis_period):
                     ]
                     display_possible.columns = ['Possible Lender', 'Repayments', 'Repaid in Period (£)', 'Review Reason']
                     display_possible['Repaid in Period (£)'] = display_possible['Repaid in Period (£)'].apply(lambda x: f"£{x:,.2f}")
-                    st.dataframe(display_possible, use_container_width=True, hide_index=True)
+                    st.dataframe(display_possible, width="stretch", hide_index=True)
         
         with tab2:
             if not analysis['repayments_by_recipient'].empty:
@@ -2548,7 +2548,7 @@ def display_loans_repayments_section(df, analysis_period):
                 display_repayments['recipient_clean'] = display_repayments['recipient_clean'].str.title()
                 display_repayments.columns = ['Recipient', 'Number of Repayments', 'Total Amount (£)']
                 display_repayments['Total Amount (£)'] = display_repayments['Total Amount (£)'].apply(lambda x: f"£{x:,.2f}")
-                st.dataframe(display_repayments, use_container_width=True, hide_index=True)
+                st.dataframe(display_repayments, width="stretch", hide_index=True)
             else:
                 st.info("No repayment transactions found in the selected period.")
         
@@ -2563,7 +2563,7 @@ def display_loans_repayments_section(df, analysis_period):
                 )
                 display_monthly = display_monthly[['month_str', 'loans', 'repayments', 'net_borrowing']]
                 display_monthly.columns = ['Month', 'Loans Received', 'Repayments Made', 'Net Borrowing']
-                st.dataframe(display_monthly, use_container_width=True, hide_index=True)
+                st.dataframe(display_monthly, width="stretch", hide_index=True)
             else:
                 st.info("No loan or repayment data found for monthly analysis.")
     
@@ -2765,7 +2765,7 @@ def render_full_financial_dashboard(
         impact_rows = build_score_impact_rows(params, metrics, scores)
         if impact_rows:
             with st.expander("Score impact", expanded=True):
-                st.dataframe(pd.DataFrame(impact_rows), use_container_width=True, hide_index=True)
+                st.dataframe(pd.DataFrame(impact_rows), width="stretch", hide_index=True)
                 final_reasons = scores.get("final_decision_reasons", []) or []
                 if final_reasons:
                     st.markdown("**Decision path:**")
@@ -2776,17 +2776,17 @@ def render_full_financial_dashboard(
         if evidence_rows:
             with st.expander("Evidence quality", expanded=False):
                 evidence_df = pd.DataFrame(evidence_rows)
-                st.dataframe(evidence_df, use_container_width=True, hide_index=True)
+                st.dataframe(evidence_df, width="stretch", hide_index=True)
 
         ob_rows = build_open_banking_insight_rows(metrics, params)
         with st.expander("Open banking derived insights", expanded=True):
             st.caption("These additional transaction-derived signals are shown for underwriting review and exports. They do not change the current score unless explicitly added to the scorecard later.")
-            st.dataframe(pd.DataFrame(ob_rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(ob_rows), width="stretch", hide_index=True)
 
         card_rows = build_card_processing_insight_rows(metrics)
         with st.expander("Card processor derived insights", expanded=True):
             st.caption("These card-statement signals are shown for underwriting review and exports. They do not change the current score unless explicitly added to the scorecard later.")
-            st.dataframe(pd.DataFrame(card_rows), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(card_rows), width="stretch", hide_index=True)
 
         # Pricing and details in expander
         with st.expander("Pricing guidance & risk analysis", expanded=False):
@@ -2934,7 +2934,7 @@ def render_full_financial_dashboard(
                 counts_display = pivot_counts.copy()
                 counts_display.index = counts_display.index.astype(str)
                 counts_display = counts_display.astype(int)
-                st.dataframe(counts_display, use_container_width=True)
+                st.dataframe(counts_display, width="stretch")
 
                 # Add totals
                 totals_counts = counts_display.sum()
@@ -2948,7 +2948,7 @@ def render_full_financial_dashboard(
                 amounts_display = pivot_amounts.copy()
                 amounts_display.index = amounts_display.index.astype(str)
                 amounts_display = amounts_display.round(2)
-                st.dataframe(amounts_display, use_container_width=True)
+                st.dataframe(amounts_display, width="stretch")
 
                 # Add totals
                 totals_amounts = amounts_display.sum()
@@ -3062,7 +3062,7 @@ def render_full_financial_dashboard(
 
     if metrics_data:
         df_metrics = pd.DataFrame(metrics_data)
-        st.dataframe(df_metrics, use_container_width=True, hide_index=True)
+        st.dataframe(df_metrics, width="stretch", hide_index=True)
 
     # Period Comparison (if applicable)
     if analysis_period != 'All':
@@ -3162,7 +3162,7 @@ def render_full_financial_dashboard(
                 })
             if breakdown_data:
                 breakdown_df = pd.DataFrame(breakdown_data)
-                st.dataframe(breakdown_df, use_container_width=True, hide_index=True)
+                st.dataframe(breakdown_df, width="stretch", hide_index=True)
 
         # Subprime breakdown
         st.markdown("---")
@@ -3223,7 +3223,7 @@ def render_full_financial_dashboard(
 
                 if metric_data:
                     df_metrics = pd.DataFrame(metric_data)
-                    st.dataframe(df_metrics, use_container_width=True, hide_index=True)
+                    st.dataframe(df_metrics, width="stretch", hide_index=True)
 
             # Key factors in columns
             if diagnostics.get('top_negative_factors') or diagnostics.get('top_positive_factors'):
@@ -3303,7 +3303,7 @@ def render_saved_run_loader():
         load_dir = st.session_state.get("app_saved_runs_load_dir") or str(reloadable_runs_default_root())
         cols = st.columns([1, 2])
         with cols[0]:
-            if st.button("Choose saved run folder", use_container_width=True, key="choose_saved_run_folder"):
+            if st.button("Choose saved run folder", width="stretch", key="choose_saved_run_folder"):
                 selected = choose_directory(title="Choose saved run folder", initial_dir=load_dir)
                 if selected:
                     st.session_state["app_saved_runs_load_dir"] = selected
@@ -3330,7 +3330,7 @@ def render_saved_run_loader():
             format_func=_label,
             key="saved_run_selector_main",
         )
-        if st.button("Load selected run", type="primary", use_container_width=True, key="load_saved_run_main"):
+        if st.button("Load selected run", type="primary", width="stretch", key="load_saved_run_main"):
             try:
                 loaded = load_reloadable_scorecard_run(selected_run)
                 st.session_state["last_run"] = loaded
@@ -3360,7 +3360,7 @@ def render_saved_run_saver():
         save_dir = st.session_state.get("app_saved_runs_save_dir") or str(reloadable_runs_default_root())
         cols = st.columns([1, 2])
         with cols[0]:
-            if st.button("Choose save folder", use_container_width=True, key="choose_save_run_folder"):
+            if st.button("Choose save folder", width="stretch", key="choose_save_run_folder"):
                 selected = choose_directory(title="Choose folder to save this run", initial_dir=save_dir)
                 if selected:
                     st.session_state["app_saved_runs_save_dir"] = selected
@@ -3372,7 +3372,7 @@ def render_saved_run_saver():
 
         default_name = run.get("company_name") or run.get("params", {}).get("company_name") or "Scorecard run"
         run_name = st.text_input("Run name", value=default_name, key="save_run_name_main")
-        if st.button("Save run to selected folder", type="primary", use_container_width=True, key="save_run_main"):
+        if st.button("Save run to selected folder", type="primary", width="stretch", key="save_run_main"):
             try:
                 run_to_save = {
                     **run,
@@ -3484,13 +3484,18 @@ def main():
         directors_score = tu_director_score
 
         # -----------------------------
-        # Business Bureau PDF Upload (NEW)
+        # Business Bureau PDF Upload (optional)
         # -----------------------------
-        sidebar_subsection("Business credit report (PDF)")
+        sidebar_subsection("Business credit report (PDF) — optional")
+        st.sidebar.caption(
+            "Optional. The scorecard still runs from the bank file and director TU XML. "
+            "Bureau CCJ and score penalties apply only after a report is uploaded and parsed."
+        )
         bureau_pdf = st.sidebar.file_uploader(
-            "Upload Business Credit Report (PDF)",
+            "Upload business credit report (PDF)",
             type=["pdf"],
-            key="bureau_pdf_upload"
+            key="bureau_pdf_upload",
+            help="Leave this blank to score without a company credit report.",
         )
 
         bureau_text = ""
@@ -3522,23 +3527,25 @@ def main():
             if bureau_parse_status == "failed":
                 st.sidebar.error(
                     "Business credit PDF text extraction failed. "
-                    f"No bureau band or CCJ status was inferred. {bureau_err}"
+                    f"No bureau band or CCJ status was inferred. Scoring will continue without bureau penalties. {bureau_err}"
                 )
             elif bureau_parse_status == "parsed":
                 st.sidebar.success(f"Business credit PDF parsed via {bureau_backend}")
-        with st.sidebar.expander("Report Information", expanded=False):
-            for section_name in ["Credit information", "Payment performance", "Legal notices", "Public Record",
-                                 "Charges"]:
-                st.markdown(f"**{section_name}**")
-                bullets = report_info.get(section_name, []) or []
+                with st.sidebar.expander("Report Information", expanded=False):
+                    for section_name in ["Credit information", "Payment performance", "Legal notices", "Public Record",
+                                         "Charges"]:
+                        st.markdown(f"**{section_name}**")
+                        bullets = report_info.get(section_name, []) or []
 
-                if not bullets:
-                    st.write("Not found in report")
-                else:
-                    for b in bullets:
-                        st.write(f"• {b}")
+                        if not bullets:
+                            st.write("Not found in report")
+                        else:
+                            for b in bullets:
+                                st.write(f"• {b}")
 
-                st.markdown("---")
+                        st.markdown("---")
+        else:
+            st.sidebar.caption("No business credit report uploaded. Bureau signals will not affect this score.")
 
         # -----------------------------
         # Risk Factors (UPDATED)
@@ -3658,7 +3665,7 @@ def main():
             "Process analysis",
             type="primary",
             disabled=uploaded_file is None or not tu_ready,
-            use_container_width=True,
+            width="stretch",
         )
         if uploaded_file is not None and not tu_ready:
             st.warning("Director TU XML is required. Upload and parse a valid TransUnion XML file in the sidebar first.")

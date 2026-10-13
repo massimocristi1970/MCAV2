@@ -2,7 +2,7 @@
 """
 Subprime Business Finance Scoring System - MICRO ENTERPRISE FRIENDLY VERSION
 Now includes risk factor penalties that match the V2 weighted system
-Balanced for micro enterprises (Â£1-10k short-term lending)
+Balanced for micro enterprises (£1-10k short-term lending)
 
 Uses centralized thresholds from app/config/scoring_thresholds.py
 """
@@ -28,7 +28,7 @@ class SubprimeScoring:
         # Load centralized thresholds if available
         self._thresholds = get_thresholds() if THRESHOLDS_AVAILABLE else None
         
-        # Subprime weights for Â£1-10k short-term lending (6-9 months)
+        # Subprime weights for £1-10k short-term lending (6-9 months)
         # Balanced for micro enterprise realities
         # These are derived from centralized config when available
         if self._thresholds:
@@ -333,7 +333,7 @@ class SubprimeScoring:
         max_credit = params.get('business_max_recommended_credit')
         if credit_limit == 0 and max_credit == 0:
             total_penalty += 2
-            applied_penalties.append("Business bureau credit limit Â£0: -2")
+            applied_penalties.append("Business bureau credit limit £0: -2")
 
         negative_impact_count = params.get('business_negative_impact_count') or 0
         try:
@@ -455,12 +455,12 @@ class SubprimeScoring:
             f"Final Score: {final_score:.1f}/100",
             "",
             "Key Metrics (Micro Enterprise Thresholds):",
-            f"â€¢ DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f} (Need 1.2+ for good score)",
-            f"â€¢ Revenue Growth: {metrics.get('Revenue Growth Rate', 0) * 100:.1f}% (Need 5%+ for good score)",
-            f"â€¢ Directors Score: {params.get('directors_score', 0)}/100 (Need 55+ for good score)",
-            f"â€¢ Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.50 for good score)",
-            f"â€¢ Operating Margin: {metrics.get('Operating Margin', 0) * 100:.1f}% (Need 3%+ for good score)",
-            f"â€¢ Negative Balance Days: {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need <5 for good score)"
+            f"• DSCR: {metrics.get('Debt Service Coverage Ratio', 0):.2f} (Need 1.2+ for good score)",
+            f"• Revenue Growth: {metrics.get('Revenue Growth Rate', 0) * 100:.1f}% (Need 5%+ for good score)",
+            f"• Directors Score: {params.get('directors_score', 0)}/100 (Need 55+ for good score)",
+            f"• Cash Flow Volatility: {metrics.get('Cash Flow Volatility', 0):.3f} (Need <0.50 for good score)",
+            f"• Operating Margin: {metrics.get('Operating Margin', 0) * 100:.1f}% (Need 3%+ for good score)",
+            f"• Negative Balance Days: {metrics.get('Average Negative Balance Days per Month', 0):.0f} (Need <5 for good score)"
         ]
 
         # Add risk factor details if any were applied
@@ -469,7 +469,7 @@ class SubprimeScoring:
             breakdown.append("")
             breakdown.append("Risk Factor Penalties Applied:")
             for penalty in applied_penalties:
-                breakdown.append(f"â€¢ {penalty}")
+                breakdown.append(f"• {penalty}")
 
         card_reasons = metrics.get("Card Processing Score Adjustment Reasons") or []
         if card_reasons:
@@ -647,7 +647,7 @@ class SubprimeScoring:
         elif metric == 'Directors Score':
             return f"Director score of {int(target)}+ would help (currently {int(actual)})"
         elif metric == 'Average Month-End Balance':
-            return f"Increase balance from Â£{actual:,.0f} to Â£{target:,.0f}"
+            return f"Increase balance from £{actual:,.0f} to £{target:,.0f}"
         elif metric == 'Revenue Growth Rate':
             return f"Improve growth from {actual*100:.1f}% to {target*100:.1f}%+"
         elif metric == 'Operating Margin':
@@ -700,7 +700,7 @@ class SubprimeScoring:
         elif metric == 'Directors Score':
             return f"Improving Directors Score from {int(actual)} to {int(achievable_value)} would add ~{estimated_gain:.1f} points"
         elif metric == 'Average Month-End Balance':
-            return f"Increasing balance from Â£{actual:,.0f} to Â£{achievable_value:,.0f} would add ~{estimated_gain:.1f} points"
+            return f"Increasing balance from £{actual:,.0f} to £{achievable_value:,.0f} would add ~{estimated_gain:.1f} points"
         elif metric == 'Revenue Growth Rate':
             return f"Improving growth from {actual*100:.1f}% to {achievable_value*100:.1f}% would add ~{estimated_gain:.1f} points"
         elif metric == 'Operating Margin':

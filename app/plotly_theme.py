@@ -112,7 +112,7 @@ def show_mca_plotly(fig: Any, *, key: str | None = None, **kwargs: Any):
     import streamlit as st
 
     finalize_mca_figure(fig)
-    opts: dict[str, Any] = {"theme": None, "use_container_width": True}
+    opts: dict[str, Any] = {"theme": None, "width": "stretch"}
     opts.update(kwargs)
     if key is not None:
         opts["key"] = key
